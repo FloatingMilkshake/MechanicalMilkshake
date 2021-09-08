@@ -11,8 +11,8 @@ namespace DiscordBot.Modules
     {
 
         [Command("tellraw")]
-        [Description("Speak through the bot!")]
-        public async Task Tellraw(CommandContext ctx, [RemainingText] string message)
+        [Description("**Owner only:** Speak through the bot!")]
+        public async Task Tellraw(CommandContext ctx, [Description("The message to have the bot send.")][RemainingText] string message)
         {
             if (ctx.Message.Author.Username != "FloatingMilkshake" && ctx.Message.Author.Discriminator != "7777")
             {
@@ -24,8 +24,8 @@ namespace DiscordBot.Modules
         }
 
         [Command("shutdown")]
-        [Description("Shuts down the bot.")]
-        public async Task Shutdown(CommandContext ctx, [RemainingText] string areYouSure)
+        [Description("**Owner only:** Shuts down the bot.")]
+        public async Task Shutdown(CommandContext ctx, [Description("This must be \"I am sure\" for the command to run.")] [RemainingText] string areYouSure)
         {
             if (ctx.Message.Author.Username != "FloatingMilkshake" && ctx.Message.Author.Discriminator != "7777")
             {
@@ -44,8 +44,8 @@ namespace DiscordBot.Modules
         }
 
         [Command("pwsh")]
-        [Description("Runs a PowerShell command on the host machine.")]
-        public async Task pwsh(CommandContext ctx, [RemainingText] String args)
+        [Description("**Owner only:** Runs a PowerShell command on the host machine.")]
+        public async Task pwsh(CommandContext ctx, [Description("The PowerShell command to run.")] [RemainingText] String args)
         {
             if (ctx.Message.Author.Username != "FloatingMilkshake" && ctx.Message.Author.Discriminator != "7777")
             {

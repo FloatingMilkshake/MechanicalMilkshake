@@ -14,7 +14,7 @@ namespace DiscordBot.Modules
         [Command("clear")]
         [Aliases("purge", "delete")]
         [Description("Deletes the given number of messages from a channel.")]
-        public async Task Clear(CommandContext ctx, int count)
+        public async Task Clear(CommandContext ctx, [Description("The number of messages to delete.")] int count)
         {
             try
             {
@@ -34,7 +34,7 @@ namespace DiscordBot.Modules
         [Command("userinfo")]
         [Aliases("whois")]
         [Description("Returns information about the provided user.")]
-        public async Task UserInfo(CommandContext ctx, DiscordMember member = null)
+        public async Task UserInfo(CommandContext ctx, [Description("The member to look up information for. Defaults to yourself if no member is provided.")] DiscordMember member = null)
         {
             if (member == null)
             {
@@ -93,13 +93,36 @@ namespace DiscordBot.Modules
         [Description("Returns information about the server.")]
         public async Task ServerInfo(CommandContext ctx)
         {
-            await ctx.RespondAsync($"**Server Info for {ctx.Guild.Name}**\n*more info coming soon when i decide to improve this command*");
+            var description = "None";
+
+            if (ctx.Guild.Description is not null)
+            {
+                description = ctx.Guild.Description;
+            }
+
+            var msSinceEpoch = ctx.Guild.Id >> 22;
+            var msUnix = msSinceEpoch + 1420070400000;
+            var createdAt = $"{(msUnix / 1000).ToString()}";
+
+            var embed = new DiscordEmbedBuilder()
+                .WithAuthor($"Server Info for {ctx.Guild.Name}")
+                .WithColor(new DiscordColor("#9B59B6"))
+                .AddField("Server Owner", $"{ctx.Guild.Owner.Username}#{ctx.Guild.Owner.Discriminator}", true)
+                .AddField("Channels", $"{ctx.Guild.Channels.Count}", true)
+                .AddField("Members", $"{ctx.Guild.MemberCount}", true)
+                .AddField("Roles", $"{ctx.Guild.Roles.Count}", true)
+                .WithThumbnail($"{ctx.Guild.IconUrl}")
+                .AddField("Description", $"{description}", true)
+                .WithFooter($"Server ID: {ctx.Guild.Id}")
+                .AddField("Created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)", true);
+
+            await ctx.RespondAsync(embed);
         }
 
         [Command("avatar")]
         [Aliases("avy", "av")]
         [Description("Returns the avatar of the provided user.")]
-        public async Task Avatar(CommandContext ctx, DiscordMember member = null)
+        public async Task Avatar(CommandContext ctx, [Description("The member to get the avatar for. Defaults to yourself if no member is provided.")] DiscordMember member = null)
         {
             if (member == null)
             {
@@ -112,7 +135,7 @@ namespace DiscordBot.Modules
         [Command("timestamp")]
         [Aliases("ts")]
         [Description("Returns the Unix timestamp of a given Discord ID/snowflake")]
-        public async Task TimestampUnixCmd(CommandContext ctx, [Description("The ID/snowflake to fetch the Unix timestamp for")] ulong snowflake)
+        public async Task TimestampUnixCmd(CommandContext ctx, [Description("The ID/snowflake to fetch the Unix timestamp for.")] ulong snowflake)
         {
             var msSinceEpoch = snowflake >> 22;
             var msUnix = msSinceEpoch + 1420070400000;

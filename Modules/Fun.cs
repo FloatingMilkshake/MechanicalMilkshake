@@ -18,7 +18,7 @@ namespace DiscordBot.Modules
 
         [Command("randomnumber")]
         [Description("Generates a random number between two that you specify.")]
-        public async Task Random(CommandContext ctx, int min, int max)
+        public async Task Random(CommandContext ctx, [Description("The minimum number to choose between.")] int min, [Description("The maximum number to choose between.")] int max)
         {
             var random = new Random();
             await ctx.RespondAsync($"Your random number is **{random.Next(min, max)}**!");
@@ -89,7 +89,7 @@ namespace DiscordBot.Modules
 
         [Command("edit")]
         [Description("Sends a message that is edited to another message you specify after a given time in seconds.")]
-        public async Task Edit(CommandContext ctx, string message, string editedMessage, int delay)
+        public async Task Edit(CommandContext ctx, [Description("Initial message for the bot to send.")] string message, [Description("What the message should be edited to.")] string editedMessage, [Description("How long the bot should wait to edit the message, in seconds.")] int delay)
         {
             if (delay is 0)
             {
