@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
 
-namespace DiscordBot.Commands
+namespace DiscordBot.Modules
 {
     public class Owner : BaseCommandModule
     {
 
         [Command("tellraw")]
         [Description("Speak through the bot!")]
-        public async Task Tellraw(CommandContext ctx, string message)
+        public async Task Tellraw(CommandContext ctx, [RemainingText] string message)
         {
             if (ctx.Message.Author.Username != "FloatingMilkshake" && ctx.Message.Author.Discriminator != "7777")
             {

@@ -1,18 +1,12 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Net;
-using System.Diagnostics;
-using System.IO;
 
-namespace DiscordBot.Commands
+namespace DiscordBot.Modules
 {
     public class Utility : BaseCommandModule
     {
@@ -38,6 +32,7 @@ namespace DiscordBot.Commands
         }
 
         [Command("userinfo")]
+        [Aliases("whois")]
         [Description("Returns information about the provided user.")]
         public async Task UserInfo(CommandContext ctx, DiscordMember member = null)
         {
@@ -46,16 +41,50 @@ namespace DiscordBot.Commands
                 member = ctx.Member;
             }
 
-            //await ctx.RespondAsync($"**User Info for {user.Username}#{user.Discriminator}**"
-            //    + "*more coming soon when i actually write the rest of this command*");
+            var msSinceEpoch = member.Id >> 22;
+            var msUnix = msSinceEpoch + 1420070400000;
+            var registeredAt = ($"{(msUnix / 1000).ToString()}");
+
+            TimeSpan t = member.JoinedAt - new DateTime(1970, 1, 1);
+            int joinedAtTimestamp = (int)t.TotalSeconds;
+
+            String memberRoles = null;
+            foreach (var role in member.Roles)
+            {
+                memberRoles += " " + role.ToString();
+                memberRoles = memberRoles.Replace("Role ", "<@&");
+                Regex pattern = new Regex(@";.*");
+                Match match = pattern.Match(memberRoles);
+                String stringToReplace = match.ToString();
+                memberRoles = memberRoles.Replace($"{stringToReplace}", ">");
+            }
+
+            String acknowledgements = "None";
+            if (member.Permissions.HasPermission(Permissions.KickMembers) && member.Permissions.HasPermission(Permissions.BanMembers))
+            {
+                acknowledgements = "Server Moderator (can kick and ban members)";
+            }
+            if (member.Permissions.HasPermission(Permissions.Administrator))
+            {
+                acknowledgements = "Server Administrator";
+            }
+            if (member.IsOwner)
+            {
+                acknowledgements = "Server Owner";
+            }
 
             var embed = new DiscordEmbedBuilder()
-                .WithDescription($"**User Info for {member.Mention}**")
+                .WithAuthor($"User Info for {member.Username}#{member.Discriminator}")
+                .WithDescription($"{member.Mention}")
                 .WithColor(new DiscordColor($"{member.Color}"))
                 .WithFooter($"Requested by {ctx.Member.Username}#{ctx.Member.Discriminator}")
-                .AddField("additional field", "aaaaaaaaaaa", false)
-                .AddField($"another additional field: {member.Id}", $"description: {member.Id}")
-                .AddField($"field with no description: {member.Id}", "**aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa**");
+                .AddField("ID", $"{member.Id}")
+                .AddField("Account registered on", $"<t:{registeredAt}:F> (<t:{registeredAt}:R>)")
+                .AddField("Joined server on", $"<t:{joinedAtTimestamp}:F> (<t:{joinedAtTimestamp}:R>)")
+                .AddField("Roles", $"{memberRoles}")
+                .AddField("Acknowledgements", $"{acknowledgements}")
+                .WithThumbnail(member.AvatarUrl)
+                .WithTimestamp(DateTime.UtcNow);
 
             await ctx.RespondAsync(embed);
         }
@@ -68,15 +97,26 @@ namespace DiscordBot.Commands
         }
 
         [Command("avatar")]
+        [Aliases("avy", "av")]
         [Description("Returns the avatar of the provided user.")]
-        public async Task Avatar(CommandContext ctx, DiscordMember user)
+        public async Task Avatar(CommandContext ctx, DiscordMember member = null)
         {
-            if (user is null)
+            if (member == null)
             {
-                user = (DiscordMember)ctx.Message.Author;
+                member = ctx.Member;
             }
 
-            await ctx.RespondAsync(user.AvatarUrl);
+            await ctx.RespondAsync(member.AvatarUrl);
+        }
+
+        [Command("timestamp")]
+        [Aliases("ts")]
+        [Description("Returns the Unix timestamp of a given Discord ID/snowflake")]
+        public async Task TimestampUnixCmd(CommandContext ctx, [Description("The ID/snowflake to fetch the Unix timestamp for")] ulong snowflake)
+        {
+            var msSinceEpoch = snowflake >> 22;
+            var msUnix = msSinceEpoch + 1420070400000;
+            await ctx.RespondAsync($"{(msUnix / 1000).ToString()}");
         }
     }
 }

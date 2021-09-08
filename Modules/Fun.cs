@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Net;
 
-namespace DiscordBot.Commands
+namespace DiscordBot.Modules
 {
     public class Fun : BaseCommandModule
     {
@@ -20,10 +20,6 @@ namespace DiscordBot.Commands
         [Description("Generates a random number between two that you specify.")]
         public async Task Random(CommandContext ctx, int min, int max)
         {
-            if (min > max)
-            {
-                await ctx.RespondAsync("Error: Mimimum value cannot be greater than maximum value!");
-            }
             var random = new Random();
             await ctx.RespondAsync($"Your random number is **{random.Next(min, max)}**!");
         }
