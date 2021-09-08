@@ -9,7 +9,6 @@ namespace DiscordBot.Modules
 {
     public class Owner : BaseCommandModule
     {
-
         [Command("tellraw")]
         [Description("**Owner only:** Speak through the bot!")]
         public async Task Tellraw(CommandContext ctx, [Description("The message to have the bot send.")][RemainingText] string message)
