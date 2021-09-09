@@ -1,0 +1,12 @@
+version: '2.3'
+services:
+  bot:
+    image: ghcr.io/floatingmilkshake/discordbot
+    env_file:
+      - .env
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 30
+    restart: always
