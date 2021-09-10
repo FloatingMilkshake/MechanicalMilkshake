@@ -32,7 +32,7 @@ namespace DiscordBot
             });
             var commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
-                StringPrefixes = new[] { "!", "milk " }
+                StringPrefixes = new[] { "!" }
             });
 
             async Task CommandsNextService_CommandErrored(CommandsNextExtension cnext, CommandErrorEventArgs e)
