@@ -141,5 +141,21 @@ namespace DiscordBot.Modules
             var msUnix = msSinceEpoch + 1420070400000;
             await ctx.RespondAsync($"{(msUnix / 1000).ToString()}");
         }
+
+        [Command("lookup")]
+        [Description("Look up a user not in the current server.")]
+        public async Task Lookup(CommandContext ctx, [Description("The user you want to look up.")] DiscordUser user)
+        {
+            var msSinceEpoch = user.Id >> 22;
+            var msUnix = msSinceEpoch + 1420070400000;
+            var createdAt = ($"{(msUnix / 1000).ToString()}");
+
+            var embed = new DiscordEmbedBuilder()
+                .WithThumbnail($"{user.AvatarUrl}")
+                .AddField("ID", $"{user.Id}")
+                .AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
+
+            await ctx.RespondAsync($"Information about **{user.Username}#{user.Discriminator}**:", embed);
+        }
     }
 }
