@@ -33,7 +33,7 @@ namespace DiscordBot.Modules
             }
             if (areYouSure == "I am sure")
             {
-                await ctx.RespondAsync("**Warning**: The bot is now shutting down. If running in a debug session in Visual Studio, it will exit.");
+                await ctx.RespondAsync("**Warning**: The bot is now shutting down.");
                 Environment.Exit(0);
             }
             else
