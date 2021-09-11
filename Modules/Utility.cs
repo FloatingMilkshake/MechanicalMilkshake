@@ -157,5 +157,18 @@ namespace DiscordBot.Modules
 
             await ctx.RespondAsync($"Information about **{user.Username}#{user.Discriminator}**:", embed);
         }
+
+        [Command("markdown")]
+        [Description("Expose the Markdown formatting behind a message!")]
+        [Aliases("md", "raw")]
+        public async Task Markdown(CommandContext ctx, [Description("The message you want to expose the formatting of. Accepts message IDs (for messages in the same channel) and links.")] DiscordMessage message)
+        {
+            var msgContentEscaped = message.Content.Replace("`", @"\`");
+            msgContentEscaped = msgContentEscaped.Replace("*", @"\*");
+            msgContentEscaped = msgContentEscaped.Replace("_", @"\_");
+            msgContentEscaped = msgContentEscaped.Replace("~", @"\~");
+            msgContentEscaped = msgContentEscaped.Replace(">", @"\>");
+            await ctx.RespondAsync($"{msgContentEscaped}");
+        }
     }
 }
