@@ -76,8 +76,10 @@ namespace DiscordBot
 
             await discord.ConnectAsync();
 
-            var general = await discord.GetChannelAsync(882446411130601472);
-            await general.SendMessageAsync("Connected!");
+            var homeEnvVar = Environment.GetEnvironmentVariable("HOME_CHANNEL");
+            ulong home = Convert.ToUInt64(homeEnvVar);
+            var homeChannel = await discord.GetChannelAsync(home);
+            await homeChannel.SendMessageAsync("Connected!");
 
             await Task.Delay(-1);
         }

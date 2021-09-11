@@ -8,5 +8,7 @@ huge thank-you to [Erisa](https://github.com/Erisa) for putting up with my const
 # want to run it yourself for some reason?
 - clone the repo
 - copy `.env-example` to `.env`
-- replace `yourtoken` with your actual bot token in `.env`
-- run `docker-compose up -d`
+- in `.env`:
+  - replace `yourtoken` with your actual bot token
+  - replace `homechannelid` with the id of a channel where you'd like startup messages to appear
+ - run `docker-compose up -d`
