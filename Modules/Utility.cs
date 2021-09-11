@@ -21,7 +21,7 @@ namespace DiscordBot.Modules
                 await ctx.Message.DeleteAsync();
                 var messages = await ctx.Channel.GetMessagesAsync(count);
                 await ctx.Channel.DeleteMessagesAsync(messages);
-                var response = await ctx.Channel.SendMessageAsync($"Deleted {count} messages!");
+                var response = await ctx.Channel.SendMessageAsync($"Deleted {messages.Count} messages!");
                 await Task.Delay(3000);
                 await response.DeleteAsync();
             }
