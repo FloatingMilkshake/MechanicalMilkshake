@@ -67,7 +67,6 @@ namespace DiscordBot.Modules
             }
 
             var embed = new DiscordEmbedBuilder()
-                .WithAuthor($"User Info for {member.Username}#{member.Discriminator}")
                 .WithDescription($"{member.Mention}")
                 .WithColor(new DiscordColor($"{member.Color}"))
                 .WithFooter($"Requested by {ctx.Member.Username}#{ctx.Member.Discriminator}")
@@ -79,7 +78,7 @@ namespace DiscordBot.Modules
                 .WithThumbnail(member.AvatarUrl)
                 .WithTimestamp(DateTime.UtcNow);
 
-            await ctx.RespondAsync(embed);
+            await ctx.RespondAsync($"User Info for {member.Username}#{member.Discriminator}", embed);
         }
 
         [Command("serverinfo")]
@@ -98,7 +97,6 @@ namespace DiscordBot.Modules
             var createdAt = $"{(msUnix / 1000).ToString()}";
 
             var embed = new DiscordEmbedBuilder()
-                .WithAuthor($"Server Info for {ctx.Guild.Name}")
                 .WithColor(new DiscordColor("#9B59B6"))
                 .AddField("Server Owner", $"{ctx.Guild.Owner.Username}#{ctx.Guild.Owner.Discriminator}", true)
                 .AddField("Channels", $"{ctx.Guild.Channels.Count}", true)
@@ -109,7 +107,7 @@ namespace DiscordBot.Modules
                 .WithFooter($"Server ID: {ctx.Guild.Id}")
                 .AddField("Created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)", true);
 
-            await ctx.RespondAsync(embed);
+            await ctx.RespondAsync($"Server Info for {ctx.Guild.Name}", embed);
         }
 
         [Command("avatar")]
