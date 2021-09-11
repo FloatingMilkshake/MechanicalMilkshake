@@ -5,6 +5,7 @@ using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace DiscordBot
@@ -74,12 +75,42 @@ namespace DiscordBot
             commands.RegisterCommands<Fun>();
             commands.CommandErrored += CommandsNextService_CommandErrored;
 
-            await discord.ConnectAsync();
+            if (Environment.GetEnvironmentVariable("HOME_CHANNEL") == null)
+            {
+                Console.WriteLine("ERROR: No home channel provided! Make sure the environment variable HOME_CHANNEL is set.");
+                Environment.Exit(1);
+            }
 
             var homeEnvVar = Environment.GetEnvironmentVariable("HOME_CHANNEL");
             ulong home = Convert.ToUInt64(homeEnvVar);
             var homeChannel = await discord.GetChannelAsync(home);
-            await homeChannel.SendMessageAsync("Connected!");
+
+            String commitHash = "";
+            if (File.Exists("CommitHash.txt"))
+            {
+                var readHash = new StreamReader("CommitHash.txt");
+                commitHash = readHash.ReadToEnd();
+            }
+            if (commitHash == "")
+            {
+                commitHash = "dev";
+            }
+
+            String commitMessage = "";
+            if (File.Exists("CommitMessage.txt"))
+            {
+                var readMessage = new StreamReader("CommitMessage.txt");
+                commitMessage = readMessage.ReadToEnd();
+            }
+            if (commitMessage == "")
+            {
+                commitMessage = "No commit message is available when debugging.";
+            }
+
+            await discord.ConnectAsync();
+
+            await homeChannel.SendMessageAsync($"Connected! Latest commit: `{commitHash}`"
+                + $"\n\nLatest commit message:\n```\n{commitMessage}\n```");
 
             await Task.Delay(-1);
         }
