@@ -110,7 +110,7 @@ namespace DiscordBot
             await discord.ConnectAsync();
 
             await homeChannel.SendMessageAsync($"Connected! Latest commit: `{commitHash}`"
-                + $"\n\nLatest commit message:\n```\n{commitMessage}\n```");
+                + $"\nLatest commit message:\n```\n{commitMessage}\n```");
 
             await Task.Delay(-1);
         }
