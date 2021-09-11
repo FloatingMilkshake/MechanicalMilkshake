@@ -78,7 +78,7 @@ namespace DiscordBot.Modules
                 .WithThumbnail(member.AvatarUrl)
                 .WithTimestamp(DateTime.UtcNow);
 
-            await ctx.RespondAsync($"User Info for {member.Username}#{member.Discriminator}", embed);
+            await ctx.RespondAsync($"User Info for **{member.Username}#{member.Discriminator}**", embed);
         }
 
         [Command("serverinfo")]
@@ -107,7 +107,7 @@ namespace DiscordBot.Modules
                 .WithFooter($"Server ID: {ctx.Guild.Id}")
                 .AddField("Created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)", true);
 
-            await ctx.RespondAsync($"Server Info for {ctx.Guild.Name}", embed);
+            await ctx.RespondAsync($"Server Info for **{ctx.Guild.Name}**", embed);
         }
 
         [Command("avatar")]
