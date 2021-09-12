@@ -3,6 +3,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using System;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -155,6 +156,28 @@ namespace DiscordBot.Modules
             var msg = await ctx.RespondAsync("Pong!");
             ulong ping = (msg.Id - ctx.Message.Id) >> 22;
             await msg.ModifyAsync($"Pong! `{ping}ms`");
+        }
+
+        [Command("wolframalpha")]
+        [Description("Search WolframAlpha without leaving Discord!")]
+        [Aliases("wa", "wolfram")]
+        public async Task WolframAlpha(CommandContext ctx, [Description("What to search for."), RemainingText] string query)
+        {
+            var msg = await ctx.RespondAsync("Searching...");
+
+            if (Environment.GetEnvironmentVariable("WOLFRAMALPHA_APP_ID") == "yourappid") {
+                await msg.ModifyAsync("Looks like you don't have an App ID! Check the `WOLFRAMALPHA_APP_ID` environment variable. "
+                    + "If you don't know how to get an App ID, see Getting Started here: <https://products.wolframalpha.com/short-answers-api/documentation/>");
+                return;
+            }
+            else
+            {
+                string appid = Environment.GetEnvironmentVariable("WOLFRAMALPHA_APP_ID");
+            }
+
+            var cli = new WebClient();
+            string data = cli.DownloadString("https://api.wolframalpha.com/v1/result?appid={appid}}&i={query}");
+            await msg.ModifyAsync(data);
         }
     }
 }
