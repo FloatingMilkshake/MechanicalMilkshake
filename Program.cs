@@ -70,7 +70,7 @@ namespace DiscordBot
                 }
             }
 
-            commands.RegisterCommands<Owner>();
+            commands.RegisterCommands<Admin>();
             commands.RegisterCommands<Utility>();
             commands.RegisterCommands<Fun>();
             commands.RegisterCommands<Mod>();
