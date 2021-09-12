@@ -147,5 +147,14 @@ namespace DiscordBot.Modules
             msgContentEscaped = msgContentEscaped.Replace(">", @"\>");
             await ctx.RespondAsync($"{msgContentEscaped}");
         }
+
+        [Command("ping")]
+        [Description("Checks my ping.")]
+        public async Task Ping(CommandContext ctx)
+        {
+            var msg = await ctx.RespondAsync("Pong!");
+            ulong ping = (msg.Id - ctx.Message.Id) >> 22;
+            await msg.ModifyAsync($"Pong! `{ping}ms`");
+        }
     }
 }
