@@ -73,6 +73,7 @@ namespace DiscordBot
             commands.RegisterCommands<Owner>();
             commands.RegisterCommands<Utility>();
             commands.RegisterCommands<Fun>();
+            commands.RegisterCommands<Mod>();
             commands.CommandErrored += CommandsNextService_CommandErrored;
 
             if (Environment.GetEnvironmentVariable("HOME_CHANNEL") == null)
