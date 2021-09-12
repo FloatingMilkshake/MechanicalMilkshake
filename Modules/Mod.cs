@@ -8,6 +8,20 @@ namespace DiscordBot.Modules
 {
     public class Mod : BaseCommandModule
     {
+        [Command("clear")]
+        [Aliases("purge", "delete")]
+        [Description("Deletes the given number of messages from a channel.")]
+        [RequirePermissions(Permissions.ManageMessages)]
+        public async Task Clear(CommandContext ctx, [Description("The number of messages to delete.")] int count)
+        {
+            await ctx.Message.DeleteAsync();
+            var messages = await ctx.Channel.GetMessagesAsync(count);
+            await ctx.Channel.DeleteMessagesAsync(messages);
+            var response = await ctx.Channel.SendMessageAsync($"Deleted {messages.Count} messages!");
+            await Task.Delay(3000);
+            await response.DeleteAsync();
+        }
+
         [Command("kick")]
         [Aliases("yeet")]
         [Description("Kicks a user. They can rejoin the server if they have an invite.")]
