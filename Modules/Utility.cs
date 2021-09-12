@@ -99,14 +99,14 @@ namespace DiscordBot.Modules
         [Command("avatar")]
         [Aliases("avy", "av")]
         [Description("Returns the avatar of the provided user.")]
-        public async Task Avatar(CommandContext ctx, [Description("The member to get the avatar for. Defaults to yourself if no member is provided.")] DiscordMember member = null)
+        public async Task Avatar(CommandContext ctx, [Description("The member to get the avatar for. Defaults to yourself if no member is provided.")] DiscordUser user = null)
         {
-            if (member == null)
+            if (user == null)
             {
-                member = ctx.Member;
+                user = ctx.Message.Author;
             }
 
-            await ctx.RespondAsync(member.AvatarUrl);
+            await ctx.RespondAsync(user.AvatarUrl);
         }
 
         [Command("timestamp")]
