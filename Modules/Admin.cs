@@ -47,6 +47,7 @@ namespace DiscordBot.Modules
                 return;
             }
 
+            await ctx.RespondAsync("Restarting...");
             Environment.Exit(1);
         }
     }
