@@ -4,6 +4,7 @@ services:
     image: ghcr.io/floatingmilkshake/discordbot
     env_file:
       - .env
+    restsrt: on-failure
   watchtower:
     image: containrrr/watchtower
     volumes:
