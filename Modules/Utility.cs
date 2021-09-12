@@ -176,7 +176,7 @@ namespace DiscordBot.Modules
             }
 
             var cli = new WebClient();
-            string data = cli.DownloadString("https://api.wolframalpha.com/v1/result?appid={appid}}&i={query}");
+            string data = cli.DownloadString($"https://api.wolframalpha.com/v1/result?appid={appid}}&i={query}");
             await msg.ModifyAsync(data);
         }
     }
