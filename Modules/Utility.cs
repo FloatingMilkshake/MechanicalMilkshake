@@ -165,6 +165,7 @@ namespace DiscordBot.Modules
         {
             var msg = await ctx.RespondAsync("Searching...");
 
+            string appid;
             if (Environment.GetEnvironmentVariable("WOLFRAMALPHA_APP_ID") == "yourappid") {
                 await msg.ModifyAsync("Looks like you don't have an App ID! Check the `WOLFRAMALPHA_APP_ID` environment variable. "
                     + "If you don't know how to get an App ID, see Getting Started here: <https://products.wolframalpha.com/short-answers-api/documentation/>");
@@ -172,7 +173,7 @@ namespace DiscordBot.Modules
             }
             else
             {
-                string appid = Environment.GetEnvironmentVariable("WOLFRAMALPHA_APP_ID");
+                appid = Environment.GetEnvironmentVariable("WOLFRAMALPHA_APP_ID");
             }
 
             var cli = new WebClient();
