@@ -184,8 +184,8 @@ namespace DiscordBot.Modules
             }
             catch (Exception e)
             {
-                await msg.ModifyAsync($"Something went wrong while searching WolframAlpha! There may not be a simple answer to your query."
-                    + "\n\n```\n{e}\n```");
+                await msg.ModifyAsync("Something went wrong while searching WolframAlpha! There may not be a simple answer to your query."
+                    + $"\n\n```\n{e}\n```");
             }
         }
     }
