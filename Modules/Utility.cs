@@ -182,10 +182,9 @@ namespace DiscordBot.Modules
                 string data = cli.DownloadString($"https://api.wolframalpha.com/v1/result?appid={appid}&i={query}");
                 await msg.ModifyAsync(data);
             }
-            catch (Exception e)
+            catch
             {
-                await msg.ModifyAsync("Something went wrong while searching WolframAlpha! There may not be a simple answer to your query."
-                    + $"\n\n```\n{e}\n```");
+                await msg.ModifyAsync("Something went wrong while searching WolframAlpha! There may not be a simple answer to your query.");
             }
         }
     }
