@@ -175,10 +175,18 @@ namespace DiscordBot.Modules
             {
                 appid = Environment.GetEnvironmentVariable("WOLFRAMALPHA_APP_ID");
             }
-
-            var cli = new WebClient();
-            string data = cli.DownloadString($"https://api.wolframalpha.com/v1/result?appid={appid}&i={query}");
-            await msg.ModifyAsync(data);
+            
+            try
+            {
+                var cli = new WebClient();
+                string data = cli.DownloadString($"https://api.wolframalpha.com/v1/result?appid={appid}&i={query}");
+                await msg.ModifyAsync(data);
+            }
+            catch (Exception e)
+            {
+                await msg.ModifyAsync("Something went wrong while searching WolframAlpha! There may not be a simple answer to your query."
+                    + "\n\n```\n{e}\n```");
+            }
         }
     }
 }
