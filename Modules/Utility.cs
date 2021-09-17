@@ -130,7 +130,6 @@ namespace DiscordBot.Modules
             public async Task TimestampDateCmd(CommandContext ctx, [Description("The date to fetch the Unix timestamp for."), RemainingText] string date)
             {
                 DateTime dateToConvert = Convert.ToDateTime(date);
-                await ctx.RespondAsync($"{dateToConvert.ToString()}");
                 long unixTime = ((DateTimeOffset)dateToConvert).ToUnixTimeSeconds();
                 await ctx.RespondAsync($"{unixTime.ToString()}");
             }
