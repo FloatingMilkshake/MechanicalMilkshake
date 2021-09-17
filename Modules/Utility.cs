@@ -110,14 +110,30 @@ namespace DiscordBot.Modules
             await ctx.RespondAsync(user.AvatarUrl);
         }
 
-        [Command("timestamp")]
+        [Group("timestamp")]
         [Aliases("ts")]
-        [Description("Returns the Unix timestamp of a given Discord ID/snowflake")]
-        public async Task TimestampUnixCmd(CommandContext ctx, [Description("The ID/snowflake to fetch the Unix timestamp for.")] ulong snowflake)
+        [Description("Returns the Unix timestamp of a given date.")]
+        class TimestampCmds : BaseCommandModule
         {
-            var msSinceEpoch = snowflake >> 22;
-            var msUnix = msSinceEpoch + 1420070400000;
-            await ctx.RespondAsync($"{(msUnix / 1000).ToString()}");
+            [GroupCommand]
+            [Description("Returns the Unix timestamp of a given Discord ID/snowflake.")]
+            public async Task TimestampSnowflakeCmd(CommandContext ctx, [Description("The ID/snowflake to fetch the Unix timestamp for.")] ulong snowflake)
+            {
+                var msSinceEpoch = snowflake >> 22;
+                var msUnix = msSinceEpoch + 1420070400000;
+                await ctx.RespondAsync($"{(msUnix / 1000).ToString()}");
+            }
+
+            [Command("date")]
+            [Aliases("string", "d")]
+            [Description("Returns the Unix timestamp of a given date.")]
+            public async Task TimestampDateCmd(CommandContext ctx, [Description("The date to fetch the Unix timestamp for."), RemainingText] string date)
+            {
+                DateTime dateToConvert = Convert.ToDateTime(date);
+                await ctx.RespondAsync($"{dateToConvert.ToString()}");
+                long unixTime = ((DateTimeOffset)dateToConvert).ToUnixTimeSeconds();
+                await ctx.RespondAsync($"{unixTime.ToString()}");
+            }
         }
 
         [Command("lookup")]
