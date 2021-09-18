@@ -18,26 +18,6 @@ namespace DiscordBot.Modules
             await ctx.Channel.SendMessageAsync(message);
         }
 
-        [Command("shutdown")]
-        [Description("**Admin-only:** Shuts down the bot.")]
-        [RequirePermissions(Permissions.Administrator)]
-        public async Task Shutdown(CommandContext ctx, [Description("This must be \"I am sure\" for the command to run."), RemainingText] string areYouSure)
-        {
-            if (areYouSure == "I am sure")
-            {
-                var msg = await ctx.RespondAsync("**Warning**: The bot is now shutting down. This action is permanent."
-                    + "\nDisconnecting from websocket...");
-                await ctx.Client.DisconnectAsync();
-                await msg.ModifyAsync("**Warning**: The bot is now shutting down. This action is permanent."
-                    + "\nDisconnecting from websocket...done! Exiting.");
-                Environment.Exit(0);
-            }
-            else
-            {
-                await ctx.RespondAsync("Are you sure?");
-            }
-        }
-
         [Command("restart")]
         [Description("**Admin-only:** Restarts the bot.")]
         [RequirePermissions(Permissions.Administrator)]
