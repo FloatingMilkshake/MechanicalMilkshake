@@ -107,7 +107,9 @@ namespace DiscordBot.Modules
                 user = ctx.Message.Author;
             }
 
-            await ctx.RespondAsync(user.AvatarUrl);
+            string avatarLink = $"{user.AvatarUrl}".Replace("size=1024", "size=4096");
+
+            await ctx.RespondAsync(avatarLink);
         }
 
         [Group("timestamp")]
