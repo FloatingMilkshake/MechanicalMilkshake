@@ -10,7 +10,7 @@ namespace DiscordBot.Modules
     {
         [Command("clear")]
         [Aliases("purge", "delete", "del")]
-        [Description("Deletes the given number of messages from a channel.")]
+        [Description("Deletes a given number of messages from a channel.")]
         [RequirePermissions(Permissions.ManageMessages)]
         public async Task Clear(CommandContext ctx, [Description("The number of messages to delete.")] int count)
         {
