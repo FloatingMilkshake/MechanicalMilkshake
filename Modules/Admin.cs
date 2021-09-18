@@ -25,7 +25,11 @@ namespace DiscordBot.Modules
         {
             if (areYouSure == "I am sure")
             {
-                await ctx.RespondAsync("**Warning**: The bot is now shutting down. This action is permanent.");
+                var msg = await ctx.RespondAsync("**Warning**: The bot is now shutting down. This action is permanent."
+                    + "\nDisconnecting from websocket...");
+                await ctx.Client.DisconnectAsync();
+                await msg.ModifyAsync("**Warning**: The bot is now shutting down. This action is permanent."
+                    + "\nDisconnecting from websocket...done! Exiting.");
                 Environment.Exit(0);
             }
             else
