@@ -65,7 +65,7 @@ namespace DiscordBot.Modules
             }
             else
             {
-                secret = Environment.GetEnvironmentVariable("WORKER_LINKS_BASE_URL");
+                secret = Environment.GetEnvironmentVariable("WORKER_LINKS_SECRET");
             }
 
             request.Headers.Add("Authorization", secret);
