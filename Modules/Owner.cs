@@ -1,10 +1,11 @@
-using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using Minio.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -92,7 +93,7 @@ namespace DiscordBot.Modules
         }
 
         [Command("upload")]
-        [Description("Upload a file to Amazon S3-compatible cloud storage.")]
+        [Description("Upload a file to Amazon S3-compatible cloud storage. Accepts an uploaded file.")]
         public async Task Upload(CommandContext ctx)
         {
             var msg = await ctx.RespondAsync("Uploading...");
@@ -105,6 +106,13 @@ namespace DiscordBot.Modules
 
             string fileName;
             string extension;
+
+            MemoryStream memStream;
+            using (WebClient client = new())
+            {
+                memStream = new MemoryStream(client.DownloadData(ctx.Message.Attachments[0].Url));
+            }
+
             try
             {
                 Dictionary<string, string> meta = new() { };
@@ -146,7 +154,7 @@ namespace DiscordBot.Modules
                 const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
                 fileName = new string(Enumerable.Repeat(chars, 10).Select(s => s[Program.random.Next(s.Length)]).ToArray()) + "." + extension;
 
-                await Program.minio.PutObjectAsync(bucket, fileName, fileName, $"image/{extension}", meta);
+                await Program.minio.PutObjectAsync(bucket, fileName, memStream, memStream.Length, $"image/{extension}", meta);
             }
             catch (MinioException e)
             {
@@ -162,12 +170,12 @@ namespace DiscordBot.Modules
             string cdnUrl;
             if (Environment.GetEnvironmentVariable("CDN_BASE_URL") == null)
             {
-                await msg.ModifyAsync($"Upload successful!\nThere's no CDN URL set in your environment file, so I can't give you a link. But your file was uploaded as {fileName}.{extension}.");
+                await msg.ModifyAsync($"Upload successful!\nThere's no CDN URL set in your environment file, so I can't give you a link. But your file was uploaded as {fileName}.");
             }
             else
             {
                 cdnUrl = Environment.GetEnvironmentVariable("CDN_BASE_URL");
-                await msg.ModifyAsync($"Upload successful!\n<{cdnUrl}/{fileName}.{extension}>");
+                await msg.ModifyAsync($"Upload successful!\n<{cdnUrl}/{fileName}>");
             }
         }
     }

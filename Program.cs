@@ -37,8 +37,16 @@ namespace DiscordBot
             });
             var commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
-                StringPrefixes = new[] { "!", "~" }
+                StringPrefixes = new[] { "-" }
             });
+
+            minio = new MinioClient
+            (
+                Environment.GetEnvironmentVariable("S3_ENDPOINT"),
+                Environment.GetEnvironmentVariable("S3_ACCESS_KEY"),
+                Environment.GetEnvironmentVariable("S3_SECRET_KEY"),
+                Environment.GetEnvironmentVariable("S3_REGION")
+            ).WithSSL();
 
             async Task CommandsNextService_CommandErrored(CommandsNextExtension cnext, CommandErrorEventArgs e)
             {
