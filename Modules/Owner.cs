@@ -103,6 +103,8 @@ namespace DiscordBot.Modules
                 return;
             }
 
+            string fileName;
+            string extension;
             try
             {
                 Dictionary<string, string> meta = new() { };
@@ -119,7 +121,6 @@ namespace DiscordBot.Modules
                     bucket = Environment.GetEnvironmentVariable("S3_BUCKET");
                 }
 
-                string extension;
                 if (ctx.Message.Attachments[0].FileName.Contains(".png"))
                 {
                     extension = "png";
@@ -143,7 +144,7 @@ namespace DiscordBot.Modules
                 }
 
                 const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                var fileName = new string(Enumerable.Repeat(chars, 10).Select(s => s[Program.random.Next(s.Length)]).ToArray()) + "." + extension;
+                fileName = new string(Enumerable.Repeat(chars, 10).Select(s => s[Program.random.Next(s.Length)]).ToArray()) + "." + extension;
 
                 await Program.minio.PutObjectAsync(bucket, fileName, fileName, $"image/{extension}", meta);
             }
@@ -156,6 +157,17 @@ namespace DiscordBot.Modules
             {
                 await msg.ModifyAsync($"An unexpected error occured while uploading!```\n{e.Message}```");
                 return;
+            }
+
+            string cdnUrl;
+            if (Environment.GetEnvironmentVariable("CDN_BASE_URL") == null)
+            {
+                await msg.ModifyAsync($"Upload successful!\nThere's no CDN URL set in your environment file, so I can't give you a link. But your file was uploaded as {fileName}.{extension}.");
+            }
+            else
+            {
+                cdnUrl = Environment.GetEnvironmentVariable("CDN_BASE_URL");
+                await msg.ModifyAsync($"Upload successful!\n<{cdnUrl}/{fileName}.{extension}>");
             }
         }
     }
