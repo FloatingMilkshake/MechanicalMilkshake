@@ -56,7 +56,7 @@ namespace DiscordBot.Modules
             }
             else if (key == "delete" || key == "del")
             {
-                request = new HttpRequestMessage(HttpMethod.Delete, "") { };
+                request = new HttpRequestMessage(HttpMethod.Delete, url) { };
             }
             else
             {
