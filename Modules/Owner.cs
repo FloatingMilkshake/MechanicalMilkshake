@@ -1,7 +1,10 @@
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using Minio.Exceptions;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -86,6 +89,74 @@ namespace DiscordBot.Modules
                 await ctx.Channel.SendMessageAsync($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service.");
             }
             await ctx.Channel.SendMessageAsync($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```");
+        }
+
+        [Command("upload")]
+        [Description("Upload a file to Amazon S3-compatible cloud storage.")]
+        public async Task Upload(CommandContext ctx)
+        {
+            var msg = await ctx.RespondAsync("Uploading...");
+
+            if (ctx.Message.Attachments.Count == 0)
+            {
+                await msg.ModifyAsync("Plese attach a file to upload!");
+                return;
+            }
+
+            try
+            {
+                Dictionary<string, string> meta = new() { };
+
+                meta["x-amz-acl"] = "public-read";
+
+                string bucket = null;
+                if (Environment.GetEnvironmentVariable("S3_BUCKET") == null)
+                {
+                    await msg.ModifyAsync("Error: S3 bucket info missing! Please check the `S3_BUCKET` environment variable.");
+                }
+                else
+                {
+                    bucket = Environment.GetEnvironmentVariable("S3_BUCKET");
+                }
+
+                string extension;
+                if (ctx.Message.Attachments[0].FileName.Contains(".png"))
+                {
+                    extension = "png";
+                }
+                else if (ctx.Message.Attachments[0].FileName.Contains(".jpg"))
+                {
+                    extension = "jpg";
+                }
+                else if (ctx.Message.Attachments[0].FileName.Contains(".gif"))
+                {
+                    extension = "gif";
+                }
+                else if (ctx.Message.Attachments[0].FileName.Contains(".mov"))
+                {
+                    extension = "mov";
+                }
+                else
+                {
+                    await msg.ModifyAsync("File extension not supported! Please add to `Owner.cs`.");
+                    return;
+                }
+
+                const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                var fileName = new string(Enumerable.Repeat(chars, 10).Select(s => s[Program.random.Next(s.Length)]).ToArray()) + "." + extension;
+
+                await Program.minio.PutObjectAsync(bucket, fileName, fileName, $"image/{extension}", meta);
+            }
+            catch (MinioException e)
+            {
+                await msg.ModifyAsync($"An API error occured while uploading!```\n{e.Message}```");
+                return;
+            }
+            catch (Exception e)
+            {
+                await msg.ModifyAsync($"An unexpected error occured while uploading!```\n{e.Message}```");
+                return;
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
+using Minio;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +13,9 @@ namespace DiscordBot
 {
     class Program
     {
+        public static MinioClient minio;
+        public static Random random = new Random();
+
         static void Main(string[] args)
         {
             MainAsync().GetAwaiter().GetResult();
