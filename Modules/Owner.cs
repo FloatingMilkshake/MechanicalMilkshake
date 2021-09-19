@@ -27,7 +27,9 @@ namespace DiscordBot.Modules
         }
 
         [Command("link")]
-        public async Task Link(CommandContext ctx, string key, string url)
+        [Aliases("wl", "links")]
+        [Description("Set/update/delete a short link with Cloudflare worker-links.")]
+        public async Task Link(CommandContext ctx, [Description("(Optional) Set a custom key for the short link.") string key, [Description("The URL the short link should point to.")] string url)
         {
 
             string baseUrl;
@@ -48,9 +50,13 @@ namespace DiscordBot.Modules
 
             HttpRequestMessage request;
 
-            if (key == null || key == "random")
+            if (key == "null" || key == "random")
             {
                 request = new HttpRequestMessage(HttpMethod.Post, "") { };
+            }
+            else if (key == "delete" || key == "del")
+            {
+                request = new HttpRequestMessage(HttpMethod.Delete, "") { };
             }
             else
             {
