@@ -37,7 +37,7 @@ namespace DiscordBot
             });
             var commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
-                StringPrefixes = new[] { "-" }
+                StringPrefixes = new[] { "!", "~" }
             });
 
             minio = new MinioClient
