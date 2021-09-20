@@ -94,24 +94,18 @@ namespace DiscordBot.Modules
 
         [Command("upload")]
         [Description("Upload a file to Amazon S3-compatible cloud storage. Accepts an uploaded file.")]
-        public async Task Upload(CommandContext ctx, [Description("(Optional) A link to a file to upload.")] string link)
+        public async Task Upload(CommandContext ctx, [Description("(Optional) A link to a file to upload. This will take priority over a file upload!")] string link = null)
         {
             var msg = await ctx.RespondAsync("Uploading...");
 
             if (ctx.Message.Attachments.Count == 0 && link == null)
             {
-                await msg.ModifyAsync("Plese attach a file to upload!");
-                return;
-            }
-
-            if (ctx.Message.Attachments.Count != 0 && link != null)
-            {
-                await msg.ModifyAsync("I can't upload two things at once! Please either attach a file OR include a link. Not both.");
+                await msg.ModifyAsync("Please attach a file to upload!");
                 return;
             }
 
             string linkToFile;
-            if (link != null && ctx.Message.Attachments.Count == 0)
+            if (link != null)
             {
                 linkToFile = link;
             }
@@ -126,7 +120,7 @@ namespace DiscordBot.Modules
             MemoryStream memStream;
             using (WebClient client = new())
             {
-                memStream = new MemoryStream(client.DownloadData(ctx.Message.Attachments[0].Url));
+                memStream = new MemoryStream(client.DownloadData(linkToFile));
             }
 
             try
