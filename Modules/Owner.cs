@@ -117,7 +117,7 @@ namespace DiscordBot.Modules
             }
             else
             {
-                linkToFile = ctx.Message.Attachments[1].Url;
+                linkToFile = ctx.Message.Attachments[0].Url;
             }
 
             string fileName;
