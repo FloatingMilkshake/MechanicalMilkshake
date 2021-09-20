@@ -94,14 +94,30 @@ namespace DiscordBot.Modules
 
         [Command("upload")]
         [Description("Upload a file to Amazon S3-compatible cloud storage. Accepts an uploaded file.")]
-        public async Task Upload(CommandContext ctx)
+        public async Task Upload(CommandContext ctx, [Description("(Optional) A link to a file to upload.")] string link)
         {
             var msg = await ctx.RespondAsync("Uploading...");
 
-            if (ctx.Message.Attachments.Count == 0)
+            if (ctx.Message.Attachments.Count == 0 && link == null)
             {
                 await msg.ModifyAsync("Plese attach a file to upload!");
                 return;
+            }
+
+            if (ctx.Message.Attachments.Count != 0 && link != null)
+            {
+                await msg.ModifyAsync("I can't upload two things at once! Please either attach a file OR include a link. Not both.");
+                return;
+            }
+
+            string linkToFile;
+            if (link != null && ctx.Message.Attachments.Count == 0)
+            {
+                linkToFile = link;
+            }
+            else
+            {
+                linkToFile = ctx.Message.Attachments[0].Url;
             }
 
             string fileName;
