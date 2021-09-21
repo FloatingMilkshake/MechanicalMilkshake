@@ -106,6 +106,15 @@ namespace DiscordBot.Modules
         [Description("Upload a file to Amazon S3-compatible cloud storage. Accepts an uploaded file.")]
         public async Task Upload(CommandContext ctx, [Description("(Optional) A link to a file to upload. This will take priority over a file upload!")] string link = null)
         {
+            if (link.Contains("<"))
+            {
+                link = link.Replace("<", "");
+            }
+            if (link.Contains(">"))
+            {
+                link = link.Replace(">", "");
+            }
+
             var msg = await ctx.RespondAsync("Uploading...");
 
             if (ctx.Message.Attachments.Count == 0 && link == null)
