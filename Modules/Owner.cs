@@ -150,19 +150,19 @@ namespace DiscordBot.Modules
                     bucket = Environment.GetEnvironmentVariable("S3_BUCKET");
                 }
 
-                if (ctx.Message.Attachments[0].FileName.Contains(".png"))
+                if (link.Contains(".png"))
                 {
                     extension = "png";
                 }
-                else if (ctx.Message.Attachments[0].FileName.Contains(".jpg"))
+                else if (link.Contains(".jpg"))
                 {
                     extension = "jpg";
                 }
-                else if (ctx.Message.Attachments[0].FileName.Contains(".gif"))
+                else if (link.Contains(".gif"))
                 {
                     extension = "gif";
                 }
-                else if (ctx.Message.Attachments[0].FileName.Contains(".mov"))
+                else if (link.Contains(".mov"))
                 {
                     extension = "mov";
                 }
