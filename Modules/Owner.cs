@@ -104,7 +104,7 @@ namespace DiscordBot.Modules
 
         [Command("upload")]
         [Description("Upload a file to Amazon S3-compatible cloud storage. Accepts an uploaded file.")]
-        public async Task Upload(CommandContext ctx, [Description("(Optional) A link to a file to upload. This will take priority over a file upload!")] string link = null)
+        public async Task Upload(CommandContext ctx, [Description("(Optional) A link to a file to upload. This will take priority over a file uploaded to Discord!")] string link = null)
         {
             if (link.Contains("<"))
             {
@@ -212,7 +212,7 @@ namespace DiscordBot.Modules
         [Command("deleteupload")]
         [Description("Delete a file uploaded to Amazon S3-compatible cloud storage.")]
         [Aliases("delupload", "delfile", "deletefile")]
-        public async Task DeleteUpload(CommandContext ctx, string link)
+        public async Task DeleteUpload(CommandContext ctx, [Description("The link to the file to delete.")] string link)
         {
             if (link.Contains("<"))
             {
