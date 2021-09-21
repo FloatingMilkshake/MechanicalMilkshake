@@ -1,12 +1,14 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using Minio.Exceptions;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace DiscordBot.Modules
@@ -133,6 +135,7 @@ namespace DiscordBot.Modules
                 if (Environment.GetEnvironmentVariable("S3_BUCKET") == null)
                 {
                     await msg.ModifyAsync("Error: S3 bucket info missing! Please check the `S3_BUCKET` environment variable.");
+                    return;
                 }
                 else
                 {
@@ -187,6 +190,127 @@ namespace DiscordBot.Modules
                 cdnUrl = Environment.GetEnvironmentVariable("CDN_BASE_URL");
                 await msg.ModifyAsync($"Upload successful!\n<{cdnUrl}/{fileName}>");
             }
+        }
+
+        [Command("deleteupload")]
+        [Description("Delete a file uploaded to Amazon S3-compatible cloud storage.")]
+        [Aliases("delupload", "delfile", "deletefile")]
+        public async Task DeleteUpload(CommandContext ctx, string link)
+        {
+            var msg = await ctx.RespondAsync("Working on it...");
+
+            if (!link.Contains("https://cdn.floatingmilkshake.com/"))
+            {
+                await msg.ModifyAsync("Please include the full URL to the file to delete!");
+                return;
+            }
+
+            string bucket;
+            if (Environment.GetEnvironmentVariable("S3_BUCKET") == null)
+            {
+                await msg.ModifyAsync("Error: S3 bucket info missing! Please check the `S3_BUCKET` environment variable.");
+                return;
+            }
+            else
+            {
+                bucket = Environment.GetEnvironmentVariable("S3_BUCKET");
+            }
+
+            string fileName = link.Replace("https://cdn.floatingmilkshake.com/", "");
+
+            try
+            {
+                await Program.minio.RemoveObjectAsync(bucket, fileName);
+            }
+            catch (MinioException e)
+            {
+                await msg.ModifyAsync($"An API error occured while attempting to delete the file!```\n{e.Message}```");
+                return;
+            }
+            catch (Exception e)
+            {
+                await msg.ModifyAsync($"An unexpected error occured while attempting to delete the file!```\n{e.Message}```");
+                return;
+            }
+
+            await msg.ModifyAsync("File deleted successfully!\nAttempting to purge Cloudflare cache...");
+
+            string cloudflareUrlPrefix;
+            if (Environment.GetEnvironmentVariable("CLOUDFLARE_URL_PREFIX") != null)
+            {
+                cloudflareUrlPrefix = Environment.GetEnvironmentVariable("CLOUDFLARE_URL_PREFIX");
+            }
+            else
+            {
+                await msg.ModifyAsync("File deleted successfully!\nError: missing Zone ID for Cloudflare. Unable to purge cache! Check the `CLOUDFLARE_URL_PREFIX` environment variable.");
+                return;
+            }
+
+            // https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L113 (https://github.com/Erisa/Lykos/blob/main/src/Modules/Owner.cs#L227)
+            CloudflareContent content = new(new List<string>() { cloudflareUrlPrefix + fileName });
+            string cloudflareContentString = JsonConvert.SerializeObject(content);
+            try
+            {
+                using HttpClient httpClient = new()
+                {
+                    BaseAddress = new Uri("https://api.cloudflare.com/")
+                };
+
+                string zoneId;
+                if (Environment.GetEnvironmentVariable("CLOUDFLARE_ZONE_ID") != null)
+                {
+                    zoneId = Environment.GetEnvironmentVariable("CLOUDFLARE_ZONE_ID");
+                }
+                else
+                {
+                    await msg.ModifyAsync("File deleted successfully!\nError: missing Zone ID for Cloudflare. Unable to purge cache! Check the `CLOUDFLARE_ZONE_ID` environment variable.");
+                    return;
+                }
+
+                string cloudflareToken;
+                if (Environment.GetEnvironmentVariable("CLOUDFLARE_TOKEN") != null)
+                {
+                    cloudflareToken = Environment.GetEnvironmentVariable("CLOUDFLARE_TOKEN");
+                }
+                else
+                {
+                    await msg.ModifyAsync("File deleted successfully!\nError: missing token for Cloudflare. Unable to purge cache! Check the `CLOUDFLARE_TOKEN` environment variable.");
+                    return;
+                }
+
+                HttpRequestMessage request = new(HttpMethod.Delete, "client/v4/zones/" + zoneId + "/purge_cache")
+                {
+                    Content = new StringContent(cloudflareContentString, Encoding.UTF8, "application/json")
+                };
+                request.Headers.Add("Authorization", $"Bearer {cloudflareToken}");
+
+                HttpResponseMessage response = await httpClient.SendAsync(request);
+                string responseText = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    await msg.ModifyAsync($"Successsfully purged the Cloudflare cache for `{fileName}`!");
+                }
+                else
+                {
+                    await msg.ModifyAsync($"An API error occured when purging the Cloudflare cache: ```json\n{responseText}```");
+                }
+            }
+            catch (Exception e)
+            {
+                await msg.ModifyAsync($"An unexpected error occured when purging the Cloudflare cache: ```json\n{e.Message}```");
+            }
+        }
+
+        // https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197 (https://github.com/Erisa/Lykos/blob/3335c38a52d28820a935f99c53f030805d4da607/src/Modules/Owner.cs#L313)
+        readonly struct CloudflareContent
+        {
+            public CloudflareContent(List<string> urls)
+            {
+                Files = urls;
+            }
+
+            public List<string> Files { get; }
         }
     }
 }
