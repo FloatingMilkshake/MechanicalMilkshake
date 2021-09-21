@@ -37,6 +37,14 @@ namespace DiscordBot.Modules
         [Description("Set/update/delete a short link with Cloudflare worker-links.")]
         public async Task Link(CommandContext ctx, [Description("(Optional) Set a custom key for the short link.")] string key, [Description("The URL the short link should point to.")] string url)
         {
+            if (url.Contains("<"))
+            {
+                url = url.Replace("<", "");
+            }
+            if (url.Contains(">"))
+            {
+                url = url.Replace(">", "");
+            }
 
             string baseUrl;
             if (Environment.GetEnvironmentVariable("WORKER_LINKS_BASE_URL") == null)
@@ -197,6 +205,15 @@ namespace DiscordBot.Modules
         [Aliases("delupload", "delfile", "deletefile")]
         public async Task DeleteUpload(CommandContext ctx, string link)
         {
+            if (link.Contains("<"))
+            {
+                link = link.Replace("<", "");
+            }
+            if (link.Contains(">"))
+            {
+                link = link.Replace(">", "");
+            }
+
             var msg = await ctx.RespondAsync("Working on it...");
 
             if (!link.Contains("https://cdn.floatingmilkshake.com/"))
