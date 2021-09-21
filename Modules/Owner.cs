@@ -289,16 +289,16 @@ namespace DiscordBot.Modules
 
                 if (response.IsSuccessStatusCode)
                 {
-                    await msg.ModifyAsync($"Successsfully purged the Cloudflare cache for `{fileName}`!");
+                    await msg.ModifyAsync($"File Deleted successfully!\nSuccesssfully purged the Cloudflare cache for `{fileName}`!");
                 }
                 else
                 {
-                    await msg.ModifyAsync($"An API error occured when purging the Cloudflare cache: ```json\n{responseText}```");
+                    await msg.ModifyAsync($"File deleted successfully!\nAn API error occured when purging the Cloudflare cache: ```json\n{responseText}```");
                 }
             }
             catch (Exception e)
             {
-                await msg.ModifyAsync($"An unexpected error occured when purging the Cloudflare cache: ```json\n{e.Message}```");
+                await msg.ModifyAsync($"File deleted successfully!\nAn unexpected error occured when purging the Cloudflare cache: ```json\n{e.Message}```");
             }
         }
 
