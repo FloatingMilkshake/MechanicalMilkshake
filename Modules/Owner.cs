@@ -106,13 +106,16 @@ namespace DiscordBot.Modules
         [Description("Upload a file to Amazon S3-compatible cloud storage. Accepts an uploaded file.")]
         public async Task Upload(CommandContext ctx, [Description("(Optional) A link to a file to upload. This will take priority over a file uploaded to Discord!")] string link = null)
         {
-            if (link.Contains("<"))
+            if (link != null)
             {
-                link = link.Replace("<", "");
-            }
-            if (link.Contains(">"))
-            {
-                link = link.Replace(">", "");
+                if (link.Contains("<"))
+                {
+                    link = link.Replace("<", "");
+                }
+                if (link.Contains(">"))
+                {
+                    link = link.Replace(">", "");
+                }
             }
 
             var msg = await ctx.RespondAsync("Uploading...");
@@ -159,19 +162,19 @@ namespace DiscordBot.Modules
                     bucket = Environment.GetEnvironmentVariable("S3_BUCKET");
                 }
 
-                if (link.Contains(".png"))
+                if (linkToFile.Contains(".png"))
                 {
                     extension = "png";
                 }
-                else if (link.Contains(".jpg"))
+                else if (linkToFile.Contains(".jpg"))
                 {
                     extension = "jpg";
                 }
-                else if (link.Contains(".gif"))
+                else if (linkToFile.Contains(".gif"))
                 {
                     extension = "gif";
                 }
-                else if (link.Contains(".mov"))
+                else if (linkToFile.Contains(".mov"))
                 {
                     extension = "mov";
                 }
@@ -315,7 +318,7 @@ namespace DiscordBot.Modules
 
                 if (response.IsSuccessStatusCode)
                 {
-                    await msg.ModifyAsync($"File Deleted successfully!\nSuccesssfully purged the Cloudflare cache for `{fileName}`!");
+                    await msg.ModifyAsync($"File deleted successfully!\nSuccesssfully purged the Cloudflare cache for `{fileName}`!");
                 }
                 else
                 {
