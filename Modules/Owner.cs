@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace DiscordBot.Modules
@@ -162,27 +163,9 @@ namespace DiscordBot.Modules
                     bucket = Environment.GetEnvironmentVariable("S3_BUCKET");
                 }
 
-                if (linkToFile.Contains(".png"))
-                {
-                    extension = "png";
-                }
-                else if (linkToFile.Contains(".jpg"))
-                {
-                    extension = "jpg";
-                }
-                else if (linkToFile.Contains(".gif"))
-                {
-                    extension = "gif";
-                }
-                else if (linkToFile.Contains(".mov"))
-                {
-                    extension = "mov";
-                }
-                else
-                {
-                    await msg.ModifyAsync("File extension not supported! Please add to `Owner.cs`.");
-                    return;
-                }
+                Regex pattern = new Regex(@"\....");
+                Match match = pattern.Match(linkToFile);
+                extension = match.ToString().Replace(".", "");
 
                 const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
                 fileName = new string(Enumerable.Repeat(chars, 10).Select(s => s[Program.random.Next(s.Length)]).ToArray()) + "." + extension;
