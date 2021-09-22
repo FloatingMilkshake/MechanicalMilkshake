@@ -163,12 +163,16 @@ namespace DiscordBot.Modules
                     bucket = Environment.GetEnvironmentVariable("S3_BUCKET");
                 }
 
-                Regex pattern = new Regex(@"\....");
-                Match match = pattern.Match(linkToFile);
-                extension = match.ToString().Replace(".", "");
+                Regex urlRemovalPattern = new Regex(@".*\/\/.*\/");
+                Match urlRemovalMatch = urlRemovalPattern.Match(linkToFile);
+                linkToFile = linkToFile.Replace(urlRemovalMatch.ToString(), "");
+
+                Regex extPattern = new Regex(@"\....");
+                Match extMatch = extPattern.Match(linkToFile);
+                extension = extMatch.ToString();
 
                 const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                fileName = new string(Enumerable.Repeat(chars, 10).Select(s => s[Program.random.Next(s.Length)]).ToArray()) + "." + extension;
+                fileName = new string(Enumerable.Repeat(chars, 10).Select(s => s[Program.random.Next(s.Length)]).ToArray()) + extension;
 
                 await Program.minio.PutObjectAsync(bucket, fileName, memStream, memStream.Length, $"image/{extension}", meta);
             }
