@@ -201,7 +201,16 @@ namespace DiscordBot.Modules
             }
             catch
             {
-                await msg.ModifyAsync("Something went wrong while searching WolframAlpha! There may not be a simple answer to your query.");
+                try
+                {
+                    var cli = new WebClient();
+                    string data = cli.DownloadString($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={query}");
+                    await msg.ModifyAsync($"Something went wrong while searching WolframAlpha and I couldn't get a simple answer for your query. Here's a more detailed result: {data}");
+                }
+                catch
+                {
+                    await msg.ModifyAsync("Something went wrong while searching WolframAlpha! There may not be an answer to your query.");
+                }
             }
         }
     }
