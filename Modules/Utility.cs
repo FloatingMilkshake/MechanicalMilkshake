@@ -216,7 +216,7 @@ namespace DiscordBot.Modules
 
         [Command("charactercount")]
         [Description("Counts the characters in a message.")]
-        [Aliases("charcount", "count")]
+        [Aliases("charcount", "count", "chars")]
         public async Task CharacterCount(CommandContext ctx, [RemainingText] string chars)
         {
             int count = 0;
