@@ -1,6 +1,7 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using System;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -104,5 +105,15 @@ namespace DiscordBot.Modules
             }
         }
 
+        [Command("keyboardsmash")]
+        [Description("Keyboard smash.")]
+        [Aliases("mashy mashy")]
+        public async Task KeyboardSmash(CommandContext ctx, int size)
+        {
+            await ctx.TriggerTypingAsync();
+            const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            string kbSmash = new string(Enumerable.Repeat(chars, size).Select(s => s[Program.random.Next(s.Length)]).ToArray());
+            await ctx.RespondAsync(kbSmash);
+        }
     }
 }
