@@ -107,7 +107,7 @@ namespace DiscordBot.Modules
 
         [Command("keyboardsmash")]
         [Description("Keyboard smash.")]
-        [Aliases("mashy mashy")]
+        [Aliases("mashy-mashy")]
         public async Task KeyboardSmash(CommandContext ctx, [Description("The number of letters in the keyboard smash.")] int size)
         {
             await ctx.TriggerTypingAsync();
