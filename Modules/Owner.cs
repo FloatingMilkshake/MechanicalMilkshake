@@ -65,12 +65,16 @@ namespace DiscordBot.Modules
 
             HttpRequestMessage request;
 
-            if (key == "null" || key == "random")
+            if (key == "null" || key == "random" || key == "rand")
             {
                 request = new HttpRequestMessage(HttpMethod.Post, "") { };
             }
             else if (key == "delete" || key == "del")
             {
+                if (!url.Contains("https://link.floatingmilkshake.com/"))
+                {
+                    url = $"https://link.floatingmilkshake.com/{url}";
+                }
                 request = new HttpRequestMessage(HttpMethod.Delete, url) { };
             }
             else
@@ -214,24 +218,18 @@ namespace DiscordBot.Modules
         [Command("deleteupload")]
         [Description("Delete a file uploaded to Amazon S3-compatible cloud storage.")]
         [Aliases("delupload", "delfile", "deletefile")]
-        public async Task DeleteUpload(CommandContext ctx, [Description("The link to the file to delete.")] string link)
+        public async Task DeleteUpload(CommandContext ctx, [Description("The key or link to the file to delete.")] string fileToDelete)
         {
-            if (link.Contains("<"))
+            if (fileToDelete.Contains("<"))
             {
-                link = link.Replace("<", "");
+                fileToDelete = fileToDelete.Replace("<", "");
             }
-            if (link.Contains(">"))
+            if (fileToDelete.Contains(">"))
             {
-                link = link.Replace(">", "");
+                fileToDelete = fileToDelete.Replace(">", "");
             }
 
             var msg = await ctx.RespondAsync("Working on it...");
-
-            if (!link.Contains("https://cdn.floatingmilkshake.com/"))
-            {
-                await msg.ModifyAsync("Please include the full URL to the file to delete!");
-                return;
-            }
 
             string bucket;
             if (Environment.GetEnvironmentVariable("S3_BUCKET") == null)
@@ -244,7 +242,15 @@ namespace DiscordBot.Modules
                 bucket = Environment.GetEnvironmentVariable("S3_BUCKET");
             }
 
-            string fileName = link.Replace("https://cdn.floatingmilkshake.com/", "");
+            string fileName;
+            if (!fileToDelete.Contains("https://cdn.floatingmilkshake.com/"))
+            {
+                fileName = fileToDelete;
+            }
+            else
+            {
+                fileName = fileToDelete.Replace("https://cdn.floatingmilkshake.com/", "");
+            }
 
             try
             {
