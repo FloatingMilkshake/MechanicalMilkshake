@@ -111,6 +111,7 @@ namespace DiscordBot.Modules
         public async Task KeyboardSmash(CommandContext ctx, [Description("The number of letters in the keyboard smash.")] int size)
         {
             await ctx.TriggerTypingAsync();
+            await Task.Delay(3000);
             const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
             string kbSmash = new string(Enumerable.Repeat(chars, size).Select(s => s[Program.random.Next(s.Length)]).ToArray());
             await ctx.RespondAsync(kbSmash);
