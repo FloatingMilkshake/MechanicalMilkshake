@@ -105,7 +105,7 @@ namespace DiscordBot.Modules
 
         [Command("upload")]
         [Description("Upload a file to Amazon S3-compatible cloud storage. Accepts an uploaded file.")]
-        public async Task Upload(CommandContext ctx, [Description("(Optional) A link to a file to upload. This will take priority over a file uploaded to Discord!")] string link = null)
+        public async Task Upload(CommandContext ctx, [Description("The name for the uploaded file.")] string name, [Description("(Optional) A link to a file to upload. This will take priority over a file uploaded to Discord!")] string link = null)
         {
             if (link != null)
             {
@@ -167,12 +167,24 @@ namespace DiscordBot.Modules
                 Match urlRemovalMatch = urlRemovalPattern.Match(linkToFile);
                 linkToFile = linkToFile.Replace(urlRemovalMatch.ToString(), "");
 
-                Regex extPattern = new Regex(@"\....");
-                Match extMatch = extPattern.Match(linkToFile);
+                Regex namePattern = new Regex(@"[^\/\\&\?]+\.\w+(?=([\?&].*$|$))");
+                Match nameMatch = namePattern.Match(linkToFile);
+                extension = nameMatch.ToString();
+
+                Regex extPattern = new Regex(@"\..*");
+                Match extMatch = extPattern.Match(extension);
                 extension = extMatch.ToString();
 
                 const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                fileName = new string(Enumerable.Repeat(chars, 10).Select(s => s[Program.random.Next(s.Length)]).ToArray()) + extension;
+
+                if (name == "null" || name == "random")
+                {
+                    fileName = new string(Enumerable.Repeat(chars, 10).Select(s => s[Program.random.Next(s.Length)]).ToArray()) + extension;
+                }
+                else
+                {
+                    fileName = name + extension;
+                }
 
                 await Program.minio.PutObjectAsync(bucket, fileName, memStream, memStream.Length, $"image/{extension}", meta);
             }
