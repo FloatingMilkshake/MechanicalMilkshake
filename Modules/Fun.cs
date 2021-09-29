@@ -116,5 +116,26 @@ namespace DiscordBot.Modules
             string kbSmash = new string(Enumerable.Repeat(chars, size).Select(s => s[Program.random.Next(s.Length)]).ToArray());
             await ctx.RespondAsync(kbSmash);
         }
+
+        [Command("letterspam")]
+        [Description("Repeats a letter.")]
+        [Aliases("letters", "repeatletter")]
+        public async Task LetterSpam(CommandContext ctx, [Description("The letter to repeat.")] string letter, [Description("The number of times to repeat the letter.")] int count)
+        {
+            await ctx.TriggerTypingAsync();
+            await Task.Delay(3000);
+            
+            if (letter.Length > 1)
+            {
+                await ctx.RespondAsync("Only one letter can be repeated.");
+            }
+            if (count > 2000)
+            {
+                await ctx.RespondAsync("Character limit exceeded! Messages can only be up to 2000 characters in size.");
+            }
+
+            string letterSpam = new string(Enumerable.Repeat(letter, count).Select(s => s[Program.random.Next(s.Length)]).ToArray());
+            await ctx.RespondAsync(letterSpam);
+        }
     }
 }
