@@ -85,7 +85,9 @@ namespace DiscordBot.Modules
             }
             catch (Exception e)
             {
-                await ctx.RespondAsync($"Something went wrong! See details below.\n\n```\n{e}\n```");
+                var failureMsg = await ctx.RespondAsync($"Something went wrong! See details below.\n\n```\n{e}\n```\n(This message will be automatically deleted in 15 seconds.");
+                await Task.Delay(15000);
+                await ctx.Channel.DeleteMessageAsync(failureMsg);
             }
         }
     }
