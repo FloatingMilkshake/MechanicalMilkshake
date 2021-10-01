@@ -87,7 +87,14 @@ namespace DiscordBot.Modules
             {
                 var failureMsg = await ctx.RespondAsync($"Something went wrong! See details below.\n\n```\n{e}\n```\n(This message will be automatically deleted in 15 seconds.)");
                 await Task.Delay(15000);
-                await ctx.Channel.DeleteMessageAsync(failureMsg);
+                try
+                {
+                    await ctx.Channel.DeleteMessageAsync(failureMsg);
+                }
+                catch
+                {
+                    // just silencing the exception here because this will probably only fail if the error msg is deleted with the delete cmd before the 15 seconds are up
+                }
             }
         }
     }
