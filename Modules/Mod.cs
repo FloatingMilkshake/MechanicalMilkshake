@@ -2,6 +2,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using System;
 using System.Threading.Tasks;
 
 namespace DiscordBot.Modules
@@ -9,7 +10,7 @@ namespace DiscordBot.Modules
     public class Mod : BaseCommandModule
     {
         [Command("clear")]
-        [Aliases("purge", "delete", "del")]
+        [Aliases("purge")]
         [Description("Deletes a given number of messages from a channel.")]
         [RequirePermissions(Permissions.ManageMessages)]
         public async Task Clear(CommandContext ctx, [Description("The number of messages to delete.")] int count)
@@ -68,6 +69,24 @@ namespace DiscordBot.Modules
             }
             await ctx.Message.DeleteAsync();
             await ctx.Channel.SendMessageAsync($"**{userToBan.Username}#{userToBan.Discriminator}** has been banned: **{reason}**");
+        }
+
+        [Command("delete")]
+        [Description("Delete a message. This can be used to to delete direct messages with the bot where you are normally unable to delete its messages.")]
+        [Aliases("deletemsg", "delmsg")]
+        public async Task Delete(CommandContext ctx, DiscordMessage message)
+        {
+            try
+            {
+                await ctx.Channel.DeleteMessageAsync(message);
+                var successMsg = await ctx.RespondAsync("Message deleted successfully.");
+                await Task.Delay(3000);
+                await ctx.Channel.DeleteMessageAsync(successMsg);
+            }
+            catch (Exception e)
+            {
+                await ctx.RespondAsync($"Something went wrong! See details below.\n\n```\n{e}\n```");
+            }
         }
     }
 }
