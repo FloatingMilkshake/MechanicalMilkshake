@@ -42,7 +42,7 @@ namespace DiscordBot
             {
                 Token = configJson.Token,
                 TokenType = TokenType.Bot,
-                Intents = DiscordIntents.AllUnprivileged
+                Intents = DiscordIntents.All
             });
 
             var commands = discord.UseCommandsNext(new CommandsNextConfiguration
