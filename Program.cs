@@ -65,7 +65,7 @@ namespace DiscordBot
             ).WithSSL();
 
             CommandsNextExtension.RegisterCommands(Assembly.GetExecutingAssembly());
-            CommandsNextExtension.CommandErrored += DiscordBot.Events.CommandEvents.CommandsNextService_CommandErrored;
+            CommandsNextExtension.CommandErrored += Events.CommandEvents.CommandsNextService_CommandErrored;
 
             if (configJson.HomeChannel == null)
             {
