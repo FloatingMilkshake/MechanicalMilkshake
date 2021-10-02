@@ -1,9 +1,11 @@
-﻿using DiscordBot.Modules;
+﻿using DiscordBot.Configuration;
+using DiscordBot.Modules;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using Minio;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,6 +17,7 @@ namespace DiscordBot
     {
         public static MinioClient minio;
         public static Random random = new Random();
+        public static ConfigJson Config = new ConfigJson();
 
         static void Main(string[] args)
         {
@@ -23,7 +26,12 @@ namespace DiscordBot
 
         internal static async Task MainAsync()
         {
-            if (Environment.GetEnvironmentVariable("BOT_TOKEN") == null)
+            // ConfigJson
+            string json = await File.ReadAllTextAsync("Configuration/Configuration.json");
+            using (var fs = File.OpenRead("Configuration/Configuration.json")) Config = JsonConvert.DeserializeObject<ConfigJson>(json);
+            var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
+
+            if (configJson.Token == null)
             {
                 Console.WriteLine("ERROR: No token provided! Make sure the environment variable BOT_TOKEN is set.");
                 Environment.Exit(1);
@@ -31,10 +39,11 @@ namespace DiscordBot
 
             var discord = new DiscordClient(new DiscordConfiguration()
             {
-                Token = Environment.GetEnvironmentVariable("BOT_TOKEN"),
-                TokenType = TokenType.Bot,
+                Token = configJson.Token,
+                TokenType = TokenType.Bot
                 Intents = DiscordIntents.AllUnprivileged
             });
+
             var commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefixes = new[] { "!", "~" }
