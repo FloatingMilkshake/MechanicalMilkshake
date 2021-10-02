@@ -18,8 +18,8 @@ namespace DiscordBot
     public class Bot
     {
         public static DiscordShardedClient ShardedClient { get; private set; }
-        public static SlashCommandsExtension Slash { get; private set; }
-        public static CommandsNextExtension Commands { get; private set; }
+        public static SlashCommandsExtension SlashCommandsExtension { get; private set; }
+        public static CommandsNextExtension CommandsNextExtension { get; private set; }
         public static MinioClient minio;
         public static Random random = new Random();
         public static ConfigJson Config = new ConfigJson();
@@ -62,8 +62,8 @@ namespace DiscordBot
                 configJson.S3_Region
             ).WithSSL();
 
-            Commands.RegisterCommands(Assembly.GetExecutingAssembly());
-            Commands.CommandErrored += Events.CommandEvents.CommandsNextService_CommandErrored;
+            CommandsNextExtension.RegisterCommands(Assembly.GetExecutingAssembly());
+            CommandsNextExtension.CommandErrored += Events.CommandEvents.CommandsNextService_CommandErrored;
 
             if (configJson.HomeChannel == null)
             {
