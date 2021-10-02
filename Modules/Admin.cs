@@ -42,22 +42,5 @@ namespace DiscordBot.Modules
             }
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Restarting.."));
         }
-
-        //[Command("restart")]
-        //[Description("**Admin-only:** Restarts the bot.")]
-        //[RequirePermissions(Permissions.Administrator)]
-        //public async Task Restart(CommandContext ctx)
-        //{
-        //    string dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
-        //    if (string.IsNullOrWhiteSpace(dockerCheckFile))
-        //    {
-        //        await ctx.RespondAsync("The bot may not be running under Docker; this means that `!restart` will behave like `!shutdown`."
-        //            + "\n\nAborted. Use `!shutdown` if you wish to shut down the bot.");
-        //        return;
-        //    }
-
-        //    await ctx.RespondAsync("Restarting...");
-        //    Environment.Exit(1);
-        //}
     }
 }
