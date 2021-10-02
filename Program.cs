@@ -1,5 +1,6 @@
 ﻿using DiscordBot.Configuration;
 using DiscordBot.Modules;
+using System.Reflection;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace DiscordBot
 {
-    class Program
+    public class Bot
     {
         public static MinioClient minio;
         public static Random random = new Random();
@@ -40,7 +41,7 @@ namespace DiscordBot
             var discord = new DiscordClient(new DiscordConfiguration()
             {
                 Token = configJson.Token,
-                TokenType = TokenType.Bot
+                TokenType = TokenType.Bot,
                 Intents = DiscordIntents.AllUnprivileged
             });
 
@@ -91,11 +92,7 @@ namespace DiscordBot
                 }
             }
 
-            commands.RegisterCommands<Owner>();
-            commands.RegisterCommands<Admin>();
-            commands.RegisterCommands<Utility>();
-            commands.RegisterCommands<Fun>();
-            commands.RegisterCommands<Mod>();
+            commands.RegisterCommands(Assembly.GetExecutingAssembly());
             commands.CommandErrored += CommandsNextService_CommandErrored;
 
             if (Environment.GetEnvironmentVariable("HOME_CHANNEL") == null)
