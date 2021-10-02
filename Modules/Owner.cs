@@ -195,14 +195,14 @@ namespace DiscordBot.Modules
 
                 if (name == "null" || name == "random")
                 {
-                    fileName = new string(Enumerable.Repeat(chars, 10).Select(s => s[Program.random.Next(s.Length)]).ToArray()) + extension;
+                    fileName = new string(Enumerable.Repeat(chars, 10).Select(s => s[Bot.random.Next(s.Length)]).ToArray()) + extension;
                 }
                 else
                 {
                     fileName = name + extension;
                 }
 
-                await Program.minio.PutObjectAsync(bucket, fileName, memStream, memStream.Length, $"image/{extension}", meta);
+                await Bot.minio.PutObjectAsync(bucket, fileName, memStream, memStream.Length, $"image/{extension}", meta);
             }
             catch (MinioException e)
             {
@@ -266,7 +266,7 @@ namespace DiscordBot.Modules
 
             try
             {
-                await Program.minio.RemoveObjectAsync(bucket, fileName);
+                await Bot.minio.RemoveObjectAsync(bucket, fileName);
             }
             catch (MinioException e)
             {
