@@ -1,0 +1,4 @@
+// Rename file to "Configuration.json"
+{
+	"token": "<place token here>"
+}
