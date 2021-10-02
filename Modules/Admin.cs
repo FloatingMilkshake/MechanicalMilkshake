@@ -18,7 +18,7 @@ namespace DiscordBot.Modules
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent(message));
         }
 
-        [SlashCommand("restart", "**Admin-only:** Restarts the bot.")]
+        [SlashCommand("restart", "**Owner-only:** Restarts the bot.")]
         [SlashRequireOwner] /* Restarting the bot should be only possible for the bot owner. */
         public async Task Restart(InteractionContext ctx)
         {
@@ -30,7 +30,7 @@ namespace DiscordBot.Modules
             string checkDockerFile = await File.ReadAllTextAsync("/proc/self/cgroup");
             if (string.IsNullOrWhiteSpace(checkDockerFile))
             {
-                var sentMessage = await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("The bot may not be running under Docker; this means that `!restart` will behave like `!shutdown`.\n\nAborted. Do you wish to shut the bot down?").AddComponents(yesButton, noButton));
+                var sentMessage = await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("The bot may not be running under Docker; this means that `restart` will behave like `shutdown`.\n\nAborted. Do you wish to shut the bot down?").AddComponents(yesButton, noButton));
 
                 var waitForReaction = await Bot.InteractivityExtension.WaitForButtonAsync(sentMessage, ctx.User);
 
