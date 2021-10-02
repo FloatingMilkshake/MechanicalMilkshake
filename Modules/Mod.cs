@@ -70,32 +70,5 @@ namespace DiscordBot.Modules
             await ctx.Message.DeleteAsync();
             await ctx.Channel.SendMessageAsync($"**{userToBan.Username}#{userToBan.Discriminator}** has been banned: **{reason}**");
         }
-
-        [Command("delete")]
-        [Description("Delete a message. This can be used to to delete direct messages with the bot where you are normally unable to delete its messages.")]
-        [Aliases("deletemsg", "delmsg")]
-        public async Task Delete(CommandContext ctx, DiscordMessage message)
-        {
-            try
-            {
-                await ctx.Channel.DeleteMessageAsync(message);
-                var successMsg = await ctx.RespondAsync("Message deleted successfully.");
-                await Task.Delay(3000);
-                await ctx.Channel.DeleteMessageAsync(successMsg);
-            }
-            catch (Exception e)
-            {
-                var failureMsg = await ctx.RespondAsync($"Something went wrong! See details below.\n\n```\n{e}\n```\n(This message will be automatically deleted in 15 seconds.)");
-                await Task.Delay(15000);
-                try
-                {
-                    await ctx.Channel.DeleteMessageAsync(failureMsg);
-                }
-                catch
-                {
-                    // just silencing the exception here because this will probably only fail if the error msg is deleted with the delete cmd before the 15 seconds are up
-                }
-            }
-        }
     }
 }
