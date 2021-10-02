@@ -5,6 +5,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
+using DSharpPlus.SlashCommands;
 using Minio;
 using Newtonsoft.Json;
 using System;
@@ -16,6 +17,9 @@ namespace DiscordBot
 {
     public class Bot
     {
+        public static DiscordShardedClient ShardedClient { get; private set; }
+        public static SlashCommandsExtension Slash { get; private set; }
+        public static CommandsNextExtension Commands { get; private set; }
         public static MinioClient minio;
         public static Random random = new Random();
         public static ConfigJson Config = new ConfigJson();
@@ -38,14 +42,14 @@ namespace DiscordBot
                 Environment.Exit(1);
             }
 
-            var discord = new DiscordClient(new DiscordConfiguration()
+            ShardedClient = new DiscordShardedClient(new DiscordConfiguration()
             {
                 Token = configJson.Token,
                 TokenType = TokenType.Bot,
                 Intents = DiscordIntents.All
             });
 
-            var commands = discord.UseCommandsNext(new CommandsNextConfiguration
+            var commands = await ShardedClient.UseCommandsNextAsync(new CommandsNextConfiguration
             {
                 StringPrefixes = new[] { "!", "~" }
             });
@@ -58,8 +62,8 @@ namespace DiscordBot
                 configJson.S3_Region
             ).WithSSL();
 
-            commands.RegisterCommands(Assembly.GetExecutingAssembly());
-            commands.CommandErrored += Events.CommandEvents.CommandsNextService_CommandErrored;
+            Commands.RegisterCommands(Assembly.GetExecutingAssembly());
+            Commands.CommandErrored += Events.CommandEvents.CommandsNextService_CommandErrored;
 
             if (configJson.HomeChannel == null)
             {
@@ -69,7 +73,7 @@ namespace DiscordBot
 
             var homeEnvVar = Environment.GetEnvironmentVariable("HOME_CHANNEL");
             ulong home = Convert.ToUInt64(homeEnvVar);
-            var homeChannel = await discord.GetChannelAsync(home);
+            var homeChannel = await ShardedClient.ShardClients[0].GetChannelAsync(home);
 
             String commitHash = "";
             if (File.Exists("CommitHash.txt"))
@@ -93,7 +97,7 @@ namespace DiscordBot
                 commitMessage = "No commit message is available when debugging.";
             }
 
-            await discord.ConnectAsync();
+            await ShardedClient.StartAsync();
 
             await homeChannel.SendMessageAsync($"Connected! Latest commit: `{commitHash}`"
                 + $"\nLatest commit message:\n```\n{commitMessage}\n```");
