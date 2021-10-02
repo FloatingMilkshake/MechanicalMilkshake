@@ -179,6 +179,18 @@ namespace DiscordBot.Modules
                 Match extMatch = extPattern.Match(extension);
                 extension = extMatch.ToString();
 
+                // macOS screenshot names are annoying so this is to get the extension from them properly
+                // just looking for "Screen Shot" in the file name is probably not the best way to do this but it works for me
+
+                if (nameMatch.ToString().Contains("Screen Shot"))
+                {
+                    Regex macExtPattern = new Regex(@"AM|PM\..*");
+                    Match macExtMatch = macExtPattern.Match(extension);
+                    extension = macExtMatch.ToString();
+                    extension = extension.Replace("AM", "");
+                    extension = extension.Replace("PM", "");
+                }
+
                 const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
                 if (name == "null" || name == "random")
