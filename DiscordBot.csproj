@@ -7,11 +7,11 @@
 
   <ItemGroup>
     <None Remove="Configuration\Configuration.json" />
-    <None Remove="Configuration\Configuration.json.example" />
+    <None Remove="Configuration\configuration.json.example" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Configuration\Configuration.json.example">
+    <Content Include="Configuration\configuration.json.example">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Configuration\Configuration.json">
