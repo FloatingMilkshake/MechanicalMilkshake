@@ -5,6 +5,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using DSharpPlus.SlashCommands;
 using Minio;
 using Newtonsoft.Json;
@@ -17,9 +18,10 @@ namespace DiscordBot
 {
     public class Bot
     {
-        public static DiscordShardedClient ShardedClient { get; private set; }
-        public static SlashCommandsExtension SlashCommandsExtension { get; private set; }
         public static CommandsNextExtension CommandsNextExtension { get; private set; }
+        public static DiscordShardedClient ShardedClient { get; private set; }
+        public static InteractivityExtension InteractivityExtension { get; private set; }
+        public static SlashCommandsExtension SlashCommandsExtension { get; private set; }
         public static MinioClient minio;
         public static Random random = new Random();
         public static ConfigJson Config = new ConfigJson();
