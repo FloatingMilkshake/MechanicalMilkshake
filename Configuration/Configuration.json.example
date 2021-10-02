@@ -1,4 +1,19 @@
-// Rename file to "Configuration.json"
 {
-	"token": "<place token here>"
+	"token": "<place token here>",
+	"home_channel": "",
+	"wolframalpha_app_id": "",
+	// Worker links
+	"worker_links_base_url": "",
+	"worker_links_secret": ""
+	// Amazon AWS
+	"s3_bucket": "",
+	"cdn_base_url": "",
+	"s3_endpoint": "",
+	"s3_access_key": "",
+	"s3_secret_key": "",
+	"s3_region": "",
+	// Cloudflare
+	"cloudflare_url_prefix": "",
+	"cloudflare_zone_id": "",
+	"cloudflare_token": ""
 }
