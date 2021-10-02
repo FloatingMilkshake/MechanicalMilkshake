@@ -52,10 +52,10 @@ namespace DiscordBot
 
             minio = new MinioClient
             (
-                Environment.GetEnvironmentVariable("S3_ENDPOINT"),
-                Environment.GetEnvironmentVariable("S3_ACCESS_KEY"),
-                Environment.GetEnvironmentVariable("S3_SECRET_KEY"),
-                Environment.GetEnvironmentVariable("S3_REGION")
+                configJson.S3_Endpoint,
+                configJson.S3_Access_Key,
+                configJson.S3_Secret_Key,
+                configJson.S3_Region
             ).WithSSL();
 
             async Task CommandsNextService_CommandErrored(CommandsNextExtension cnext, CommandErrorEventArgs e)
@@ -95,7 +95,7 @@ namespace DiscordBot
             commands.RegisterCommands(Assembly.GetExecutingAssembly());
             commands.CommandErrored += CommandsNextService_CommandErrored;
 
-            if (Environment.GetEnvironmentVariable("HOME_CHANNEL") == null)
+            if (configJson.HomeChannel == null)
             {
                 Console.WriteLine("ERROR: No home channel provided! Make sure the environment variable HOME_CHANNEL is set.");
                 Environment.Exit(1);
