@@ -113,7 +113,7 @@ namespace DiscordBot.Modules
             await ctx.TriggerTypingAsync();
             await Task.Delay(3000);
             const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            string kbSmash = new string(Enumerable.Repeat(chars, size).Select(s => s[Program.random.Next(s.Length)]).ToArray());
+            string kbSmash = new string(Enumerable.Repeat(chars, size).Select(s => s[Bot.random.Next(s.Length)]).ToArray());
             await ctx.RespondAsync(kbSmash);
         }
 
@@ -134,7 +134,7 @@ namespace DiscordBot.Modules
                 await ctx.RespondAsync("Character limit exceeded! Messages can only be up to 2000 characters in size.");
             }
 
-            string letterSpam = new string(Enumerable.Repeat(letter, count).Select(s => s[Program.random.Next(s.Length)]).ToArray());
+            string letterSpam = new string(Enumerable.Repeat(letter, count).Select(s => s[Bot.random.Next(s.Length)]).ToArray());
             await ctx.RespondAsync(letterSpam);
         }
     }
