@@ -33,7 +33,7 @@ namespace DiscordBot
             {
                 Token = Environment.GetEnvironmentVariable("BOT_TOKEN"),
                 TokenType = TokenType.Bot,
-                Intents = DiscordIntents.AllUnprivileged
+                Intents = DiscordIntents.All
             });
             var commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
