@@ -11,7 +11,7 @@ namespace DiscordBot.Modules
     {
         [Command("tellraw")]
         [Description("Speak through the bot!")]
-        [RequirePermissions(Permissions.KickMembers)]
+        [RequireUserPermissions(Permissions.KickMembers)]
         public async Task Tellraw(CommandContext ctx, [Description("The message to have the bot send."), RemainingText] string message)
         {
             await ctx.Message.DeleteAsync();
