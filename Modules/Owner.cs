@@ -33,6 +33,23 @@ namespace DiscordBot.Modules
             }
         }
 
+        [Command("restart")]
+        [Description("Restarts the bot.")]
+        [RequireOwner]
+        public async Task Restart(CommandContext ctx)
+        {
+            string dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
+            if (string.IsNullOrWhiteSpace(dockerCheckFile))
+            {
+                await ctx.RespondAsync("The bot may not be running under Docker; this means that `!restart` will behave like `!shutdown`."
+                    + "\n\nAborted. Use `!shutdown` if you wish to shut down the bot.");
+                return;
+            }
+
+            await ctx.RespondAsync("Restarting...");
+            Environment.Exit(1);
+        }
+
         [Command("link")]
         [Aliases("wl", "links")]
         [Description("Set/update/delete a short link with Cloudflare worker-links.")]
