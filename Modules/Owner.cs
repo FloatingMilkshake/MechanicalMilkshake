@@ -36,6 +36,7 @@ namespace DiscordBot.Modules
         [Command("link")]
         [Aliases("wl", "links")]
         [Description("Set/update/delete a short link with Cloudflare worker-links.")]
+        [RequireOwner]
         public async Task Link(CommandContext ctx, [Description("(Optional) Set a custom key for the short link.")] string key, [Description("The URL the short link should point to.")] string url)
         {
             if (url.Contains("<"))
@@ -109,6 +110,7 @@ namespace DiscordBot.Modules
 
         [Command("upload")]
         [Description("Upload a file to Amazon S3-compatible cloud storage. Accepts an uploaded file.")]
+        [RequireOwner]
         public async Task Upload(CommandContext ctx, [Description("The name for the uploaded file.")] string name, [Description("(Optional) A link to a file to upload. This will take priority over a file uploaded to Discord!")] string link = null)
         {
             if (link != null)
