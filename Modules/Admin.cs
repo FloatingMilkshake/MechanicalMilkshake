@@ -9,15 +9,6 @@ namespace DiscordBot.Modules
 {
     public class Admin : BaseCommandModule
     {
-        [Command("tellraw")]
-        [Description("**Admin-only:** Speak through the bot!")]
-        [RequirePermissions(Permissions.Administrator)]
-        public async Task Tellraw(CommandContext ctx, [Description("The message to have the bot send."), RemainingText] string message)
-        {
-            await ctx.Message.DeleteAsync();
-            await ctx.Channel.SendMessageAsync(message);
-        }
-
         [Command("restart")]
         [Description("**Admin-only:** Restarts the bot.")]
         [RequirePermissions(Permissions.Administrator)]

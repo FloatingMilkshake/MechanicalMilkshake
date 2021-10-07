@@ -9,6 +9,15 @@ namespace DiscordBot.Modules
 {
     public class Mod : BaseCommandModule
     {
+        [Command("tellraw")]
+        [Description("Speak through the bot!")]
+        [RequirePermissions(Permissions.KickMembers)]
+        public async Task Tellraw(CommandContext ctx, [Description("The message to have the bot send."), RemainingText] string message)
+        {
+            await ctx.Message.DeleteAsync();
+            await ctx.Channel.SendMessageAsync(message);
+        }
+
         [Command("clear")]
         [Aliases("purge")]
         [Description("Deletes a given number of messages from a channel.")]
