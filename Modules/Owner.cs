@@ -232,6 +232,7 @@ namespace DiscordBot.Modules
         [Command("deleteupload")]
         [Description("Delete a file uploaded to Amazon S3-compatible cloud storage.")]
         [Aliases("delupload", "delfile", "deletefile")]
+        [RequireOwner]
         public async Task DeleteUpload(CommandContext ctx, [Description("The key or link to the file to delete.")] string fileToDelete)
         {
             if (fileToDelete.Contains("<"))
