@@ -76,8 +76,12 @@ namespace DiscordBot
                     };
                     embed.AddField("Message", ex.Message);
                     if (e.Exception.GetType().ToString() == "System.ArgumentException")
-                        embed.AddField("Note", "This usually means that you used the command incorrectly.\n" +
-                            "Please double-check how to use this command.");
+                        embed.AddField("What's that mean?", "This usually means that you used the command incorrectly.\n" +
+                            $"Please run `help {e.Command.QualifiedName}` for information about what you need to provide for the `{e.Command.QualifiedName}` command.");
+                    if (e.Command.QualifiedName == "randomnumber")
+                    {
+                        embed.AddField("But I provided two numbers!", "One of them may have been too high. Numbers that are too high are not parsed as numbers, which will cause an error. Try with a smaller number.");
+                    }
                     await e.Context.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
                 }
             }
