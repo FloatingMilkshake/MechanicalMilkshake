@@ -14,11 +14,11 @@ using System.Threading.Tasks;
 
 namespace DiscordBot.Modules
 {
+    [RequireOwner]
     public class Owner : BaseCommandModule
     {
         [Command("shutdown")]
         [Description("Shuts down the bot.")]
-        [RequireOwner]
         public async Task Shutdown(CommandContext ctx, [Description("This must be \"I am sure\" for the command to run."), RemainingText] string areYouSure)
         {
             if (areYouSure == "I am sure")
@@ -35,7 +35,6 @@ namespace DiscordBot.Modules
 
         [Command("restart")]
         [Description("Restarts the bot.")]
-        [RequireOwner]
         public async Task Restart(CommandContext ctx)
         {
             string dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
@@ -53,7 +52,6 @@ namespace DiscordBot.Modules
         [Command("link")]
         [Aliases("wl", "links")]
         [Description("Set/update/delete a short link with Cloudflare worker-links.")]
-        [RequireOwner]
         public async Task Link(CommandContext ctx, [Description("(Optional) Set a custom key for the short link.")] string key, [Description("The URL the short link should point to.")] string url)
         {
             if (url.Contains("<"))
@@ -127,7 +125,6 @@ namespace DiscordBot.Modules
 
         [Command("upload")]
         [Description("Upload a file to Amazon S3-compatible cloud storage. Accepts an uploaded file.")]
-        [RequireOwner]
         public async Task Upload(CommandContext ctx, [Description("The name for the uploaded file.")] string name, [Description("(Optional) A link to a file to upload. This will take priority over a file uploaded to Discord!")] string link = null)
         {
             if (link != null)
@@ -249,7 +246,6 @@ namespace DiscordBot.Modules
         [Command("deleteupload")]
         [Description("Delete a file uploaded to Amazon S3-compatible cloud storage.")]
         [Aliases("delupload", "delfile", "deletefile")]
-        [RequireOwner]
         public async Task DeleteUpload(CommandContext ctx, [Description("The key or link to the file to delete.")] string fileToDelete)
         {
             if (fileToDelete.Contains("<"))
