@@ -233,15 +233,15 @@ namespace DiscordBot.Modules
         [Aliases("deletemsg", "delmsg")]
         public async Task Delete(CommandContext ctx, DiscordMessage message)
         {
-            DiscordMember author = default;
+            DiscordMember author;
             if (!ctx.Channel.IsPrivate)
             {
                 author = await ctx.Guild.GetMemberAsync(ctx.Message.Author.Id);
-            }
-            if (!ctx.Channel.IsPrivate && !author.Permissions.HasPermission(Permissions.ManageMessages))
-            {
-                await ctx.RespondAsync("You don't have permission to use this command here!\n`delete` requires the Manage Messages permission when being used in a non-DM channel.");
-                return;
+                if (!author.Permissions.HasPermission(Permissions.ManageMessages))
+                {
+                    await ctx.RespondAsync("You don't have permission to use this command here!\n`delete` requires the Manage Messages permission when being used in a non-DM channel.");
+                    return;
+                }
             }
 
             try
@@ -253,9 +253,9 @@ namespace DiscordBot.Modules
             }
             catch (DSharpPlus.Exceptions.NotFoundException)
             {
-                var failureMsg = await ctx.RespondAsync($"Something went wrong!\n" +
-                    $"The message you're trying to delete cannot be found. Note that you cannot delete messages in one server from another, or from DMs.\n" +
-                    $"(This message will be automatically deleted in 15 seconds.)");
+                var failureMsg = await ctx.RespondAsync("Something went wrong!\n" +
+                    "The message you're trying to delete cannot be found. Note that you cannot delete messages in one server from another, or from DMs.\n" +
+                    "(This message will be automatically deleted in 15 seconds.)");
                 await Task.Delay(15000);
                 try
                 {
