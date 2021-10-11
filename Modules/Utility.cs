@@ -3,6 +3,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -231,67 +232,143 @@ namespace DiscordBot.Modules
         [Command("delete")]
         [Description("Delete a message. This can be used to to delete direct messages with the bot where you are normally unable to delete its messages.")]
         [Aliases("deletemsg", "delmsg")]
-        public async Task Delete(CommandContext ctx, DiscordMessage message)
+        public async Task Delete(CommandContext ctx, string message)
         {
             DiscordMember author;
-            if (!ctx.Channel.IsPrivate)
+            if (message == "all")
             {
-                author = await ctx.Guild.GetMemberAsync(ctx.Message.Author.Id);
-                if (!author.Permissions.HasPermission(Permissions.ManageMessages))
+                if (!ctx.Channel.IsPrivate)
                 {
-                    await ctx.RespondAsync("You don't have permission to use this command here!\n`delete` requires the Manage Messages permission when being used in a non-DM channel.");
+                    await ctx.RespondAsync("`delete all` can only be run in Direct Messages!");
                     return;
                 }
-            }
 
-            try
-            {
-                await ctx.Channel.DeleteMessageAsync(message);
-                var successMsg = await ctx.RespondAsync("Message deleted successfully.");
-                await Task.Delay(3000);
-                await ctx.Channel.DeleteMessageAsync(successMsg);
-            }
-            catch (DSharpPlus.Exceptions.NotFoundException)
-            {
-                var failureMsg = await ctx.RespondAsync("Something went wrong!\n" +
-                    "The message you're trying to delete cannot be found. Note that you cannot delete messages in one server from another, or from DMs.\n" +
-                    "(This message will be automatically deleted in 15 seconds.)");
+                DiscordMessage response = await ctx.RespondAsync("This might take a while. Working...");
+
+                System.Collections.ObjectModel.Collection<DiscordMessage> messagesToDelete = new() { };
+                var messagesToConsider = await ctx.Channel.GetMessagesAsync(100);
+                foreach (DiscordMessage msg in messagesToConsider)
+                {
+                    if (msg.Author == ctx.Client.CurrentUser && msg != response)
+                    {
+                        messagesToDelete.Add(msg);
+                    }
+                }
+
+                if (messagesToDelete.Count == 0)
+                {
+                    await response.ModifyAsync("Something went wrong!\n" +
+                        "Looks like none of the last 100 messages were sent by me!\n" +
+                        "(This message will be automatically deleted in 15 seconds.)");
+                    await Task.Delay(15000);
+                    try
+                    {
+                        await ctx.Channel.DeleteMessageAsync(response);
+                    }
+                    catch
+                    {
+                        // just silencing the exception here because this will probably only fail if the error msg is deleted with the delete cmd before the 15 seconds are up
+                    }
+                }
+                else
+                {
+                    foreach (DiscordMessage msg in messagesToDelete)
+                    {
+                        try
+                        {
+                            await ctx.Channel.DeleteMessageAsync(msg);
+                            await Task.Delay(3000);
+                        }
+                        catch (Exception e)
+                        {
+                            await response.ModifyAsync("Something went wrong!\n" +
+                                $"```\n{e}\n```");
+                        }
+                    }
+                }
+
+                await response.ModifyAsync("Done! This message will be deleted automatically in 10 seconds.");
                 await Task.Delay(15000);
                 try
                 {
-                    await ctx.Channel.DeleteMessageAsync(failureMsg);
+                    await ctx.Channel.DeleteMessageAsync(response);
                 }
                 catch
                 {
-                    // just silencing the exception here because this will probably only fail if the error msg is deleted with the delete cmd before the 15 seconds are up
+                    // just silencing the exception here because this will probably only fail if the error msg is deleted with the delete cmd before the 10 seconds are up
                 }
             }
-            catch (DSharpPlus.Exceptions.UnauthorizedException)
+            else
             {
-                var failureMsg = await ctx.RespondAsync("Something went wrong!\n" +
-                    "I don't have permission to delete that message.\n" +
-                    "(This message will be automatically deleted in 15 seconds.)");
-                await Task.Delay(15000);
+                if (!ctx.Channel.IsPrivate)
+                {
+                    author = await ctx.Guild.GetMemberAsync(ctx.Message.Author.Id);
+                    if (!author.Permissions.HasPermission(Permissions.ManageMessages))
+                    {
+                        await ctx.RespondAsync("You don't have permission to use this command here!\n`delete` requires the Manage Messages permission when being used in a non-DM channel.");
+                        return;
+                    }
+                }
+
                 try
                 {
-                    await ctx.Channel.DeleteMessageAsync(failureMsg);
+                    DiscordMessage msg = null;
+                    try
+                    {
+                        msg = await ctx.Channel.GetMessageAsync(Convert.ToUInt64(message));
+                    }
+                    catch
+                    {
+                        await ctx.RespondAsync($"That doesn't look like a message ID! Make sure you've got the right thing. A message ID will look something like this: `{ctx.Message.Id}`");
+                        return;
+                    }
+                    await ctx.Channel.DeleteMessageAsync(msg);
+                    var successMsg = await ctx.RespondAsync("Message deleted successfully.");
+                    await Task.Delay(3000);
+                    await ctx.Channel.DeleteMessageAsync(successMsg);
                 }
-                catch
+                catch (DSharpPlus.Exceptions.NotFoundException)
                 {
-                    // silencing exception
+                    var failureMsg = await ctx.RespondAsync("Something went wrong!\n" +
+                        "The message you're trying to delete cannot be found. Note that you cannot delete messages in one server from another, or from DMs.\n" +
+                        "(This message will be automatically deleted in 15 seconds.)");
+                    await Task.Delay(15000);
+                    try
+                    {
+                        await ctx.Channel.DeleteMessageAsync(failureMsg);
+                    }
+                    catch
+                    {
+                        // just silencing the exception here because this will probably only fail if the error msg is deleted with the delete cmd before the 15 seconds are up
+                    }
                 }
-            }
-            catch (Exception e)
-            {
-                var failureMsg = await ctx.RespondAsync($"Something went wrong! See details below.\n\n```\n{e}\n```\n(This message will be automatically deleted in 15 seconds.)");
-                await Task.Delay(15000);
-                try
+                catch (DSharpPlus.Exceptions.UnauthorizedException)
                 {
-                    await ctx.Channel.DeleteMessageAsync(failureMsg);
+                    var failureMsg = await ctx.RespondAsync("Something went wrong!\n" +
+                        "I don't have permission to delete that message.\n" +
+                        "(This message will be automatically deleted in 15 seconds.)");
+                    await Task.Delay(15000);
+                    try
+                    {
+                        await ctx.Channel.DeleteMessageAsync(failureMsg);
+                    }
+                    catch
+                    {
+                        // silencing exception
+                    }
                 }
-                catch
+                catch (Exception e)
                 {
-                    // silencing exception
+                    var failureMsg = await ctx.RespondAsync($"Something went wrong! See details below.\n\n```\n{e}\n```\n(This message will be automatically deleted in 15 seconds.)");
+                    await Task.Delay(15000);
+                    try
+                    {
+                        await ctx.Channel.DeleteMessageAsync(failureMsg);
+                    }
+                    catch
+                    {
+                        // silencing exception
+                    }
                 }
             }
         }
