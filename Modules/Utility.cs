@@ -172,8 +172,9 @@ namespace DiscordBot.Modules
         public async Task Ping(CommandContext ctx)
         {
             var msg = await ctx.RespondAsync("Pong!");
-            ulong ping = (msg.Id - ctx.Message.Id) >> 22;
-            await msg.ModifyAsync($"Pong! `{ping}ms`");
+            ulong responseTime = (msg.Id - ctx.Message.Id) >> 22;
+            await msg.ModifyAsync($"Pong! `{ctx.Client.Ping}ms`"
+                + $"\nIt took me `{responseTime}ms` to respond to your message.");
         }
 
         [Command("wolframalpha")]
