@@ -182,10 +182,17 @@ namespace MechanicalMilkshake.Modules
         [Aliases("wa", "wolfram")]
         public async Task WolframAlpha(CommandContext ctx, [Description("What to search for."), RemainingText] string query)
         {
+            if (query == null)
+            {
+                await ctx.RespondAsync("Hmm, it doesn't look like you entered a valid query. Try something like `~wolframalpha What is the meaning of life?`.");
+                return;
+            }
+
             var msg = await ctx.RespondAsync("Searching...");
 
             string appid;
-            if (Environment.GetEnvironmentVariable("WOLFRAMALPHA_APP_ID") == "yourappid") {
+            if (Environment.GetEnvironmentVariable("WOLFRAMALPHA_APP_ID") == "yourappid")
+            {
                 await msg.ModifyAsync("Looks like you don't have an App ID! Check the `WOLFRAMALPHA_APP_ID` environment variable. "
                     + "If you don't know how to get an App ID, see Getting Started here: <https://products.wolframalpha.com/short-answers-api/documentation/>");
                 return;
