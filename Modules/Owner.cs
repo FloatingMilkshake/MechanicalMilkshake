@@ -12,7 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace DiscordBot.Modules
+namespace MechanicalMilkshake.Modules
 {
     [RequireOwner]
     public class Owner : BaseCommandModule

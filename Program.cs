@@ -1,4 +1,4 @@
-﻿using DiscordBot.Modules;
+﻿using MechanicalMilkshake.Modules;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace DiscordBot
+namespace MechanicalMilkshake
 {
     class Program
     {

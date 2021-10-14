@@ -5,7 +5,7 @@ using DSharpPlus.Entities;
 using System;
 using System.Threading.Tasks;
 
-namespace DiscordBot.Modules
+namespace MechanicalMilkshake.Modules
 {
     public class Mod : BaseCommandModule
     {

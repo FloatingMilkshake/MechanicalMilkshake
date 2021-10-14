@@ -2,7 +2,7 @@
 Please note that this is a personal project of mine and is currently only designed for use in a few servers at most. I do not currently plan nor wish for it to be used in many servers and become a large bot.
 
 The following rules apply when contributing to this repository:
-- Do not open a pull request that adds major features without prior discussion through GitHub's [Issues](https://github.com/FloatingMilkshake/DiscordBot/issues) feature or other means. 
+- Do not open a pull request that adds major features without prior discussion through GitHub's [Issues](https://github.com/FloatingMilkshake/MechanicalMilkshake/issues) feature or other means. 
 - Do not attempt to implement sharding. This is not necessary as this bot is only made for use in a few servers at most. 
 - Do not propose any significant changes without prior testing. I will not accept untested changes.
 - Do not alter the GitHub Action files (`/.github/workflows`). Open an issue if there is a problem.

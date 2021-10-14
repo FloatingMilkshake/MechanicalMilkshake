@@ -8,7 +8,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace DiscordBot.Modules
+namespace MechanicalMilkshake.Modules
 {
     public class Utility : BaseCommandModule
     {

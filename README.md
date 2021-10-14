@@ -1,4 +1,4 @@
-# DiscordBot
+# MechanicalMilkshake
 my first Discord bot, written in C# with DSharpPlus!
 
 the code is probably terrible because i don't know what i'm doing. but it works!
