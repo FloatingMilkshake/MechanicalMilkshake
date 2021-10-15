@@ -1,7 +1,7 @@
 version: '2.3'
 services:
   bot:
-    image: ghcr.io/floatingmilkshake/MechanicalMilkshake
+    image: ghcr.io/floatingmilkshake/mechanicalmilkshake
     env_file:
       - .env
     restart: on-failure

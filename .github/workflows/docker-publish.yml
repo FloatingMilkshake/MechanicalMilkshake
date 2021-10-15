@@ -57,5 +57,5 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ghcr.io/floatingmilkshake/MechanicalMilkshake:latest
+          tags: ghcr.io/floatingmilkshake/mechanicalmilkshake:latest
           labels: ${{ steps.meta.outputs.labels }}
