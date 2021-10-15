@@ -14,7 +14,17 @@ namespace MechanicalMilkshake.Modules
         [RequireUserPermissions(Permissions.KickMembers)]
         public async Task Tellraw(CommandContext ctx, [Description("The message to have the bot send."), RemainingText] string message)
         {
-            await ctx.Message.DeleteAsync();
+            try
+            {
+                if (!ctx.Channel.IsPrivate)
+                {
+                    await ctx.Message.DeleteAsync();
+                }
+            }
+            catch (DSharpPlus.Exceptions.UnauthorizedException)
+            {
+                // do nothing
+            }
             await ctx.Channel.SendMessageAsync(message);
         }
 
@@ -22,6 +32,7 @@ namespace MechanicalMilkshake.Modules
         [Aliases("purge")]
         [Description("Deletes a given number of messages from a channel.")]
         [RequirePermissions(Permissions.ManageMessages)]
+        [RequireGuild]
         public async Task Clear(CommandContext ctx, [Description("The number of messages to delete.")] int count)
         {
             await ctx.Message.DeleteAsync();
@@ -36,6 +47,7 @@ namespace MechanicalMilkshake.Modules
         [Aliases("yeet")]
         [Description("Kicks a user. They can rejoin the server if they have an invite.")]
         [RequirePermissions(Permissions.KickMembers)]
+        [RequireGuild]
         public async Task Kick(CommandContext ctx, [Description("The user to kick.")] DiscordUser userToKick, [Description("The reason for the kick."), RemainingText] string reason)
         {
             DiscordMember memberToKick = default;
@@ -65,6 +77,7 @@ namespace MechanicalMilkshake.Modules
         [Aliases("bonk")]
         [Description("Bans a user. They will not be able to rejoin unless unbanned.")]
         [RequirePermissions(Permissions.BanMembers)]
+        [RequireGuild]
         public async Task Ban(CommandContext ctx, [Description("The user to ban.")] DiscordUser userToBan, [Description("The reason for the ban."), RemainingText] string reason)
         {
             try

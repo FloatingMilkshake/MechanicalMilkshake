@@ -29,7 +29,17 @@ namespace MechanicalMilkshake.Modules
         [Description("Makes the bot type.")]
         public async Task TypeCommand(CommandContext ctx)
         {
-            await ctx.Message.DeleteAsync();
+            try
+            {
+                if (!ctx.Channel.IsPrivate)
+                {
+                    await ctx.Message.DeleteAsync();
+                }
+            }
+            catch (DSharpPlus.Exceptions.UnauthorizedException)
+            {
+                // do nothing
+            }
             await ctx.TriggerTypingAsync();
         }
 
@@ -98,7 +108,18 @@ namespace MechanicalMilkshake.Modules
             }
             else
             {
-                await ctx.Message.DeleteAsync();
+                try
+                {
+                    if (!ctx.Channel.IsPrivate)
+                    {
+                        await ctx.Message.DeleteAsync();
+                    }
+                }
+                catch (DSharpPlus.Exceptions.UnauthorizedException)
+                {
+                    // do nothing
+                }
+
                 var msg = await ctx.Channel.SendMessageAsync(message);
                 await Task.Delay(delay * 1000);
                 await msg.ModifyAsync(editedMessage);
