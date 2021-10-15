@@ -91,5 +91,23 @@ namespace MechanicalMilkshake.Modules
             await ctx.Message.DeleteAsync();
             await ctx.Channel.SendMessageAsync($"**{userToBan.Username}#{userToBan.Discriminator}** has been banned: **{reason}**");
         }
+
+        [Command("unban")]
+        [Description("Unbans a user.")]
+        [RequirePermissions(Permissions.BanMembers)]
+        [RequireGuild]
+        public async Task Unban(CommandContext ctx, [Description("The user to unban.")] DiscordUser userToUnban)
+        {
+            try
+            {
+                await ctx.Guild.UnbanMemberAsync(userToUnban);
+            }
+            catch
+            {
+                await ctx.RespondAsync($"Something went wrong. You or I may not be allowed to unban **{userToUnban.Username}#{userToUnban.Discriminator}**! Please check the role hierarchy and permissions.");
+                return;
+            }
+            await ctx.RespondAsync($"Successfully unbanned **{userToUnban.Username}#{userToUnban.Discriminator}**!");
+        }
     }
 }
