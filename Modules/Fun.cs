@@ -145,7 +145,7 @@ namespace MechanicalMilkshake.Modules
         {
             await ctx.TriggerTypingAsync();
             await Task.Delay(3000);
-            
+
             if (letter.Length > 1)
             {
                 await ctx.RespondAsync("Only one letter can be repeated.");

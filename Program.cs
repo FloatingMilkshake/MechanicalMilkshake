@@ -1,8 +1,8 @@
-﻿using MechanicalMilkshake.Modules;
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
+using MechanicalMilkshake.Modules;
 using Minio;
 using System;
 using System.Collections.Generic;

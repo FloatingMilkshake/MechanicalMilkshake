@@ -2,7 +2,6 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using System;
 using System.Threading.Tasks;
 
 namespace MechanicalMilkshake.Modules

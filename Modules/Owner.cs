@@ -23,7 +23,7 @@ namespace MechanicalMilkshake.Modules
         {
             if (areYouSure == "I am sure")
             {
-                var msg = await ctx.RespondAsync("**Warning**: The bot is now shutting down. This action is permanent.");
+                await ctx.RespondAsync("**Warning**: The bot is now shutting down. This action is permanent.");
                 await ctx.Client.DisconnectAsync();
                 Environment.Exit(0);
             }
