@@ -99,15 +99,15 @@ namespace MechanicalMilkshake.Modules
 
         [Command("avatar")]
         [Aliases("avy", "av")]
-        [Description("Returns the avatar of the provided user.")]
-        public async Task Avatar(CommandContext ctx, [Description("The member to get the avatar for. Defaults to yourself if no member is provided.")] DiscordUser user = null)
+        [Description("Returns the avatar of the provided member.")]
+        public async Task Avatar(CommandContext ctx, [Description("The member to get the avatar for. Defaults to yourself if no member is provided.")] DiscordMember member = null)
         {
-            if (user == null)
+            if (member == null)
             {
-                user = ctx.Message.Author;
+                member = await ctx.Guild.GetMemberAsync(ctx.Message.Author.Id);
             }
 
-            string avatarLink = $"{user.AvatarUrl}".Replace("size=1024", "size=4096");
+            string avatarLink = $"{member.AvatarUrl}".Replace("size=1024", "size=4096");
 
             await ctx.RespondAsync(avatarLink);
         }
