@@ -149,6 +149,7 @@ namespace MechanicalMilkshake.Modules
             if (letter.Length > 1)
             {
                 await ctx.RespondAsync("Only one letter can be repeated.");
+                return;
             }
             if (count > 2000)
             {
