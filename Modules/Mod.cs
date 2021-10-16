@@ -2,6 +2,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using System;
 using System.Threading.Tasks;
 
 namespace MechanicalMilkshake.Modules
@@ -83,10 +84,15 @@ namespace MechanicalMilkshake.Modules
             {
                 await ctx.Guild.BanMemberAsync(userToBan.Id, 0, reason);
             }
-            catch
+            catch (DSharpPlus.Exceptions.UnauthorizedException)
             {
                 await ctx.RespondAsync($"Something went wrong. You or I may not be allowed to ban **{userToBan.Username}#{userToBan.Discriminator}**! Please check the role hierarchy and permissions.");
                 return;
+            }
+            catch (Exception e)
+            {
+                await ctx.RespondAsync("Something went wrong! I ran into a problem while trying to ban that user. This error has been logged.");
+                Console.WriteLine($"ERROR: {e.GetType()} occurred when {ctx.Member.Username}#{ctx.Member.Discriminator} ({ctx.Member.Id}) attempted to ban {userToBan.Username}#{userToBan.Discriminator} ({userToBan.Id}) from {ctx.Guild.Name}!");
             }
             await ctx.Message.DeleteAsync();
             await ctx.Channel.SendMessageAsync($"**{userToBan.Username}#{userToBan.Discriminator}** has been banned: **{reason}**");
@@ -102,10 +108,15 @@ namespace MechanicalMilkshake.Modules
             {
                 await ctx.Guild.UnbanMemberAsync(userToUnban);
             }
-            catch
+            catch (DSharpPlus.Exceptions.UnauthorizedException)
             {
                 await ctx.RespondAsync($"Something went wrong. You or I may not be allowed to unban **{userToUnban.Username}#{userToUnban.Discriminator}**! Please check the role hierarchy and permissions.");
                 return;
+            }
+            catch (Exception e)
+            {
+                await ctx.RespondAsync("Something went wrong! I ran into a problem while trying to unban that user. This error has been logged.");
+                Console.WriteLine($"ERROR: {e.GetType()} occurred when {ctx.Member.Username}#{ctx.Member.Discriminator} ({ctx.Member.Id}) attempted to unban {userToUnban.Username}#{userToUnban.Discriminator} ({userToUnban.Id}) from {ctx.Guild.Name}!");
             }
             await ctx.RespondAsync($"Successfully unbanned **{userToUnban.Username}#{userToUnban.Discriminator}**!");
         }
