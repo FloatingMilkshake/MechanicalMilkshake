@@ -100,7 +100,7 @@ namespace MechanicalMilkshake.Modules
         [Command("avatar")]
         [Aliases("avy", "av")]
         [Description("Returns the avatar of the provided user. Defaults to yourself if no user is provided.")]
-        public async Task Avatar(CommandContext ctx, [Description("The server member to get the avatar for.")] DiscordMember member = null)
+        public async Task Avatar(CommandContext ctx, [Description("The server member to get the avatar for."), RemainingText] DiscordMember member = null)
         {
             if (member == null)
             {
@@ -113,7 +113,7 @@ namespace MechanicalMilkshake.Modules
         }
 
         [Command("avatar")]
-        public async Task Avatar(CommandContext ctx, [Description("The user to get the avatar for.")] DiscordUser user = null)
+        public async Task Avatar(CommandContext ctx, [Description("The user to get the avatar for."), RemainingText] DiscordUser user = null)
         {
             if (user == null)
             {
