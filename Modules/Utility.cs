@@ -99,8 +99,8 @@ namespace MechanicalMilkshake.Modules
 
         [Command("avatar")]
         [Aliases("avy", "av")]
-        [Description("Returns the avatar of the provided member.")]
-        public async Task Avatar(CommandContext ctx, [Description("The member to get the avatar for. Defaults to yourself if no member is provided.")] DiscordMember member = null)
+        [Description("Returns the avatar of the provided user. Defaults to yourself if no user is provided.")]
+        public async Task Avatar(CommandContext ctx, [Description("The server member to get the avatar for.")] DiscordMember member = null)
         {
             if (member == null)
             {
@@ -110,6 +110,22 @@ namespace MechanicalMilkshake.Modules
             string avatarLink = $"{member.AvatarUrl}".Replace("size=1024", "size=4096");
 
             await ctx.RespondAsync(avatarLink);
+        }
+
+        [Command("avatar")]
+        public async Task Avatar(CommandContext ctx, [Description("The user to get the avatar for.")] DiscordUser user = null)
+        {
+            if (user == null)
+            {
+                // other command above will take care of this
+                return;
+            }
+            else
+            {
+                string avatarLink = $"{user.AvatarUrl}".Replace("size=1024", "size=4096");
+
+                await ctx.RespondAsync(avatarLink);
+            }
         }
 
         [Group("timestamp")]
