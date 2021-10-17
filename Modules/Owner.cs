@@ -394,6 +394,14 @@ namespace MechanicalMilkshake.Modules
             }
         }
 
+        [Command("uptime")]
+        [Description("Checks uptime of the bot, from the time it connects to Discord.")]
+        public async Task Uptime(CommandContext ctx)
+        {
+            long unixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
+            await ctx.RespondAsync($"<t:{unixTime.ToString()}:F> (<t:{unixTime.ToString()}:R>)");
+        }
+
         // https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197 (https://github.com/Erisa/Lykos/blob/3335c38a52d28820a935f99c53f030805d4da607/src/Modules/Owner.cs#L313)
         readonly struct CloudflareContent
         {

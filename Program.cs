@@ -15,6 +15,7 @@ namespace MechanicalMilkshake
     {
         public static MinioClient minio;
         public static Random random = new Random();
+        public static DateTime connectTime;
 
         static void Main(string[] args)
         {
@@ -125,8 +126,9 @@ namespace MechanicalMilkshake
             }
 
             await discord.ConnectAsync();
+            connectTime = DateTime.Now;
 
-            await homeChannel.SendMessageAsync($"Connected! Latest commit: `{commitHash}`"
+        await homeChannel.SendMessageAsync($"Connected! Latest commit: `{commitHash}`"
                 + $"\nLatest commit message:\n```\n{commitMessage}\n```");
 
             await Task.Delay(-1);
