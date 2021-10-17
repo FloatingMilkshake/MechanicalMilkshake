@@ -79,7 +79,7 @@ namespace MechanicalMilkshake.Modules
                 BaseAddress = new Uri(baseUrl)
             };
 
-            HttpRequestMessage request;
+            HttpRequestMessage request = null;
 
             if (key == "null" || key == "random" || key == "rand")
             {
@@ -92,6 +92,31 @@ namespace MechanicalMilkshake.Modules
                     url = $"https://link.floatingmilkshake.com/{url}";
                 }
                 request = new HttpRequestMessage(HttpMethod.Delete, url) { };
+            }
+            else if (key == "query")
+            {
+                if (!url.Contains("https://link.floatingmilkshake.com/"))
+                {
+                    if (url.Contains("http"))
+                    {
+                        await ctx.RespondAsync("Hmm, that doesn't look like a shortlink...");
+                        return;
+                    }
+                    url = $"https://link.floatingmilkshake.com/{url}";
+                }
+                var msg = await ctx.RespondAsync("Checking...");
+                var cli = new WebClient();
+                string data = default;
+                try
+                {
+                    data = cli.DownloadString(url);
+                    await msg.ModifyAsync("Looks like this link goes somewhere!");
+                }
+                catch (WebException e) when (e.Message.Contains("404"))
+                {
+                    await msg.ModifyAsync("Hmm, it doesn't look like this link goes anywhere!");
+                }
+                return;
             }
             else
             {
