@@ -116,6 +116,11 @@ namespace MechanicalMilkshake.Modules
                 {
                     await msg.ModifyAsync("Hmm, it doesn't look like this link goes anywhere!");
                 }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"ERROR: {e.GetType()} occurred when {ctx.Member.Username}#{ctx.Member.Discriminator} ({ctx.Member.Id}) attempted to run {ctx.Message.Content} in {ctx.Message.Channel}!");
+                    await msg.ModifyAsync("Something went wrong while checking that link! This error has been logged.");
+                }
                 return;
             }
             else
