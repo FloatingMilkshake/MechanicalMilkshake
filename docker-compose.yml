@@ -5,6 +5,8 @@ services:
     env_file:
       - .env
     restart: on-failure
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
   watchtower:
     image: containrrr/watchtower
     volumes:
