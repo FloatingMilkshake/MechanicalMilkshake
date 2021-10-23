@@ -83,6 +83,10 @@ namespace MechanicalMilkshake
                     {
                         embed.AddField("But I provided two numbers!", "One of them may have been too high. Numbers that are too high are not parsed as numbers, which will cause an error. Try with a smaller number.");
                     }
+                    if (e.Command.QualifiedName == "upload")
+                    {
+                        embed.AddField("Did you forget to include a file name?", "`upload` requires that you specify a name for the file as the first argument. If you'd like to use a randomly-generated file name, use the name `random`.");
+                    }
                     await e.Context.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
                 }
             }
