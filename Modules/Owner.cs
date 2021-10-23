@@ -17,38 +17,6 @@ namespace MechanicalMilkshake.Modules
     [RequireOwner]
     public class Owner : BaseCommandModule
     {
-        [Command("shutdown")]
-        [Description("Shuts down the bot.")]
-        public async Task Shutdown(CommandContext ctx, [Description("This must be \"I am sure\" for the command to run."), RemainingText] string areYouSure)
-        {
-            if (areYouSure == "I am sure")
-            {
-                await ctx.RespondAsync("**Warning**: The bot is now shutting down. This action is permanent.");
-                await ctx.Client.DisconnectAsync();
-                Environment.Exit(0);
-            }
-            else
-            {
-                await ctx.RespondAsync("Are you sure?");
-            }
-        }
-
-        [Command("restart")]
-        [Description("Restarts the bot.")]
-        public async Task Restart(CommandContext ctx)
-        {
-            string dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
-            if (string.IsNullOrWhiteSpace(dockerCheckFile))
-            {
-                await ctx.RespondAsync("The bot may not be running under Docker; this means that `!restart` will behave like `!shutdown`."
-                    + "\n\nAborted. Use `!shutdown` if you wish to shut down the bot.");
-                return;
-            }
-
-            await ctx.RespondAsync("Restarting...");
-            Environment.Exit(1);
-        }
-
         [Command("link")]
         [Aliases("wl", "links")]
         [Description("Set/update/delete a short link with Cloudflare worker-links.")]
@@ -394,12 +362,57 @@ namespace MechanicalMilkshake.Modules
             }
         }
 
-        [Command("uptime")]
-        [Description("Checks uptime of the bot, from the time it connects to Discord.")]
-        public async Task Uptime(CommandContext ctx)
+        [Group("debug")]
+        [Description("Commands for checking if the bot is working properly.")]
+        class Debug : BaseCommandModule
         {
-            long unixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
-            await ctx.RespondAsync($"<t:{unixTime.ToString()}:F> (<t:{unixTime.ToString()}:R>)");
+            [Command("uptime")]
+            [Description("Checks uptime of the bot, from the time it connects to Discord.")]
+            public async Task Uptime(CommandContext ctx)
+            {
+                long unixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
+                await ctx.RespondAsync($"<t:{unixTime.ToString()}:F> (<t:{unixTime.ToString()}:R>)");
+            }
+
+            [Command("timecheck")]
+            [Aliases("currenttime", "time")]
+            [Description("Returns the current time on the current machine.")]
+            public async Task TimeCheck(CommandContext ctx)
+            {
+                await ctx.RespondAsync($"Seems to me like it's currently `{DateTime.Now}`.");
+            }
+
+            [Command("shutdown")]
+            [Description("Shuts down the bot.")]
+            public async Task Shutdown(CommandContext ctx, [Description("This must be \"I am sure\" for the command to run."), RemainingText] string areYouSure)
+            {
+                if (areYouSure == "I am sure")
+                {
+                    await ctx.RespondAsync("**Warning**: The bot is now shutting down. This action is permanent.");
+                    await ctx.Client.DisconnectAsync();
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    await ctx.RespondAsync("Are you sure?");
+                }
+            }
+
+            [Command("restart")]
+            [Description("Restarts the bot.")]
+            public async Task Restart(CommandContext ctx)
+            {
+                string dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
+                if (string.IsNullOrWhiteSpace(dockerCheckFile))
+                {
+                    await ctx.RespondAsync("The bot may not be running under Docker; this means that `!restart` will behave like `!shutdown`."
+                        + "\n\nAborted. Use `!shutdown` if you wish to shut down the bot.");
+                    return;
+                }
+
+                await ctx.RespondAsync("Restarting...");
+                Environment.Exit(1);
+            }
         }
 
         // https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197 (https://github.com/Erisa/Lykos/blob/3335c38a52d28820a935f99c53f030805d4da607/src/Modules/Owner.cs#L313)
