@@ -185,6 +185,11 @@ namespace MechanicalMilkshake.Modules
                 Match urlRemovalMatch = urlRemovalPattern.Match(linkToFile);
                 linkToFile = linkToFile.Replace(urlRemovalMatch.ToString(), "");
 
+                Regex parameterRemovalPattern = new Regex(@".*\?");
+                Match parameterRemovalMatch = parameterRemovalPattern.Match(linkToFile);
+                linkToFile = parameterRemovalMatch.ToString();
+                linkToFile = linkToFile.Replace("?", "");
+
                 Regex namePattern = new Regex(@"[^\/\\&\?]+\.\w+(?=([\?&].*$|$))");
                 Match nameMatch = namePattern.Match(linkToFile);
                 extension = nameMatch.ToString();
@@ -210,6 +215,10 @@ namespace MechanicalMilkshake.Modules
                 if (name == "null" || name == "random")
                 {
                     fileName = new string(Enumerable.Repeat(chars, 10).Select(s => s[Program.random.Next(s.Length)]).ToArray()) + extension;
+                }
+                else if (name == "existing" || name == "preserve" || name == "keep")
+                {
+                    fileName = linkToFile;
                 }
                 else
                 {
