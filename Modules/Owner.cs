@@ -1,5 +1,6 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
 using Minio.Exceptions;
 using Newtonsoft.Json;
 using System;
@@ -78,7 +79,20 @@ namespace MechanicalMilkshake.Modules
                 try
                 {
                     data = cli.DownloadString(url);
-                    await msg.ModifyAsync("Looks like this link goes somewhere!");
+                    DiscordMessage queryResponseMsg = await msg.ModifyAsync("Looks like this link goes somewhere!\nChecking target...");
+                    // check link target
+                    var queryRequest = (HttpWebRequest)WebRequest.Create(url);
+                    queryRequest.AllowAutoRedirect = false;
+                    var queryResponse = (HttpWebResponse)queryRequest.GetResponse();
+                    if (queryResponse.StatusCode == HttpStatusCode.Found)
+                    {
+                        string queryTargetUrl = queryResponse.Headers["Location"];
+                        await queryResponseMsg.ModifyAsync($"Looks like this link goes somewhere!\nTarget: {queryTargetUrl}");
+                    }
+                    else
+                    {
+                        await queryResponseMsg.ModifyAsync("Looks like this link goes somewhere, but I ran into a problem trying to fetch the target!");
+                    }
                 }
                 catch (WebException e) when (e.Message.Contains("404"))
                 {
