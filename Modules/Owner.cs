@@ -87,7 +87,7 @@ namespace MechanicalMilkshake.Modules
                     if (queryResponse.StatusCode == HttpStatusCode.Found)
                     {
                         string queryTargetUrl = queryResponse.Headers["Location"];
-                        await queryResponseMsg.ModifyAsync($"Looks like this link goes somewhere!\nTarget: {queryTargetUrl}");
+                        await queryResponseMsg.ModifyAsync($"Looks like this link goes somewhere!\nTarget (embed suppressed): <{queryTargetUrl}>");
                     }
                     else
                     {
