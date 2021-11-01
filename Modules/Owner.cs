@@ -20,7 +20,7 @@ namespace MechanicalMilkshake.Modules
         [Command("link")]
         [Aliases("wl", "links")]
         [Description("Set/update/delete a short link with Cloudflare worker-links.")]
-        public async Task Link(CommandContext ctx, [Description("(Optional) Set a custom key for the short link.")] string key, [Description("The URL the short link should point to.")] string url)
+        public async Task Link(CommandContext ctx, [Description("Set a custom key for the short link.")] string key, [Description("The URL the short link should point to.")] string url)
         {
             if (url.Contains("<"))
             {
