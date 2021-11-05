@@ -13,6 +13,7 @@ namespace MechanicalMilkshake
 {
     class Program
     {
+        public static DiscordClient discord;
         public static MinioClient minio;
         public static Random random = new Random();
         public static DateTime connectTime;
@@ -30,7 +31,7 @@ namespace MechanicalMilkshake
                 Environment.Exit(1);
             }
 
-            var discord = new DiscordClient(new DiscordConfiguration()
+            discord = new DiscordClient(new DiscordConfiguration()
             {
                 Token = Environment.GetEnvironmentVariable("BOT_TOKEN"),
                 TokenType = TokenType.Bot,
@@ -95,6 +96,7 @@ namespace MechanicalMilkshake
             commands.RegisterCommands<Utility>();
             commands.RegisterCommands<Fun>();
             commands.RegisterCommands<Mod>();
+            commands.RegisterCommands<PerServerFeatures>();
             commands.CommandErrored += CommandsNextService_CommandErrored;
 
             if (Environment.GetEnvironmentVariable("HOME_CHANNEL") == null)
@@ -132,10 +134,16 @@ namespace MechanicalMilkshake
             await discord.ConnectAsync();
             connectTime = DateTime.Now;
 
-        await homeChannel.SendMessageAsync($"Connected! Latest commit: `{commitHash}`"
+            await homeChannel.SendMessageAsync($"Connected! Latest commit: `{commitHash}`"
                 + $"\nLatest commit message:\n```\n{commitMessage}\n```");
 
-            await Task.Delay(-1);
+            while (true)
+            {
+                await Task.Delay(10000);
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+                PerServerFeatures.WednesdayCheck();
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            }
         }
     }
 }
