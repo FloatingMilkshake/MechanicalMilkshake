@@ -2,6 +2,7 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
 using MechanicalMilkshake.Modules;
 using Minio;
 using System;
@@ -131,18 +132,25 @@ namespace MechanicalMilkshake
                 commitMessage = "No commit message is available when debugging.";
             }
 
-            await discord.ConnectAsync();
-            connectTime = DateTime.Now;
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            async Task OnReady(DiscordClient client, ReadyEventArgs e)
+            {
+                Task.Run(async () =>
+                {
+                    connectTime = DateTime.Now;
 
-            await homeChannel.SendMessageAsync($"Connected! Latest commit: `{commitHash}`"
-                + $"\nLatest commit message:\n```\n{commitMessage}\n```");
+                    await homeChannel.SendMessageAsync($"Connected! Latest commit: `{commitHash}`"
+                        + $"\nLatest commit message:\n```\n{commitMessage}\n```");
+                });
+            }
+
+            await discord.ConnectAsync();
+            discord.Ready += OnReady;
 
             while (true)
             {
                 await Task.Delay(10000);
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                 PerServerFeatures.WednesdayCheck();
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             }
         }
     }
