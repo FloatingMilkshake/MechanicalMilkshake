@@ -252,7 +252,7 @@ namespace MechanicalMilkshake.Modules
             await ctx.RespondAsync(count.ToString());
         }
 
-        [Command("delete")]
+        [Command("deletemessage")]
         [Description("Delete a message. This can be used to to delete direct messages with the bot where you are normally unable to delete its messages.")]
         [Aliases("deletemsg", "delmsg")]
         public async Task Delete(CommandContext ctx, string message)
