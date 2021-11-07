@@ -262,7 +262,7 @@ namespace MechanicalMilkshake.Modules
             {
                 if (!ctx.Channel.IsPrivate)
                 {
-                    await ctx.RespondAsync("`delete all` can only be run in Direct Messages!");
+                    await ctx.RespondAsync($"`{ctx.Command} all` can only be run in Direct Messages!");
                     return;
                 }
 
