@@ -139,8 +139,10 @@ namespace MechanicalMilkshake.Modules
         [Description("Upload a file to Amazon S3-compatible cloud storage. Accepts an uploaded file.")]
         public async Task Upload(CommandContext ctx, [Description("The name for the uploaded file. Set to `preserve` to keep the name of the file you want to upload, or `random` to generate a random name.")] string name, [Description("(Optional) A link to a file to upload. This will take priority over a file uploaded to Discord!")] string link = null)
         {
+            string linkToFile;
             if (link != null)
             {
+                linkToFile = link;
                 if (link.Contains("<"))
                 {
                     link = link.Replace("<", "");
@@ -150,6 +152,16 @@ namespace MechanicalMilkshake.Modules
                     link = link.Replace(">", "");
                 }
             }
+            else
+            {
+                linkToFile = ctx.Message.Attachments[0].Url;
+            }
+
+            if (name == "delete")
+            {
+                await DeleteUpload(ctx, linkToFile);
+                return;
+            }
 
             var msg = await ctx.RespondAsync("Uploading...");
 
@@ -157,16 +169,6 @@ namespace MechanicalMilkshake.Modules
             {
                 await msg.ModifyAsync("Please attach a file to upload!");
                 return;
-            }
-
-            string linkToFile;
-            if (link != null)
-            {
-                linkToFile = link;
-            }
-            else
-            {
-                linkToFile = ctx.Message.Attachments[0].Url;
             }
 
             string fileName;
@@ -251,10 +253,9 @@ namespace MechanicalMilkshake.Modules
             }
         }
 
-        [Command("deleteupload")]
-        [Description("Delete a file uploaded to Amazon S3-compatible cloud storage.")]
-        [Aliases("delupload", "delfile", "deletefile")]
-        public async Task DeleteUpload(CommandContext ctx, [Description("The key or link to the file to delete.")] string fileToDelete)
+        // this used to be a command, but is now called from `upload` if the `name` argument is set to `delete`
+        // it could be merged into `upload`, but this is the easy/lazy way to do it. it works!
+        public async Task DeleteUpload(CommandContext ctx, string fileToDelete)
         {
             if (fileToDelete.Contains("<"))
             {
