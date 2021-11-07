@@ -201,32 +201,19 @@ namespace MechanicalMilkshake.Modules
 
                 Regex parameterRemovalPattern = new Regex(@".*\?");
                 Match parameterRemovalMatch = parameterRemovalPattern.Match(linkToFile);
-                linkToFile = parameterRemovalMatch.ToString();
+                if (parameterRemovalMatch != null && parameterRemovalMatch.ToString() != "")
+                {
+                    linkToFile = parameterRemovalMatch.ToString();
+                }
                 linkToFile = linkToFile.Replace("?", "");
 
-                Regex namePattern = new Regex(@"[^\/\\&\?]+\.\w+(?=([\?&].*$|$))");
-                Match nameMatch = namePattern.Match(linkToFile);
-                extension = nameMatch.ToString();
-
                 Regex extPattern = new Regex(@"\..*");
-                Match extMatch = extPattern.Match(extension);
+                Match extMatch = extPattern.Match(linkToFile);
                 extension = extMatch.ToString();
-
-                // macOS screenshot names are annoying so this is to get the extension from them properly
-                // just looking for "Screen Shot" in the file name is probably not the best way to do this but it works for me
-
-                if (nameMatch.ToString().Contains("Screen Shot"))
-                {
-                    Regex macExtPattern = new Regex(@"AM|PM\..*");
-                    Match macExtMatch = macExtPattern.Match(extension);
-                    extension = macExtMatch.ToString();
-                    extension = extension.Replace("AM", "");
-                    extension = extension.Replace("PM", "");
-                }
 
                 const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-                if (name == "null" || name == "random")
+                if (name == "random")
                 {
                     fileName = new string(Enumerable.Repeat(chars, 10).Select(s => s[Program.random.Next(s.Length)]).ToArray()) + extension;
                 }
