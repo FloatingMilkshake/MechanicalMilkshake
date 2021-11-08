@@ -39,7 +39,7 @@ namespace MechanicalMilkshake.Modules
                 memberRoles = memberRoles.Replace($"{stringToReplace}", ">");
             }
 
-            String acknowledgements = "None";
+            String acknowledgements = null;
             if (member.Permissions.HasPermission(Permissions.KickMembers) && member.Permissions.HasPermission(Permissions.BanMembers))
             {
                 acknowledgements = "Server Moderator (can kick and ban members)";
@@ -53,6 +53,16 @@ namespace MechanicalMilkshake.Modules
                 acknowledgements = "Server Owner";
             }
 
+            string roles;
+            if (memberRoles == null)
+            {
+                roles = "None";
+            }
+            else
+            {
+                roles = memberRoles;
+            }
+
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
                 .WithDescription($"{member.Mention}")
                 .WithColor(new DiscordColor($"{member.Color}"))
@@ -60,10 +70,14 @@ namespace MechanicalMilkshake.Modules
                 .AddField("ID", $"{member.Id}")
                 .AddField("Account registered on", $"<t:{registeredAt}:F> (<t:{registeredAt}:R>)")
                 .AddField("Joined server on", $"<t:{joinedAtTimestamp}:F> (<t:{joinedAtTimestamp}:R>)")
-                .AddField("Roles", $"{memberRoles}")
-                .AddField("Acknowledgements", $"{acknowledgements}")
+                .AddField("Roles", roles)
                 .WithThumbnail(member.AvatarUrl)
                 .WithTimestamp(DateTime.UtcNow);
+
+            if (acknowledgements != null)
+            {
+                embed.AddField("Acknowledgements", acknowledgements);
+            }
 
             await ctx.RespondAsync($"User Info for **{member.Username}#{member.Discriminator}**", embed);
         }
