@@ -136,6 +136,7 @@ namespace MechanicalMilkshake.Modules
         }
 
         [Command("upload")]
+        [Aliases("up")]
         [Description("Upload a file to Amazon S3-compatible cloud storage. Accepts an uploaded file.")]
         public async Task Upload(CommandContext ctx, [Description("The name for the uploaded file. Set to `preserve` to keep the name of the file you want to upload, or `random` to generate a random name.")] string name, [Description("(Optional) A link to a file to upload. This will take priority over a file uploaded to Discord!")] string link = null)
         {
