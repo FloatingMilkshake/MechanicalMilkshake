@@ -21,7 +21,7 @@ namespace MechanicalMilkshake.Modules
         [Description("Generates a random number between two that you specify.")]
         public async Task Random(CommandContext ctx, [Description("The minimum number to choose between.")] int min, [Description("The maximum number to choose between.")] int max)
         {
-            var random = new Random();
+            Random random = new Random();
             await ctx.RespondAsync($"Your random number is **{random.Next(min, max)}**!");
         }
 
@@ -47,10 +47,10 @@ namespace MechanicalMilkshake.Modules
         [Description("Gets a random cat picture from the internet.")]
         public async Task Cat(CommandContext ctx)
         {
-            var msg = await ctx.RespondAsync("*Looking for a cat...*");
-            var cli = new WebClient();
+            DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Looking for a cat...*");
+            WebClient cli = new WebClient();
             string data = cli.DownloadString("https://api.thecatapi.com/v1/images/search");
-            Regex pattern = new Regex(@"https:\/\/cdn2.thecatapi.com\/images\/.*(.png|.jpg)");
+            Regex pattern = new(@"https:\/\/cdn2.thecatapi.com\/images\/.*(.png|.jpg)");
             Match cat = pattern.Match(data);
             if (cat is not null)
             {
@@ -66,14 +66,14 @@ namespace MechanicalMilkshake.Modules
         [Description("Gets a random dog picture from the internet.")]
         public async Task Dog(CommandContext ctx)
         {
-            var msg = await ctx.RespondAsync("*Looking for a dog...*");
-            var cli = new WebClient();
+            DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Looking for a dog...*");
+            WebClient cli = new WebClient();
             string data = cli.DownloadString("https://dog.ceo/api/breeds/image/random");
-            Regex pattern = new Regex(@"https:\\\/\\\/images.dog.ceo\\\/breeds\\\/.*(.png|.jpg)");
+            Regex pattern = new(@"https:\\\/\\\/images.dog.ceo\\\/breeds\\\/.*(.png|.jpg)");
             Match dogMatch = pattern.Match(data);
             if (dogMatch is not null)
             {
-                var dog = dogMatch.ToString();
+                string dog = dogMatch.ToString();
                 dog = dog.Replace("\\", "");
                 await msg.ModifyAsync($"{dog}");
             }
@@ -85,11 +85,11 @@ namespace MechanicalMilkshake.Modules
 
         [Command("randomfact")]
         [Description("Gets a random fact.")]
-        public async Task fact(CommandContext ctx)
+        public async Task Fact(CommandContext ctx)
         {
-            var msg = await ctx.RespondAsync("*Getting a random fact...*");
+            DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Getting a random fact...*");
 
-            var cli = new WebClient();
+            WebClient cli = new WebClient();
             string fact = cli.DownloadString("https://uselessfacts.jsph.pl/random.md");
 
             fact = fact.Replace(")", ">)");
@@ -120,7 +120,7 @@ namespace MechanicalMilkshake.Modules
                     // do nothing
                 }
 
-                var msg = await ctx.Channel.SendMessageAsync(message);
+                DSharpPlus.Entities.DiscordMessage msg = await ctx.Channel.SendMessageAsync(message);
                 await Task.Delay(delay * 1000);
                 await msg.ModifyAsync(editedMessage);
             }
@@ -134,7 +134,7 @@ namespace MechanicalMilkshake.Modules
             await ctx.TriggerTypingAsync();
             await Task.Delay(3000);
             const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            string kbSmash = new string(Enumerable.Repeat(chars, size).Select(s => s[Program.random.Next(s.Length)]).ToArray());
+            string kbSmash = new(Enumerable.Repeat(chars, size).Select(s => s[Program.random.Next(s.Length)]).ToArray());
             await ctx.RespondAsync(kbSmash);
         }
 
@@ -156,7 +156,7 @@ namespace MechanicalMilkshake.Modules
             await ctx.TriggerTypingAsync();
             await Task.Delay(3000);
 
-            string letterSpam = new string(Enumerable.Repeat(letter, count).Select(s => s[Program.random.Next(s.Length)]).ToArray());
+            string letterSpam = new(Enumerable.Repeat(letter, count).Select(s => s[Program.random.Next(s.Length)]).ToArray());
             await ctx.RespondAsync(letterSpam);
         }
     }

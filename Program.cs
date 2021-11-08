@@ -16,7 +16,7 @@ namespace MechanicalMilkshake
     {
         public static DiscordClient discord;
         public static MinioClient minio;
-        public static Random random = new Random();
+        public static Random random = new();
         public static DateTime connectTime;
 
         static void Main(string[] args)
@@ -38,7 +38,7 @@ namespace MechanicalMilkshake
                 TokenType = TokenType.Bot,
                 Intents = DiscordIntents.All
             });
-            var commands = discord.UseCommandsNext(new CommandsNextConfiguration
+            CommandsNextExtension commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefixes = new[] { "!", "~" }
             });
@@ -56,13 +56,13 @@ namespace MechanicalMilkshake
                 if (e.Exception is CommandNotFoundException && (e.Command == null || e.Command.QualifiedName != "help"))
                     return;
 
-                var exs = new List<Exception>();
+                List<Exception> exs = new List<Exception>();
                 if (e.Exception is AggregateException ae)
                     exs.AddRange(ae.InnerExceptions);
                 else
                     exs.Add(e.Exception);
 
-                foreach (var ex in exs)
+                foreach (Exception ex in exs)
                 {
                     if (ex is CommandNotFoundException && (e.Command == null || e.Command.QualifiedName != "help"))
                         return;
@@ -70,7 +70,7 @@ namespace MechanicalMilkshake
                     if (ex is ChecksFailedException && (e.Command.Name != "help"))
                         return;
 
-                    var embed = new DiscordEmbedBuilder
+                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                     {
                         Color = new DiscordColor("#FF0000"),
                         Title = "An exception occurred when executing a command",
@@ -106,14 +106,14 @@ namespace MechanicalMilkshake
                 Environment.Exit(1);
             }
 
-            var homeEnvVar = Environment.GetEnvironmentVariable("HOME_CHANNEL");
+            string homeEnvVar = Environment.GetEnvironmentVariable("HOME_CHANNEL");
             ulong home = Convert.ToUInt64(homeEnvVar);
-            var homeChannel = await discord.GetChannelAsync(home);
+            DiscordChannel homeChannel = await discord.GetChannelAsync(home);
 
             String commitHash = "";
             if (File.Exists("CommitHash.txt"))
             {
-                var readHash = new StreamReader("CommitHash.txt");
+                StreamReader readHash = new StreamReader("CommitHash.txt");
                 commitHash = readHash.ReadToEnd();
             }
             if (commitHash == "")
@@ -124,7 +124,7 @@ namespace MechanicalMilkshake
             String commitMessage = "";
             if (File.Exists("CommitMessage.txt"))
             {
-                var readMessage = new StreamReader("CommitMessage.txt");
+                StreamReader readMessage = new StreamReader("CommitMessage.txt");
                 commitMessage = readMessage.ReadToEnd();
             }
             if (commitMessage == "")

@@ -36,9 +36,9 @@ namespace MechanicalMilkshake.Modules
         public async Task Clear(CommandContext ctx, [Description("The number of messages to delete.")] int count)
         {
             await ctx.Message.DeleteAsync();
-            var messages = await ctx.Channel.GetMessagesAsync(count);
+            System.Collections.Generic.IReadOnlyList<DiscordMessage> messages = await ctx.Channel.GetMessagesAsync(count);
             await ctx.Channel.DeleteMessagesAsync(messages);
-            var response = await ctx.Channel.SendMessageAsync($"Deleted {messages.Count} messages!");
+            DiscordMessage response = await ctx.Channel.SendMessageAsync($"Deleted {messages.Count} messages!");
             await Task.Delay(3000);
             await response.DeleteAsync();
         }
@@ -50,7 +50,7 @@ namespace MechanicalMilkshake.Modules
         [RequireGuild]
         public async Task Kick(CommandContext ctx, [Description("The user to kick.")] DiscordUser userToKick, [Description("The reason for the kick."), RemainingText] string reason)
         {
-            DiscordMember memberToKick = default;
+            DiscordMember memberToKick;
             try
             {
                 memberToKick = await ctx.Guild.GetMemberAsync(userToKick.Id);

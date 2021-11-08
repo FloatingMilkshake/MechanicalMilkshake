@@ -8,8 +8,6 @@ namespace MechanicalMilkshake.Modules
 {
     public class PerServerFeatures : BaseCommandModule
     {
-        public static bool wedCheckDone = false;
-
         // per-server commands go here (use [TargetServer]!)
         [Command("checkserver")]
         public async Task CheckServer(CommandContext ctx, ulong id)
@@ -26,7 +24,7 @@ namespace MechanicalMilkshake.Modules
 
         public static async Task WednesdayCheck()
         {
-            DiscordChannel channel = null;
+            bool wedCheckDone = false;
             if (DateTime.Now.DayOfWeek != DayOfWeek.Wednesday)
             {
                 return;
@@ -38,7 +36,7 @@ namespace MechanicalMilkshake.Modules
 
             try
             {
-                channel = await Program.discord.GetChannelAsync(874488354786394192);
+                DiscordChannel channel = await Program.discord.GetChannelAsync(874488354786394192);
                 await channel.SendMessageAsync("(this message will be changed at some point)");
                 wedCheckDone = true;
 
@@ -51,7 +49,6 @@ namespace MechanicalMilkshake.Modules
         }
     }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public class TargetServerAttribute : CheckBaseAttribute
     {
         public ulong TargetGuild { get; private set; }
@@ -66,5 +63,4 @@ namespace MechanicalMilkshake.Modules
             return !ctx.Channel.IsPrivate && ctx.Guild.Id == TargetGuild;
         }
     }
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 }

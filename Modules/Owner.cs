@@ -73,17 +73,17 @@ namespace MechanicalMilkshake.Modules
                     }
                     url = $"https://link.floatingmilkshake.com/{url}";
                 }
-                var msg = await ctx.RespondAsync("Checking...");
-                var cli = new WebClient();
+                DiscordMessage msg = await ctx.RespondAsync("Checking...");
+                WebClient cli = new WebClient();
                 string data = default;
                 try
                 {
                     data = cli.DownloadString(url);
                     DiscordMessage queryResponseMsg = await msg.ModifyAsync("Looks like this link goes somewhere!\nChecking target...");
                     // check link target
-                    var queryRequest = (HttpWebRequest)WebRequest.Create(url);
+                    HttpWebRequest queryRequest = (HttpWebRequest)WebRequest.Create(url);
                     queryRequest.AllowAutoRedirect = false;
-                    var queryResponse = (HttpWebResponse)queryRequest.GetResponse();
+                    HttpWebResponse queryResponse = (HttpWebResponse)queryRequest.GetResponse();
                     if (queryResponse.StatusCode == HttpStatusCode.Found)
                     {
                         string queryTargetUrl = queryResponse.Headers["Location"];
@@ -163,7 +163,7 @@ namespace MechanicalMilkshake.Modules
                 return;
             }
 
-            var msg = await ctx.RespondAsync("Uploading...");
+            DiscordMessage msg = await ctx.RespondAsync("Uploading...");
 
             if (ctx.Message.Attachments.Count == 0 && link == null)
             {
@@ -197,11 +197,11 @@ namespace MechanicalMilkshake.Modules
                     bucket = Environment.GetEnvironmentVariable("S3_BUCKET");
                 }
 
-                Regex urlRemovalPattern = new Regex(@".*\/\/.*\/");
+                Regex urlRemovalPattern = new(@".*\/\/.*\/");
                 Match urlRemovalMatch = urlRemovalPattern.Match(linkToFile);
                 linkToFile = linkToFile.Replace(urlRemovalMatch.ToString(), "");
 
-                Regex parameterRemovalPattern = new Regex(@".*\?");
+                Regex parameterRemovalPattern = new(@".*\?");
                 Match parameterRemovalMatch = parameterRemovalPattern.Match(linkToFile);
                 if (parameterRemovalMatch != null && parameterRemovalMatch.ToString() != "")
                 {
@@ -209,7 +209,7 @@ namespace MechanicalMilkshake.Modules
                 }
                 linkToFile = linkToFile.Replace("?", "");
 
-                Regex extPattern = new Regex(@"\..*");
+                Regex extPattern = new(@"\..*");
                 Match extMatch = extPattern.Match(linkToFile);
                 extension = extMatch.ToString();
 
@@ -266,7 +266,7 @@ namespace MechanicalMilkshake.Modules
                 fileToDelete = fileToDelete.Replace(">", "");
             }
 
-            var msg = await ctx.RespondAsync("Working on it...");
+            DiscordMessage msg = await ctx.RespondAsync("Working on it...");
 
             string bucket;
             if (Environment.GetEnvironmentVariable("S3_BUCKET") == null)
@@ -382,7 +382,7 @@ namespace MechanicalMilkshake.Modules
             public async Task Uptime(CommandContext ctx)
             {
                 long unixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
-                await ctx.RespondAsync($"<t:{unixTime.ToString()}:F> (<t:{unixTime.ToString()}:R>)");
+                await ctx.RespondAsync($"<t:{unixTime}:F> (<t:{unixTime}:R>)");
             }
 
             [Command("timecheck")]
