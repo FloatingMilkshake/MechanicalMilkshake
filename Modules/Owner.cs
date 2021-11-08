@@ -158,7 +158,7 @@ namespace MechanicalMilkshake.Modules
                 linkToFile = ctx.Message.Attachments[0].Url;
             }
 
-            if (name == "delete")
+            if (name == "delete" || name == "del")
             {
                 await DeleteUpload(ctx, linkToFile);
                 return;
@@ -216,7 +216,7 @@ namespace MechanicalMilkshake.Modules
 
                 const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-                if (name == "random")
+                if (name == "random" || name == "generate")
                 {
                     fileName = new string(Enumerable.Repeat(chars, 10).Select(s => s[Program.random.Next(s.Length)]).ToArray()) + extension;
                 }
