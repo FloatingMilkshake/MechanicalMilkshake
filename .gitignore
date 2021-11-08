@@ -3,7 +3,6 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,windows,dotnetcore,visualstudio,visualstudiocode,csharp
 
 .env
-.vscode/
 
 ### Csharp ###
 ## Ignore Visual Studio temporary files, build results, and
