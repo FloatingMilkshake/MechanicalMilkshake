@@ -79,8 +79,10 @@ namespace MechanicalMilkshake
                     };
                     embed.AddField("Message", ex.Message);
                     if (e.Exception.GetType().ToString() == "System.ArgumentException")
+                    {
                         embed.AddField("What's that mean?", "This usually means that you used the command incorrectly.\n" +
                             $"Please run `help {e.Command.QualifiedName}` for information about what you need to provide for the `{e.Command.QualifiedName}` command.");
+                    }
                     if (e.Command.QualifiedName == "upload")
                     {
                         embed.AddField("Did you forget to include a file name?", "`upload` requires that you specify a name for the file as the first argument. If you'd like to use a randomly-generated file name, use the name `random`.");
