@@ -183,8 +183,8 @@ namespace MechanicalMilkshake.Modules
         }
 
         [Command("markdown")]
-        [Description("Expose the Markdown formatting behind a message!")]
         [Aliases("md", "raw")]
+        [Description("Expose the Markdown formatting behind a message!")]
         public async Task Markdown(CommandContext ctx, [Description("The message you want to expose the formatting of. Accepts message IDs (for messages in the same channel) and links.")] DiscordMessage message)
         {
             string msgContentEscaped = message.Content.Replace("`", @"\`");
@@ -206,8 +206,8 @@ namespace MechanicalMilkshake.Modules
         }
 
         [Command("wolframalpha")]
-        [Description("Search WolframAlpha without leaving Discord!")]
         [Aliases("wa", "wolfram")]
+        [Description("Search WolframAlpha without leaving Discord!")]
         public async Task WolframAlpha(CommandContext ctx, [Description("What to search for."), RemainingText] string query)
         {
             if (query == null)
@@ -250,8 +250,8 @@ namespace MechanicalMilkshake.Modules
         }
 
         [Command("charactercount")]
-        [Description("Counts the characters in a message.")]
         [Aliases("charcount", "count", "chars")]
+        [Description("Counts the characters in a message.")]
         public async Task CharacterCount(CommandContext ctx, [RemainingText] string chars)
         {
             int count = 0;
@@ -264,8 +264,8 @@ namespace MechanicalMilkshake.Modules
         }
 
         [Command("deletemessage")]
-        [Description("Delete a message. This can be used to to delete direct messages with the bot where you are normally unable to delete its messages.")]
         [Aliases("deletemsg", "delmsg")]
+        [Description("Delete a message. This can be used to to delete direct messages with the bot where you are normally unable to delete its messages.")]
         public async Task Delete(CommandContext ctx, string message)
         {
             DiscordMember author;

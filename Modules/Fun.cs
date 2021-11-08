@@ -129,8 +129,8 @@ namespace MechanicalMilkshake.Modules
         }
 
         [Command("keyboardsmash")]
-        [Description("Keyboard smash.")]
         [Aliases("mashy-mashy", "kbsmash", "mashymashy", "smash")]
+        [Description("Keyboard smash.")]
         public async Task KeyboardSmash(CommandContext ctx, [Description("The number of letters in the keyboard smash.")] int size)
         {
             await ctx.TriggerTypingAsync();
@@ -141,8 +141,8 @@ namespace MechanicalMilkshake.Modules
         }
 
         [Command("letterspam")]
-        [Description("Repeats a letter.")]
         [Aliases("letters", "repeatletter")]
+        [Description("Repeats a letter.")]
         public async Task LetterSpam(CommandContext ctx, [Description("The letter to repeat.")] string letter, [Description("The number of times to repeat the letter.")] int count)
         {
             if (letter.Length > 1)
