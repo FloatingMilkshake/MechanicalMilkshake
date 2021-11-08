@@ -229,7 +229,7 @@ namespace MechanicalMilkshake.Modules
                     fileName = name + extension;
                 }
 
-                await Program.minio.PutObjectAsync(bucket, fileName, memStream, memStream.Length, $"image/{extension}", meta);
+                await Program.minio.PutObjectAsync(bucket, fileName, memStream, memStream.Length, "image/png", meta);
             }
             catch (MinioException e)
             {
