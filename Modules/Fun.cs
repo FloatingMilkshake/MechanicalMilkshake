@@ -19,9 +19,15 @@ namespace MechanicalMilkshake.Modules
 
         [Command("randomnumber")]
         [Description("Generates a random number between two that you specify.")]
-        public async Task Random(CommandContext ctx, [Description("The minimum number to choose between.")] int min, [Description("The maximum number to choose between.")] int max)
+        public async Task Random(CommandContext ctx, [Description("The minimum number to choose between. Defaults to 1.")] int min = 1, [Description("The maximum number to choose between. Defaults to 10.")] int max = 10)
         {
-            Random random = new Random();
+            if (min > max)
+            {
+                await ctx.RespondAsync("The minimum number cannot be greater than the maximum number!");
+                return;
+            }
+
+            Random random = new();
             await ctx.RespondAsync($"Your random number is **{random.Next(min, max)}**!");
         }
 
