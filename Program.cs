@@ -8,6 +8,7 @@ using Minio;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace MechanicalMilkshake
@@ -18,6 +19,7 @@ namespace MechanicalMilkshake
         public static MinioClient minio;
         public static Random random = new();
         public static DateTime connectTime;
+        public static WebClient webClient = new();
 
         static void Main(string[] args)
         {
@@ -56,7 +58,7 @@ namespace MechanicalMilkshake
                 if (e.Exception is CommandNotFoundException && (e.Command == null || e.Command.QualifiedName != "help"))
                     return;
 
-                List<Exception> exs = new List<Exception>();
+                List<Exception> exs = new();
                 if (e.Exception is AggregateException ae)
                     exs.AddRange(ae.InnerExceptions);
                 else
@@ -70,7 +72,7 @@ namespace MechanicalMilkshake
                     if (ex is ChecksFailedException && (e.Command.Name != "help"))
                         return;
 
-                    DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                    DiscordEmbedBuilder embed = new()
                     {
                         Color = new DiscordColor("#FF0000"),
                         Title = "An exception occurred when executing a command",
@@ -108,10 +110,10 @@ namespace MechanicalMilkshake
             ulong home = Convert.ToUInt64(homeEnvVar);
             DiscordChannel homeChannel = await discord.GetChannelAsync(home);
 
-            String commitHash = "";
+            string commitHash = "";
             if (File.Exists("CommitHash.txt"))
             {
-                StreamReader readHash = new StreamReader("CommitHash.txt");
+                StreamReader readHash = new("CommitHash.txt");
                 commitHash = readHash.ReadToEnd();
             }
             if (commitHash == "")
@@ -119,10 +121,10 @@ namespace MechanicalMilkshake
                 commitHash = "dev";
             }
 
-            String commitMessage = "";
+            string commitMessage = "";
             if (File.Exists("CommitMessage.txt"))
             {
-                StreamReader readMessage = new StreamReader("CommitMessage.txt");
+                StreamReader readMessage = new("CommitMessage.txt");
                 commitMessage = readMessage.ReadToEnd();
             }
             if (commitMessage == "")

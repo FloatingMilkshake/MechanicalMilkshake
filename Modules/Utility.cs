@@ -3,7 +3,6 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using System;
-using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -28,18 +27,18 @@ namespace MechanicalMilkshake.Modules
             TimeSpan t = member.JoinedAt - new DateTime(1970, 1, 1);
             int joinedAtTimestamp = (int)t.TotalSeconds;
 
-            String memberRoles = null;
+            string memberRoles = null;
             foreach (DiscordRole role in member.Roles)
             {
                 memberRoles += " " + role.ToString();
                 memberRoles = memberRoles.Replace("Role ", "<@&");
                 Regex pattern = new(@";.*");
                 Match match = pattern.Match(memberRoles);
-                String stringToReplace = match.ToString();
+                string stringToReplace = match.ToString();
                 memberRoles = memberRoles.Replace($"{stringToReplace}", ">");
             }
 
-            String acknowledgements = null;
+            string acknowledgements = null;
             if (member.Permissions.HasPermission(Permissions.KickMembers) && member.Permissions.HasPermission(Permissions.BanMembers))
             {
                 acknowledgements = "Server Moderator (can kick and ban members)";
@@ -233,16 +232,14 @@ namespace MechanicalMilkshake.Modules
 
             try
             {
-                WebClient cli = new WebClient();
-                string data = cli.DownloadString($"https://api.wolframalpha.com/v1/result?appid={appid}&i={query}");
+                string data = Program.webClient.DownloadString($"https://api.wolframalpha.com/v1/result?appid={appid}&i={query}");
                 await msg.ModifyAsync(data);
             }
             catch
             {
                 try
                 {
-                    WebClient cli = new WebClient();
-                    string data = cli.DownloadString($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={query}");
+                    string data = Program.webClient.DownloadString($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={query}");
                     await msg.ModifyAsync($"Something went wrong while searching WolframAlpha and I couldn't get a simple answer for your query. Here's a more detailed result: {data}");
                 }
                 catch

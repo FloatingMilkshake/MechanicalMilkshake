@@ -2,7 +2,6 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using System;
 using System.Linq;
-using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -54,8 +53,7 @@ namespace MechanicalMilkshake.Modules
         public async Task Cat(CommandContext ctx)
         {
             DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Looking for a cat...*");
-            WebClient cli = new WebClient();
-            string data = cli.DownloadString("https://api.thecatapi.com/v1/images/search");
+            string data = Program.webClient.DownloadString("https://api.thecatapi.com/v1/images/search");
             Regex pattern = new(@"https:\/\/cdn2.thecatapi.com\/images\/.*(.png|.jpg)");
             Match cat = pattern.Match(data);
             if (cat is not null)
@@ -73,8 +71,7 @@ namespace MechanicalMilkshake.Modules
         public async Task Dog(CommandContext ctx)
         {
             DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Looking for a dog...*");
-            WebClient cli = new WebClient();
-            string data = cli.DownloadString("https://dog.ceo/api/breeds/image/random");
+            string data = Program.webClient.DownloadString("https://dog.ceo/api/breeds/image/random");
             Regex pattern = new(@"https:\\\/\\\/images.dog.ceo\\\/breeds\\\/.*(.png|.jpg)");
             Match dogMatch = pattern.Match(data);
             if (dogMatch is not null)
@@ -95,8 +92,7 @@ namespace MechanicalMilkshake.Modules
         {
             DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Getting a random fact...*");
 
-            WebClient cli = new WebClient();
-            string fact = cli.DownloadString("https://uselessfacts.jsph.pl/random.md");
+            string fact = Program.webClient.DownloadString("https://uselessfacts.jsph.pl/random.md");
 
             fact = fact.Replace(")", ">)");
             fact = fact.Replace("http", "<http");

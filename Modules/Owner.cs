@@ -74,11 +74,10 @@ namespace MechanicalMilkshake.Modules
                     url = $"https://link.floatingmilkshake.com/{url}";
                 }
                 DiscordMessage msg = await ctx.RespondAsync("Checking...");
-                WebClient cli = new WebClient();
                 string data = default;
                 try
                 {
-                    data = cli.DownloadString(url);
+                    data = Program.webClient.DownloadString(url);
                     DiscordMessage queryResponseMsg = await msg.ModifyAsync("Looks like this link goes somewhere!\nChecking target...");
                     // check link target
                     HttpWebRequest queryRequest = (HttpWebRequest)WebRequest.Create(url);
