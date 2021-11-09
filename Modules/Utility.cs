@@ -232,14 +232,14 @@ namespace MechanicalMilkshake.Modules
 
             try
             {
-                string data = Program.webClient.DownloadString($"https://api.wolframalpha.com/v1/result?appid={appid}&i={query}");
+                string data = await Program.httpClient.GetStringAsync($"https://api.wolframalpha.com/v1/result?appid={appid}&i={query}");
                 await msg.ModifyAsync(data);
             }
             catch
             {
                 try
                 {
-                    string data = Program.webClient.DownloadString($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={query}");
+                    string data = await Program.httpClient.GetStringAsync($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={query}");
                     await msg.ModifyAsync($"Something went wrong while searching WolframAlpha and I couldn't get a simple answer for your query. Here's a more detailed result: {data}");
                 }
                 catch

@@ -53,7 +53,7 @@ namespace MechanicalMilkshake.Modules
         public async Task Cat(CommandContext ctx)
         {
             DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Looking for a cat...*");
-            string data = Program.webClient.DownloadString("https://api.thecatapi.com/v1/images/search");
+            string data = await Program.httpClient.GetStringAsync("https://api.thecatapi.com/v1/images/search");
             Regex pattern = new(@"https:\/\/cdn2.thecatapi.com\/images\/.*(.png|.jpg)");
             Match cat = pattern.Match(data);
             if (cat is not null)
@@ -71,7 +71,7 @@ namespace MechanicalMilkshake.Modules
         public async Task Dog(CommandContext ctx)
         {
             DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Looking for a dog...*");
-            string data = Program.webClient.DownloadString("https://dog.ceo/api/breeds/image/random");
+            string data = await Program.httpClient.GetStringAsync("https://dog.ceo/api/breeds/image/random");
             Regex pattern = new(@"https:\\\/\\\/images.dog.ceo\\\/breeds\\\/.*(.png|.jpg)");
             Match dogMatch = pattern.Match(data);
             if (dogMatch is not null)
@@ -92,7 +92,7 @@ namespace MechanicalMilkshake.Modules
         {
             DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Getting a random fact...*");
 
-            string fact = Program.webClient.DownloadString("https://uselessfacts.jsph.pl/random.md");
+            string fact = await Program.httpClient.GetStringAsync("https://uselessfacts.jsph.pl/random.md");
 
             fact = fact.Replace(")", ">)");
             fact = fact.Replace("http", "<http");

@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -24,11 +23,11 @@ namespace MechanicalMilkshake.Modules
         [Description("Set/update/delete a short link with Cloudflare worker-links.")]
         public async Task Link(CommandContext ctx, [Description("Set a custom key for the short link.")] string key, [Description("The URL the short link should point to.")] string url)
         {
-            if (url.Contains("<"))
+            if (url.Contains('<'))
             {
                 url = url.Replace("<", "");
             }
-            if (url.Contains(">"))
+            if (url.Contains('>'))
             {
                 url = url.Replace(">", "");
             }
@@ -62,48 +61,6 @@ namespace MechanicalMilkshake.Modules
                     url = $"https://link.floatingmilkshake.com/{url}";
                 }
                 request = new HttpRequestMessage(HttpMethod.Delete, url) { };
-            }
-            else if (key == "query")
-            {
-                if (!url.Contains("https://link.floatingmilkshake.com/"))
-                {
-                    if (url.Contains("http"))
-                    {
-                        await ctx.RespondAsync("Hmm, that doesn't look like a shortlink...");
-                        return;
-                    }
-                    url = $"https://link.floatingmilkshake.com/{url}";
-                }
-                DiscordMessage msg = await ctx.RespondAsync("Checking...");
-                string data = default;
-                try
-                {
-                    data = Program.webClient.DownloadString(url);
-                    DiscordMessage queryResponseMsg = await msg.ModifyAsync("Looks like this link goes somewhere!\nChecking target...");
-                    // check link target
-                    HttpWebRequest queryRequest = (HttpWebRequest)WebRequest.Create(url);
-                    queryRequest.AllowAutoRedirect = false;
-                    HttpWebResponse queryResponse = (HttpWebResponse)queryRequest.GetResponse();
-                    if (queryResponse.StatusCode == HttpStatusCode.Found)
-                    {
-                        string queryTargetUrl = queryResponse.Headers["Location"];
-                        await queryResponseMsg.ModifyAsync($"Looks like this link goes somewhere!\nTarget (embed suppressed): <{queryTargetUrl}>");
-                    }
-                    else
-                    {
-                        await queryResponseMsg.ModifyAsync("Looks like this link goes somewhere, but I ran into a problem trying to fetch the target!");
-                    }
-                }
-                catch (WebException e) when (e.Message.Contains("404"))
-                {
-                    await msg.ModifyAsync("Hmm, it doesn't look like this link goes anywhere!");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"ERROR: {e.GetType()} occurred when {ctx.Member.Username}#{ctx.Member.Discriminator} ({ctx.Member.Id}) attempted to run {ctx.Message.Content} in {ctx.Message.Channel}!");
-                    await msg.ModifyAsync("Something went wrong while checking that link! This error has been logged.");
-                }
-                return;
             }
             else
             {
@@ -144,11 +101,11 @@ namespace MechanicalMilkshake.Modules
             if (link != null)
             {
                 linkToFile = link;
-                if (link.Contains("<"))
+                if (link.Contains('<'))
                 {
                     link = link.Replace("<", "");
                 }
-                if (link.Contains(">"))
+                if (link.Contains('>'))
                 {
                     link = link.Replace(">", "");
                 }
@@ -175,11 +132,7 @@ namespace MechanicalMilkshake.Modules
             string fileName;
             string extension;
 
-            MemoryStream memStream;
-            using (WebClient client = new())
-            {
-                memStream = new MemoryStream(client.DownloadData(linkToFile));
-            }
+            MemoryStream memStream = new(await Program.httpClient.GetByteArrayAsync(linkToFile));
 
             try
             {
@@ -258,11 +211,11 @@ namespace MechanicalMilkshake.Modules
         // it could be merged into `upload`, but this is the easy/lazy way to do it. it works!
         public async Task DeleteUpload(CommandContext ctx, string fileToDelete)
         {
-            if (fileToDelete.Contains("<"))
+            if (fileToDelete.Contains('<'))
             {
                 fileToDelete = fileToDelete.Replace("<", "");
             }
-            if (fileToDelete.Contains(">"))
+            if (fileToDelete.Contains('>'))
             {
                 fileToDelete = fileToDelete.Replace(">", "");
             }

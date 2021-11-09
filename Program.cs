@@ -8,7 +8,7 @@ using Minio;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace MechanicalMilkshake
@@ -19,7 +19,7 @@ namespace MechanicalMilkshake
         public static MinioClient minio;
         public static Random random = new();
         public static DateTime connectTime;
-        public static WebClient webClient = new();
+        public static HttpClient httpClient = new();
 
         static void Main(string[] args)
         {
