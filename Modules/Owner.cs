@@ -394,7 +394,7 @@ namespace MechanicalMilkshake.Modules
                 }
 
                 await ctx.RespondAsync("**Debug Information:**\n"
-                    + $"\n**Version:** `{commitHash}`"
+                    + $"\n**Version:** `{commitHash.Trim()}`"
                     + $"\n**Framework:** `{RuntimeInformation.FrameworkDescription}`"
                     + $"\n**Platform:** `{RuntimeInformation.OSDescription}`"
                     + $"\n**Library:** `DSharpPlus {Program.discord.VersionString}`");
