@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -377,6 +378,37 @@ namespace MechanicalMilkshake.Modules
         [Description("Commands for checking if the bot is working properly.")]
         class Debug : BaseCommandModule
         {
+            [GroupCommand]
+            [Description("Shows debug information about the bot.")]
+            public async Task DebugInfo(CommandContext ctx)
+            {
+                string commitHash = "";
+                if (File.Exists("CommitHash.txt"))
+                {
+                    StreamReader readHash = new("CommitHash.txt");
+                    commitHash = readHash.ReadToEnd();
+                }
+                if (commitHash == "")
+                {
+                    commitHash = "dev";
+                }
+
+                await ctx.RespondAsync("**Debug Information:**\n"
+                    + $"\n**Version:** `{commitHash}`"
+                    + $"\n**Framework:** `{RuntimeInformation.FrameworkDescription}`"
+                    + $"\n**Platform:** `{RuntimeInformation.OSDescription}`"
+                    + $"\n**Library:** `DSharpPlus {Program.discord.VersionString}`");
+            }
+
+            // this is here to add aliases for the above group command, because apparently the [Aliases] attribute doesn't work on a group command
+            // yes this isn't a great way to do it but it does work
+            [Command("info")]
+            [Aliases("about")]
+            public async Task DebugInfoAliases(CommandContext ctx)
+            {
+                await DebugInfo(ctx);
+            }
+
             [Command("uptime")]
             [Description("Checks uptime of the bot, from the time it connects to Discord.")]
             public async Task Uptime(CommandContext ctx)
