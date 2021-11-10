@@ -97,7 +97,7 @@ namespace MechanicalMilkshake.Modules
             string createdAt = $"{msUnix / 1000}";
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
-                .WithColor(new DiscordColor("#9B59B6"))
+                .WithColor(new DiscordColor("#FAA61A"))
                 .AddField("Server Owner", $"{ctx.Guild.Owner.Username}#{ctx.Guild.Owner.Discriminator}", true)
                 .AddField("Channels", $"{ctx.Guild.Channels.Count}", true)
                 .AddField("Members", $"{ctx.Guild.MemberCount}", true)
