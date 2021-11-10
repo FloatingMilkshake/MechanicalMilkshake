@@ -12,20 +12,24 @@ namespace MechanicalMilkshake.Modules
         [Command("tellraw")]
         [Description("Speak through the bot!")]
         [RequireUserPermissions(Permissions.KickMembers)]
-        public async Task Tellraw(CommandContext ctx, [Description("The message to have the bot send."), RemainingText] string message)
+        public async Task Tellraw(CommandContext ctx, [Description("The channel to send the message in.")] DiscordChannel targetChannel, [Description("The message to have the bot send."), RemainingText] string message)
         {
             try
             {
-                if (!ctx.Channel.IsPrivate)
-                {
-                    await ctx.Message.DeleteAsync();
-                }
+                await targetChannel.SendMessageAsync(message);
             }
             catch (DSharpPlus.Exceptions.UnauthorizedException)
             {
-                // do nothing
+                await ctx.RespondAsync("I don't have permission to send messages in that channel!");
+                return;
             }
-            await ctx.Channel.SendMessageAsync(message);
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception {e.Message} occurred when {ctx.User.Id} ran {ctx.Command.Name} in #{ctx.Channel.Name} (target channel: {targetChannel.Name})!\nException Details: {e}");
+                await ctx.RespondAsync("Something went wrong when attempting to send that message! This error has been logged.");
+                return;
+            }
+            await ctx.RespondAsync($"I sent your message to {targetChannel.Mention}.");
         }
 
         [Command("clear")]

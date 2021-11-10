@@ -89,7 +89,14 @@ namespace MechanicalMilkshake
                     {
                         embed.AddField("Did you forget to include a file name?", "`upload` requires that you specify a name for the file as the first argument. If you'd like to use a randomly-generated file name, use the name `random`.");
                     }
-                    await e.Context.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
+                    if (e.Command.QualifiedName == "tellraw" && e.Exception.GetType().ToString() == "System.ArgumentException")
+                    {
+                        await e.Context.RespondAsync("An error occurred! Either you did not specify a target channel, or I do not have permission to see that channel.");
+                    }
+                    else
+                    {
+                        await e.Context.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
+                    }
                 }
             }
 
