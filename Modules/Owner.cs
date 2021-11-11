@@ -461,19 +461,20 @@ namespace MechanicalMilkshake.Modules
                 activity.Name = activityName;
                 if (activityType != ActivityType.Streaming)
                 {
-                    activityType = type switch
+                    activityType = type.ToLower() switch
                     {
                         "playing" => ActivityType.Playing,
                         "watching" => ActivityType.Watching,
                         "competing" => ActivityType.Competing,
                         "listening" => ActivityType.ListeningTo,
+                        "listeningto" => ActivityType.ListeningTo,
                         _ => ActivityType.Playing,
                     };
                     activity.ActivityType = activityType;
                 }
             }
 
-            UserStatus userStatus = status switch
+            UserStatus userStatus = status.ToLower() switch
             {
                 "online" => UserStatus.Online,
                 "idle" => UserStatus.Idle,
