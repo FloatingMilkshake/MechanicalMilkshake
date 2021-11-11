@@ -182,7 +182,25 @@ namespace MechanicalMilkshake.Modules
                     fileName = name + extension;
                 }
 
-                await Program.minio.PutObjectAsync(bucket, fileName, memStream, memStream.Length, "image/png", meta);
+                string contentType;
+                if (extension == ".png")
+                {
+                    contentType = "image/png";
+                }
+                else if (extension == ".jpg" || extension == ".jpeg")
+                {
+                    contentType = "image/jpeg";
+                }
+                else if (extension == ".txt")
+                {
+                    contentType = "text/plain";
+                }
+                else
+                {
+                    contentType = "application/octet-stream"; // force download
+                }
+
+                await Program.minio.PutObjectAsync(bucket, fileName, memStream, memStream.Length, contentType, meta);
             }
             catch (MinioException e)
             {
