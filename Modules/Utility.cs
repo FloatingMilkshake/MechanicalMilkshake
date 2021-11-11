@@ -96,8 +96,10 @@ namespace MechanicalMilkshake.Modules
             ulong msUnix = msSinceEpoch + 1420070400000;
             string createdAt = $"{msUnix / 1000}";
 
+            DiscordMember botUserAsMember = await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id);
+
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
-                .WithColor(new DiscordColor("#FAA61A"))
+                .WithColor(new DiscordColor($"{botUserAsMember.Color}"))
                 .AddField("Server Owner", $"{ctx.Guild.Owner.Username}#{ctx.Guild.Owner.Discriminator}", true)
                 .AddField("Channels", $"{ctx.Guild.Channels.Count}", true)
                 .AddField("Members", $"{ctx.Guild.MemberCount}", true)
