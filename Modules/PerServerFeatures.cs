@@ -29,7 +29,7 @@ namespace MechanicalMilkshake.Modules
             {
                 return;
             }
-            if (DateTime.Now.DayOfWeek == DayOfWeek.Wednesday && wedCheckDone || DateTime.Now.ToShortTimeString() != "10:00 AM")
+            if (DateTime.Now.DayOfWeek == DayOfWeek.Wednesday && wedCheckDone || DateTime.Now.ToShortTimeString() != "10:00")
             {
                 return;
             }
