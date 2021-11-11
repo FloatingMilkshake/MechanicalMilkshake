@@ -3,6 +3,9 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Enums;
+using DSharpPlus.Interactivity.Extensions;
 using MechanicalMilkshake.Modules;
 using Minio;
 using System;
@@ -40,6 +43,12 @@ namespace MechanicalMilkshake
                 TokenType = TokenType.Bot,
                 Intents = DiscordIntents.All
             });
+            discord.UseInteractivity(new InteractivityConfiguration()
+            {
+                PollBehaviour = PollBehaviour.KeepEmojis,
+                Timeout = TimeSpan.FromSeconds(30)
+            });
+
             CommandsNextExtension commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
                 StringPrefixes = new[] { "!", "~" }

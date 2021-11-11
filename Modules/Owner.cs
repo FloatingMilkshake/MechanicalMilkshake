@@ -1,6 +1,7 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity.Extensions;
 using Minio.Exceptions;
 using Newtonsoft.Json;
 using System;
@@ -427,6 +428,72 @@ namespace MechanicalMilkshake.Modules
                 await ctx.RespondAsync("Restarting...");
                 Environment.Exit(1);
             }
+        }
+
+        [Command("setactivity")]
+        [Aliases("setstatus")]
+        [Description("Sets the bot's activity.")]
+        public async Task SetActivity(CommandContext ctx, string status = "online", string type = "playing", [RemainingText] string activityName = null)
+        {
+            DiscordActivity activity = new();
+            ActivityType activityType = default;
+            if (type == "streaming")
+            {
+                await ctx.RespondAsync("Please send the URL of the stream to use:");
+                string streamUrl = null;
+                var result = await ctx.Message.GetNextMessageAsync(m =>
+                {
+                    streamUrl = m.Content.Replace("<", "");
+                    streamUrl = streamUrl.Replace(">", "");
+                    return true;
+                });
+
+                if (!result.TimedOut)
+                {
+                    activityType = ActivityType.Streaming;
+                    activity.ActivityType = activityType;
+                    activity.StreamUrl = streamUrl;
+                    activity.Name = activityName;
+                }
+            }
+            else
+            {
+                activity.Name = activityName;
+                if (activityType != ActivityType.Streaming)
+                {
+                    activityType = type switch
+                    {
+                        "playing" => ActivityType.Playing,
+                        "watching" => ActivityType.Watching,
+                        "competing" => ActivityType.Competing,
+                        "listening" => ActivityType.ListeningTo,
+                        _ => ActivityType.Playing,
+                    };
+                    activity.ActivityType = activityType;
+                }
+            }
+
+            UserStatus userStatus = status switch
+            {
+                "online" => UserStatus.Online,
+                "idle" => UserStatus.Idle,
+                "dnd" => UserStatus.DoNotDisturb,
+                "offline" => UserStatus.Invisible,
+                "invisible" => UserStatus.Invisible,
+                _ => UserStatus.Online,
+            };
+
+            await ctx.Client.UpdateStatusAsync(activity, userStatus);
+
+            await ctx.RespondAsync("Activity set successfully!");
+        }
+
+        [Command("resetactivity")]
+        [Aliases("resetstatus", "clearactivity", "clearstatus")]
+        [Hidden]
+        public async Task ResetStatus(CommandContext ctx)
+        {
+            await SetActivity(ctx, "online");
         }
 
         // https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197 (https://github.com/Erisa/Lykos/blob/3335c38a52d28820a935f99c53f030805d4da607/src/Modules/Owner.cs#L313)
