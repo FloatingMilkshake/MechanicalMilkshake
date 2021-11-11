@@ -51,7 +51,7 @@ namespace MechanicalMilkshake
 
             CommandsNextExtension commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
-                StringPrefixes = new[] { "!", "~" }
+                StringPrefixes = new[] { "!", "~", "-", "mm" }
             });
 
             minio = new MinioClient
