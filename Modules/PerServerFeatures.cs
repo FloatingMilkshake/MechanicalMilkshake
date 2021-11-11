@@ -10,6 +10,7 @@ namespace MechanicalMilkshake.Modules
     {
         // per-server commands go here (use [TargetServer]!)
         [Command("checkserver")]
+        [Hidden]
         public async Task CheckServer(CommandContext ctx, ulong id)
         {
             if (id == ctx.Guild.Id)
