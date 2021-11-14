@@ -2,11 +2,15 @@ version: '2.3'
 services:
   bot:
     image: ghcr.io/floatingmilkshake/mechanicalmilkshake
-    env_file:
-      - .env
     restart: on-failure
     volumes:
-      - /etc/localtime:/etc/localtime:ro
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+      - type: bind
+        source: ./config.json
+        target: /app/config.json
   watchtower:
     image: containrrr/watchtower
     volumes:

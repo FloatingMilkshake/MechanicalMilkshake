@@ -8,10 +8,12 @@ using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using MechanicalMilkshake.Modules;
 using Minio;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace MechanicalMilkshake
@@ -23,6 +25,7 @@ namespace MechanicalMilkshake
         public static Random random = new();
         public static DateTime connectTime;
         public static HttpClient httpClient = new();
+        public static ConfigJson configjson;
 
         static void Main(string[] args)
         {
@@ -31,15 +34,28 @@ namespace MechanicalMilkshake
 
         internal static async Task MainAsync()
         {
-            if (Environment.GetEnvironmentVariable("BOT_TOKEN") == null)
+            var json = "";
+
+            string configFile = "config.json";
+#if DEBUG
+            configFile = "config.dev.json";
+#endif
+
+            using (var fs = File.OpenRead(configFile))
+            using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
+                json = await sr.ReadToEndAsync();
+
+            configjson = JsonConvert.DeserializeObject<ConfigJson>(json);
+
+            if (configjson.BotToken == null || configjson.BotToken == "")
             {
-                Console.WriteLine("ERROR: No token provided! Make sure the environment variable BOT_TOKEN is set.");
+                Console.WriteLine("ERROR: No token provided! Make sure the botToken field in your config.json file is set.");
                 Environment.Exit(1);
             }
 
             discord = new DiscordClient(new DiscordConfiguration()
             {
-                Token = Environment.GetEnvironmentVariable("BOT_TOKEN"),
+                Token = configjson.BotToken,
                 TokenType = TokenType.Bot,
                 Intents = DiscordIntents.All
             });
@@ -56,10 +72,10 @@ namespace MechanicalMilkshake
 
             minio = new MinioClient
             (
-                Environment.GetEnvironmentVariable("S3_ENDPOINT"),
-                Environment.GetEnvironmentVariable("S3_ACCESS_KEY"),
-                Environment.GetEnvironmentVariable("S3_SECRET_KEY"),
-                Environment.GetEnvironmentVariable("S3_REGION")
+                configjson.S3.Endpoint,
+                configjson.S3.AccessKey,
+                configjson.S3.SecretKey,
+                configjson.S3.Region
             ).WithSSL();
 
             async Task CommandsNextService_CommandErrored(CommandsNextExtension cnext, CommandErrorEventArgs e)
@@ -116,15 +132,15 @@ namespace MechanicalMilkshake
             commands.RegisterCommands<PerServerFeatures>();
             commands.CommandErrored += CommandsNextService_CommandErrored;
 
-            if (Environment.GetEnvironmentVariable("HOME_CHANNEL") == null)
+            if (configjson.HomeChannel == null)
             {
-                Console.WriteLine("ERROR: No home channel provided! Make sure the environment variable HOME_CHANNEL is set.");
+                Console.WriteLine("ERROR: No home channel provided! Make sure the homeChannel field in your config.json file is set.");
                 Environment.Exit(1);
             }
 
-            string homeEnvVar = Environment.GetEnvironmentVariable("HOME_CHANNEL");
-            ulong home = Convert.ToUInt64(homeEnvVar);
-            DiscordChannel homeChannel = await discord.GetChannelAsync(home);
+            ulong homeChannelId = Convert.ToUInt64(configjson.HomeChannel);
+
+            DiscordChannel homeChannel = await discord.GetChannelAsync(homeChannelId);
 
             string commitHash = "";
             if (File.Exists("CommitHash.txt"))

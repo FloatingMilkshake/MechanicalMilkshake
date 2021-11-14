@@ -221,15 +221,15 @@ namespace MechanicalMilkshake.Modules
             DiscordMessage msg = await ctx.RespondAsync("Searching...");
 
             string appid;
-            if (Environment.GetEnvironmentVariable("WOLFRAMALPHA_APP_ID") == "yourappid")
+            if (Program.configjson.WolframAlphaAppId == null)
             {
-                await msg.ModifyAsync("Looks like you don't have an App ID! Check the `WOLFRAMALPHA_APP_ID` environment variable. "
+                await msg.ModifyAsync("Looks like you don't have an App ID! Check the wolframAlphaAppId field in your config.json file. "
                     + "If you don't know how to get an App ID, see Getting Started here: <https://products.wolframalpha.com/short-answers-api/documentation/>");
                 return;
             }
             else
             {
-                appid = Environment.GetEnvironmentVariable("WOLFRAMALPHA_APP_ID");
+                appid = Program.configjson.WolframAlphaAppId;
             }
 
             try

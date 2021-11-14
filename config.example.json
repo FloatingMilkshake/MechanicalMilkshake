@@ -1,0 +1,26 @@
+{
+  "botToken": "",
+  "homeChannel": "",
+
+  "wolframAlphaAppId": "",
+
+  "workerLinks": {
+    "baseUrl": "",
+    "secret": ""
+  },
+
+  "s3": {
+    "bucket": "",
+    "CdnBaseUrl": "",
+    "endpoint": "",
+    "accessKey": "",
+    "secretKey": "",
+    "region": ""
+  },
+
+  "cloudflare": {
+    "urlPrefix": "",
+    "zoneId": "",
+    "token": ""
+  }
+}

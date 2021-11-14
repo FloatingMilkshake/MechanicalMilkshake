@@ -34,14 +34,14 @@ namespace MechanicalMilkshake.Modules
             }
 
             string baseUrl;
-            if (Environment.GetEnvironmentVariable("WORKER_LINKS_BASE_URL") == null)
+            if (Program.configjson.WorkerLinks.BaseUrl == null)
             {
-                await ctx.RespondAsync("Error: No base URL provided! Make sure the environment variable `WORKER_LINKS_BASE_URL` is set.");
+                await ctx.RespondAsync("Error: No base URL provided! Make sure the baseUrl field under workerLinks in your config.json file is set.");
                 return;
             }
             else
             {
-                baseUrl = Environment.GetEnvironmentVariable("WORKER_LINKS_BASE_URL");
+                baseUrl = Program.configjson.WorkerLinks.BaseUrl;
             }
 
             using HttpClient httpClient = new()
@@ -69,14 +69,14 @@ namespace MechanicalMilkshake.Modules
             }
 
             string secret;
-            if (Environment.GetEnvironmentVariable("WORKER_LINKS_SECRET") == null)
+            if (Program.configjson.WorkerLinks.Secret == null)
             {
-                await ctx.RespondAsync("Error: No secret provided! Make sure the environment variable `WORKER_LINKS_secret` is set.");
+                await ctx.RespondAsync("Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set.");
                 return;
             }
             else
             {
-                secret = Environment.GetEnvironmentVariable("WORKER_LINKS_SECRET");
+                secret = Program.configjson.WorkerLinks.Secret;
             }
 
             request.Headers.Add("Authorization", secret);
@@ -142,14 +142,14 @@ namespace MechanicalMilkshake.Modules
                 meta["x-amz-acl"] = "public-read";
 
                 string bucket = null;
-                if (Environment.GetEnvironmentVariable("S3_BUCKET") == null)
+                if (Program.configjson.S3.Bucket == null)
                 {
-                    await msg.ModifyAsync("Error: S3 bucket info missing! Please check the `S3_BUCKET` environment variable.");
+                    await msg.ModifyAsync("Error: S3 bucket info missing! Make sure the bucket field under s3 in your config.json file is set.");
                     return;
                 }
                 else
                 {
-                    bucket = Environment.GetEnvironmentVariable("S3_BUCKET");
+                    bucket = Program.configjson.S3.Bucket;
                 }
 
                 Regex urlRemovalPattern = new(@".*\/\/.*\/");
@@ -215,13 +215,13 @@ namespace MechanicalMilkshake.Modules
             }
 
             string cdnUrl;
-            if (Environment.GetEnvironmentVariable("CDN_BASE_URL") == null)
+            if (Program.configjson.S3.CdnBaseUrl == null)
             {
-                await msg.ModifyAsync($"Upload successful!\nThere's no CDN URL set in your environment file, so I can't give you a link. But your file was uploaded as {fileName}.");
+                await msg.ModifyAsync($"Upload successful!\nThere's no CDN URL set in your config.json, so I can't give you a link. But your file was uploaded as {fileName}.");
             }
             else
             {
-                cdnUrl = Environment.GetEnvironmentVariable("CDN_BASE_URL");
+                cdnUrl = Program.configjson.S3.CdnBaseUrl;
                 await msg.ModifyAsync($"Upload successful!\n<{cdnUrl}/{fileName}>");
             }
         }
@@ -242,14 +242,14 @@ namespace MechanicalMilkshake.Modules
             DiscordMessage msg = await ctx.RespondAsync("Working on it...");
 
             string bucket;
-            if (Environment.GetEnvironmentVariable("S3_BUCKET") == null)
+            if (Program.configjson.S3.Bucket == null)
             {
-                await msg.ModifyAsync("Error: S3 bucket info missing! Please check the `S3_BUCKET` environment variable.");
+                await msg.ModifyAsync("Error: S3 bucket info missing! Make sure the bucket field under s3 in your config.json file is set.");
                 return;
             }
             else
             {
-                bucket = Environment.GetEnvironmentVariable("S3_BUCKET");
+                bucket = Program.configjson.S3.Bucket;
             }
 
             string fileName;
@@ -280,13 +280,13 @@ namespace MechanicalMilkshake.Modules
             await msg.ModifyAsync("File deleted successfully!\nAttempting to purge Cloudflare cache...");
 
             string cloudflareUrlPrefix;
-            if (Environment.GetEnvironmentVariable("CLOUDFLARE_URL_PREFIX") != null)
+            if (Program.configjson.Cloudflare.UrlPrefix != null)
             {
-                cloudflareUrlPrefix = Environment.GetEnvironmentVariable("CLOUDFLARE_URL_PREFIX");
+                cloudflareUrlPrefix = Program.configjson.Cloudflare.UrlPrefix;
             }
             else
             {
-                await msg.ModifyAsync("File deleted successfully!\nError: missing Zone ID for Cloudflare. Unable to purge cache! Check the `CLOUDFLARE_URL_PREFIX` environment variable.");
+                await msg.ModifyAsync("File deleted successfully!\nError: missing Zone ID for Cloudflare. Unable to purge cache! Check the urlPrefix field under cloudflare in your config.json file.");
                 return;
             }
 
@@ -301,24 +301,24 @@ namespace MechanicalMilkshake.Modules
                 };
 
                 string zoneId;
-                if (Environment.GetEnvironmentVariable("CLOUDFLARE_ZONE_ID") != null)
+                if (Program.configjson.Cloudflare.ZoneId != null)
                 {
-                    zoneId = Environment.GetEnvironmentVariable("CLOUDFLARE_ZONE_ID");
+                    zoneId = Program.configjson.Cloudflare.ZoneId;
                 }
                 else
                 {
-                    await msg.ModifyAsync("File deleted successfully!\nError: missing Zone ID for Cloudflare. Unable to purge cache! Check the `CLOUDFLARE_ZONE_ID` environment variable.");
+                    await msg.ModifyAsync("File deleted successfully!\nError: missing Zone ID for Cloudflare. Unable to purge cache! Check the urlPrefix field under cloudflare in your config.json file.");
                     return;
                 }
 
                 string cloudflareToken;
-                if (Environment.GetEnvironmentVariable("CLOUDFLARE_TOKEN") != null)
+                if (Program.configjson.Cloudflare.Token != null)
                 {
-                    cloudflareToken = Environment.GetEnvironmentVariable("CLOUDFLARE_TOKEN");
+                    cloudflareToken = Program.configjson.Cloudflare.Token;
                 }
                 else
                 {
-                    await msg.ModifyAsync("File deleted successfully!\nError: missing token for Cloudflare. Unable to purge cache! Check the `CLOUDFLARE_TOKEN` environment variable.");
+                    await msg.ModifyAsync("File deleted successfully!\nError: missing token for Cloudflare. Unable to purge cache! Check the token field under cloudflare in your config.json file.");
                     return;
                 }
 
