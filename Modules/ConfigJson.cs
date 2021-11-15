@@ -9,6 +9,18 @@ namespace MechanicalMilkshake.Modules
 
         [JsonProperty("secret")]
         public string Secret { get; set; }
+
+        [JsonProperty("namespaceId")]
+        public string NamespaceId { get; set; }
+
+        [JsonProperty("apiKey")]
+        public string ApiKey { get; set; }
+
+        [JsonProperty("accountId")]
+        public string AccountId { get; set; }
+
+        [JsonProperty("email")]
+        public string Email { get; set; }
     }
 
     public class S3

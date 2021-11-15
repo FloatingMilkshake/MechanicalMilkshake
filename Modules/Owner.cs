@@ -22,7 +22,7 @@ namespace MechanicalMilkshake.Modules
         [Command("link")]
         [Aliases("wl", "links")]
         [Description("Set/update/delete a short link with Cloudflare worker-links.")]
-        public async Task Link(CommandContext ctx, [Description("Set a custom key for the short link.")] string key, [Description("The URL the short link should point to.")] string url)
+        public async Task Link(CommandContext ctx, [Description("Set a custom key for the short link.")] string key, [Description("The URL the short link should point to.")] string url = "")
         {
             if (url.Contains('<'))
             {
@@ -63,6 +63,11 @@ namespace MechanicalMilkshake.Modules
                 }
                 request = new HttpRequestMessage(HttpMethod.Delete, url) { };
             }
+            else if (key == "list")
+            {
+                await ListWorkerLinks(ctx);
+                return;
+            }
             else
             {
                 request = new HttpRequestMessage(HttpMethod.Put, key) { };
@@ -91,6 +96,78 @@ namespace MechanicalMilkshake.Modules
                 await ctx.Channel.SendMessageAsync($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service.");
             }
             await ctx.Channel.SendMessageAsync($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```");
+        }
+
+        // referenced in above command. this is in a separate method to make things a little easier to work with while still being able to have it as part of the link command.
+        public async Task ListWorkerLinks(CommandContext ctx)
+        {
+            if (Program.configjson.WorkerLinks.ApiKey == null)
+            {
+                await ctx.RespondAsync("Error: missing Cloudflare API Key! Make sure the apiKey field under workerLinks in your config.json file is set.");
+                return;
+            }
+
+            if (Program.configjson.WorkerLinks.NamespaceId == null)
+            {
+                await ctx.RespondAsync("Error: missing KV Namespace ID! Make sure the namespaceId field under workerLinks in your config.json file is set.");
+                return;
+            }
+
+            if (Program.configjson.WorkerLinks.AccountId == null)
+            {
+                await ctx.RespondAsync("Error: missing Cloudflare Account ID! Make sure the accountId field under workerLinks in your config.json file is set.");
+            }
+
+            if (Program.configjson.WorkerLinks.Email == null)
+            {
+                await ctx.RespondAsync("Error: missing email address for Cloudflare! Make sure the email field under workerLinks in your config.json file is set.");
+            }
+
+            DiscordMessage msg = await ctx.RespondAsync("Working...");
+
+            string requestUri = $"https://api.cloudflare.com/client/v4/accounts/{Program.configjson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId}/keys";
+            HttpRequestMessage request = new(HttpMethod.Get, requestUri);
+
+            request.Headers.Add("X-Auth-Key", Program.configjson.WorkerLinks.ApiKey);
+            request.Headers.Add("X-Auth-Email", Program.configjson.WorkerLinks.Email);
+            HttpResponseMessage response = await Program.httpClient.SendAsync(request);
+
+            string responseText = await response.Content.ReadAsStringAsync();
+
+            var parsedResponse = JsonConvert.DeserializeObject<CloudflareResponse>(responseText);
+
+            string kvListResponse = "";
+
+            foreach (KVEntry item in parsedResponse.Result)
+            {
+                string key = item.Name.Replace("/", "%2F");
+
+                string valueRequestUri = $"https://api.cloudflare.com/client/v4/accounts/{Program.configjson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId}/values/{key}";
+                HttpRequestMessage valueRequest = new(HttpMethod.Get, valueRequestUri);
+
+                valueRequest.Headers.Add("X-Auth-Key", Program.configjson.WorkerLinks.ApiKey);
+                valueRequest.Headers.Add("X-Auth-Email", Program.configjson.WorkerLinks.Email);
+                HttpResponseMessage valueResponse = await Program.httpClient.SendAsync(valueRequest);
+
+                DiscordMessage targetMsg = await msg.Channel.GetMessageAsync(msg.Id);
+                string value = await valueResponse.Content.ReadAsStringAsync();
+                value = value.Replace(value, $"<{value}>");
+                kvListResponse += $"`{item.Name}`: {value}\n\n";
+            }
+
+            await msg.ModifyAsync(kvListResponse);
+        }
+
+        public class CloudflareResponse
+        {
+            [JsonProperty("result")]
+            public List<KVEntry> Result { get; set; }
+        }
+
+        public class KVEntry
+        {
+            [JsonProperty("name")]
+            public string Name { get; set; }
         }
 
         [Command("upload")]

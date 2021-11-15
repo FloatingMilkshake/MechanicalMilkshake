@@ -6,7 +6,11 @@
 
   "workerLinks": {
     "baseUrl": "",
-    "secret": ""
+    "secret": "",
+    "namespaceId": "",
+    "apiKey": "",
+    "accountId": "",
+    "email":  ""
   },
 
   "s3": {
