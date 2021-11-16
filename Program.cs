@@ -161,7 +161,7 @@ namespace MechanicalMilkshake
             }
             if (commitMessage == "")
             {
-                commitMessage = "No commit message is available when debugging.";
+                commitMessage = $"Process started at {DateTime.Now}";
             }
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
