@@ -173,9 +173,11 @@ namespace MechanicalMilkshake.Modules
         [Command("upload")]
         [Aliases("up")]
         [Description("Upload a file to Amazon S3-compatible cloud storage. Accepts an uploaded file.")]
-        public async Task Upload(CommandContext ctx, [Description("The name for the uploaded file. Set to `preserve` to keep the name of the file you want to upload, or `random` to generate a random name.")] string name, [Description("(Optional) A link to a file to upload. This will take priority over a file uploaded to Discord!")] string link = null)
+        public async Task Upload(CommandContext ctx, [Description("The name for the uploaded file. Set to `preserve` to keep the name of the file you want to upload, or `random` to generate a random name.")] string name, [Description("(Optional) A link to a file to upload. This will take priority over a file uploaded to Discord! (If you leave this empty and do not upload a file, I will display the image at the name you provided if it exists.)")] string link = null)
         {
-            string linkToFile;
+            DiscordMessage msg = await ctx.RespondAsync("Working...");
+
+            string linkToFile = null;
             if (link != null)
             {
                 linkToFile = link;
@@ -190,20 +192,38 @@ namespace MechanicalMilkshake.Modules
             }
             else
             {
-                linkToFile = ctx.Message.Attachments[0].Url;
+                try
+                {
+                    linkToFile = ctx.Message.Attachments[0].Url;
+                }
+                catch
+                {
+                    // message has no attachments and a link was not provided
+
+                    if (!name.Contains('.'))
+                    {
+                        await msg.ModifyAsync("Hmm. If you're trying to upload a file, make sure it was uploaded or linked correctly. If you're trying to preview an image, make sure you included the file extension.");
+                        return;
+                    }
+
+                    HttpRequestMessage request = new(HttpMethod.Get, $"{Program.configjson.S3.CdnBaseUrl}/{name}");
+                    HttpResponseMessage response = await Program.httpClient.SendAsync(request);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        await msg.ModifyAsync("Hmm, it looks like that file doesn't exist! If you're sure it does, perhaps you got the extension wrong.");
+                        return;
+                    }
+                    else
+                    {
+                        await msg.ModifyAsync($"{Program.configjson.S3.CdnBaseUrl}/{name}");
+                        return;
+                    }
+                }
             }
 
             if (name == "delete" || name == "del")
             {
                 await DeleteUpload(ctx, linkToFile);
-                return;
-            }
-
-            DiscordMessage msg = await ctx.RespondAsync("Uploading...");
-
-            if (ctx.Message.Attachments.Count == 0 && link == null)
-            {
-                await msg.ModifyAsync("Please attach a file to upload!");
                 return;
             }
 
