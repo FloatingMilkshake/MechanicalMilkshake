@@ -495,6 +495,7 @@ namespace MechanicalMilkshake.Modules
             }
 
             [Command("shutdown")]
+            [Aliases("shitdown")]
             [Description("Shuts down the bot.")]
             public async Task Shutdown(CommandContext ctx, [Description("This must be \"I am sure\" for the command to run."), RemainingText] string areYouSure)
             {
