@@ -515,11 +515,21 @@ namespace MechanicalMilkshake.Modules
             [Description("Restarts the bot.")]
             public async Task Restart(CommandContext ctx)
             {
-                string dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
-                if (string.IsNullOrWhiteSpace(dockerCheckFile))
+                try
                 {
+                    string dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
+                    if (string.IsNullOrWhiteSpace(dockerCheckFile))
+                    {
+                        await ctx.RespondAsync("The bot may not be running under Docker; this means that `!restart` will behave like `!shutdown`."
+                            + "\n\nAborted. Use `!shutdown` if you wish to shut down the bot.");
+                        return;
+                    }
+                }
+                catch
+                {
+                    // /proc/self/cgroup could not be found; not running in Docker
                     await ctx.RespondAsync("The bot may not be running under Docker; this means that `!restart` will behave like `!shutdown`."
-                        + "\n\nAborted. Use `!shutdown` if you wish to shut down the bot.");
+                            + "\n\nAborted. Use `!shutdown` if you wish to shut down the bot.");
                     return;
                 }
 
