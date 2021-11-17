@@ -29,7 +29,7 @@ namespace MechanicalMilkshake.Modules
                 await ctx.RespondAsync("Something went wrong when attempting to send that message! This error has been logged.");
                 return;
             }
-            await ctx.RespondAsync($"I sent your message to {targetChannel.Mention}.");
+            await ctx.Message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":white_check_mark:"));
         }
 
         [Command("clear")]
