@@ -181,8 +181,8 @@ namespace MechanicalMilkshake
 
             while (true)
             {
-                await Task.Delay(10000);
                 PerServerFeatures.WednesdayCheck();
+                await Task.Delay(60000);
             }
         }
     }

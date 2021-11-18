@@ -25,12 +25,14 @@ namespace MechanicalMilkshake.Modules
 
         public static async Task WednesdayCheck()
         {
-            bool wedCheckDone = false;
+#if DEBUG
+            Console.WriteLine($"[{DateTime.Now}] WednesdayCheck running.");
+#endif
             if (DateTime.Now.DayOfWeek != DayOfWeek.Wednesday)
             {
                 return;
             }
-            if (DateTime.Now.DayOfWeek == DayOfWeek.Wednesday && wedCheckDone || DateTime.Now.ToShortTimeString() != "10:00")
+            else if (!DateTime.Now.ToShortTimeString().Contains("10:00"))
             {
                 return;
             }
@@ -39,7 +41,6 @@ namespace MechanicalMilkshake.Modules
             {
                 DiscordChannel channel = await Program.discord.GetChannelAsync(874488354786394192);
                 await channel.SendMessageAsync("(this message will be changed at some point)");
-                wedCheckDone = true;
 
             }
             catch (Exception e)
