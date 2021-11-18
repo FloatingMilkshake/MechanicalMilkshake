@@ -594,7 +594,14 @@ namespace MechanicalMilkshake.Modules
 
             await ctx.Client.UpdateStatusAsync(activity, userStatus);
 
-            await ctx.RespondAsync("Activity set successfully!");
+            if (ctx.Channel.IsPrivate)
+            {
+                await ctx.Message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":white_check_mark:"));
+            }
+            else
+            {
+                await ctx.RespondAsync("Activity set successfully!");
+            }
         }
 
         [Command("resetactivity")]
