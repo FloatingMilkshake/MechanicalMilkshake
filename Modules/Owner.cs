@@ -61,7 +61,8 @@ namespace MechanicalMilkshake.Modules
                 {
                     url = $"https://link.floatingmilkshake.com/{url}";
                 }
-                request = new HttpRequestMessage(HttpMethod.Delete, url) { };
+                await DeleteWorkerLink(ctx, url, httpClient);
+                return;
             }
             else if (key == "list")
             {
@@ -98,7 +99,34 @@ namespace MechanicalMilkshake.Modules
             await ctx.Channel.SendMessageAsync($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```");
         }
 
-        // referenced in above command. this is in a separate method to make things a little easier to work with while still being able to have it as part of the link command.
+        public async Task DeleteWorkerLink(CommandContext ctx, string url, HttpClient httpClient)
+        {
+            string secret;
+            if (Program.configjson.WorkerLinks.Secret == null)
+            {
+                await ctx.RespondAsync("Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set.");
+                return;
+            }
+            else
+            {
+                secret = Program.configjson.WorkerLinks.Secret;
+            }
+
+            HttpRequestMessage request = new(HttpMethod.Delete, url) { };
+            request.Headers.Add("Authorization", secret);
+
+            HttpResponseMessage response = await httpClient.SendAsync(request);
+            int httpStatusCode = (int)response.StatusCode;
+            string httpStatus = response.StatusCode.ToString();
+            string responseText = await response.Content.ReadAsStringAsync();
+            if (responseText.Length > 1940)
+            {
+                await ctx.Channel.SendMessageAsync($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service.");
+            }
+            await ctx.Channel.SendMessageAsync($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```");
+        }
+
+        // referenced in Link command. this is in a separate method to make things a little easier to work with while still being able to have it as part of the link command.
         public async Task ListWorkerLinks(CommandContext ctx)
         {
             if (Program.configjson.WorkerLinks.ApiKey == null)
