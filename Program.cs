@@ -78,6 +78,8 @@ namespace MechanicalMilkshake
                 configjson.S3.Region
             ).WithSSL();
 
+            // Most of the code for this exception handler is from Erisa's Cliptok: https://github.com/Erisa/Cliptok/blob/main/Program.cs#L481-L520
+
             async Task CommandsNextService_CommandErrored(CommandsNextExtension cnext, CommandErrorEventArgs e)
             {
                 if (e.Exception is CommandNotFoundException && (e.Command == null || e.Command.QualifiedName != "help"))
