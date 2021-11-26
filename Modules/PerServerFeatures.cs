@@ -9,18 +9,11 @@ namespace MechanicalMilkshake.Modules
     public class PerServerFeatures : BaseCommandModule
     {
         // Per-server commands go here. Use the [TargetServer(serverId)] attribute to restrict a command to a specific guild.
-        [Command("checkserver")]
+        [Command("wowlookatthiscoolcommand")]
         [Hidden]
-        public async Task CheckServer(CommandContext ctx, ulong id)
+        public async Task HiddenCommand(CommandContext ctx)
         {
-            if (id == ctx.Guild.Id)
-            {
-                await ctx.RespondAsync("Check successful. This server's ID matches the ID you provided.");
-            }
-            else
-            {
-                await ctx.RespondAsync("Check failed! This server's ID does not match the ID you provided.");
-            }
+            await ctx.RespondAsync("Congratulations, you found the secret command! I wonder what it does... :thinking:");
         }
 
         public static async Task WednesdayCheck()
