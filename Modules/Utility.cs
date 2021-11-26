@@ -132,7 +132,7 @@ namespace MechanicalMilkshake.Modules
         {
             if (user == null)
             {
-                // other command above will take care of this
+                // The other commmand above will take care of this, so this one can finish here.
                 return;
             }
             else
@@ -303,7 +303,7 @@ namespace MechanicalMilkshake.Modules
                     }
                     catch
                     {
-                        // just silencing the exception here because this will probably only fail if the error msg is deleted with the delete cmd before the 15 seconds are up
+                        // Silencing the exception here because this will probably only fail if the error message is deleted with the Delete command before the 15 seconds are up.
                     }
                 }
                 else
@@ -331,7 +331,7 @@ namespace MechanicalMilkshake.Modules
                 }
                 catch
                 {
-                    // just silencing the exception here because this will probably only fail if the error msg is deleted with the delete cmd before the 10 seconds are up
+                    // Silencing the exception here because this will probably only fail if the error message is deleted with the Delete command before the 10 seconds are up.
                 }
             }
             else
@@ -375,7 +375,7 @@ namespace MechanicalMilkshake.Modules
                     }
                     catch
                     {
-                        // just silencing the exception here because this will probably only fail if the error msg is deleted with the delete cmd before the 15 seconds are up
+                        // Silencing the exception here because this will probably only fail if the error message is deleted with the Delete command before the 15 seconds are up.
                     }
                 }
                 catch (DSharpPlus.Exceptions.UnauthorizedException)
@@ -390,7 +390,7 @@ namespace MechanicalMilkshake.Modules
                     }
                     catch
                     {
-                        // silencing exception
+                        // Silencing the exception here because this will probably only fail if the error message is deleted with the Delete command before the 15 seconds are up.
                     }
                 }
                 catch (Exception e)
@@ -403,7 +403,7 @@ namespace MechanicalMilkshake.Modules
                     }
                     catch
                     {
-                        // silencing exception
+                        // Silencing the exception here because this will probably only fail if the error message is deleted with the Delete command before the 15 seconds are up.
                     }
                 }
             }

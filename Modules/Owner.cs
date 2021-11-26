@@ -126,7 +126,7 @@ namespace MechanicalMilkshake.Modules
             await ctx.Channel.SendMessageAsync($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```");
         }
 
-        // referenced in Link command. this is in a separate method to make things a little easier to work with while still being able to have it as part of the link command.
+        // The below method is referenced in the Link command. This code here is in a separate method to make things a little easier to work with while still being able to have it as part of the Link command.
         public async Task ListWorkerLinks(CommandContext ctx)
         {
             if (Program.configjson.WorkerLinks.ApiKey == null)
@@ -224,7 +224,8 @@ namespace MechanicalMilkshake.Modules
                 }
                 catch
                 {
-                    // message has no attachments and a link was not provided
+                    // The user's message has no files attached, and no link was provided. Nothing was providd to upload.
+                    // In this case we will assume the user wants to have the bot respond with the image they named. However, if that file doesn't exist, send an error (perhaps the user just didn't upload the image properly or mistyped a filename?)
 
                     if (!name.Contains('.'))
                     {
@@ -323,7 +324,7 @@ namespace MechanicalMilkshake.Modules
                 }
                 else
                 {
-                    contentType = "application/octet-stream"; // force download
+                    contentType = "application/octet-stream"; // Using application/octet-stream will force the file to be downloaded, which is what we want to happen if it doesn't match any of the file extensions above.
                 }
 
                 await Program.minio.PutObjectAsync(bucket, fileName, memStream, memStream.Length, contentType, meta);
@@ -351,8 +352,7 @@ namespace MechanicalMilkshake.Modules
             }
         }
 
-        // this used to be a command, but is now called from `upload` if the `name` argument is set to `delete`
-        // it could be merged into `upload`, but this is the easy/lazy way to do it. it works!
+        // This code used to be a command, but is now called from Upload if the name argument is set to "delete". It could be merged into Upload, but this is the easy/lazy way to do it. It works, so I'm happy with it.
         public async Task DeleteUpload(CommandContext ctx, string fileToDelete)
         {
             if (fileToDelete.Contains('<'))
@@ -415,7 +415,9 @@ namespace MechanicalMilkshake.Modules
                 return;
             }
 
-            // https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L113 (https://github.com/Erisa/Lykos/blob/main/src/Modules/Owner.cs#L227)
+            // This code is (mostly) taken from https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L113.
+            // (Note that I originally found it here: https://github.com/Erisa/Lykos/blob/main/src/Modules/Owner.cs#L227)
+
             CloudflareContent content = new(new List<string>() { cloudflareUrlPrefix + fileName });
             string cloudflareContentString = JsonConvert.SerializeObject(content);
             try
@@ -497,8 +499,8 @@ namespace MechanicalMilkshake.Modules
                     + $"\n**Library:** `DSharpPlus {Program.discord.VersionString}`");
             }
 
-            // this is here to add aliases for the above group command, because apparently the [Aliases] attribute doesn't work on a group command
-            // yes this isn't a great way to do it but it does work
+            // This is here to add aliases for the above group command, because apparently the [Aliases] attribute doesn't work on a group command.
+            // It might be a bit of a sketchy way to do it, but it works.
             [Command("info")]
             [Aliases("about")]
             public async Task DebugInfoAliases(CommandContext ctx)
@@ -555,7 +557,7 @@ namespace MechanicalMilkshake.Modules
                 }
                 catch
                 {
-                    // /proc/self/cgroup could not be found; not running in Docker
+                    // /proc/self/cgroup could not be found, which means the bot is not running in Docker.
                     await ctx.RespondAsync("The bot may not be running under Docker; this means that `!restart` will behave like `!shutdown`."
                             + "\n\nAborted. Use `!shutdown` if you wish to shut down the bot.");
                     return;
@@ -640,7 +642,8 @@ namespace MechanicalMilkshake.Modules
             await SetActivity(ctx, "online");
         }
 
-        // https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197 (https://github.com/Erisa/Lykos/blob/3335c38a52d28820a935f99c53f030805d4da607/src/Modules/Owner.cs#L313)
+        // This code is taken from https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197.
+        // (Note that I originally found it here: https://github.com/Erisa/Lykos/blob/3335c38a52d28820a935f99c53f030805d4da607/src/Modules/Owner.cs#L313)
         readonly struct CloudflareContent
         {
             public CloudflareContent(List<string> urls)

@@ -43,7 +43,7 @@ namespace MechanicalMilkshake.Modules
             }
             catch (DSharpPlus.Exceptions.UnauthorizedException)
             {
-                // do nothing
+                // Fail silently (do nothing). The bot cannot delete the invoking message, which is fine. There's no response here to avoid clutter.
             }
             await ctx.TriggerTypingAsync();
         }
@@ -119,7 +119,7 @@ namespace MechanicalMilkshake.Modules
                 }
                 catch (DSharpPlus.Exceptions.UnauthorizedException)
                 {
-                    // do nothing
+                    // Fail silently (do nothing). The bot cannot delete the invoking message, which is fine. There's no response here to avoid clutter.
                 }
 
                 DSharpPlus.Entities.DiscordMessage msg = await ctx.Channel.SendMessageAsync(message);

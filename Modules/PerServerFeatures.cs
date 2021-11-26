@@ -8,7 +8,7 @@ namespace MechanicalMilkshake.Modules
 {
     public class PerServerFeatures : BaseCommandModule
     {
-        // per-server commands go here (use [TargetServer]!)
+        // Per-server commands go here. Use the [TargetServer(serverId)] attribute to restrict a command to a specific guild.
         [Command("checkserver")]
         [Hidden]
         public async Task CheckServer(CommandContext ctx, ulong id)
