@@ -93,6 +93,9 @@ namespace MechanicalMilkshake
 
                 foreach (Exception ex in exs)
                 {
+                    if (ex is ChecksFailedException)
+                        return;
+
                     if (ex is CommandNotFoundException && (e.Command == null || e.Command.QualifiedName != "help"))
                         return;
 
