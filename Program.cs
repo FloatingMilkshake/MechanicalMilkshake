@@ -103,11 +103,11 @@ namespace MechanicalMilkshake
                     {
                         Color = new DiscordColor("#FF0000"),
                         Title = "An exception occurred when executing a command",
-                        Description = $"`{e.Exception.GetType()}` occurred when executing `{e.Command.QualifiedName}`.",
+                        Description = $"`{ex.GetType()}` occurred when executing `{e.Command.QualifiedName}`.",
                         Timestamp = DateTime.UtcNow
                     };
                     embed.AddField("Message", ex.Message);
-                    if (e.Exception.GetType().ToString() == "System.ArgumentException")
+                    if (ex.GetType().ToString() == "System.ArgumentException")
                     {
                         embed.AddField("What's that mean?", "This usually means that you used the command incorrectly.\n" +
                             $"Please run `help {e.Command.QualifiedName}` for information about what you need to provide for the `{e.Command.QualifiedName}` command.");
@@ -116,7 +116,7 @@ namespace MechanicalMilkshake
                     {
                         embed.AddField("Did you forget to include a file name?", "`upload` requires that you specify a name for the file as the first argument. If you'd like to use a randomly-generated file name, use the name `random`.");
                     }
-                    if (e.Command.QualifiedName == "tellraw" && e.Exception.GetType().ToString() == "System.ArgumentException")
+                    if (e.Command.QualifiedName == "tellraw" && ex.GetType().ToString() == "System.ArgumentException")
                     {
                         await e.Context.RespondAsync("An error occurred! Either you did not specify a target channel, or I do not have permission to see that channel.");
                     }
