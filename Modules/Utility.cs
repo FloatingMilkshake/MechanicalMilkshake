@@ -3,6 +3,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -27,17 +28,6 @@ namespace MechanicalMilkshake.Modules
             TimeSpan t = member.JoinedAt - new DateTime(1970, 1, 1);
             int joinedAtTimestamp = (int)t.TotalSeconds;
 
-            string memberRoles = null;
-            foreach (DiscordRole role in member.Roles)
-            {
-                memberRoles += " " + role.ToString();
-                memberRoles = memberRoles.Replace("Role ", "<@&");
-                Regex pattern = new(@";.*");
-                Match match = pattern.Match(memberRoles);
-                string stringToReplace = match.ToString();
-                memberRoles = memberRoles.Replace($"{stringToReplace}", ">");
-            }
-
             string acknowledgements = null;
             if (member.Permissions.HasPermission(Permissions.KickMembers) && member.Permissions.HasPermission(Permissions.BanMembers))
             {
@@ -52,14 +42,14 @@ namespace MechanicalMilkshake.Modules
                 acknowledgements = "Server Owner";
             }
 
-            string roles;
-            if (memberRoles == null)
+            string roles = "None";
+            if (member.Roles.Any())
             {
-                roles = "None";
-            }
-            else
-            {
-                roles = memberRoles;
+                roles = "";
+                foreach (DiscordRole role in member.Roles.OrderBy(role => role.Position).Reverse())
+                {
+                    roles += role.Mention + " ";
+                }
             }
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
