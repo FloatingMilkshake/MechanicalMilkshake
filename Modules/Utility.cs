@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace MechanicalMilkshake.Modules
 {
@@ -229,15 +230,10 @@ namespace MechanicalMilkshake.Modules
             }
             catch
             {
-                try
-                {
-                    string data = await Program.httpClient.GetStringAsync($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={query}");
-                    await msg.ModifyAsync($"Something went wrong while searching WolframAlpha and I couldn't get a simple answer for your query. Here's a more detailed result: {data}");
-                }
-                catch
-                {
-                    await msg.ModifyAsync("Something went wrong while searching WolframAlpha! There may not be an answer to your query.");
-                }
+                string queryEncoded = HttpUtility.UrlEncode(query);
+
+                await msg.ModifyAsync("Something went wrong while searching WolframAlpha and I couldn't get a simple answer for your query! Note that I cannot return all data however, and a result may be available here: "
+                    + $"<https://www.wolframalpha.com/input/?i={queryEncoded}>");
             }
         }
 
