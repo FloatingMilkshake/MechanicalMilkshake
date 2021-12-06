@@ -203,10 +203,14 @@ namespace MechanicalMilkshake.Modules
         [Description("Search WolframAlpha without leaving Discord!")]
         public async Task WolframAlpha(CommandContext ctx, [Description("What to search for."), RemainingText] string query)
         {
+            string queryEncoded;
             if (query == null)
             {
                 await ctx.RespondAsync("Hmm, it doesn't look like you entered a valid query. Try something like `~wolframalpha What is the meaning of life?`.");
                 return;
+            }
+            else {
+                queryEncoded = HttpUtility.UrlEncode(query);
             }
 
             DiscordMessage msg = await ctx.RespondAsync("Searching...");
@@ -226,12 +230,10 @@ namespace MechanicalMilkshake.Modules
             try
             {
                 string data = await Program.httpClient.GetStringAsync($"https://api.wolframalpha.com/v1/result?appid={appid}&i={query}");
-                await msg.ModifyAsync(data);
+                await msg.ModifyAsync(data + $"\n\n*Query URL: <https://www.wolframalpha.com/input/?i={queryEncoded}>*");
             }
             catch
             {
-                string queryEncoded = HttpUtility.UrlEncode(query);
-
                 await msg.ModifyAsync("Something went wrong while searching WolframAlpha and I couldn't get a simple answer for your query! Note that I cannot return all data however, and a result may be available here: "
                     + $"<https://www.wolframalpha.com/input/?i={queryEncoded}>");
             }
