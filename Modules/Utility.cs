@@ -54,10 +54,10 @@ namespace MechanicalMilkshake.Modules
             }
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
-                .WithDescription($"{member.Mention}")
                 .WithColor(new DiscordColor($"{member.Color}"))
                 .WithFooter($"Requested by {ctx.Member.Username}#{ctx.Member.Discriminator}")
-                .AddField("ID", $"{member.Id}")
+                .AddField("User Mention", member.Mention)
+                .AddField("User ID", $"{member.Id}")
                 .AddField("Account registered on", $"<t:{registeredAt}:F> (<t:{registeredAt}:R>)")
                 .AddField("Joined server on", $"<t:{joinedAtTimestamp}:F> (<t:{joinedAtTimestamp}:R>)")
                 .AddField("Roles", roles)
