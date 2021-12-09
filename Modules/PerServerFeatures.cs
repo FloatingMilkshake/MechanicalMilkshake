@@ -33,7 +33,7 @@ namespace MechanicalMilkshake.Modules
             try
             {
                 DiscordChannel channel = await Program.discord.GetChannelAsync(874488354786394192);
-                await channel.SendMessageAsync("(this message will be changed at some point)");
+                // await channel.SendMessageAsync("(this message will be changed at some point)");
 
             }
             catch (Exception e)
