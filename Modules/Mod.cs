@@ -59,7 +59,7 @@ namespace MechanicalMilkshake.Modules
         [Description("Kicks a user. They can rejoin the server if they have an invite.")]
         [RequirePermissions(Permissions.KickMembers)]
         [RequireGuild]
-        public async Task Kick(CommandContext ctx, [Description("The user to kick.")] DiscordUser userToKick, [Description("The reason for the kick."), RemainingText] string reason)
+        public async Task Kick(CommandContext ctx, [Description("The user to kick.")] DiscordUser userToKick, [Description("The reason for the kick."), RemainingText] string reason = "No reason provided.")
         {
             DiscordMember memberToKick;
             try
@@ -89,7 +89,7 @@ namespace MechanicalMilkshake.Modules
         [Description("Bans a user. They will not be able to rejoin unless unbanned.")]
         [RequirePermissions(Permissions.BanMembers)]
         [RequireGuild]
-        public async Task Ban(CommandContext ctx, [Description("The user to ban.")] DiscordUser userToBan, [Description("The reason for the ban."), RemainingText] string reason)
+        public async Task Ban(CommandContext ctx, [Description("The user to ban.")] DiscordUser userToBan, [Description("The reason for the ban."), RemainingText] string reason = "No reason provided.")
         {
             try
             {
