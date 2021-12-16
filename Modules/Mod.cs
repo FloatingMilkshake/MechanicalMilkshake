@@ -81,7 +81,7 @@ namespace MechanicalMilkshake.Modules
                 return;
             }
             await ctx.Message.DeleteAsync();
-            await ctx.Channel.SendMessageAsync($"**{userToKick.Username}#{userToKick.Discriminator}** has been kicked: **{reason}**");
+            await ctx.Channel.SendMessageAsync($"{userToKick.Mention} has been kicked: **{reason}**");
         }
 
         [Command("ban")]
@@ -106,7 +106,7 @@ namespace MechanicalMilkshake.Modules
                 Console.WriteLine($"ERROR: {e.GetType()} occurred when {ctx.Member.Username}#{ctx.Member.Discriminator} ({ctx.Member.Id}) attempted to ban {userToBan.Username}#{userToBan.Discriminator} ({userToBan.Id}) from {ctx.Guild.Name}!");
             }
             await ctx.Message.DeleteAsync();
-            await ctx.Channel.SendMessageAsync($"**{userToBan.Username}#{userToBan.Discriminator}** has been banned: **{reason}**");
+            await ctx.Channel.SendMessageAsync($"{userToBan.Mention} has been banned: **{reason}**");
         }
 
         [Command("unban")]
