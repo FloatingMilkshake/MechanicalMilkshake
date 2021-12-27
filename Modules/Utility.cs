@@ -42,6 +42,12 @@ namespace MechanicalMilkshake.Modules
             {
                 acknowledgements = "Server Owner";
             }
+            if (member.PremiumSince != null)
+            {
+                DateTime PremiumSinceUtc = member.PremiumSince.Value.UtcDateTime;
+                long unixTime = ((DateTimeOffset)PremiumSinceUtc).ToUnixTimeSeconds();
+                acknowledgements = $"Server Booster (boosting since <t:{unixTime}:R> (<t:{unixTime}:F>)";
+            }
 
             string roles = "None";
             if (member.Roles.Any())
@@ -67,6 +73,15 @@ namespace MechanicalMilkshake.Modules
             if (acknowledgements != null)
             {
                 embed.AddField("Acknowledgements", acknowledgements);
+            }
+
+            if (member.PremiumSince != null)
+            {
+                DateTime PremiumSinceUtc = member.PremiumSince.Value.UtcDateTime;
+                long unixTime = ((DateTimeOffset)PremiumSinceUtc).ToUnixTimeSeconds();
+                string boostingSince = $"Boosting since <t:{unixTime}:R> (<t:{unixTime}:F>";
+
+                embed.AddField("Server Booster", boostingSince);
             }
 
             await ctx.RespondAsync($"User Info for **{member.Username}#{member.Discriminator}**", embed);
