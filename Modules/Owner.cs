@@ -210,10 +210,12 @@ namespace MechanicalMilkshake.Modules
                 if (link.Contains('<'))
                 {
                     link = link.Replace("<", "");
+                    linkToFile = link.Replace("<", "");
                 }
                 if (link.Contains('>'))
                 {
                     link = link.Replace(">", "");
+                    linkToFile = link.Replace(">", "");
                 }
             }
             else
