@@ -28,7 +28,7 @@ namespace MechanicalMilkshake.Modules
             }
 
             [Command("fact")]
-            [Description("Gets a random fact.")]
+            [Description("Get a random fact.")]
             public async Task Fact(CommandContext ctx)
             {
                 DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Getting a random fact...*");
@@ -46,7 +46,7 @@ namespace MechanicalMilkshake.Modules
         }
 
         [Command("cat")]
-        [Description("Gets a random cat picture from the internet.")]
+        [Description("Get a random cat picture from the internet.")]
         public async Task Cat(CommandContext ctx)
         {
             DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Looking for a cat...*");
@@ -64,7 +64,7 @@ namespace MechanicalMilkshake.Modules
         }
 
         [Command("dog")]
-        [Description("Gets a random dog picture from the internet.")]
+        [Description("Get a random dog picture from the internet.")]
         public async Task Dog(CommandContext ctx)
         {
             DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Looking for a dog...*");
@@ -98,7 +98,7 @@ namespace MechanicalMilkshake.Modules
             }
 
             [Command("repeat")]
-            [Description("Repeat a letter.")]
+            [Description("Repeat a single letter.")]
             public async Task LetterSpam(CommandContext ctx, [Description("The letter to repeat.")] string letter, [Description("The number of times to repeat it.")] int count)
             {
                 if (letter.Length > 1)

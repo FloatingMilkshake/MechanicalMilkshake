@@ -23,7 +23,7 @@ namespace MechanicalMilkshake.Modules
     {
         [Command("link")]
         [Aliases("wl", "links")]
-        [Description("Set/update/delete a short link with Cloudflare worker-links.")]
+        [Description("Set, update, or delete a short link with Cloudflare worker-links.")]
         public async Task Link(CommandContext ctx, [Description("Set a custom key for the short link.")] string key, [Description("The URL the short link should point to.")] string url = "")
         {
             if (url.Contains('<'))
@@ -482,7 +482,7 @@ namespace MechanicalMilkshake.Modules
         class Debug : BaseCommandModule
         {
             [GroupCommand]
-            [Description("Shows debug information about the bot.")]
+            [Description("Show debug information about the bot.")]
             public async Task DebugInfo(CommandContext ctx)
             {
                 string commitHash = "";
@@ -513,7 +513,7 @@ namespace MechanicalMilkshake.Modules
             }
 
             [Command("uptime")]
-            [Description("Checks uptime of the bot, from the time it connects to Discord.")]
+            [Description("Check the bot's uptime (from the time it connects to Discord).")]
             public async Task Uptime(CommandContext ctx)
             {
                 long unixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
@@ -522,7 +522,7 @@ namespace MechanicalMilkshake.Modules
 
             [Command("timecheck")]
             [Aliases("currenttime", "time")]
-            [Description("Returns the current time on the current machine.")]
+            [Description("Return the current time on the machine the bot is running on.")]
             public async Task TimeCheck(CommandContext ctx)
             {
                 await ctx.RespondAsync($"Seems to me like it's currently `{DateTime.Now}`.");
@@ -530,7 +530,7 @@ namespace MechanicalMilkshake.Modules
 
             [Command("shutdown")]
             [Aliases("shitdown")]
-            [Description("Shuts down the bot.")]
+            [Description("Shut down the bot.")]
             public async Task Shutdown(CommandContext ctx, [Description("This must be \"I am sure\" for the command to run."), RemainingText] string areYouSure)
             {
                 if (areYouSure == "I am sure")
@@ -546,7 +546,7 @@ namespace MechanicalMilkshake.Modules
             }
 
             [Command("restart")]
-            [Description("Restarts the bot.")]
+            [Description("Restart the bot.")]
             public async Task Restart(CommandContext ctx)
             {
                 try
@@ -574,7 +574,7 @@ namespace MechanicalMilkshake.Modules
 
         [Command("setactivity")]
         [Aliases("setstatus")]
-        [Description("Sets the bot's activity.")]
+        [Description("Set the bot's activity.")]
         public async Task SetActivity(CommandContext ctx, string status = "online", string type = "playing", [RemainingText] string activityName = null)
         {
             DiscordActivity activity = new();
@@ -640,6 +640,7 @@ namespace MechanicalMilkshake.Modules
 
         [Command("resetactivity")]
         [Aliases("resetstatus", "clearactivity", "clearstatus")]
+        [Description("Reset the bot's activity (sets its status to online with no activity).")]
         [Hidden]
         public async Task ResetStatus(CommandContext ctx)
         {

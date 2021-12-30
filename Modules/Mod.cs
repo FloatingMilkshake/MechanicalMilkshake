@@ -10,7 +10,7 @@ namespace MechanicalMilkshake.Modules
     public class Mod : BaseCommandModule
     {
         [Command("tellraw")]
-        [Description("Speak through the bot!")]
+        [Description("Speak through the bot! Requires the `Kick Members` permission.")]
         [RequireUserPermissions(Permissions.KickMembers)]
         public async Task Tellraw(CommandContext ctx, [Description("The channel to send the message in.")] DiscordChannel targetChannel, [Description("The message to have the bot send."), RemainingText] string message)
         {
@@ -41,7 +41,7 @@ namespace MechanicalMilkshake.Modules
 
         [Command("clear")]
         [Aliases("purge")]
-        [Description("Deletes a given number of messages from a channel.")]
+        [Description("Delete a given number of messages from a channel. Requires the `Manage Messages` permission.")]
         [RequirePermissions(Permissions.ManageMessages)]
         [RequireGuild]
         public async Task Clear(CommandContext ctx, [Description("The number of messages to delete.")] int count)
@@ -56,7 +56,7 @@ namespace MechanicalMilkshake.Modules
 
         [Command("kick")]
         [Aliases("yeet")]
-        [Description("Kicks a user. They can rejoin the server if they have an invite.")]
+        [Description("Kick a user. They can rejoin the server if they have an invite. Requires the `Kick Members` permission.")]
         [RequirePermissions(Permissions.KickMembers)]
         [RequireGuild]
         public async Task Kick(CommandContext ctx, [Description("The user to kick.")] DiscordUser userToKick, [Description("The reason for the kick."), RemainingText] string reason = "No reason provided.")
@@ -86,7 +86,7 @@ namespace MechanicalMilkshake.Modules
 
         [Command("ban")]
         [Aliases("bonk")]
-        [Description("Bans a user. They will not be able to rejoin unless unbanned.")]
+        [Description("Ban a user. They will not be able to rejoin unless unbanned. Requires the `Ban Members` permission.")]
         [RequirePermissions(Permissions.BanMembers)]
         [RequireGuild]
         public async Task Ban(CommandContext ctx, [Description("The user to ban.")] DiscordUser userToBan, [Description("The reason for the ban."), RemainingText] string reason = "No reason provided.")
@@ -110,7 +110,7 @@ namespace MechanicalMilkshake.Modules
         }
 
         [Command("unban")]
-        [Description("Unbans a user.")]
+        [Description("Unban a user. Requires the `Ban Members` permission.")]
         [RequirePermissions(Permissions.BanMembers)]
         [RequireGuild]
         public async Task Unban(CommandContext ctx, [Description("The user to unban.")] DiscordUser userToUnban)

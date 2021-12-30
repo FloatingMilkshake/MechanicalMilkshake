@@ -9,11 +9,13 @@ namespace MechanicalMilkshake.Modules
     public class PerServerFeatures : BaseCommandModule
     {
         // Per-server commands go here. Use the [TargetServer(serverId)] attribute to restrict a command to a specific guild.
-        [Command("wowlookatthiscoolcommand")]
+
+        // Note that this command here can be removed if another command is added; there just needs to be one here to prevent an exception from being thrown when the bot is run.
+        [Command("dummycommand")]
         [Hidden]
-        public async Task HiddenCommand(CommandContext ctx)
+        public async Task DummyCommand(CommandContext ctx)
         {
-            await ctx.RespondAsync("Congratulations, you found the secret command! I wonder what it does... :thinking:");
+            await ctx.RespondAsync("Hi! This command does nothing other than prevent an exception from being thrown when the bot is run. :)");
         }
 
         public static async Task WednesdayCheck()
