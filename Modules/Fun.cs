@@ -9,13 +9,6 @@ namespace MechanicalMilkshake.Modules
 {
     public class Fun : BaseCommandModule
     {
-        [Command("hi")]
-        [Description("Says hi back to you!")]
-        public async Task Greeting(CommandContext ctx)
-        {
-            await ctx.RespondAsync($"hi {ctx.Member.Mention}!");
-        }
-
         [Group("random")]
         [Description("Get a random number or fact.")]
         class random : BaseCommandModule
