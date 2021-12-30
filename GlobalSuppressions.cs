@@ -5,8 +5,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.Fun.Cat(DSharpPlus.CommandsNext.CommandContext)~System.Threading.Tasks.Task")]
-[assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.Fun.Dog(DSharpPlus.CommandsNext.CommandContext)~System.Threading.Tasks.Task")]
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.Mod.Ban(DSharpPlus.CommandsNext.CommandContext,DSharpPlus.Entities.DiscordUser,System.String)~System.Threading.Tasks.Task")]
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.Mod.Clear(DSharpPlus.CommandsNext.CommandContext,System.Int32)~System.Threading.Tasks.Task")]
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.Mod.Kick(DSharpPlus.CommandsNext.CommandContext,DSharpPlus.Entities.DiscordUser,System.String)~System.Threading.Tasks.Task")]
@@ -40,3 +38,5 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.Fun.LetterCmds.KeyboardSmash(DSharpPlus.CommandsNext.CommandContext,System.Int32)~System.Threading.Tasks.Task")]
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.Fun.LetterCmds.LetterSpam(DSharpPlus.CommandsNext.CommandContext,System.String,System.Int32)~System.Threading.Tasks.Task")]
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.PerServerFeatures.DummyCommand(DSharpPlus.CommandsNext.CommandContext)~System.Threading.Tasks.Task")]
+[assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.Fun.RandomCmds.Cat(DSharpPlus.CommandsNext.CommandContext)~System.Threading.Tasks.Task")]
+[assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.Fun.RandomCmds.Dog(DSharpPlus.CommandsNext.CommandContext)~System.Threading.Tasks.Task")]
