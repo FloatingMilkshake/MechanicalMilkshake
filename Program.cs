@@ -123,6 +123,10 @@ namespace MechanicalMilkshake
                     {
                         await e.Context.RespondAsync("An error occurred! Either you did not specify a target channel, or I do not have permission to see that channel.");
                     }
+                    if (ex.GetType().ToString() == "System.InvalidOperationException" && ex.Message.Contains("this group is not executable"))
+                    {
+                        await e.Context.RespondAsync($"Did you mean to run a command inside this group? `{e.Command.QualifiedName}` cannot be run on its own. Try `help {e.Command.QualifiedName}` to see what commands are available.");
+                    }
                     else
                     {
                         await e.Context.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
