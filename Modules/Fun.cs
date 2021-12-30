@@ -42,8 +42,11 @@ namespace MechanicalMilkshake.Modules
 
                 string fact = await Program.httpClient.GetStringAsync("https://uselessfacts.jsph.pl/random.md");
 
-                fact = fact.Replace(")", ">)");
-                fact = fact.Replace("http", "<http");
+                if (fact.Contains("http"))
+                {
+                    fact = fact.Replace(")", ">)");
+                    fact = fact.Replace("http", "<http");
+                }
 
                 await msg.ModifyAsync(fact);
             }
