@@ -83,34 +83,6 @@ namespace MechanicalMilkshake.Modules
             }
         }
 
-        [Command("edit")]
-        [Description("Sends a message that is edited to another message you specify after a given time in seconds.")]
-        public async Task Edit(CommandContext ctx, [Description("Initial message for the bot to send.")] string message, [Description("What the message should be edited to.")] string editedMessage, [Description("How long the bot should wait to edit the message, in seconds.")] int delay)
-        {
-            if (delay is 0)
-            {
-                await ctx.RespondAsync("You must specify a time to wait before editing the message!");
-            }
-            else
-            {
-                try
-                {
-                    if (!ctx.Channel.IsPrivate)
-                    {
-                        await ctx.Message.DeleteAsync();
-                    }
-                }
-                catch (DSharpPlus.Exceptions.UnauthorizedException)
-                {
-                    // Fail silently (do nothing). The bot cannot delete the invoking message, which is fine. There's no response here to avoid clutter.
-                }
-
-                DSharpPlus.Entities.DiscordMessage msg = await ctx.Channel.SendMessageAsync(message);
-                await Task.Delay(delay * 1000);
-                await msg.ModifyAsync(editedMessage);
-            }
-        }
-
         [Command("keyboardsmash")]
         [Aliases("mashy-mashy", "kbsmash", "mashymashy", "smash")]
         [Description("Keyboard smash.")]
