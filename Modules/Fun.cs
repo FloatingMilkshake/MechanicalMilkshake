@@ -11,7 +11,7 @@ namespace MechanicalMilkshake.Modules
     {
         [Group("random")]
         [Description("Get a random number or fact.")]
-        class random : BaseCommandModule
+        class RandomCmds : BaseCommandModule
         {
             [Command("number")]
             [Description("Generates a random number between two that you specify.")]
@@ -85,7 +85,7 @@ namespace MechanicalMilkshake.Modules
 
         [Group("letter")]
         [Description("Repeat a single letter, or many.")]
-        public class letter : BaseCommandModule
+        public class LetterCmds : BaseCommandModule
         {
             [Command("spam")]
             [Aliases("smash", "keyboardsmash")]
