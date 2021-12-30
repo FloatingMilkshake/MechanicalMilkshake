@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 
 namespace MechanicalMilkshake.Modules
 {
+    [Group("owner")]
+    [Description("Commands that can only be run by the bot owner.")]
     [RequireOwner]
     public class Owner : BaseCommandModule
     {
