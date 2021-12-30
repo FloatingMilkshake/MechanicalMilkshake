@@ -271,6 +271,7 @@ namespace MechanicalMilkshake.Modules
         [Command("deletemessage")]
         [Aliases("deletemsg", "delmsg")]
         [Description("Delete a message. This can be used to to delete direct messages with the bot where you are normally unable to delete its messages.")]
+        [Hidden]
         public async Task Delete(CommandContext ctx, string message)
         {
             DiscordMember author;
