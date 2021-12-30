@@ -16,18 +16,37 @@ namespace MechanicalMilkshake.Modules
             await ctx.RespondAsync($"hi {ctx.Member.Mention}!");
         }
 
-        [Command("randomnumber")]
-        [Description("Generates a random number between two that you specify.")]
-        public async Task Random(CommandContext ctx, [Description("The minimum number to choose between. Defaults to 1.")] int min = 1, [Description("The maximum number to choose between. Defaults to 10.")] int max = 10)
+        [Group("random")]
+        [Description("Get a random number or fact.")]
+        class random : BaseCommandModule
         {
-            if (min > max)
+            [Command("number")]
+            [Description("Generates a random number between two that you specify.")]
+            public async Task Random(CommandContext ctx, [Description("The minimum number to choose between. Defaults to 1.")] int min = 1, [Description("The maximum number to choose between. Defaults to 10.")] int max = 10)
             {
-                await ctx.RespondAsync("The minimum number cannot be greater than the maximum number!");
-                return;
+                if (min > max)
+                {
+                    await ctx.RespondAsync("The minimum number cannot be greater than the maximum number!");
+                    return;
+                }
+
+                Random random = new();
+                await ctx.RespondAsync($"Your random number is **{random.Next(min, max)}**!");
             }
 
-            Random random = new();
-            await ctx.RespondAsync($"Your random number is **{random.Next(min, max)}**!");
+            [Command("fact")]
+            [Description("Gets a random fact.")]
+            public async Task Fact(CommandContext ctx)
+            {
+                DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Getting a random fact...*");
+
+                string fact = await Program.httpClient.GetStringAsync("https://uselessfacts.jsph.pl/random.md");
+
+                fact = fact.Replace(")", ">)");
+                fact = fact.Replace("http", "<http");
+
+                await msg.ModifyAsync(fact);
+            }
         }
 
         [Command("type")]
@@ -84,20 +103,6 @@ namespace MechanicalMilkshake.Modules
             {
                 await msg.ModifyAsync("I found a dog, but something happened and I wasn't able to send it here. Try again.");
             }
-        }
-
-        [Command("randomfact")]
-        [Description("Gets a random fact.")]
-        public async Task Fact(CommandContext ctx)
-        {
-            DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Getting a random fact...*");
-
-            string fact = await Program.httpClient.GetStringAsync("https://uselessfacts.jsph.pl/random.md");
-
-            fact = fact.Replace(")", ">)");
-            fact = fact.Replace("http", "<http");
-
-            await msg.ModifyAsync(fact);
         }
 
         [Command("edit")]
