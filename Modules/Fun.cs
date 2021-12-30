@@ -10,7 +10,7 @@ namespace MechanicalMilkshake.Modules
     public class Fun : BaseCommandModule
     {
         [Group("random")]
-        [Description("Get a random number or fact.")]
+        [Description("Get a random number, fact, or picture of a dog or cat.")]
         class RandomCmds : BaseCommandModule
         {
             [Command("number")]
@@ -43,43 +43,43 @@ namespace MechanicalMilkshake.Modules
 
                 await msg.ModifyAsync(fact);
             }
-        }
 
-        [Command("cat")]
-        [Description("Get a random cat picture from the internet.")]
-        public async Task Cat(CommandContext ctx)
-        {
-            DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Looking for a cat...*");
-            string data = await Program.httpClient.GetStringAsync("https://api.thecatapi.com/v1/images/search");
-            Regex pattern = new(@"https:\/\/cdn2.thecatapi.com\/images\/.*(.png|.jpg)");
-            Match cat = pattern.Match(data);
-            if (cat is not null)
+            [Command("cat")]
+            [Description("Get a random cat picture from the internet.")]
+            public async Task Cat(CommandContext ctx)
             {
-                await msg.ModifyAsync($"{cat}");
+                DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Looking for a cat...*");
+                string data = await Program.httpClient.GetStringAsync("https://api.thecatapi.com/v1/images/search");
+                Regex pattern = new(@"https:\/\/cdn2.thecatapi.com\/images\/.*(.png|.jpg)");
+                Match cat = pattern.Match(data);
+                if (cat is not null)
+                {
+                    await msg.ModifyAsync($"{cat}");
+                }
+                else
+                {
+                    await msg.ModifyAsync("I found a cat, but something happened and I wasn't able to send it here. Try again.");
+                }
             }
-            else
-            {
-                await msg.ModifyAsync("I found a cat, but something happened and I wasn't able to send it here. Try again.");
-            }
-        }
 
-        [Command("dog")]
-        [Description("Get a random dog picture from the internet.")]
-        public async Task Dog(CommandContext ctx)
-        {
-            DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Looking for a dog...*");
-            string data = await Program.httpClient.GetStringAsync("https://dog.ceo/api/breeds/image/random");
-            Regex pattern = new(@"https:\\\/\\\/images.dog.ceo\\\/breeds\\\/.*(.png|.jpg)");
-            Match dogMatch = pattern.Match(data);
-            if (dogMatch is not null)
+            [Command("dog")]
+            [Description("Get a random dog picture from the internet.")]
+            public async Task Dog(CommandContext ctx)
             {
-                string dog = dogMatch.ToString();
-                dog = dog.Replace("\\", "");
-                await msg.ModifyAsync($"{dog}");
-            }
-            else
-            {
-                await msg.ModifyAsync("I found a dog, but something happened and I wasn't able to send it here. Try again.");
+                DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Looking for a dog...*");
+                string data = await Program.httpClient.GetStringAsync("https://dog.ceo/api/breeds/image/random");
+                Regex pattern = new(@"https:\\\/\\\/images.dog.ceo\\\/breeds\\\/.*(.png|.jpg)");
+                Match dogMatch = pattern.Match(data);
+                if (dogMatch is not null)
+                {
+                    string dog = dogMatch.ToString();
+                    dog = dog.Replace("\\", "");
+                    await msg.ModifyAsync($"{dog}");
+                }
+                else
+                {
+                    await msg.ModifyAsync("I found a dog, but something happened and I wasn't able to send it here. Try again.");
+                }
             }
         }
 
