@@ -83,38 +83,37 @@ namespace MechanicalMilkshake.Modules
             }
         }
 
-        [Command("keyboardsmash")]
-        [Aliases("mashy-mashy", "kbsmash", "mashymashy", "smash")]
-        [Description("Keyboard smash.")]
-        public async Task KeyboardSmash(CommandContext ctx, [Description("The number of letters in the keyboard smash.")] int size)
+        [Group("letter")]
+        [Description("Repeat a single letter, or many.")]
+        public class letter : BaseCommandModule
         {
-            await ctx.TriggerTypingAsync();
-            await Task.Delay(3000);
-            const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            string kbSmash = new(Enumerable.Repeat(chars, size).Select(s => s[Program.random.Next(s.Length)]).ToArray());
-            await ctx.RespondAsync(kbSmash);
-        }
-
-        [Command("letterspam")]
-        [Aliases("letters", "repeatletter")]
-        [Description("Repeats a letter.")]
-        public async Task LetterSpam(CommandContext ctx, [Description("The letter to repeat.")] string letter, [Description("The number of times to repeat the letter.")] int count)
-        {
-            if (letter.Length > 1)
+            [Command("spam")]
+            [Aliases("smash", "keyboardsmash")]
+            [Description("Spam letters. Think of a keyboard smash.")]
+            public async Task KeyboardSmash(CommandContext ctx, [Description("The number of letters.")] int size)
             {
-                await ctx.RespondAsync("Only one letter can be repeated.");
-                return;
-            }
-            if (count > 2000)
-            {
-                await ctx.RespondAsync("Character limit exceeded! Messages can only be up to 2000 characters in size.");
+                const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                string kbSmash = new(Enumerable.Repeat(chars, size).Select(s => s[Program.random.Next(s.Length)]).ToArray());
+                await ctx.RespondAsync(kbSmash);
             }
 
-            await ctx.TriggerTypingAsync();
-            await Task.Delay(3000);
+            [Command("repeat")]
+            [Description("Repeat a letter.")]
+            public async Task LetterSpam(CommandContext ctx, [Description("The letter to repeat.")] string letter, [Description("The number of times to repeat it.")] int count)
+            {
+                if (letter.Length > 1)
+                {
+                    await ctx.RespondAsync("Only one letter can be repeated.");
+                    return;
+                }
+                if (count > 2000)
+                {
+                    await ctx.RespondAsync("Character limit exceeded! Messages can only be up to 2000 characters in size.");
+                }
 
-            string letterSpam = new(Enumerable.Repeat(letter, count).Select(s => s[Program.random.Next(s.Length)]).ToArray());
-            await ctx.RespondAsync(letterSpam);
+                string letterSpam = new(Enumerable.Repeat(letter, count).Select(s => s[Program.random.Next(s.Length)]).ToArray());
+                await ctx.RespondAsync(letterSpam);
+            }
         }
     }
 }
