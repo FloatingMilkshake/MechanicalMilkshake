@@ -45,24 +45,6 @@ namespace MechanicalMilkshake.Modules
             }
         }
 
-        [Command("type")]
-        [Description("Makes the bot type.")]
-        public async Task TypeCommand(CommandContext ctx)
-        {
-            try
-            {
-                if (!ctx.Channel.IsPrivate)
-                {
-                    await ctx.Message.DeleteAsync();
-                }
-            }
-            catch (DSharpPlus.Exceptions.UnauthorizedException)
-            {
-                // Fail silently (do nothing). The bot cannot delete the invoking message, which is fine. There's no response here to avoid clutter.
-            }
-            await ctx.TriggerTypingAsync();
-        }
-
         [Command("cat")]
         [Description("Gets a random cat picture from the internet.")]
         public async Task Cat(CommandContext ctx)
