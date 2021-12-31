@@ -420,7 +420,7 @@ namespace MechanicalMilkshake.Modules
             }
 
             // This code is (mostly) taken from https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L113.
-            // (Note that I originally found it here: https://github.com/Erisa/Lykos/blob/main/src/Modules/Owner.cs#L227)
+            // (Note that I originally found it here: https://github.com/Erisa/Lykos/blob/1f32e03/src/Modules/Owner.cs#L232)
 
             CloudflareContent content = new(new List<string>() { cloudflareUrlPrefix + fileName });
             string cloudflareContentString = JsonConvert.SerializeObject(content);
@@ -648,7 +648,7 @@ namespace MechanicalMilkshake.Modules
         }
 
         // This code is taken from https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197.
-        // (Note that I originally found it here: https://github.com/Erisa/Lykos/blob/3335c38a52d28820a935f99c53f030805d4da607/src/Modules/Owner.cs#L313)
+        // (Note that I originally found it here: https://github.com/Erisa/Lykos/blob/3335c38/src/Modules/Owner.cs#L313)
         readonly struct CloudflareContent
         {
             public CloudflareContent(List<string> urls)
