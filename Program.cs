@@ -93,14 +93,14 @@ namespace MechanicalMilkshake
 
                 foreach (Exception ex in exs)
                 {
-                    if (ex is ChecksFailedException)
-                        return;
-
                     if (ex is CommandNotFoundException && (e.Command == null || e.Command.QualifiedName != "help"))
                         return;
 
-                    if (ex is ChecksFailedException && (e.Command.Name != "help"))
+                    if (ex is ChecksFailedException)
+                    {
+                        await e.Context.RespondAsync("Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up.");
                         return;
+                    }
 
                     DiscordEmbedBuilder embed = new()
                     {
