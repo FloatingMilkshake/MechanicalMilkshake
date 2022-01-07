@@ -255,7 +255,7 @@ namespace MechanicalMilkshake.Modules
         }
 
         [Command("charactercount")]
-        [Aliases("charcount", "count", "chars")]
+        [Aliases("charcount", "count", "chars", "cc")]
         [Description("Counts the characters in a message.")]
         public async Task CharacterCount(CommandContext ctx, [RemainingText] string chars)
         {
