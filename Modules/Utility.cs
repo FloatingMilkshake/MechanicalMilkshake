@@ -156,11 +156,25 @@ namespace MechanicalMilkshake.Modules
         {
             [GroupCommand]
             [Description("Returns the Unix timestamp of a given Discord ID/snowflake.")]
-            public async Task TimestampSnowflakeCmd(CommandContext ctx, [Description("The ID/snowflake to fetch the Unix timestamp for.")] ulong snowflake)
+            public async Task TimestampSnowflakeCmd(CommandContext ctx, [Description("The ID/snowflake to fetch the Unix timestamp for.")] ulong snowflake, [Description("The format to convert the timestamp to. Options are F/D/T/R/f/d/t, or nothing to return the raw Unix timestamp.")] string format = null)
             {
                 ulong msSinceEpoch = snowflake >> 22;
                 ulong msUnix = msSinceEpoch + 1420070400000;
-                await ctx.RespondAsync($"{msUnix / 1000}");
+                if (format == null) {
+                    await ctx.RespondAsync($"{msUnix / 1000}");
+                }
+                else
+                {
+                    string[] validFormats = { "F", "f", "T", "t", "D", "d", "R" };
+                    if (validFormats.Any(format.Contains))
+                    {
+                        await ctx.RespondAsync($"<t:{msUnix / 1000}:{format}>");
+                    }
+                    else
+                    {
+                        await ctx.RespondAsync($"Hmm, that doesn't look like a valid format. Here's the raw Unix timestamp: {msUnix / 1000}");
+                    }
+                }
             }
 
             [Command("date")]
