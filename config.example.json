@@ -1,6 +1,7 @@
 {
   "botToken": "",
   "homeChannel": "",
+  "devServerId":  "",
 
   "wolframAlphaAppId": "",
 

@@ -160,7 +160,8 @@ namespace MechanicalMilkshake.Modules
             {
                 ulong msSinceEpoch = snowflake >> 22;
                 ulong msUnix = msSinceEpoch + 1420070400000;
-                if (format == null) {
+                if (format == null)
+                {
                     await ctx.RespondAsync($"{msUnix / 1000}");
                 }
                 else
@@ -238,7 +239,8 @@ namespace MechanicalMilkshake.Modules
                 await ctx.RespondAsync("Hmm, it doesn't look like you entered a valid query. Try something like `~wolframalpha What is the meaning of life?`.");
                 return;
             }
-            else {
+            else
+            {
                 queryEncoded = HttpUtility.UrlEncode(query);
             }
 

@@ -1,7 +1,8 @@
-using DSharpPlus.CommandsNext;
+using DSharpPlus;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.Attributes;
 using Minio.Exceptions;
 using Newtonsoft.Json;
 using System;
@@ -16,15 +17,10 @@ using System.Threading.Tasks;
 
 namespace MechanicalMilkshake.Modules
 {
-    [Group("owner")]
-    [Description("Commands that can only be run by the bot owner.")]
-    [RequireOwner]
-    public class Owner : BaseCommandModule
+    public class Owner : ApplicationCommandModule
     {
-        [Command("link")]
-        [Aliases("wl", "links")]
-        [Description("Set, update, or delete a short link with Cloudflare worker-links.")]
-        public async Task Link(CommandContext ctx, [Description("Set a custom key for the short link.")] string key, [Description("The URL the short link should point to.")] string url = "")
+        [SlashCommand("link", "[Bot owner only] Set, update, or delete a short link with Cloudflare worker-links.")]
+        public async Task Link(InteractionContext ctx, [Option("key", "Set a custom key for the short link.")] string key, [Option("url", "The URL the short link should point to.")] string url = "")
         {
             if (url.Contains('<'))
             {
@@ -38,7 +34,7 @@ namespace MechanicalMilkshake.Modules
             string baseUrl;
             if (Program.configjson.WorkerLinks.BaseUrl == null)
             {
-                await ctx.RespondAsync("Error: No base URL provided! Make sure the baseUrl field under workerLinks in your config.json file is set.");
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No base URL provided! Make sure the baseUrl field under workerLinks in your config.json file is set."));
                 return;
             }
             else
@@ -79,7 +75,7 @@ namespace MechanicalMilkshake.Modules
             string secret;
             if (Program.configjson.WorkerLinks.Secret == null)
             {
-                await ctx.RespondAsync("Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set.");
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set."));
                 return;
             }
             else
@@ -96,17 +92,17 @@ namespace MechanicalMilkshake.Modules
             string responseText = await response.Content.ReadAsStringAsync();
             if (responseText.Length > 1940)
             {
-                await ctx.Channel.SendMessageAsync($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service.");
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service."));
             }
-            await ctx.Channel.SendMessageAsync($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```");
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```"));
         }
 
-        public async Task DeleteWorkerLink(CommandContext ctx, string url, HttpClient httpClient)
+        public async Task DeleteWorkerLink(InteractionContext ctx, string url, HttpClient httpClient)
         {
             string secret;
             if (Program.configjson.WorkerLinks.Secret == null)
             {
-                await ctx.RespondAsync("Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set.");
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set."));
                 return;
             }
             else
@@ -123,37 +119,36 @@ namespace MechanicalMilkshake.Modules
             string responseText = await response.Content.ReadAsStringAsync();
             if (responseText.Length > 1940)
             {
-                await ctx.Channel.SendMessageAsync($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service.");
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service."));
             }
-            await ctx.Channel.SendMessageAsync($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```");
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```"));
         }
 
-        // The below method is referenced in the Link command. This code here is in a separate method to make things a little easier to work with while still being able to have it as part of the Link command.
-        public async Task ListWorkerLinks(CommandContext ctx)
+        public async Task ListWorkerLinks(InteractionContext ctx)
         {
             if (Program.configjson.WorkerLinks.ApiKey == null)
             {
-                await ctx.RespondAsync("Error: missing Cloudflare API Key! Make sure the apiKey field under workerLinks in your config.json file is set.");
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing Cloudflare API Key! Make sure the apiKey field under workerLinks in your config.json file is set."));
                 return;
             }
 
             if (Program.configjson.WorkerLinks.NamespaceId == null)
             {
-                await ctx.RespondAsync("Error: missing KV Namespace ID! Make sure the namespaceId field under workerLinks in your config.json file is set.");
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing KV Namespace ID! Make sure the namespaceId field under workerLinks in your config.json file is set."));
                 return;
             }
 
             if (Program.configjson.WorkerLinks.AccountId == null)
             {
-                await ctx.RespondAsync("Error: missing Cloudflare Account ID! Make sure the accountId field under workerLinks in your config.json file is set.");
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing Cloudflare Account ID! Make sure the accountId field under workerLinks in your config.json file is set."));
             }
 
             if (Program.configjson.WorkerLinks.Email == null)
             {
-                await ctx.RespondAsync("Error: missing email address for Cloudflare! Make sure the email field under workerLinks in your config.json file is set.");
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing email address for Cloudflare! Make sure the email field under workerLinks in your config.json file is set."));
             }
 
-            DiscordMessage msg = await ctx.RespondAsync("Working...");
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Working..."));
 
             string requestUri = $"https://api.cloudflare.com/client/v4/accounts/{Program.configjson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId}/keys";
             HttpRequestMessage request = new(HttpMethod.Get, requestUri);
@@ -179,13 +174,12 @@ namespace MechanicalMilkshake.Modules
                 valueRequest.Headers.Add("X-Auth-Email", Program.configjson.WorkerLinks.Email);
                 HttpResponseMessage valueResponse = await Program.httpClient.SendAsync(valueRequest);
 
-                DiscordMessage targetMsg = await msg.Channel.GetMessageAsync(msg.Id);
                 string value = await valueResponse.Content.ReadAsStringAsync();
                 value = value.Replace(value, $"<{value}>");
                 kvListResponse += $"`{item.Name}`: {value}\n\n";
             }
 
-            await msg.ModifyAsync(kvListResponse);
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(kvListResponse));
         }
 
         public class CloudflareResponse
@@ -200,55 +194,43 @@ namespace MechanicalMilkshake.Modules
             public string Name { get; set; }
         }
 
-        [Command("upload")]
-        [Aliases("up", "img")]
-        [Description("Upload a file to Amazon S3-compatible cloud storage. Accepts an uploaded file.")]
-        public async Task Upload(CommandContext ctx, [Description("The name for the uploaded file. Set to `preserve` to keep the name of the file you want to upload, or `random` to generate a random name.")] string name, [Description("(Optional) A link to a file to upload. This will take priority over a file uploaded to Discord! (If you leave this empty and do not upload a file, I will display the image at the name you provided if it exists.)")] string link = null)
+        [SlashCommand("upload", "[Bot owner only] Upload a file to Amazon S3-compatible cloud storage.")]
+        public async Task Upload(InteractionContext ctx, [Option("name", "The name for the uploaded file.")] string name, [Option("link", "A link to a file to upload.")] string link)
         {
             string linkToFile = null;
-            if (link != null)
+            linkToFile = link;
+            if (link.Contains('<'))
             {
-                linkToFile = link;
-                if (link.Contains('<'))
-                {
-                    link = link.Replace("<", "");
-                    linkToFile = link.Replace("<", "");
-                }
-                if (link.Contains('>'))
-                {
-                    link = link.Replace(">", "");
-                    linkToFile = link.Replace(">", "");
-                }
+                link = link.Replace("<", "");
+                linkToFile = link.Replace("<", "");
             }
-            else
+            if (link.Contains('>'))
             {
-                try
+                link = link.Replace(">", "");
+                linkToFile = link.Replace(">", "");
+            }
+            if (link == null)
+            {
+                // No link was provided; nothing was provided to upload.
+                // In this case we will assume the user wants to have the bot respond with the image they named. However, if that file doesn't exist, send an error (perhaps the user mistyped a filename?)
+
+                if (!name.Contains('.'))
                 {
-                    linkToFile = ctx.Message.Attachments[0].Url;
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm. If you're trying to upload a file, make sure it was uploaded or linked correctly. If you're trying to preview an image, make sure you included the file extension."));
+                    return;
                 }
-                catch
+
+                HttpRequestMessage request = new(HttpMethod.Get, $"{Program.configjson.S3.CdnBaseUrl}/{name}");
+                HttpResponseMessage response = await Program.httpClient.SendAsync(request);
+                if (!response.IsSuccessStatusCode)
                 {
-                    // The user's message has no files attached, and no link was provided. Nothing was providd to upload.
-                    // In this case we will assume the user wants to have the bot respond with the image they named. However, if that file doesn't exist, send an error (perhaps the user just didn't upload the image properly or mistyped a filename?)
-
-                    if (!name.Contains('.'))
-                    {
-                        await ctx.RespondAsync("Hmm. If you're trying to upload a file, make sure it was uploaded or linked correctly. If you're trying to preview an image, make sure you included the file extension.");
-                        return;
-                    }
-
-                    HttpRequestMessage request = new(HttpMethod.Get, $"{Program.configjson.S3.CdnBaseUrl}/{name}");
-                    HttpResponseMessage response = await Program.httpClient.SendAsync(request);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        await ctx.RespondAsync("Hmm, it looks like that file doesn't exist! If you're sure it does, perhaps you got the extension wrong.");
-                        return;
-                    }
-                    else
-                    {
-                        await ctx.RespondAsync($"{Program.configjson.S3.CdnBaseUrl}/{name}");
-                        return;
-                    }
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm, it looks like that file doesn't exist! If you're sure it does, perhaps you got the extension wrong."));
+                    return;
+                }
+                else
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}"));
+                    return;
                 }
             }
 
@@ -258,7 +240,7 @@ namespace MechanicalMilkshake.Modules
                 return;
             }
 
-            DiscordMessage msg = await ctx.RespondAsync("Working...");
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Working..."));
 
             string fileName;
             string extension;
@@ -274,7 +256,7 @@ namespace MechanicalMilkshake.Modules
                 string bucket = null;
                 if (Program.configjson.S3.Bucket == null)
                 {
-                    await msg.ModifyAsync("Error: S3 bucket info missing! Make sure the bucket field under s3 in your config.json file is set.");
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Error: S3 bucket info missing! Make sure the bucket field under s3 in your config.json file is set."));
                     return;
                 }
                 else
@@ -335,29 +317,29 @@ namespace MechanicalMilkshake.Modules
             }
             catch (MinioException e)
             {
-                await msg.ModifyAsync($"An API error occured while uploading!```\n{e.Message}```");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"An API error occured while uploading!```\n{e.Message}```"));
                 return;
             }
             catch (Exception e)
             {
-                await msg.ModifyAsync($"An unexpected error occured while uploading!```\n{e.Message}```");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"An unexpected error occured while uploading!```\n{e.Message}```"));
                 return;
             }
 
             string cdnUrl;
             if (Program.configjson.S3.CdnBaseUrl == null)
             {
-                await msg.ModifyAsync($"Upload successful!\nThere's no CDN URL set in your config.json, so I can't give you a link. But your file was uploaded as {fileName}.");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Upload successful!\nThere's no CDN URL set in your config.json, so I can't give you a link. But your file was uploaded as {fileName}."));
             }
             else
             {
                 cdnUrl = Program.configjson.S3.CdnBaseUrl;
-                await msg.ModifyAsync($"Upload successful!\n<{cdnUrl}/{fileName}>");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Upload successful!\n<{cdnUrl}/{fileName}>"));
             }
         }
 
         // This code used to be a command, but is now called from Upload if the name argument is set to "delete". It could be merged into Upload, but this is the easy/lazy way to do it. It works, so I'm happy with it.
-        public async Task DeleteUpload(CommandContext ctx, string fileToDelete)
+        public async Task DeleteUpload(InteractionContext ctx, string fileToDelete)
         {
             if (fileToDelete.Contains('<'))
             {
@@ -368,12 +350,12 @@ namespace MechanicalMilkshake.Modules
                 fileToDelete = fileToDelete.Replace(">", "");
             }
 
-            DiscordMessage msg = await ctx.RespondAsync("Working on it...");
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Working on it..."));
 
             string bucket;
             if (Program.configjson.S3.Bucket == null)
             {
-                await msg.ModifyAsync("Error: S3 bucket info missing! Make sure the bucket field under s3 in your config.json file is set.");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Error: S3 bucket info missing! Make sure the bucket field under s3 in your config.json file is set."));
                 return;
             }
             else
@@ -397,16 +379,16 @@ namespace MechanicalMilkshake.Modules
             }
             catch (MinioException e)
             {
-                await msg.ModifyAsync($"An API error occured while attempting to delete the file!```\n{e.Message}```");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"An API error occured while attempting to delete the file!```\n{e.Message}```"));
                 return;
             }
             catch (Exception e)
             {
-                await msg.ModifyAsync($"An unexpected error occured while attempting to delete the file!```\n{e.Message}```");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"An unexpected error occured while attempting to delete the file!```\n{e.Message}```"));
                 return;
             }
 
-            await msg.ModifyAsync("File deleted successfully!\nAttempting to purge Cloudflare cache...");
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("File deleted successfully!\nAttempting to purge Cloudflare cache..."));
 
             string cloudflareUrlPrefix;
             if (Program.configjson.Cloudflare.UrlPrefix != null)
@@ -415,7 +397,7 @@ namespace MechanicalMilkshake.Modules
             }
             else
             {
-                await msg.ModifyAsync("File deleted successfully!\nError: missing Zone ID for Cloudflare. Unable to purge cache! Check the urlPrefix field under cloudflare in your config.json file.");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("File deleted successfully!\nError: missing Zone ID for Cloudflare. Unable to purge cache! Check the urlPrefix field under cloudflare in your config.json file."));
                 return;
             }
 
@@ -438,7 +420,7 @@ namespace MechanicalMilkshake.Modules
                 }
                 else
                 {
-                    await msg.ModifyAsync("File deleted successfully!\nError: missing Zone ID for Cloudflare. Unable to purge cache! Check the urlPrefix field under cloudflare in your config.json file.");
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("File deleted successfully!\nError: missing Zone ID for Cloudflare. Unable to purge cache! Check the urlPrefix field under cloudflare in your config.json file."));
                     return;
                 }
 
@@ -449,7 +431,7 @@ namespace MechanicalMilkshake.Modules
                 }
                 else
                 {
-                    await msg.ModifyAsync("File deleted successfully!\nError: missing token for Cloudflare. Unable to purge cache! Check the token field under cloudflare in your config.json file.");
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("File deleted successfully!\nError: missing token for Cloudflare. Unable to purge cache! Check the token field under cloudflare in your config.json file."));
                     return;
                 }
 
@@ -464,26 +446,25 @@ namespace MechanicalMilkshake.Modules
 
                 if (response.IsSuccessStatusCode)
                 {
-                    await msg.ModifyAsync($"File deleted successfully!\nSuccesssfully purged the Cloudflare cache for `{fileName}`!");
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"File deleted successfully!\nSuccesssfully purged the Cloudflare cache for `{fileName}`!"));
                 }
                 else
                 {
-                    await msg.ModifyAsync($"File deleted successfully!\nAn API error occured when purging the Cloudflare cache: ```json\n{responseText}```");
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"File deleted successfully!\nAn API error occured when purging the Cloudflare cache: ```json\n{responseText}```"));
                 }
             }
             catch (Exception e)
             {
-                await msg.ModifyAsync($"File deleted successfully!\nAn unexpected error occured when purging the Cloudflare cache: ```json\n{e.Message}```");
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"File deleted successfully!\nAn unexpected error occured when purging the Cloudflare cache: ```json\n{e.Message}```"));
             }
         }
 
-        [Group("debug")]
-        [Description("Commands for checking if the bot is working properly.")]
-        class Debug : BaseCommandModule
+        [SlashCommandGroup("debug", "[Bot owner only] Commands for checking if the bot is working properly.")]
+        [SlashRequireOwner]
+        public class DebugCmds : ApplicationCommandModule
         {
-            [GroupCommand]
-            [Description("Show debug information about the bot.")]
-            public async Task DebugInfo(CommandContext ctx)
+            [SlashCommand("info", "[Bot owner only] Show debug information about the bot.")]
+            public async Task DebugInfo(InteractionContext ctx)
             {
                 string commitHash = "";
                 if (File.Exists("CommitHash.txt"))
@@ -496,124 +477,78 @@ namespace MechanicalMilkshake.Modules
                     commitHash = "dev";
                 }
 
-                await ctx.RespondAsync("**Debug Information:**\n"
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("**Debug Information:**\n"
                     + $"\n**Version:** `{commitHash.Trim()}`"
                     + $"\n**Framework:** `{RuntimeInformation.FrameworkDescription}`"
                     + $"\n**Platform:** `{RuntimeInformation.OSDescription}`"
-                    + $"\n**Library:** `DSharpPlus {Program.discord.VersionString}`");
+                    + $"\n**Library:** `DSharpPlus {Program.discord.VersionString}`"));
             }
 
-            // This is here to add aliases for the above group command, because apparently the [Aliases] attribute doesn't work on a group command.
-            // It might be a bit of a sketchy way to do it, but it works.
-            [Command("info")]
-            [Aliases("about")]
-            public async Task DebugInfoAliases(CommandContext ctx)
-            {
-                await DebugInfo(ctx);
-            }
-
-            [Command("uptime")]
-            [Description("Check the bot's uptime (from the time it connects to Discord).")]
-            public async Task Uptime(CommandContext ctx)
+            [SlashCommand("uptime", "[Bot owner only] Check the bot's uptime (from the time it connects to Discord).")]
+            public async Task Uptime(InteractionContext ctx)
             {
                 long unixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
-                await ctx.RespondAsync($"<t:{unixTime}:F> (<t:{unixTime}:R>)");
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"<t:{unixTime}:F> (<t:{unixTime}:R>)"));
             }
 
-            [Command("timecheck")]
-            [Aliases("currenttime", "time")]
-            [Description("Return the current time on the machine the bot is running on.")]
-            public async Task TimeCheck(CommandContext ctx)
+            [SlashCommand("timecheck", "[Bot owner only] Return the current time on the machine the bot is running on.")]
+            public async Task TimeCheck(InteractionContext ctx)
             {
-                await ctx.RespondAsync($"Seems to me like it's currently `{DateTime.Now}`.");
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Seems to me like it's currently `{DateTime.Now}`."));
             }
 
-            [Command("shutdown")]
-            [Aliases("shitdown")]
-            [Description("Shut down the bot.")]
-            public async Task Shutdown(CommandContext ctx, [Description("This must be \"I am sure\" for the command to run."), RemainingText] string areYouSure)
+            [SlashCommand("shutdown", "[Bot owner only] Shut down the bot.")]
+            public async Task Shutdown(InteractionContext ctx)
             {
-                if (areYouSure == "I am sure")
-                {
-                    await ctx.RespondAsync("**Warning**: The bot is now shutting down. This action is permanent.");
-                    await ctx.Client.DisconnectAsync();
-                    Environment.Exit(0);
-                }
-                else
-                {
-                    await ctx.RespondAsync("Are you sure?");
-                }
+                DiscordButtonComponent button = new(ButtonStyle.Primary, "shutdown-button", "Shut Down");
+
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Are you sure you want to shut down the bot?").AddComponents(button).AsEphemeral(true));
             }
 
-            [Command("restart")]
-            [Description("Restart the bot.")]
-            public async Task Restart(CommandContext ctx)
+            [SlashCommand("restart", "[Bot owner only] Restart the bot.")]
+            public async Task Restart(InteractionContext ctx)
             {
                 try
                 {
                     string dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
                     if (string.IsNullOrWhiteSpace(dockerCheckFile))
                     {
-                        await ctx.RespondAsync("The bot may not be running under Docker; this means that `!restart` will behave like `!shutdown`."
-                            + "\n\nAborted. Use `!shutdown` if you wish to shut down the bot.");
+                        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("The bot may not be running under Docker; this means that `!restart` will behave like `!shutdown`."
+                            + "\n\nAborted. Use `!shutdown` if you wish to shut down the bot."));
                         return;
                     }
                 }
                 catch
                 {
                     // /proc/self/cgroup could not be found, which means the bot is not running in Docker.
-                    await ctx.RespondAsync("The bot may not be running under Docker; this means that `!restart` will behave like `!shutdown`."
-                            + "\n\nAborted. Use `!shutdown` if you wish to shut down the bot.");
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("The bot may not be running under Docker; this means that `!restart` will behave like `!shutdown`.)"
+                            + "\n\nAborted. Use `!shutdown` if you wish to shut down the bot."));
                     return;
                 }
 
-                await ctx.RespondAsync("Restarting...");
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Restarting..."));
                 Environment.Exit(1);
             }
         }
 
-        [Command("setactivity")]
-        [Aliases("setstatus")]
-        [Description("Set the bot's activity.")]
-        public async Task SetActivity(CommandContext ctx, string status = "online", string type = "playing", [RemainingText] string activityName = null)
+        [SlashCommand("setactivity", "[Bot owner only] Set the bot's activity.")]
+        public async Task SetActivity(InteractionContext ctx, [Option("status", "The bot's online status.")] string status = "online", [Option("type", "The type of status (playing, watching, etc).")] string type = "playing", [Option("activityName", "The bot's activity (for example, watching '!help').")] string activityName = null)
         {
             DiscordActivity activity = new();
             ActivityType activityType = default;
-            if (type == "streaming")
+            activity.Name = activityName;
+            if (activityType != ActivityType.Streaming)
             {
-                await ctx.RespondAsync("Please send the URL of the stream to use:");
-                string streamUrl = null;
-                var result = await ctx.Message.GetNextMessageAsync(m =>
+                activityType = type.ToLower() switch
                 {
-                    streamUrl = m.Content.Replace("<", "");
-                    streamUrl = streamUrl.Replace(">", "");
-                    return true;
-                });
-
-                if (!result.TimedOut)
-                {
-                    activityType = ActivityType.Streaming;
-                    activity.ActivityType = activityType;
-                    activity.StreamUrl = streamUrl;
-                    activity.Name = activityName;
-                }
-            }
-            else
-            {
-                activity.Name = activityName;
-                if (activityType != ActivityType.Streaming)
-                {
-                    activityType = type.ToLower() switch
-                    {
-                        "playing" => ActivityType.Playing,
-                        "watching" => ActivityType.Watching,
-                        "competing" => ActivityType.Competing,
-                        "listening" => ActivityType.ListeningTo,
-                        "listeningto" => ActivityType.ListeningTo,
-                        _ => ActivityType.Playing,
-                    };
-                    activity.ActivityType = activityType;
-                }
+                    "playing" => ActivityType.Playing,
+                    "watching" => ActivityType.Watching,
+                    "competing" => ActivityType.Competing,
+                    "listening" => ActivityType.ListeningTo,
+                    "listeningto" => ActivityType.ListeningTo,
+                    _ => ActivityType.Playing,
+                };
+                activity.ActivityType = activityType;
             }
 
             UserStatus userStatus = status.ToLower() switch
@@ -628,21 +563,12 @@ namespace MechanicalMilkshake.Modules
 
             await ctx.Client.UpdateStatusAsync(activity, userStatus);
 
-            if (ctx.Channel.IsPrivate)
-            {
-                await ctx.Message.CreateReactionAsync(DiscordEmoji.FromName(ctx.Client, ":white_check_mark:"));
-            }
-            else
-            {
-                await ctx.RespondAsync("Activity set successfully!");
-            }
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Activity set successfully!"));
         }
 
-        [Command("resetactivity")]
-        [Aliases("resetstatus", "clearactivity", "clearstatus")]
-        [Description("Reset the bot's activity (sets its status to online with no activity).")]
+        [SlashCommand("resetactivity", "Reset the bot's activity (sets its status to online with no activity).")]
         [Hidden]
-        public async Task ResetStatus(CommandContext ctx)
+        public async Task ResetStatus(InteractionContext ctx)
         {
             await SetActivity(ctx, "online");
         }

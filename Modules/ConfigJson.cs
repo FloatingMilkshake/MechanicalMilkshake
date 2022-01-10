@@ -64,6 +64,9 @@ namespace MechanicalMilkshake.Modules
         [JsonProperty("homeChannel")]
         public string HomeChannel { get; private set; }
 
+        [JsonProperty("devServerId")]
+        public ulong DevServerId { get; private set; }
+
         [JsonProperty("wolframAlphaAppId")]
         public string WolframAlphaAppId { get; private set; }
 

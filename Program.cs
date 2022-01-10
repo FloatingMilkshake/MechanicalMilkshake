@@ -6,6 +6,7 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.SlashCommands;
 using MechanicalMilkshake.Modules;
 using Minio;
 using Newtonsoft.Json;
@@ -64,6 +65,16 @@ namespace MechanicalMilkshake
                 PollBehaviour = PollBehaviour.KeepEmojis,
                 Timeout = TimeSpan.FromSeconds(30)
             });
+
+            var slash = discord.UseSlashCommands();
+
+            slash.SlashCommandErrored += async (s, e) =>
+            {
+                if (e.Exception is SlashExecutionChecksFailedException slex)
+                {
+                    await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up.").AsEphemeral(true));
+                }
+            };
 
             CommandsNextExtension commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
@@ -134,7 +145,23 @@ namespace MechanicalMilkshake
                 }
             }
 
-            commands.RegisterCommands<Owner>();
+            discord.ComponentInteractionCreated += async (s, e) =>
+            {
+                if (e.Id == "shutdown-button")
+                {
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("**Warning: The bot is now shutting down. This action is permanent.**\n\n(Note: The bot may still show as online for a few minutes before Discord realizes it is offline.)").AsEphemeral(true));
+                    //await discord.DisconnectAsync();
+                    Environment.Exit(0);
+                }
+            };
+
+#if DEBUG
+            slash.RegisterCommands<Owner>(configjson.DevServerId);
+            Console.WriteLine("Slash commands registered for debugging.");
+#else
+            slash.RegisterCommands<Owner>();
+            Console.WriteLine("Slash commands registered globally.");
+#endif
             commands.RegisterCommands<Utility>();
             commands.RegisterCommands<Fun>();
             commands.RegisterCommands<Mod>();
