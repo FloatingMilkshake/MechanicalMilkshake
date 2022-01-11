@@ -201,6 +201,14 @@ namespace MechanicalMilkshake.Modules
             linkToFile = link;
             if (link != null)
             {
+                // Remove extension from filename. We don't want this to cause issues with duplicate file extensions.
+                Regex extRemovalPattern = new(@"\..*");
+                Match extRemovalMatch = extRemovalPattern.Match(name);
+                if (!string.IsNullOrWhiteSpace(extRemovalMatch.ToString()))
+                {
+                    name = name.Replace(extRemovalMatch.ToString(), "");
+                }
+
                 if (link.Contains('<'))
                 {
                     link = link.Replace("<", "");
