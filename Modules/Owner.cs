@@ -319,7 +319,7 @@ namespace MechanicalMilkshake.Modules
                 }
             }
 
-            [SlashCommand("delete", "Delete a file from Amazon S3-compatible cloud storage.")]
+            [SlashCommand("delete", "[Bot owner only] Delete a file from Amazon S3-compatible cloud storage.")]
             public async Task DeleteUpload(InteractionContext ctx, [Option("file", "The file to delete.")] string fileToDelete)
             {
                 if (fileToDelete.Contains('<'))
@@ -440,7 +440,7 @@ namespace MechanicalMilkshake.Modules
                 }
             }
 
-            [SlashCommand("preview", "Preview an image stored on Amazon S3-compatible cloud storage.")]
+            [SlashCommand("preview", "[Bot owner only] Preview an image stored on Amazon S3-compatible cloud storage.")]
             public async Task CdnPreview(InteractionContext ctx, [Option("name", "The name (or link) of the file to preview.")] string name, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to True.")] bool ephemeralResponse = true)
             {
                 if (!name.Contains('.'))
