@@ -198,61 +198,26 @@ namespace MechanicalMilkshake.Modules
         public class Cdn
         {
             [SlashCommand("upload", "[Bot owner only] Upload a file to Amazon S3-compatible cloud storage.")]
-            public async Task Upload(InteractionContext ctx, [Option("name", "The name for the uploaded file.")] string name, [Option("link", "A link to a file to upload.")] string link = null, [Option("ephemeralresponse", "Whether my response should be ephemeral. Works only when previewing images. Defaults to True.")] bool ephemeralResponse = true)
+            public async Task Upload(InteractionContext ctx, [Option("name", "The name for the uploaded file.")] string name, [Option("link", "A link to a file to upload.")] string link, [Option("ephemeralresponse", "Whether my response should be ephemeral. Works only when previewing images. Defaults to True.")] bool ephemeralResponse = true)
             {
-                string linkToFile = null;
-                linkToFile = link;
-                if (link != null)
+                string linkToFile = link;
+                // Remove extension from filename. We don't want this to cause issues with duplicate file extensions.
+                Regex extRemovalPattern = new(@"\..*");
+                Match extRemovalMatch = extRemovalPattern.Match(name);
+                if (!string.IsNullOrWhiteSpace(extRemovalMatch.ToString()))
                 {
-                    // Remove extension from filename. We don't want this to cause issues with duplicate file extensions.
-                    Regex extRemovalPattern = new(@"\..*");
-                    Match extRemovalMatch = extRemovalPattern.Match(name);
-                    if (!string.IsNullOrWhiteSpace(extRemovalMatch.ToString()))
-                    {
-                        name = name.Replace(extRemovalMatch.ToString(), "");
-                    }
-
-                    if (link.Contains('<'))
-                    {
-                        link = link.Replace("<", "");
-                        linkToFile = link.Replace("<", "");
-                    }
-                    if (link.Contains('>'))
-                    {
-                        link = link.Replace(">", "");
-                        linkToFile = link.Replace(">", "");
-                    }
+                    name = name.Replace(extRemovalMatch.ToString(), "");
                 }
-                else
+
+                if (link.Contains('<'))
                 {
-                    // No link was provided; nothing was provided to upload.
-                    // In this case we will assume the user wants to have the bot respond with the image they named. However, if that file doesn't exist, send an error (perhaps the user mistyped a filename?)
-
-                    if (!name.Contains('.'))
-                    {
-                        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm. If you're trying to upload a file, make sure it was uploaded or linked correctly. If you're trying to preview an image, make sure you included the file extension.").AsEphemeral(true));
-                        return;
-                    }
-
-                    HttpRequestMessage request = new(HttpMethod.Get, $"{Program.configjson.S3.CdnBaseUrl}/{name}");
-                    HttpResponseMessage response = await Program.httpClient.SendAsync(request);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm, it looks like that file doesn't exist! If you're sure it does, perhaps you got the extension wrong.").AsEphemeral(true));
-                        return;
-                    }
-                    else
-                    {
-                        if (ephemeralResponse)
-                        {
-                            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}").AsEphemeral(true));
-                        }
-                        else
-                        {
-                            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}").AsEphemeral(false));
-                        }
-                        return;
-                    }
+                    link = link.Replace("<", "");
+                    linkToFile = link.Replace("<", "");
+                }
+                if (link.Contains('>'))
+                {
+                    link = link.Replace(">", "");
+                    linkToFile = link.Replace(">", "");
                 }
 
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Working...").AsEphemeral(true));
@@ -471,6 +436,36 @@ namespace MechanicalMilkshake.Modules
                 catch (Exception e)
                 {
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"File deleted successfully!\nAn unexpected error occured when purging the Cloudflare cache: ```json\n{e.Message}```"));
+                }
+            }
+
+            [SlashCommand("preview", "Preview an image stored on Amazon S3-compatible cloud storage.")]
+            public async Task CdnPreview(InteractionContext ctx, [Option("name", "The name (or link) of the file to preview.")] string name, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to True.")] bool ephemeralResponse = true)
+            {
+                if (!name.Contains('.'))
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm. If you're trying to upload a file, make sure it was uploaded or linked correctly. If you're trying to preview an image, make sure you included the file extension.").AsEphemeral(true));
+                    return;
+                }
+
+                HttpRequestMessage request = new(HttpMethod.Get, $"{Program.configjson.S3.CdnBaseUrl}/{name}");
+                HttpResponseMessage response = await Program.httpClient.SendAsync(request);
+                if (!response.IsSuccessStatusCode)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm, it looks like that file doesn't exist! If you're sure it does, perhaps you got the extension wrong.").AsEphemeral(true));
+                    return;
+                }
+                else
+                {
+                    if (ephemeralResponse)
+                    {
+                        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}").AsEphemeral(true));
+                    }
+                    else
+                    {
+                        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}").AsEphemeral(false));
+                    }
+                    return;
                 }
             }
         }
