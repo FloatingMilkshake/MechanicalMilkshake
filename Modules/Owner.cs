@@ -513,16 +513,16 @@ namespace MechanicalMilkshake.Modules
                     string dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
                     if (string.IsNullOrWhiteSpace(dockerCheckFile))
                     {
-                        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("The bot may not be running under Docker; this means that `!restart` will behave like `!shutdown`."
-                            + "\n\nAborted. Use `!shutdown` if you wish to shut down the bot."));
+                        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("The bot may not be running under Docker; this means that `/debug restart` will behave like `/debug shutdown`."
+                            + "\n\nOperation aborted. Use `/debug shutdown` if you wish to shut down the bot."));
                         return;
                     }
                 }
                 catch
                 {
                     // /proc/self/cgroup could not be found, which means the bot is not running in Docker.
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("The bot may not be running under Docker; this means that `!restart` will behave like `!shutdown`.)"
-                            + "\n\nAborted. Use `!shutdown` if you wish to shut down the bot."));
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("The bot may not be running under Docker; this means that `/debug restart` will behave like `/debug shutdown`.)"
+                            + "\n\nOperation aborted. Use `/debug shutdown` if you wish to shut down the bot."));
                     return;
                 }
 
