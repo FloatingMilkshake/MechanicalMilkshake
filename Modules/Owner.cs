@@ -34,7 +34,7 @@ namespace MechanicalMilkshake.Modules
             string baseUrl;
             if (Program.configjson.WorkerLinks.BaseUrl == null)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No base URL provided! Make sure the baseUrl field under workerLinks in your config.json file is set."));
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No base URL provided! Make sure the baseUrl field under workerLinks in your config.json file is set.").AsEphemeral(true));
                 return;
             }
             else
@@ -75,7 +75,7 @@ namespace MechanicalMilkshake.Modules
             string secret;
             if (Program.configjson.WorkerLinks.Secret == null)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set."));
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set.").AsEphemeral(true));
                 return;
             }
             else
@@ -92,9 +92,9 @@ namespace MechanicalMilkshake.Modules
             string responseText = await response.Content.ReadAsStringAsync();
             if (responseText.Length > 1940)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service."));
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service.").AsEphemeral(true));
             }
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```"));
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```").AsEphemeral(true));
         }
 
         public async Task DeleteWorkerLink(InteractionContext ctx, string url, HttpClient httpClient)
@@ -102,7 +102,7 @@ namespace MechanicalMilkshake.Modules
             string secret;
             if (Program.configjson.WorkerLinks.Secret == null)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set."));
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set.").AsEphemeral(true));
                 return;
             }
             else
@@ -119,36 +119,36 @@ namespace MechanicalMilkshake.Modules
             string responseText = await response.Content.ReadAsStringAsync();
             if (responseText.Length > 1940)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service."));
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service.").AsEphemeral(true));
             }
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```"));
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```").AsEphemeral(true));
         }
 
         public async Task ListWorkerLinks(InteractionContext ctx)
         {
             if (Program.configjson.WorkerLinks.ApiKey == null)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing Cloudflare API Key! Make sure the apiKey field under workerLinks in your config.json file is set."));
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing Cloudflare API Key! Make sure the apiKey field under workerLinks in your config.json file is set.").AsEphemeral(true));
                 return;
             }
 
             if (Program.configjson.WorkerLinks.NamespaceId == null)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing KV Namespace ID! Make sure the namespaceId field under workerLinks in your config.json file is set."));
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing KV Namespace ID! Make sure the namespaceId field under workerLinks in your config.json file is set.").AsEphemeral(true));
                 return;
             }
 
             if (Program.configjson.WorkerLinks.AccountId == null)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing Cloudflare Account ID! Make sure the accountId field under workerLinks in your config.json file is set."));
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing Cloudflare Account ID! Make sure the accountId field under workerLinks in your config.json file is set.").AsEphemeral(true));
             }
 
             if (Program.configjson.WorkerLinks.Email == null)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing email address for Cloudflare! Make sure the email field under workerLinks in your config.json file is set."));
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing email address for Cloudflare! Make sure the email field under workerLinks in your config.json file is set.").AsEphemeral(true));
             }
 
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Working..."));
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Working...").AsEphemeral(true));
 
             string requestUri = $"https://api.cloudflare.com/client/v4/accounts/{Program.configjson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId}/keys";
             HttpRequestMessage request = new(HttpMethod.Get, requestUri);
@@ -216,7 +216,7 @@ namespace MechanicalMilkshake.Modules
 
                 if (!name.Contains('.'))
                 {
-                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm. If you're trying to upload a file, make sure it was uploaded or linked correctly. If you're trying to preview an image, make sure you included the file extension."));
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm. If you're trying to upload a file, make sure it was uploaded or linked correctly. If you're trying to preview an image, make sure you included the file extension.").AsEphemeral(true));
                     return;
                 }
 
@@ -224,12 +224,12 @@ namespace MechanicalMilkshake.Modules
                 HttpResponseMessage response = await Program.httpClient.SendAsync(request);
                 if (!response.IsSuccessStatusCode)
                 {
-                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm, it looks like that file doesn't exist! If you're sure it does, perhaps you got the extension wrong."));
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm, it looks like that file doesn't exist! If you're sure it does, perhaps you got the extension wrong.").AsEphemeral(true));
                     return;
                 }
                 else
                 {
-                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}"));
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}").AsEphemeral(true));
                     return;
                 }
             }
@@ -240,7 +240,7 @@ namespace MechanicalMilkshake.Modules
                 return;
             }
 
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Working..."));
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Working...").AsEphemeral(true));
 
             string fileName;
             string extension;
@@ -350,7 +350,7 @@ namespace MechanicalMilkshake.Modules
                 fileToDelete = fileToDelete.Replace(">", "");
             }
 
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Working on it..."));
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Working on it...").AsEphemeral(true));
 
             string bucket;
             if (Program.configjson.S3.Bucket == null)
@@ -481,20 +481,20 @@ namespace MechanicalMilkshake.Modules
                     + $"\n**Version:** `{commitHash.Trim()}`"
                     + $"\n**Framework:** `{RuntimeInformation.FrameworkDescription}`"
                     + $"\n**Platform:** `{RuntimeInformation.OSDescription}`"
-                    + $"\n**Library:** `DSharpPlus {Program.discord.VersionString}`"));
+                    + $"\n**Library:** `DSharpPlus {Program.discord.VersionString}`").AsEphemeral(true));
             }
 
             [SlashCommand("uptime", "[Bot owner only] Check the bot's uptime (from the time it connects to Discord).")]
             public async Task Uptime(InteractionContext ctx)
             {
                 long unixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"<t:{unixTime}:F> (<t:{unixTime}:R>)"));
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"<t:{unixTime}:F> (<t:{unixTime}:R>)").AsEphemeral(true));
             }
 
             [SlashCommand("timecheck", "[Bot owner only] Return the current time on the machine the bot is running on.")]
             public async Task TimeCheck(InteractionContext ctx)
             {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Seems to me like it's currently `{DateTime.Now}`."));
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Seems to me like it's currently `{DateTime.Now}`.").AsEphemeral(true));
             }
 
             [SlashCommand("shutdown", "[Bot owner only] Shut down the bot.")]
@@ -514,7 +514,7 @@ namespace MechanicalMilkshake.Modules
                     if (string.IsNullOrWhiteSpace(dockerCheckFile))
                     {
                         await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("The bot may not be running under Docker; this means that `/debug restart` will behave like `/debug shutdown`."
-                            + "\n\nOperation aborted. Use `/debug shutdown` if you wish to shut down the bot."));
+                            + "\n\nOperation aborted. Use `/debug shutdown` if you wish to shut down the bot.").AsEphemeral(true));
                         return;
                     }
                 }
@@ -522,11 +522,11 @@ namespace MechanicalMilkshake.Modules
                 {
                     // /proc/self/cgroup could not be found, which means the bot is not running in Docker.
                     await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("The bot may not be running under Docker; this means that `/debug restart` will behave like `/debug shutdown`.)"
-                            + "\n\nOperation aborted. Use `/debug shutdown` if you wish to shut down the bot."));
+                            + "\n\nOperation aborted. Use `/debug shutdown` if you wish to shut down the bot.").AsEphemeral(true));
                     return;
                 }
 
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Restarting..."));
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Restarting...").AsEphemeral(true));
                 Environment.Exit(1);
             }
         }
@@ -563,7 +563,7 @@ namespace MechanicalMilkshake.Modules
 
             await ctx.Client.UpdateStatusAsync(activity, userStatus);
 
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Activity set successfully!"));
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Activity set successfully!").AsEphemeral(true));
         }
 
         [SlashCommand("resetactivity", "Reset the bot's activity (sets its status to online with no activity).")]
