@@ -195,21 +195,24 @@ namespace MechanicalMilkshake.Modules
         }
 
         [SlashCommand("upload", "[Bot owner only] Upload a file to Amazon S3-compatible cloud storage.")]
-        public async Task Upload(InteractionContext ctx, [Option("name", "The name for the uploaded file.")] string name, [Option("link", "A link to a file to upload.")] string link)
+        public async Task Upload(InteractionContext ctx, [Option("name", "The name for the uploaded file.")] string name, [Option("link", "A link to a file to upload.")] string link = null, [Option("ephemeralresponse", "Whether my response should be ephemeral. Works only when previewing images. Defaults to True.")] bool ephemeralResponse = true)
         {
             string linkToFile = null;
             linkToFile = link;
-            if (link.Contains('<'))
+            if (link != null)
             {
-                link = link.Replace("<", "");
-                linkToFile = link.Replace("<", "");
+                if (link.Contains('<'))
+                {
+                    link = link.Replace("<", "");
+                    linkToFile = link.Replace("<", "");
+                }
+                if (link.Contains('>'))
+                {
+                    link = link.Replace(">", "");
+                    linkToFile = link.Replace(">", "");
+                }
             }
-            if (link.Contains('>'))
-            {
-                link = link.Replace(">", "");
-                linkToFile = link.Replace(">", "");
-            }
-            if (link == null)
+            else
             {
                 // No link was provided; nothing was provided to upload.
                 // In this case we will assume the user wants to have the bot respond with the image they named. However, if that file doesn't exist, send an error (perhaps the user mistyped a filename?)
@@ -229,7 +232,14 @@ namespace MechanicalMilkshake.Modules
                 }
                 else
                 {
-                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}").AsEphemeral(true));
+                    if (ephemeralResponse)
+                    {
+                        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}").AsEphemeral(true));
+                    }
+                    else
+                    {
+                        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}").AsEphemeral(false));
+                    }
                     return;
                 }
             }
