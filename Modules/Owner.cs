@@ -194,7 +194,7 @@ namespace MechanicalMilkshake.Modules
             public string Name { get; set; }
         }
 
-        [SlashCommand("upload", "[Bot owner only] Upload a file to Amazon S3-compatible cloud storage.")]
+        [SlashCommand("cdn", "[Bot owner only] Upload a file to Amazon S3-compatible cloud storage.")]
         public async Task Upload(InteractionContext ctx, [Option("name", "The name for the uploaded file.")] string name, [Option("link", "A link to a file to upload.")] string link = null, [Option("ephemeralresponse", "Whether my response should be ephemeral. Works only when previewing images. Defaults to True.")] bool ephemeralResponse = true)
         {
             string linkToFile = null;
