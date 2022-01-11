@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 
 namespace MechanicalMilkshake.Modules
 {
+    [SlashRequireOwner]
     public class Owner : ApplicationCommandModule
     {
         [SlashCommand("link", "[Bot owner only] Set, update, or delete a short link with Cloudflare worker-links.")]
@@ -471,7 +472,6 @@ namespace MechanicalMilkshake.Modules
         }
 
         [SlashCommandGroup("debug", "[Bot owner only] Commands for checking if the bot is working properly.")]
-        [SlashRequireOwner]
         public class DebugCmds : ApplicationCommandModule
         {
             [SlashCommand("info", "[Bot owner only] Show debug information about the bot.")]
