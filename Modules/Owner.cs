@@ -577,7 +577,7 @@ namespace MechanicalMilkshake.Modules
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Activity set successfully!").AsEphemeral(true));
         }
 
-        [SlashCommand("resetactivity", "Reset the bot's activity (sets its status to online with no activity).")]
+        [SlashCommand("resetactivity", "[Bot owner only] Reset the bot's activity (sets its status to online with no activity).")]
         [Hidden]
         public async Task ResetStatus(InteractionContext ctx)
         {
