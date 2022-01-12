@@ -20,179 +20,191 @@ namespace MechanicalMilkshake.Modules
     [SlashRequireOwner]
     public class Owner : ApplicationCommandModule
     {
-        [SlashCommand("link", "[Bot owner only] Set, update, or delete a short link with Cloudflare worker-links.")]
-        public async Task Link(InteractionContext ctx, [Option("key", "Set a custom key for the short link.")] string key, [Option("url", "The URL the short link should point to.")] string url = "")
+        [SlashCommandGroup("link", "[Bot owner only] Set, update, or delete a short link with Cloudflare worker-links.")]
+        public class Link
         {
-            if (url.Contains('<'))
+            [SlashCommand("set", "Set or update a short link with Cloudflare worker-links.")]
+            public async Task SetLink(InteractionContext ctx, [Option("key", "Set a custom key for the short link.")] string key, [Option("url", "The URL the short link should point to.")] string url)
             {
-                url = url.Replace("<", "");
-            }
-            if (url.Contains('>'))
-            {
-                url = url.Replace(">", "");
-            }
-
-            string baseUrl;
-            if (Program.configjson.WorkerLinks.BaseUrl == null)
-            {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No base URL provided! Make sure the baseUrl field under workerLinks in your config.json file is set.").AsEphemeral(true));
-                return;
-            }
-            else
-            {
-                baseUrl = Program.configjson.WorkerLinks.BaseUrl;
-            }
-
-            using HttpClient httpClient = new()
-            {
-                BaseAddress = new Uri(baseUrl)
-            };
-
-            HttpRequestMessage request = null;
-
-            if (key == "null" || key == "random" || key == "rand")
-            {
-                request = new HttpRequestMessage(HttpMethod.Post, "") { };
-            }
-            else if (key == "delete" || key == "del")
-            {
-                if (!url.Contains("https://link.floatingmilkshake.com/"))
+                if (url.Contains('<'))
                 {
-                    url = $"https://link.floatingmilkshake.com/{url}";
+                    url = url.Replace("<", "");
                 }
-                await DeleteWorkerLink(ctx, url, httpClient);
-                return;
+                if (url.Contains('>'))
+                {
+                    url = url.Replace(">", "");
+                }
+
+                string baseUrl;
+                if (Program.configjson.WorkerLinks.BaseUrl == null)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No base URL provided! Make sure the baseUrl field under workerLinks in your config.json file is set.").AsEphemeral(true));
+                    return;
+                }
+                else
+                {
+                    baseUrl = Program.configjson.WorkerLinks.BaseUrl;
+                }
+
+                using HttpClient httpClient = new()
+                {
+                    BaseAddress = new Uri(baseUrl)
+                };
+
+                HttpRequestMessage request = null;
+
+                if (key == "null" || key == "random" || key == "rand")
+                {
+                    request = new HttpRequestMessage(HttpMethod.Post, "") { };
+                }
+                else
+                {
+                    request = new HttpRequestMessage(HttpMethod.Put, key) { };
+                }
+
+                string secret;
+                if (Program.configjson.WorkerLinks.Secret == null)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set.").AsEphemeral(true));
+                    return;
+                }
+                else
+                {
+                    secret = Program.configjson.WorkerLinks.Secret;
+                }
+
+                request.Headers.Add("Authorization", secret);
+                request.Headers.Add("URL", url);
+
+                HttpResponseMessage response = await httpClient.SendAsync(request);
+                int httpStatusCode = (int)response.StatusCode;
+                string httpStatus = response.StatusCode.ToString();
+                string responseText = await response.Content.ReadAsStringAsync();
+                if (responseText.Length > 1940)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service.").AsEphemeral(true));
+                }
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```").AsEphemeral(true));
             }
-            else if (key == "list")
+
+            [SlashCommand("delete", "Delete a short link with Cloudflare worker-links.")]
+            public async Task DeleteWorkerLink(InteractionContext ctx, [Option("link", "The key or URL of the short link to delete.")] string url)
             {
-                await ListWorkerLinks(ctx);
-                return;
+                string baseUrl;
+                if (Program.configjson.WorkerLinks.BaseUrl == null)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No base URL provided! Make sure the baseUrl field under workerLinks in your config.json file is set.").AsEphemeral(true));
+                    return;
+                }
+                else
+                {
+                    baseUrl = Program.configjson.WorkerLinks.BaseUrl;
+                }
+                using HttpClient httpClient = new()
+                {
+                    BaseAddress = new Uri(baseUrl)
+                };
+
+                if (!url.Contains(baseUrl))
+                {
+                    url = $"{baseUrl}/{url}";
+                }
+
+                string secret;
+                if (Program.configjson.WorkerLinks.Secret == null)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set.").AsEphemeral(true));
+                    return;
+                }
+                else
+                {
+                    secret = Program.configjson.WorkerLinks.Secret;
+                }
+
+                HttpRequestMessage request = new(HttpMethod.Delete, url) { };
+                request.Headers.Add("Authorization", secret);
+
+                HttpResponseMessage response = await httpClient.SendAsync(request);
+                int httpStatusCode = (int)response.StatusCode;
+                string httpStatus = response.StatusCode.ToString();
+                string responseText = await response.Content.ReadAsStringAsync();
+                if (responseText.Length > 1940)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service.").AsEphemeral(true));
+                }
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```").AsEphemeral(true));
             }
-            else
+
+            [SlashCommand("list", "List all short links configured with Cloudflare worker-links.")]
+            public async Task ListWorkerLinks(InteractionContext ctx)
             {
-                request = new HttpRequestMessage(HttpMethod.Put, key) { };
+                if (Program.configjson.WorkerLinks.ApiKey == null)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing Cloudflare API Key! Make sure the apiKey field under workerLinks in your config.json file is set.").AsEphemeral(true));
+                    return;
+                }
+
+                if (Program.configjson.WorkerLinks.NamespaceId == null)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing KV Namespace ID! Make sure the namespaceId field under workerLinks in your config.json file is set.").AsEphemeral(true));
+                    return;
+                }
+
+                if (Program.configjson.WorkerLinks.AccountId == null)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing Cloudflare Account ID! Make sure the accountId field under workerLinks in your config.json file is set.").AsEphemeral(true));
+                }
+
+                if (Program.configjson.WorkerLinks.Email == null)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing email address for Cloudflare! Make sure the email field under workerLinks in your config.json file is set.").AsEphemeral(true));
+                }
+
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Working...").AsEphemeral(true));
+
+                string requestUri = $"https://api.cloudflare.com/client/v4/accounts/{Program.configjson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId}/keys";
+                HttpRequestMessage request = new(HttpMethod.Get, requestUri);
+
+                request.Headers.Add("X-Auth-Key", Program.configjson.WorkerLinks.ApiKey);
+                request.Headers.Add("X-Auth-Email", Program.configjson.WorkerLinks.Email);
+                HttpResponseMessage response = await Program.httpClient.SendAsync(request);
+
+                string responseText = await response.Content.ReadAsStringAsync();
+
+                var parsedResponse = JsonConvert.DeserializeObject<CloudflareResponse>(responseText);
+
+                string kvListResponse = "";
+
+                foreach (KVEntry item in parsedResponse.Result)
+                {
+                    string key = item.Name.Replace("/", "%2F");
+
+                    string valueRequestUri = $"https://api.cloudflare.com/client/v4/accounts/{Program.configjson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId}/values/{key}";
+                    HttpRequestMessage valueRequest = new(HttpMethod.Get, valueRequestUri);
+
+                    valueRequest.Headers.Add("X-Auth-Key", Program.configjson.WorkerLinks.ApiKey);
+                    valueRequest.Headers.Add("X-Auth-Email", Program.configjson.WorkerLinks.Email);
+                    HttpResponseMessage valueResponse = await Program.httpClient.SendAsync(valueRequest);
+
+                    string value = await valueResponse.Content.ReadAsStringAsync();
+                    value = value.Replace(value, $"<{value}>");
+                    kvListResponse += $"`{item.Name}`: {value}\n\n";
+                }
+
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(kvListResponse));
             }
 
-            string secret;
-            if (Program.configjson.WorkerLinks.Secret == null)
+            public class CloudflareResponse
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set.").AsEphemeral(true));
-                return;
+                [JsonProperty("result")]
+                public List<KVEntry> Result { get; set; }
             }
-            else
+
+            public class KVEntry
             {
-                secret = Program.configjson.WorkerLinks.Secret;
+                [JsonProperty("name")]
+                public string Name { get; set; }
             }
-
-            request.Headers.Add("Authorization", secret);
-            request.Headers.Add("URL", url);
-
-            HttpResponseMessage response = await httpClient.SendAsync(request);
-            int httpStatusCode = (int)response.StatusCode;
-            string httpStatus = response.StatusCode.ToString();
-            string responseText = await response.Content.ReadAsStringAsync();
-            if (responseText.Length > 1940)
-            {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service.").AsEphemeral(true));
-            }
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```").AsEphemeral(true));
-        }
-
-        public async Task DeleteWorkerLink(InteractionContext ctx, string url, HttpClient httpClient)
-        {
-            string secret;
-            if (Program.configjson.WorkerLinks.Secret == null)
-            {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set.").AsEphemeral(true));
-                return;
-            }
-            else
-            {
-                secret = Program.configjson.WorkerLinks.Secret;
-            }
-
-            HttpRequestMessage request = new(HttpMethod.Delete, url) { };
-            request.Headers.Add("Authorization", secret);
-
-            HttpResponseMessage response = await httpClient.SendAsync(request);
-            int httpStatusCode = (int)response.StatusCode;
-            string httpStatus = response.StatusCode.ToString();
-            string responseText = await response.Content.ReadAsStringAsync();
-            if (responseText.Length > 1940)
-            {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service.").AsEphemeral(true));
-            }
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```").AsEphemeral(true));
-        }
-
-        public async Task ListWorkerLinks(InteractionContext ctx)
-        {
-            if (Program.configjson.WorkerLinks.ApiKey == null)
-            {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing Cloudflare API Key! Make sure the apiKey field under workerLinks in your config.json file is set.").AsEphemeral(true));
-                return;
-            }
-
-            if (Program.configjson.WorkerLinks.NamespaceId == null)
-            {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing KV Namespace ID! Make sure the namespaceId field under workerLinks in your config.json file is set.").AsEphemeral(true));
-                return;
-            }
-
-            if (Program.configjson.WorkerLinks.AccountId == null)
-            {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing Cloudflare Account ID! Make sure the accountId field under workerLinks in your config.json file is set.").AsEphemeral(true));
-            }
-
-            if (Program.configjson.WorkerLinks.Email == null)
-            {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing email address for Cloudflare! Make sure the email field under workerLinks in your config.json file is set.").AsEphemeral(true));
-            }
-
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Working...").AsEphemeral(true));
-
-            string requestUri = $"https://api.cloudflare.com/client/v4/accounts/{Program.configjson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId}/keys";
-            HttpRequestMessage request = new(HttpMethod.Get, requestUri);
-
-            request.Headers.Add("X-Auth-Key", Program.configjson.WorkerLinks.ApiKey);
-            request.Headers.Add("X-Auth-Email", Program.configjson.WorkerLinks.Email);
-            HttpResponseMessage response = await Program.httpClient.SendAsync(request);
-
-            string responseText = await response.Content.ReadAsStringAsync();
-
-            var parsedResponse = JsonConvert.DeserializeObject<CloudflareResponse>(responseText);
-
-            string kvListResponse = "";
-
-            foreach (KVEntry item in parsedResponse.Result)
-            {
-                string key = item.Name.Replace("/", "%2F");
-
-                string valueRequestUri = $"https://api.cloudflare.com/client/v4/accounts/{Program.configjson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId}/values/{key}";
-                HttpRequestMessage valueRequest = new(HttpMethod.Get, valueRequestUri);
-
-                valueRequest.Headers.Add("X-Auth-Key", Program.configjson.WorkerLinks.ApiKey);
-                valueRequest.Headers.Add("X-Auth-Email", Program.configjson.WorkerLinks.Email);
-                HttpResponseMessage valueResponse = await Program.httpClient.SendAsync(valueRequest);
-
-                string value = await valueResponse.Content.ReadAsStringAsync();
-                value = value.Replace(value, $"<{value}>");
-                kvListResponse += $"`{item.Name}`: {value}\n\n";
-            }
-
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(kvListResponse));
-        }
-
-        public class CloudflareResponse
-        {
-            [JsonProperty("result")]
-            public List<KVEntry> Result { get; set; }
-        }
-
-        public class KVEntry
-        {
-            [JsonProperty("name")]
-            public string Name { get; set; }
         }
 
         [SlashCommandGroup("cdn", "[Bot owner only] Manage files uploaded to Amazon S3-compatible cloud storage.")]
