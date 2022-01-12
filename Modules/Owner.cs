@@ -211,7 +211,7 @@ namespace MechanicalMilkshake.Modules
         public class Cdn
         {
             [SlashCommand("upload", "[Bot owner only] Upload a file to Amazon S3-compatible cloud storage.")]
-            public async Task Upload(InteractionContext ctx, [Option("name", "The name for the uploaded file.")] string name, [Option("link", "A link to a file to upload.")] string link, [Option("ephemeralresponse", "Whether my response should be ephemeral. Works only when previewing images. Defaults to True.")] bool ephemeralResponse = true)
+            public async Task Upload(InteractionContext ctx, [Option("name", "The name for the uploaded file.")] string name, [Option("link", "A link to a file to upload.")] string link)
             {
                 string linkToFile = link;
                 // Remove extension from filename. We don't want this to cause issues with duplicate file extensions.
