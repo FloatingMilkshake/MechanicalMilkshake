@@ -155,16 +155,19 @@ namespace MechanicalMilkshake
                 }
             };
 
-#if DEBUG
+#if DEBUG // Register slash commands for dev server only when debugging in VS; no need to wait an hour for changes to apply
             slash.RegisterCommands<Owner>(configjson.DevServerId);
+            slash.RegisterCommands<Fun>(configjson.DevServerId);
+            slash.RegisterCommands<Mod>(configjson.DevServerId);
+            slash.RegisterCommands<Utility>(configjson.DevServerId);
             Console.WriteLine("Slash commands registered for debugging.");
-#else
+#else // Register slash commands globally for 'production' bot
             slash.RegisterCommands<Owner>();
+            slash.RegisterCommands<Fun>();
+            slash.RegisterCommands<Mod>();
+            slash.RegisterCommands<Utility>();
             Console.WriteLine("Slash commands registered globally.");
 #endif
-            commands.RegisterCommands<Utility>();
-            commands.RegisterCommands<Fun>();
-            commands.RegisterCommands<Mod>();
             commands.RegisterCommands<PerServerFeatures>();
             commands.CommandErrored += CommandsNextService_CommandErrored;
 
