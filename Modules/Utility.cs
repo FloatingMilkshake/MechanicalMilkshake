@@ -52,12 +52,6 @@ namespace MechanicalMilkshake.Modules
             {
                 acknowledgements = "Server Owner";
             }
-            if (member.PremiumSince != null)
-            {
-                DateTime PremiumSinceUtc = member.PremiumSince.Value.UtcDateTime;
-                long unixTime = ((DateTimeOffset)PremiumSinceUtc).ToUnixTimeSeconds();
-                acknowledgements = $"Server Booster (boosting since <t:{unixTime}:R> (<t:{unixTime}:F>)";
-            }
 
             string roles = "None";
             if (member.Roles.Any())
