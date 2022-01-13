@@ -457,7 +457,7 @@ namespace MechanicalMilkshake.Modules
             {
                 if (!name.Contains('.'))
                 {
-                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm. If you're trying to upload a file, make sure it was uploaded or linked correctly. If you're trying to preview an image, make sure you included the file extension.").AsEphemeral(true));
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm, it doesn't look like you included a file extension. Be sure to include the proper file extension so I can find the image you're looking for.").AsEphemeral(true));
                     return;
                 }
 
