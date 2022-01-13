@@ -15,7 +15,7 @@ namespace MechanicalMilkshake.Modules
         {
             [Command("number")]
             [Description("Generates a random number between two that you specify.")]
-            public async Task Random(CommandContext ctx, [Description("The minimum number to choose between. Defaults to 1.")] int min = 1, [Description("The maximum number to choose between. Defaults to 10.")] int max = 10)
+            public async Task RandomNumber(CommandContext ctx, [Description("The minimum number to choose between. Defaults to 1.")] int min = 1, [Description("The maximum number to choose between. Defaults to 10.")] int max = 10)
             {
                 if (min > max)
                 {
@@ -29,7 +29,7 @@ namespace MechanicalMilkshake.Modules
 
             [Command("fact")]
             [Description("Get a random fact.")]
-            public async Task Fact(CommandContext ctx)
+            public async Task RandomFact(CommandContext ctx)
             {
                 DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Getting a random fact...*");
 
@@ -46,7 +46,7 @@ namespace MechanicalMilkshake.Modules
 
             [Command("cat")]
             [Description("Get a random cat picture from the internet.")]
-            public async Task Cat(CommandContext ctx)
+            public async Task RandomCat(CommandContext ctx)
             {
                 DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Looking for a cat...*");
                 string data = await Program.httpClient.GetStringAsync("https://api.thecatapi.com/v1/images/search");
@@ -64,7 +64,7 @@ namespace MechanicalMilkshake.Modules
 
             [Command("dog")]
             [Description("Get a random dog picture from the internet.")]
-            public async Task Dog(CommandContext ctx)
+            public async Task RandomDog(CommandContext ctx)
             {
                 DSharpPlus.Entities.DiscordMessage msg = await ctx.RespondAsync("*Looking for a dog...*");
                 string data = await Program.httpClient.GetStringAsync("https://dog.ceo/api/breeds/image/random");
@@ -90,7 +90,7 @@ namespace MechanicalMilkshake.Modules
             [Command("spam")]
             [Aliases("smash", "keyboardsmash")]
             [Description("Spam letters. Think of a keyboard smash.")]
-            public async Task KeyboardSmash(CommandContext ctx, [Description("The number of letters.")] int size)
+            public async Task LetterSpam(CommandContext ctx, [Description("The number of letters.")] int size)
             {
                 const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
                 string kbSmash = new(Enumerable.Repeat(chars, size).Select(s => s[Program.random.Next(s.Length)]).ToArray());
@@ -99,7 +99,7 @@ namespace MechanicalMilkshake.Modules
 
             [Command("repeat")]
             [Description("Repeat a single letter.")]
-            public async Task LetterSpam(CommandContext ctx, [Description("The letter to repeat.")] string letter, [Description("The number of times to repeat it.")] int count)
+            public async Task LetterRepeat(CommandContext ctx, [Description("The letter to repeat.")] string letter, [Description("The number of times to repeat it.")] int count)
             {
                 if (letter.Length > 1)
                 {
