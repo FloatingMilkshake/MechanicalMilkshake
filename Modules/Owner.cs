@@ -555,7 +555,7 @@ namespace MechanicalMilkshake.Modules
         }
 
         [SlashCommand("setactivity", "[Bot owner only] Set the bot's activity.")]
-        public async Task SetActivity(InteractionContext ctx, [Option("status", "The bot's online status.")] string status = "online", [Option("type", "The type of status (playing, watching, etc).")] string type = "playing", [Option("activityName", "The bot's activity (for example, watching '!help').")] string activityName = null)
+        public async Task SetActivity(InteractionContext ctx, [Option("status", "The bot's online status. Defaults to 'online'.")] string status = "online", [Option("type", "The type of status (playing, watching, etc). Defaults to 'playing'.")] string type = "playing", [Option("activityName", "The bot's activity (for example, watching '!help'). Defaults to nothing.")] string activityName = null)
         {
             DiscordActivity activity = new();
             ActivityType activityType = default;
