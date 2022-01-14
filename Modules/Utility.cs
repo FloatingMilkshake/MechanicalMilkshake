@@ -254,10 +254,16 @@ namespace MechanicalMilkshake.Modules
                 appid = Program.configjson.WolframAlphaAppId;
             }
 
+            string queryEscaped = query.Replace("`", @"\`");
+            queryEscaped = queryEscaped.Replace("*", @"\*");
+            queryEscaped = queryEscaped.Replace("_", @"\_");
+            queryEscaped = queryEscaped.Replace("~", @"\~");
+            queryEscaped = queryEscaped.Replace(">", @"\>");
+
             try
             {
                 string data = await Program.httpClient.GetStringAsync($"https://api.wolframalpha.com/v1/result?appid={appid}&i={query}");
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(data + $"\n\n*Query URL: <https://www.wolframalpha.com/input/?i={queryEncoded}>*"));
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"> {queryEscaped}\n" + data + $"\n\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
             }
             catch
             {
