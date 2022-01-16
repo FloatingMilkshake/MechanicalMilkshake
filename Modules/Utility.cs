@@ -282,10 +282,12 @@ namespace MechanicalMilkshake.Modules
         [SlashCommand("wolframalpha", "Search WolframAlpha without leaving Discord!")]
         public async Task WolframAlpha(InteractionContext ctx, [Option("query", "What to search for.")] string query)
         {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
             string queryEncoded;
             if (query == null)
             {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Hmm, it doesn't look like you entered a valid query. Try something like `/wolframalpha query:What is the meaning of life?`."));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Hmm, it doesn't look like you entered a valid query. Try something like `/wolframalpha query:What is the meaning of life?`."));
                 return;
             }
             else
@@ -293,12 +295,10 @@ namespace MechanicalMilkshake.Modules
                 queryEncoded = HttpUtility.UrlEncode(query);
             }
 
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Searching..."));
-
             string appid;
             if (Program.configjson.WolframAlphaAppId == null)
             {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Looks like you don't have an App ID! Check the wolframAlphaAppId field in your config.json file. "
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Looks like you don't have an App ID! Check the wolframAlphaAppId field in your config.json file. "
                     + "If you don't know how to get an App ID, see Getting Started here: <https://products.wolframalpha.com/short-answers-api/documentation/>"));
                 return;
             }
@@ -316,12 +316,11 @@ namespace MechanicalMilkshake.Modules
             try
             {
                 string data = await Program.httpClient.GetStringAsync($"https://api.wolframalpha.com/v1/result?appid={appid}&i={query}");
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"> {queryEscaped}\n" + data + $"\n\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"> {queryEscaped}\n" + data + $"\n\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
             }
             catch
             {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Something went wrong while searching WolframAlpha and I couldn't get a simple answer for your query! Note that I cannot return all data however, and a result may be available here: "
-                    + $"<https://www.wolframalpha.com/input/?i={queryEncoded}>"));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Something went wrong while searching WolframAlpha and I couldn't get a simple answer for your query! Note that I cannot return all data however, and a result may be available here: " + $"<https://www.wolframalpha.com/input/?i={queryEncoded}>"));
             }
         }
 

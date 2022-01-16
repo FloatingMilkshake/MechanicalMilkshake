@@ -138,29 +138,29 @@ namespace MechanicalMilkshake.Modules
             [SlashCommand("list", "List all short links configured with Cloudflare worker-links.")]
             public async Task ListWorkerLinks(InteractionContext ctx)
             {
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
+
                 if (Program.configjson.WorkerLinks.ApiKey == null)
                 {
-                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing Cloudflare API Key! Make sure the apiKey field under workerLinks in your config.json file is set.").AsEphemeral(true));
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Error: missing Cloudflare API Key! Make sure the apiKey field under workerLinks in your config.json file is set.").AsEphemeral(true));
                     return;
                 }
 
                 if (Program.configjson.WorkerLinks.NamespaceId == null)
                 {
-                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing KV Namespace ID! Make sure the namespaceId field under workerLinks in your config.json file is set.").AsEphemeral(true));
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Error: missing KV Namespace ID! Make sure the namespaceId field under workerLinks in your config.json file is set.").AsEphemeral(true));
                     return;
                 }
 
                 if (Program.configjson.WorkerLinks.AccountId == null)
                 {
-                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing Cloudflare Account ID! Make sure the accountId field under workerLinks in your config.json file is set.").AsEphemeral(true));
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Error: missing Cloudflare Account ID! Make sure the accountId field under workerLinks in your config.json file is set.").AsEphemeral(true));
                 }
 
                 if (Program.configjson.WorkerLinks.Email == null)
                 {
-                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Error: missing email address for Cloudflare! Make sure the email field under workerLinks in your config.json file is set.").AsEphemeral(true));
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Error: missing email address for Cloudflare! Make sure the email field under workerLinks in your config.json file is set.").AsEphemeral(true));
                 }
-
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Working...").AsEphemeral(true));
 
                 string requestUri = $"https://api.cloudflare.com/client/v4/accounts/{Program.configjson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId}/keys";
                 HttpRequestMessage request = new(HttpMethod.Get, requestUri);
@@ -191,7 +191,7 @@ namespace MechanicalMilkshake.Modules
                     kvListResponse += $"`{item.Name}`: {value}\n\n";
                 }
 
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(kvListResponse));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(kvListResponse).AsEphemeral(true));
             }
 
             public class CloudflareResponse
@@ -213,6 +213,8 @@ namespace MechanicalMilkshake.Modules
             [SlashCommand("upload", "[Bot owner only] Upload a file to Amazon S3-compatible cloud storage.")]
             public async Task Upload(InteractionContext ctx, [Option("name", "The name for the uploaded file.")] string name, [Option("link", "A link to a file to upload.")] string link)
             {
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
+
                 string linkToFile = link;
                 // Remove extension from filename. We don't want this to cause issues with duplicate file extensions.
                 Regex extRemovalPattern = new(@"\..*");
@@ -233,8 +235,6 @@ namespace MechanicalMilkshake.Modules
                     linkToFile = link.Replace(">", "");
                 }
 
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Working...").AsEphemeral(true));
-
                 string fileName;
                 string extension;
 
@@ -249,7 +249,7 @@ namespace MechanicalMilkshake.Modules
                     string bucket = null;
                     if (Program.configjson.S3.Bucket == null)
                     {
-                        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Error: S3 bucket info missing! Make sure the bucket field under s3 in your config.json file is set."));
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Error: S3 bucket info missing! Make sure the bucket field under s3 in your config.json file is set."));
                         return;
                     }
                     else
@@ -310,30 +310,32 @@ namespace MechanicalMilkshake.Modules
                 }
                 catch (MinioException e)
                 {
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"An API error occured while uploading!```\n{e.Message}```"));
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"An API error occured while uploading!```\n{e.Message}```"));
                     return;
                 }
                 catch (Exception e)
                 {
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"An unexpected error occured while uploading!```\n{e.Message}```"));
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"An unexpected error occured while uploading!```\n{e.Message}```"));
                     return;
                 }
 
                 string cdnUrl;
                 if (Program.configjson.S3.CdnBaseUrl == null)
                 {
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Upload successful!\nThere's no CDN URL set in your config.json, so I can't give you a link. But your file was uploaded as {fileName}."));
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Upload successful!\nThere's no CDN URL set in your config.json, so I can't give you a link. But your file was uploaded as {fileName}."));
                 }
                 else
                 {
                     cdnUrl = Program.configjson.S3.CdnBaseUrl;
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Upload successful!\n<{cdnUrl}/{fileName}>"));
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Upload successful!\n<{cdnUrl}/{fileName}>"));
                 }
             }
 
             [SlashCommand("delete", "[Bot owner only] Delete a file from Amazon S3-compatible cloud storage.")]
             public async Task DeleteUpload(InteractionContext ctx, [Option("file", "The file to delete.")] string fileToDelete)
             {
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
+
                 if (fileToDelete.Contains('<'))
                 {
                     fileToDelete = fileToDelete.Replace("<", "");
@@ -343,12 +345,10 @@ namespace MechanicalMilkshake.Modules
                     fileToDelete = fileToDelete.Replace(">", "");
                 }
 
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Working on it...").AsEphemeral(true));
-
                 string bucket;
                 if (Program.configjson.S3.Bucket == null)
                 {
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Error: S3 bucket info missing! Make sure the bucket field under s3 in your config.json file is set."));
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Error: S3 bucket info missing! Make sure the bucket field under s3 in your config.json file is set."));
                     return;
                 }
                 else
@@ -372,16 +372,16 @@ namespace MechanicalMilkshake.Modules
                 }
                 catch (MinioException e)
                 {
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"An API error occured while attempting to delete the file!```\n{e.Message}```"));
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"An API error occured while attempting to delete the file!```\n{e.Message}```"));
                     return;
                 }
                 catch (Exception e)
                 {
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"An unexpected error occured while attempting to delete the file!```\n{e.Message}```"));
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"An unexpected error occured while attempting to delete the file!```\n{e.Message}```"));
                     return;
                 }
 
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("File deleted successfully!\nAttempting to purge Cloudflare cache..."));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("File deleted successfully!\nAttempting to purge Cloudflare cache..."));
 
                 string cloudflareUrlPrefix;
                 if (Program.configjson.Cloudflare.UrlPrefix != null)
