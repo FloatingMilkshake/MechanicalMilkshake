@@ -3,6 +3,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -197,27 +198,79 @@ namespace MechanicalMilkshake.Modules
         }
 
         [SlashCommand("markdown", "Expose the Markdown formatting behind a message!")]
-        public async Task Markdown(InteractionContext ctx, [Option("message", "The message you want to expose the formatting of. Accepts message IDs.")] string messageToExpose)
+        public async Task Markdown(InteractionContext ctx, [Option("message", "The message you want to expose the formatting of. Accepts message IDs and links.")] string messageToExpose)
         {
-            ulong messageId;
-            try
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            DiscordMessage message = null;
+            if (!messageToExpose.Contains("discord.com"))
             {
-                messageId = Convert.ToUInt64(messageToExpose);
+                ulong messageId;
+                try
+                {
+                    messageId = Convert.ToUInt64(messageToExpose);
+                }
+                catch
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Hmm, that doesn't look like a valid message ID. I wasn't able to get the Markdown data from it."));
+                    return;
+                }
+
+                message = await ctx.Channel.GetMessageAsync(messageId);
             }
-            catch
+            else
             {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Hmm, that doesn't look like a valid message ID. I wasn't able to get the Markdown data from it."));
-                return;
+                // Assume the user provided a message link. Extract channel and message IDs to get message content.
+
+                // Extract all IDs from URL. This will leave you with something like "guild_id/channel_id/message_id".
+                Regex extractId = new(@".*.discord.com\/channels\/");
+                Match selectionToRemove = extractId.Match(messageToExpose);
+                messageToExpose = messageToExpose.Replace(selectionToRemove.ToString(), "");
+
+                // Extract channel ID. This will leave you with "/channel_id".
+                Regex getChannelId = new(@"\/[a-zA-Z0-9]*");
+                Match channelId = getChannelId.Match(messageToExpose);
+                // Remove '/' to get "channel_id"
+                string targetChannel = channelId.ToString().Replace("/", "");
+
+                ulong targetChannelId = Convert.ToUInt64(targetChannel);
+
+                DiscordChannel channel;
+                try
+                {
+                    channel = await ctx.Client.GetChannelAsync(targetChannelId);
+                }
+                catch
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("I wasn't able to find that message! Make sure I have permission to see the channel it's in."));
+                    return;
+                }
+
+                // Now we have the channel ID and need to get the message inside that channel. To do this we'll need the message ID from what we had before...
+
+                Regex getMessageId = new(@"[a-zA-Z0-9]*\/[a-zA-Z0-9]*\/");
+                Match idsToRemove = getMessageId.Match(messageToExpose);
+                string targetMsgId = messageToExpose.Replace(idsToRemove.ToString(), "");
+
+                ulong targetMessage = Convert.ToUInt64(targetMsgId.ToString());
+
+                try
+                {
+                    message = await channel.GetMessageAsync(targetMessage);
+                }
+                catch
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("I wasn't able to read that message! Make sure I have permisison to access it."));
+                }
             }
 
-            DiscordMessage message = await ctx.Channel.GetMessageAsync(messageId);
 
             string msgContentEscaped = message.Content.Replace("`", @"\`");
             msgContentEscaped = msgContentEscaped.Replace("*", @"\*");
             msgContentEscaped = msgContentEscaped.Replace("_", @"\_");
             msgContentEscaped = msgContentEscaped.Replace("~", @"\~");
             msgContentEscaped = msgContentEscaped.Replace(">", @"\>");
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"{msgContentEscaped}"));
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"{msgContentEscaped}"));
         }
 
         [SlashCommand("ping", "Checks my ping.")]
