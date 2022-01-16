@@ -7,6 +7,7 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.EventArgs;
 using MechanicalMilkshake.Modules;
 using Minio;
 using Newtonsoft.Json;
@@ -68,11 +69,40 @@ namespace MechanicalMilkshake
 
             var slash = discord.UseSlashCommands();
 
-            slash.SlashCommandErrored += async (s, e) =>
+            slash.SlashCommandErrored += async (SlashCommandsExtension scmds, SlashCommandErrorEventArgs e) =>
             {
-                if (e.Exception is SlashExecutionChecksFailedException slex)
+                if (e.Exception is SlashExecutionChecksFailedException)
                 {
                     await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up.").AsEphemeral(true));
+                    return;
+                }
+
+                List<Exception> exs = new();
+                if (e.Exception is AggregateException ae)
+                    exs.AddRange(ae.InnerExceptions);
+                else
+                    exs.Add(e.Exception);
+
+                foreach (Exception ex in exs)
+                {
+                    DiscordEmbedBuilder embed = new()
+                    {
+                        Color = new DiscordColor("#FF0000"),
+                        Title = "An exception occurred when executing a slash command",
+                        Description = $"`{ex.GetType()}` occurred when executing `{e.Context.CommandName}`.",
+                        Timestamp = DateTime.UtcNow
+                    };
+                    embed.AddField("Message", ex.Message);
+
+                    // I don't know how to tell whether the command response was deferred or not, so we're going to try both an interaction response and follow-up so that the interaction doesn't time-out.
+                    try
+                    {
+                        await e.Context.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(embed.Build()));
+                    }
+                    catch
+                    {
+                        await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed.Build()));
+                    }
                 }
             };
 
