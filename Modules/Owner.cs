@@ -470,14 +470,7 @@ namespace MechanicalMilkshake.Modules
                 }
                 else
                 {
-                    if (ephemeralResponse)
-                    {
-                        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}").AsEphemeral(true));
-                    }
-                    else
-                    {
-                        await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}").AsEphemeral(false));
-                    }
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}").AsEphemeral(ephemeralResponse));
                     return;
                 }
             }
