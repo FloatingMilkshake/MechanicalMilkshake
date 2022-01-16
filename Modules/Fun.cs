@@ -82,19 +82,19 @@ namespace MechanicalMilkshake.Modules
         public class LetterCmds : ApplicationCommandModule
         {
             [SlashCommand("spam", "Spam letters. Think of a keyboard smash.")]
-            public async Task LetterSpam(InteractionContext ctx, [Option("size", "The number of letters.")] long size)
+            public async Task LetterSpam(InteractionContext ctx, [Option("size", "The number of letters.")] long size, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to True.")] bool ephemeralresponse = true)
             {
                 const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
                 string kbSmash = new(Enumerable.Repeat(chars, (int)size).Select(s => s[Program.random.Next(s.Length)]).ToArray());
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(kbSmash));
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(kbSmash).AsEphemeral(ephemeralresponse));
             }
 
             [SlashCommand("repeat", "Repeat a single letter.")]
-            public async Task LetterRepeat(InteractionContext ctx, [Option("letter", "The letter to repeat.")] string letter, [Option("count", "The number of times to repeat it.")] long count)
+            public async Task LetterRepeat(InteractionContext ctx, [Option("letter", "The letter to repeat.")] string letter, [Option("count", "The number of times to repeat it.")] long count, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to True.")] bool ephemeralResponse = true)
             {
                 if (letter.Length > 1)
                 {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Only one letter can be repeated."));
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Only one letter can be repeated.").AsEphemeral(ephemeralResponse));
                     return;
                 }
                 if (count > 2000)
@@ -103,7 +103,7 @@ namespace MechanicalMilkshake.Modules
                 }
 
                 string response = new(Enumerable.Repeat(letter, (int)count).Select(s => s[Program.random.Next(s.Length)]).ToArray());
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(response));
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(response).AsEphemeral(ephemeralResponse));
             }
         }
     }
