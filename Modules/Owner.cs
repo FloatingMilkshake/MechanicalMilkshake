@@ -269,7 +269,7 @@ namespace MechanicalMilkshake.Modules
                     }
                     linkToFile = linkToFile.Replace("?", "");
 
-                    Regex extPattern = new(@"\..*");
+                    Regex extPattern = new(@"\.[^.]*?$");
                     Match extMatch = extPattern.Match(linkToFile);
                     extension = extMatch.ToString();
 
