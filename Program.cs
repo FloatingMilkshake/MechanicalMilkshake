@@ -179,9 +179,7 @@ namespace MechanicalMilkshake
             {
                 if (e.Id == "shutdown-button")
                 {
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("**Warning: The bot is now shutting down. This action is permanent.**\n\n(Note: The bot may still show as online for a few minutes before Discord realizes it is offline.)").AsEphemeral(true));
-                    //await discord.DisconnectAsync();
-                    Environment.Exit(0);
+                    Owner.DebugCmds.ShutdownConfirmed(e.Interaction);
                 }
             };
 
