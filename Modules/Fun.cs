@@ -99,7 +99,13 @@ namespace MechanicalMilkshake.Modules
                 }
                 if (count > 2000)
                 {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Character limit exceeded! Messages can only be up to 2000 characters in size."));
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Character limit exceeded! Messages can only be up to 2000 characters in size.").AsEphemeral(ephemeralResponse));
+                    return;
+                }
+                if (count == 0)
+                {
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("I can't repeat a letter 0 times!").AsEphemeral(ephemeralResponse));
+                    return;
                 }
 
                 string response = new(Enumerable.Repeat(letter, (int)count).Select(s => s[Program.random.Next(s.Length)]).ToArray());
