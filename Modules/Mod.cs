@@ -46,9 +46,10 @@ namespace MechanicalMilkshake.Modules
         [SlashRequireGuild]
         public async Task Clear(InteractionContext ctx, [Option("count", "The number of messages to delete.")] long count)
         {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
             System.Collections.Generic.IReadOnlyList<DiscordMessage> messages = await ctx.Channel.GetMessagesAsync((int)count);
             await ctx.Channel.DeleteMessagesAsync(messages);
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Deleted {messages.Count} messages!").AsEphemeral(true));
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Deleted {messages.Count} messages!").AsEphemeral(true));
         }
 
         [SlashCommand("kick", "Kick a user. They can rejoin the server with an invite. Requires the Kick Members permission.")]
