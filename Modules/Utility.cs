@@ -335,5 +335,97 @@ namespace MechanicalMilkshake.Modules
 
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(count.ToString()));
         }
+
+        [SlashCommand("deletemessage", "Delete a message. This can be used to to delete direct messages with the bot.")]
+        public async Task Delete(InteractionContext ctx, [Option("message", "The ID of the message to delete.")] string message)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
+
+            DiscordMember author;
+            if (message == "all")
+            {
+                if (!ctx.Channel.IsPrivate)
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"`{ctx.CommandName} all` can only be run in Direct Messages!").AsEphemeral(true));
+                    return;
+                }
+                
+                System.Collections.ObjectModel.Collection<DiscordMessage> messagesToDelete = new() { };
+                System.Collections.Generic.IReadOnlyList<DiscordMessage> messagesToConsider = await ctx.Channel.GetMessagesAsync(100);
+                foreach (DiscordMessage msg in messagesToConsider)
+                {
+                    if (msg.Author == ctx.Client.CurrentUser)
+                    {
+                        messagesToDelete.Add(msg);
+                    }
+                }
+
+                if (messagesToDelete.Count == 0)
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Something went wrong!\n" +
+                        "I couldn't find any messages sent by me to delete!"));
+                }
+                else
+                {
+                    foreach (DiscordMessage msg in messagesToDelete)
+                    {
+                        try
+                        {
+                            await ctx.Channel.DeleteMessageAsync(msg);
+                            await Task.Delay(3000);
+                        }
+                        catch (Exception e)
+                        {
+                            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Something went wrong!\n" +
+                                $"```\n{e}\n```"));
+                        }
+                    }
+                }
+
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Done!").AsEphemeral(true));
+            }
+            else
+            {
+                if (!ctx.Channel.IsPrivate)
+                {
+                    author = await ctx.Guild.GetMemberAsync(ctx.User.Id);
+                    if (!author.Permissions.HasPermission(Permissions.ManageMessages))
+                    {
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You don't have permission to use this command here!\n`delete` requires the Manage Messages permission when being used in a non-DM channel.").AsEphemeral(true));
+                        return;
+                    }
+                }
+
+                try
+                {
+                    DiscordMessage msg = null;
+                    try
+                    {
+                        msg = await ctx.Channel.GetMessageAsync(Convert.ToUInt64(message));
+                    }
+                    catch
+                    {
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"That doesn't look like a message ID! Make sure you've got the right thing. A message ID will look something like this: `{ctx.Interaction.Id}`"));
+                        return;
+                    }
+                    await ctx.Channel.DeleteMessageAsync(msg);
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Message deleted successfully.").AsEphemeral(true));
+                }
+                catch (DSharpPlus.Exceptions.NotFoundException)
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Something went wrong!\n" +
+                        "The message you're trying to delete cannot be found. Note that you cannot delete messages in one server from another, or from DMs.").AsEphemeral(true));
+                }
+                catch (DSharpPlus.Exceptions.UnauthorizedException)
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Something went wrong!\n" +
+                        "I don't have permission to delete that message.").AsEphemeral(true));
+                }
+                catch (Exception e)
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Something went wrong! See details below.\n\n```\n{e}\n```").AsEphemeral(true));
+                }
+            }
+        }
     }
 }
