@@ -1,5 +1,7 @@
 ﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Converters;
+using DSharpPlus.CommandsNext.Entities;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -32,6 +34,35 @@ namespace MechanicalMilkshake
         static void Main(string[] args)
         {
             MainAsync().GetAwaiter().GetResult();
+        }
+
+        public class CustomHelpFormatter : BaseHelpFormatter
+        {
+            protected DiscordEmbedBuilder _embed;
+
+            public CustomHelpFormatter(CommandContext ctx) : base(ctx)
+            {
+                _embed = new DiscordEmbedBuilder();
+            }
+
+            public override BaseHelpFormatter WithCommand(Command command)
+            {
+                return this;
+            }
+
+            public override BaseHelpFormatter WithSubcommands(IEnumerable<Command> cmds)
+            {
+                _embed.Title = "Help";
+                _embed.Description = $"No commands are available with this prefix.\n\nAll commands have been moved to slash (`/`) commands. Type `/` and select *{discord.CurrentUser.Username}* on the left to see available commands.";
+                _embed.Color = DiscordColor.Red;
+
+                return this;
+            }
+
+            public override CommandHelpMessage Build()
+            {
+                return new CommandHelpMessage(embed: _embed);
+            }
         }
 
         internal static async Task MainAsync()
@@ -110,6 +141,8 @@ namespace MechanicalMilkshake
             {
                 StringPrefixes = new[] { "!", "~", "-", "mm" }
             });
+
+            commands.SetHelpFormatter<CustomHelpFormatter>();
 
             minio = new MinioClient
             (
