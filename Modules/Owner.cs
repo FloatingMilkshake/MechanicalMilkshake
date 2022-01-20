@@ -3,6 +3,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
+using MimeTypes;
 using Minio.Exceptions;
 using Newtonsoft.Json;
 using System;
@@ -215,30 +216,20 @@ namespace MechanicalMilkshake.Modules
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
 
-                string linkToFile = link;
-                // Remove extension from filename. We don't want this to cause issues with duplicate file extensions.
-                Regex extRemovalPattern = new(@"\..*");
-                Match extRemovalMatch = extRemovalPattern.Match(name);
-                if (!string.IsNullOrWhiteSpace(extRemovalMatch.ToString()))
-                {
-                    name = name.Replace(extRemovalMatch.ToString(), "");
-                }
-
                 if (link.Contains('<'))
                 {
                     link = link.Replace("<", "");
-                    linkToFile = link.Replace("<", "");
+                    link = link.Replace("<", "");
                 }
                 if (link.Contains('>'))
                 {
                     link = link.Replace(">", "");
-                    linkToFile = link.Replace(">", "");
+                    link = link.Replace(">", "");
                 }
 
                 string fileName;
-                string extension;
 
-                MemoryStream memStream = new(await Program.httpClient.GetByteArrayAsync(linkToFile));
+                MemoryStream memStream = new(await Program.httpClient.GetByteArrayAsync(link));
 
                 try
                 {
@@ -258,20 +249,22 @@ namespace MechanicalMilkshake.Modules
                     }
 
                     Regex urlRemovalPattern = new(@".*\/\/.*\/");
-                    Match urlRemovalMatch = urlRemovalPattern.Match(linkToFile);
-                    linkToFile = linkToFile.Replace(urlRemovalMatch.ToString(), "");
+                    Match urlRemovalMatch = urlRemovalPattern.Match(link);
+                    link = link.Replace(urlRemovalMatch.ToString(), "");
+
+                    // At this point 'link' will probably look like a filename (example.png), but if a link was provided that had parameters then 'link' might look more like (example.png?someparameter=something)
 
                     Regex parameterRemovalPattern = new(@".*\?");
-                    Match parameterRemovalMatch = parameterRemovalPattern.Match(linkToFile);
+                    Match parameterRemovalMatch = parameterRemovalPattern.Match(link);
                     if (parameterRemovalMatch != null && parameterRemovalMatch.ToString() != "")
                     {
-                        linkToFile = parameterRemovalMatch.ToString();
+                        link = parameterRemovalMatch.ToString();
                     }
-                    linkToFile = linkToFile.Replace("?", "");
+                    string fileNameAndExtension = link.Replace("?", "");
 
-                    Regex extPattern = new(@"\.[^.]*?$");
-                    Match extMatch = extPattern.Match(linkToFile);
-                    extension = extMatch.ToString();
+                    // From here on out we can be sure that 'fileNameAndExtension' is in the format (example.png).
+
+                    string extension = Path.GetExtension(fileNameAndExtension);
 
                     const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -281,32 +274,14 @@ namespace MechanicalMilkshake.Modules
                     }
                     else if (name == "existing" || name == "preserve" || name == "keep")
                     {
-                        fileName = linkToFile;
+                        fileName = Path.GetFileNameWithoutExtension(fileNameAndExtension);
                     }
                     else
                     {
                         fileName = name + extension;
                     }
 
-                    string contentType;
-                    if (extension == ".png")
-                    {
-                        contentType = "image/png";
-                    }
-                    else if (extension == ".jpg" || extension == ".jpeg")
-                    {
-                        contentType = "image/jpeg";
-                    }
-                    else if (extension == ".txt")
-                    {
-                        contentType = "text/plain";
-                    }
-                    else
-                    {
-                        contentType = "application/octet-stream"; // Using application/octet-stream will force the file to be downloaded, which is what we want to happen if it doesn't match any of the file extensions above.
-                    }
-
-                    await Program.minio.PutObjectAsync(bucket, fileName, memStream, memStream.Length, contentType, meta);
+                    await Program.minio.PutObjectAsync(bucket, fileName, memStream, memStream.Length, MimeTypeMap.GetMimeType(extension), meta);
                 }
                 catch (MinioException e)
                 {
@@ -357,13 +332,13 @@ namespace MechanicalMilkshake.Modules
                 }
 
                 string fileName;
-                if (!fileToDelete.Contains("https://cdn.floatingmilkshake.com/"))
+                if (!fileToDelete.Contains($"{Program.configjson.S3.CdnBaseUrl}/"))
                 {
                     fileName = fileToDelete;
                 }
                 else
                 {
-                    fileName = fileToDelete.Replace("https://cdn.floatingmilkshake.com/", "");
+                    fileName = fileToDelete.Replace($"{Program.configjson.S3.CdnBaseUrl}/", "");
                 }
 
                 try
