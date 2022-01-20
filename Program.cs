@@ -53,7 +53,7 @@ namespace MechanicalMilkshake
             public override BaseHelpFormatter WithSubcommands(IEnumerable<Command> cmds)
             {
                 _embed.Title = "Help";
-                _embed.Description = $"No commands are available with this prefix.\n\nAll commands have been moved to slash (`/`) commands. Type `/` and select *{discord.CurrentUser.Username}* on the left to see available commands.";
+                _embed.Description = $"No commands are available with this prefix.\n\nAll commands have been moved to slash (`/`) commands. Type `/` and select {discord.CurrentUser.Username} to see available commands.";
                 _embed.Color = DiscordColor.Red;
 
                 return this;
