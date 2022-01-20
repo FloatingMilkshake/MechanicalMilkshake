@@ -282,6 +282,7 @@ namespace MechanicalMilkshake
             while (true)
             {
                 PerServerFeatures.WednesdayCheck();
+                PerServerFeatures.PizzaTime();
                 await Task.Delay(60000);
             }
         }

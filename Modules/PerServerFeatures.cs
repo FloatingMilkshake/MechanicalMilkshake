@@ -44,6 +44,28 @@ namespace MechanicalMilkshake.Modules
                 return;
             }
         }
+
+        public static async Task PizzaTime()
+        {
+#if DEBUG
+            Console.WriteLine($"[{DateTime.Now}] PizzaTime running.");
+#endif
+            if (!DateTime.Now.ToShortTimeString().Contains("12:00 PM"))
+            {
+                return;
+            }
+
+            try
+            {
+                DiscordChannel channel = await Program.discord.GetChannelAsync(932768798224838778);
+                await channel.SendMessageAsync("https://cdn.discordapp.com/attachments/932768798224838778/932768814284812298/IMG_9147.png");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"An error occurred! Details: {e}");
+                return;
+            }
+        }
     }
 
     public class TargetServerAttribute : CheckBaseAttribute
