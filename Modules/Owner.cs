@@ -485,7 +485,8 @@ namespace MechanicalMilkshake.Modules
             [SlashCommand("timecheck", "[Bot owner only] Return the current time on the machine the bot is running on.")]
             public async Task TimeCheck(InteractionContext ctx)
             {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Seems to me like it's currently `{DateTime.Now}`.").AsEphemeral(true));
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Seems to me like it's currently `{DateTime.Now}`."
+                    + $"\n(Short Time: `{DateTime.Now.ToShortTimeString()}`)").AsEphemeral(true));
             }
 
             [SlashCommand("shutdown", "[Bot owner only] Shut down the bot.")]
