@@ -50,7 +50,7 @@ namespace MechanicalMilkshake.Modules
 #if DEBUG
             Console.WriteLine($"[{DateTime.Now}] PizzaTime running.");
 #endif
-            if (!DateTime.Now.ToShortTimeString().Contains("12:00 PM"))
+            if (!DateTime.Now.ToShortTimeString().Contains("12:00"))
             {
                 return;
             }
