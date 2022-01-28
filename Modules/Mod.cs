@@ -124,5 +124,41 @@ namespace MechanicalMilkshake.Modules
             }
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Successfully unbanned **{userToUnban.Username}#{userToUnban.Discriminator}**!"));
         }
+
+        [SlashCommand("nickname", "Changes my nickname.")]
+        public async Task Nickname(InteractionContext ctx, [Option("nickname", "What to change my nickname to. Leave this blank to clear it.")] string nickname = null)
+        {
+            // Checking permissions this way instead of using the [SlashRequireUserPermissions] attribute because I don't believe there's a way to check whether a user has one permission OR another permission with that attribute.
+            if (!ctx.Member.Permissions.HasPermission(Permissions.ManageNicknames) && !ctx.Member.Permissions.HasPermission(Permissions.ManageGuild))
+            {
+                throw new SlashExecutionChecksFailedException();
+            }
+            else
+            {
+                DiscordMember bot = await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id);
+                try
+                {
+                    await bot.ModifyAsync(x =>
+                    {
+                        x.Nickname = nickname;
+                        x.AuditLogReason = $"Nickname changed by {ctx.User.Username} (ID: {ctx.User.Id}).";
+                    });
+                }
+                catch (Exception e)
+                {
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Hmm, something went wrong while trying to change my nickname!\n\n> {e.Message}").AsEphemeral(false));
+                    return;
+                }
+
+                if (nickname != null)
+                {
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Nickname changed to **{nickname}** successfully!").AsEphemeral(false));
+                }
+                else
+                {
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Nickname cleared successfully!"));
+                }
+            }   
+        }
     }
 }
