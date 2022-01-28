@@ -381,7 +381,7 @@ namespace MechanicalMilkshake.Modules
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"`{ctx.CommandName} all` can only be run in Direct Messages!").AsEphemeral(true));
                     return;
                 }
-                
+
                 System.Collections.ObjectModel.Collection<DiscordMessage> messagesToDelete = new() { };
                 System.Collections.Generic.IReadOnlyList<DiscordMessage> messagesToConsider = await ctx.Channel.GetMessagesAsync(100);
                 foreach (DiscordMessage msg in messagesToConsider)

@@ -158,7 +158,7 @@ namespace MechanicalMilkshake.Modules
                 {
                     await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Nickname cleared successfully!"));
                 }
-            }   
+            }
         }
     }
 }
