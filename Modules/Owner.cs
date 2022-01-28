@@ -24,7 +24,7 @@ namespace MechanicalMilkshake.Modules
         [SlashCommandGroup("link", "[Bot owner only] Set, update, or delete a short link with Cloudflare worker-links.")]
         public class Link
         {
-            [SlashCommand("set", "Set or update a short link with Cloudflare worker-links.")]
+            [SlashCommand("set", "[Bot owner only] Set or update a short link with Cloudflare worker-links.")]
             public async Task SetLink(InteractionContext ctx, [Option("key", "Set a custom key for the short link.")] string key, [Option("url", "The URL the short link should point to.")] string url)
             {
                 if (url.Contains('<'))
@@ -88,7 +88,7 @@ namespace MechanicalMilkshake.Modules
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```").AsEphemeral(true));
             }
 
-            [SlashCommand("delete", "Delete a short link with Cloudflare worker-links.")]
+            [SlashCommand("delete", "[Bot owner only] Delete a short link with Cloudflare worker-links.")]
             public async Task DeleteWorkerLink(InteractionContext ctx, [Option("link", "The key or URL of the short link to delete.")] string url)
             {
                 string baseUrl;
@@ -136,7 +136,7 @@ namespace MechanicalMilkshake.Modules
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```").AsEphemeral(true));
             }
 
-            [SlashCommand("list", "List all short links configured with Cloudflare worker-links.")]
+            [SlashCommand("list", "[Bot owner only] List all short links configured with Cloudflare worker-links.")]
             public async Task ListWorkerLinks(InteractionContext ctx)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
