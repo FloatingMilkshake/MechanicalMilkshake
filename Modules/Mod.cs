@@ -126,6 +126,7 @@ namespace MechanicalMilkshake.Modules
         }
 
         [SlashCommand("nickname", "Changes my nickname.")]
+        [SlashRequireGuild]
         public async Task Nickname(InteractionContext ctx, [Option("nickname", "What to change my nickname to. Leave this blank to clear it.")] string nickname = null)
         {
             // Checking permissions this way instead of using the [SlashRequireUserPermissions] attribute because I don't believe there's a way to check whether a user has one permission OR another permission with that attribute.
@@ -144,19 +145,24 @@ namespace MechanicalMilkshake.Modules
                         x.AuditLogReason = $"Nickname changed by {ctx.User.Username} (ID: {ctx.User.Id}).";
                     });
                 }
+                catch (DSharpPlus.Exceptions.UnauthorizedException)
+                {
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Hmm, something went wrong while trying to change my nickname! It looks like I don't have permission. Make sure I have a role with the `Change Nickname` permission enabled, or that the permissions for @everyone have `Change Nickname` enabled.").AsEphemeral(true));
+                    return;
+                }
                 catch (Exception e)
                 {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Hmm, something went wrong while trying to change my nickname!\n\n> {e.Message}").AsEphemeral(false));
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Hmm, something went wrong while trying to change my nickname!\n\nThis was Discord's response:\n> {e.Message}\n\nIf you'd like to contact the bot owner about this, include this debug info:\n```{e}\n```").AsEphemeral(true));
                     return;
                 }
 
                 if (nickname != null)
                 {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Nickname changed to **{nickname}** successfully!").AsEphemeral(false));
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Nickname changed to **{nickname}** successfully!").AsEphemeral(true));
                 }
                 else
                 {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Nickname cleared successfully!"));
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Nickname cleared successfully!").AsEphemeral(true));
                 }
             }
         }
