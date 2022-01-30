@@ -244,7 +244,7 @@ namespace MechanicalMilkshake.Modules
                 }
                 catch
                 {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Hmm, that doesn't look like a valid message ID. I wasn't able to get the Markdown data from it."));
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Hmm, that doesn't look like a valid message ID or link. I wasn't able to get the Markdown data from it."));
                     return;
                 }
 
@@ -263,9 +263,7 @@ namespace MechanicalMilkshake.Modules
                 Regex getChannelId = new(@"\/[a-zA-Z0-9]*");
                 Match channelId = getChannelId.Match(messageToExpose);
                 // Remove '/' to get "channel_id"
-                string targetChannel = channelId.ToString().Replace("/", "");
-
-                ulong targetChannelId = Convert.ToUInt64(targetChannel);
+                ulong targetChannelId = Convert.ToUInt64(channelId.ToString().Replace("/", ""));
 
                 DiscordChannel channel;
                 try
