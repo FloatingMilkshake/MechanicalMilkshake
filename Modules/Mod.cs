@@ -29,13 +29,7 @@ namespace MechanicalMilkshake.Modules
             }
             catch (DSharpPlus.Exceptions.UnauthorizedException)
             {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("I don't have permission to send messages in that channel!"));
-                return;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Exception {e.Message} occurred when {ctx.User.Id} ran {ctx.CommandName} in #{ctx.Channel.Name} (target channel: {targetChannel.Name})!\nException Details: {e}");
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Something went wrong when attempting to send that message! This error has been logged."));
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("I don't have permission to send messages in that channel!").AsEphemeral(true));
                 return;
             }
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"I sent your message to {targetChannel.Mention}.").AsEphemeral(true));
@@ -96,8 +90,8 @@ namespace MechanicalMilkshake.Modules
             }
             catch (Exception e)
             {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Something went wrong! I ran into a problem while trying to ban that user. This error has been logged.").AsEphemeral(true));
-                Console.WriteLine($"ERROR: {e.GetType()} occurred when {ctx.Member.Username}#{ctx.Member.Discriminator} ({ctx.Member.Id}) attempted to ban {userToBan.Username}#{userToBan.Discriminator} ({userToBan.Id}) from {ctx.Guild.Name}!");
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Hmm, something went wrong while trying to ban that user!\n\nThis was Discord's response:\n> {e.Message}\n\nIf you'd like to contact the bot owner about this, include this debug info:\n```{e}\n```").AsEphemeral(true));
+                return;
             }
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("User banned successfully.").AsEphemeral(true));
             await ctx.Channel.SendMessageAsync($"{userToBan.Mention} has been banned: **{reason}**");
@@ -119,8 +113,8 @@ namespace MechanicalMilkshake.Modules
             }
             catch (Exception e)
             {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Something went wrong! I ran into a problem while trying to unban that user. This error has been logged.").AsEphemeral(true));
-                Console.WriteLine($"ERROR: {e.GetType()} occurred when {ctx.Member.Username}#{ctx.Member.Discriminator} ({ctx.Member.Id}) attempted to unban {userToUnban.Username}#{userToUnban.Discriminator} ({userToUnban.Id}) from {ctx.Guild.Name}!");
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Hmm, something went wrong while trying to unban that user!\n\nThis was Discord's response:\n> {e.Message}\n\nIf you'd like to contact the bot owner about this, include this debug info:\n```{e}\n```").AsEphemeral(true));
+                return;
             }
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Successfully unbanned **{userToUnban.Username}#{userToUnban.Discriminator}**!"));
         }
@@ -137,24 +131,11 @@ namespace MechanicalMilkshake.Modules
             else
             {
                 DiscordMember bot = await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id);
-                try
+                await bot.ModifyAsync(x =>
                 {
-                    await bot.ModifyAsync(x =>
-                    {
-                        x.Nickname = nickname;
-                        x.AuditLogReason = $"Nickname changed by {ctx.User.Username} (ID: {ctx.User.Id}).";
-                    });
-                }
-                catch (DSharpPlus.Exceptions.UnauthorizedException)
-                {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Hmm, something went wrong while trying to change my nickname! It looks like I don't have permission. Make sure I have a role with the `Change Nickname` permission enabled, or that the permissions for @everyone have `Change Nickname` enabled.").AsEphemeral(true));
-                    return;
-                }
-                catch (Exception e)
-                {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Hmm, something went wrong while trying to change my nickname!\n\nThis was Discord's response:\n> {e.Message}\n\nIf you'd like to contact the bot owner about this, include this debug info:\n```{e}\n```").AsEphemeral(true));
-                    return;
-                }
+                    x.Nickname = nickname;
+                    x.AuditLogReason = $"Nickname changed by {ctx.User.Username} (ID: {ctx.User.Id}).";
+                });
 
                 if (nickname != null)
                 {

@@ -124,15 +124,16 @@ namespace MechanicalMilkshake
                         Timestamp = DateTime.UtcNow
                     };
                     embed.AddField("Message", ex.Message);
+                    embed.AddField("Debug Info", $"If you'd like to contact the bot owner about this, include this debug info:\n```{ex}\n```");
 
                     // I don't know how to tell whether the command response was deferred or not, so we're going to try both an interaction response and follow-up so that the interaction doesn't time-out.
                     try
                     {
-                        await e.Context.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(embed.Build()));
+                        await e.Context.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(embed.Build()).AsEphemeral(true));
                     }
                     catch
                     {
-                        await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed.Build()));
+                        await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed.Build()).AsEphemeral(true));
                     }
                 }
             };
@@ -184,6 +185,7 @@ namespace MechanicalMilkshake
                         Timestamp = DateTime.UtcNow
                     };
                     embed.AddField("Message", ex.Message);
+                    embed.AddField("Debug Info", $"If you'd like to contact the bot owner about this, include this debug info:\n```{ex}\n```");
                     if (ex.GetType().ToString() == "System.ArgumentException")
                     {
                         embed.AddField("What's that mean?", "This usually means that you used the command incorrectly.\n" +
