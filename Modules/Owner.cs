@@ -273,7 +273,7 @@ namespace MechanicalMilkshake.Modules
                     }
                     else if (name == "existing" || name == "preserve" || name == "keep")
                     {
-                        fileName = Path.GetFileNameWithoutExtension(fileNameAndExtension);
+                        fileName = fileNameAndExtension;
                     }
                     else
                     {
