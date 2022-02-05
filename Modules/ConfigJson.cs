@@ -28,7 +28,7 @@ namespace MechanicalMilkshake.Modules
         [JsonProperty("bucket")]
         public string Bucket { get; set; }
 
-        [JsonProperty("CdnBaseUrl")]
+        [JsonProperty("cdnBaseUrl")]
         public string CdnBaseUrl { get; set; }
 
         [JsonProperty("endpoint")]

@@ -16,7 +16,7 @@
 
   "s3": {
     "bucket": "",
-    "CdnBaseUrl": "",
+    "cdnBaseUrl": "",
     "endpoint": "",
     "accessKey": "",
     "secretKey": "",
