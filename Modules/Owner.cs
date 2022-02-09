@@ -427,7 +427,7 @@ namespace MechanicalMilkshake.Modules
             }
 
             [SlashCommand("preview", "[Bot owner only] Preview an image stored on Amazon S3-compatible cloud storage.")]
-            public async Task CdnPreview(InteractionContext ctx, [Option("name", "The name (or link) of the file to preview.")] string name, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to True.")] bool ephemeralResponse = true)
+            public async Task CdnPreview(InteractionContext ctx, [Option("name", "The name (or link) of the file to preview.")] string name, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to True.")] bool isEphemeral = true)
             {
                 if (!name.Contains('.'))
                 {
@@ -444,7 +444,7 @@ namespace MechanicalMilkshake.Modules
                 }
                 else
                 {
-                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}").AsEphemeral(ephemeralResponse));
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{Program.configjson.S3.CdnBaseUrl}/{name}").AsEphemeral(isEphemeral));
                     return;
                 }
             }
@@ -454,7 +454,7 @@ namespace MechanicalMilkshake.Modules
         public class DebugCmds : ApplicationCommandModule
         {
             [SlashCommand("info", "[Bot owner only] Show debug information about the bot.")]
-            public async Task DebugInfo(InteractionContext ctx)
+            public async Task DebugInfo(InteractionContext ctx, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to True.")] bool isEphemeral = true)
             {
                 string commitHash = "";
                 if (File.Exists("CommitHash.txt"))
@@ -471,7 +471,7 @@ namespace MechanicalMilkshake.Modules
                     + $"\n**Version:** `{commitHash.Trim()}`"
                     + $"\n**Framework:** `{RuntimeInformation.FrameworkDescription}`"
                     + $"\n**Platform:** `{RuntimeInformation.OSDescription}`"
-                    + $"\n**Library:** `DSharpPlus {Program.discord.VersionString}`").AsEphemeral(true));
+                    + $"\n**Library:** `DSharpPlus {Program.discord.VersionString}`").AsEphemeral(isEphemeral));
             }
 
             [SlashCommand("uptime", "[Bot owner only] Check the bot's uptime (from the time it connects to Discord).")]
