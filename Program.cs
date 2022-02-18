@@ -30,6 +30,7 @@ namespace MechanicalMilkshake
         public static DateTime connectTime;
         public static HttpClient httpClient = new();
         public static ConfigJson configjson;
+        public static readonly string processStartTime = DateTime.Now.ToString();
 
         static void Main(string[] args)
         {
@@ -263,7 +264,7 @@ namespace MechanicalMilkshake
             }
             if (commitMessage == "")
             {
-                commitMessage = $"Process started at {DateTime.Now}";
+                commitMessage = $"Process started at {processStartTime}";
             }
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed

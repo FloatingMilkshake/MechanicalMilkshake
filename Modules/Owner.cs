@@ -477,8 +477,12 @@ namespace MechanicalMilkshake.Modules
             [SlashCommand("uptime", "[Bot owner only] Check the bot's uptime (from the time it connects to Discord).")]
             public async Task Uptime(InteractionContext ctx)
             {
-                long unixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"<t:{unixTime}:F> (<t:{unixTime}:R>)").AsEphemeral(true));
+                long connectUnixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
+
+                DateTime startTime = Convert.ToDateTime(Program.processStartTime);
+                long startUnixTime = ((DateTimeOffset)startTime).ToUnixTimeSeconds();
+
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Process started at <t:{startUnixTime}:F> (<t:{startUnixTime}:R>).\n\nLast connected to Discord at <t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>).").AsEphemeral(true));
             }
 
             [SlashCommand("timecheck", "[Bot owner only] Return the current time on the machine the bot is running on.")]
