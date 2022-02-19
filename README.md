@@ -1,8 +1,6 @@
 # MechanicalMilkshake
 My first Discord bot, written in C# with DSharpPlus!
 
-The code is probably not great because I'm not the best at this. But it works!
-
 Huge thank you to [Erisa](https://github.com/Erisa) for putting up with my constant questions as I learned how to do this! You have no idea how much I appreciate it. ♥
 
 # Want to run the bot yourself for some reason?
