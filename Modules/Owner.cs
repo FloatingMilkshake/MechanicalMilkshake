@@ -455,7 +455,7 @@ namespace MechanicalMilkshake.Modules
         public class DebugCmds : ApplicationCommandModule
         {
             [SlashCommand("info", "[Bot owner only] Show debug information about the bot.")]
-            public async Task DebugInfo(InteractionContext ctx, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to True.")] bool isEphemeral = true)
+            public async Task DebugInfo(InteractionContext ctx, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to False.")] bool isEphemeral = false)
             {
                 string commitHash = "";
                 if (File.Exists("CommitHash.txt"))
@@ -580,9 +580,9 @@ namespace MechanicalMilkshake.Modules
         // https://github.com/Erisa/Lykos/blob/5f9c17c/src/Modules/Owner.cs#L116-L144
         // https://github.com/Erisa/Lykos/blob/822e9c5/src/Modules/Helpers.cs#L36-L82
         [SlashCommand("runcommand", "[Bot owner only] Run a shell command on the machine the bot's running on!")]
-        public async Task RunCommand(InteractionContext ctx, [Option("command", "The command to run, including any arguments.")] string command)
+        public async Task RunCommand(InteractionContext ctx, [Option("command", "The command to run, including any arguments.")] string command, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to False.")] bool isEphemeral = false)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(isEphemeral));
             string osDescription = RuntimeInformation.OSDescription;
             string fileName;
             string args;
@@ -624,11 +624,11 @@ namespace MechanicalMilkshake.Modules
             if (result.Length > 1947)
             {
                 Console.WriteLine(result);
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! It was too long to post here though; see the console for the full output."));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! It was too long to post here though; see the console for the full output.").AsEphemeral(isEphemeral));
             }
             else
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! Output: ```\n{result}```"));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! Output: ```\n{result}```").AsEphemeral(isEphemeral));
             }
         }
 

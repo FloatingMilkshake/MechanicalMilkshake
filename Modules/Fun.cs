@@ -82,7 +82,7 @@ namespace MechanicalMilkshake.Modules
         public class LetterCmds : ApplicationCommandModule
         {
             [SlashCommand("spam", "Spam letters. Think of a keyboard smash.")]
-            public async Task LetterSpam(InteractionContext ctx, [Option("size", "The number of letters.")] long size, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to True.")] bool ephemeralresponse = true)
+            public async Task LetterSpam(InteractionContext ctx, [Option("size", "The number of letters.")] long size, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to False.")] bool ephemeralresponse = false)
             {
                 const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
                 string kbSmash = new(Enumerable.Repeat(chars, (int)size).Select(s => s[Program.random.Next(s.Length)]).ToArray());
@@ -90,7 +90,7 @@ namespace MechanicalMilkshake.Modules
             }
 
             [SlashCommand("repeat", "Repeat a single letter.")]
-            public async Task LetterRepeat(InteractionContext ctx, [Option("letter", "The letter to repeat.")] string letter, [Option("count", "The number of times to repeat it.")] long count, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to True.")] bool ephemeralResponse = true)
+            public async Task LetterRepeat(InteractionContext ctx, [Option("letter", "The letter to repeat.")] string letter, [Option("count", "The number of times to repeat it.")] long count, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to False.")] bool ephemeralResponse = false)
             {
                 if (letter.Length > 1)
                 {
