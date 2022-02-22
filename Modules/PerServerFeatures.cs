@@ -70,7 +70,7 @@ namespace MechanicalMilkshake.Modules
         public static async Task EsportsPing()
         {
 #if DEBUG
-            Console.WriteLine($"[{DateTime.Now}] EsportsCheck running.");
+            Console.WriteLine($"[{DateTime.Now}] EsportsPing running.");
 #endif
             if (!DateTime.Now.ToShortTimeString().Contains(":00"))
             {
