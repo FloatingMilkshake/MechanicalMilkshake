@@ -66,6 +66,28 @@ namespace MechanicalMilkshake.Modules
                 return;
             }
         }
+
+        public static async Task EsportsPing()
+        {
+#if DEBUG
+            Console.WriteLine($"[{DateTime.Now}] EsportsCheck running.");
+#endif
+            if (!DateTime.Now.ToShortTimeString().Contains(":00"))
+            {
+                return;
+            }
+
+            try
+            {
+                DiscordChannel channel = await Program.discord.GetChannelAsync(935271047400407050);
+                await channel.SendMessageAsync("<@567007649149878277> the smash trial is at 5. Be there Mr. petrazarki");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"An error occurred! Details: {e}");
+                return;
+            }
+        }
     }
 
     public class TargetServerAttribute : CheckBaseAttribute

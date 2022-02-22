@@ -286,6 +286,7 @@ namespace MechanicalMilkshake
             {
                 PerServerFeatures.WednesdayCheck();
                 PerServerFeatures.PizzaTime();
+                PerServerFeatures.EsportsPing();
                 await Task.Delay(60000);
             }
         }
