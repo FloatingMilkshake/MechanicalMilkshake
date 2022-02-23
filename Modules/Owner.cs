@@ -457,22 +457,7 @@ namespace MechanicalMilkshake.Modules
             [SlashCommand("info", "[Bot owner only] Show debug information about the bot.")]
             public async Task DebugInfo(InteractionContext ctx, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to False.")] bool isEphemeral = false)
             {
-                string commitHash = "";
-                if (File.Exists("CommitHash.txt"))
-                {
-                    StreamReader readHash = new("CommitHash.txt");
-                    commitHash = readHash.ReadToEnd();
-                }
-                if (commitHash == "")
-                {
-                    commitHash = "dev";
-                }
-
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("**Debug Information:**\n"
-                    + $"\n**Version:** `{commitHash.Trim()}`"
-                    + $"\n**Framework:** `{RuntimeInformation.FrameworkDescription}`"
-                    + $"\n**Platform:** `{RuntimeInformation.OSDescription}`"
-                    + $"\n**Library:** `DSharpPlus {Program.discord.VersionString}`").AsEphemeral(isEphemeral));
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Debug Information:\n" + Program.GetDebugInfo()).AsEphemeral(isEphemeral));
             }
 
             [SlashCommand("uptime", "[Bot owner only] Check the bot's uptime (from the time it connects to Discord).")]

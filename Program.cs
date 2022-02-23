@@ -17,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -245,28 +246,6 @@ namespace MechanicalMilkshake
 
             DiscordChannel homeChannel = await discord.GetChannelAsync(homeChannelId);
 
-            string commitHash = "";
-            if (File.Exists("CommitHash.txt"))
-            {
-                StreamReader readHash = new("CommitHash.txt");
-                commitHash = readHash.ReadToEnd();
-            }
-            if (commitHash == "")
-            {
-                commitHash = "dev";
-            }
-
-            string commitMessage = "";
-            if (File.Exists("CommitMessage.txt"))
-            {
-                StreamReader readMessage = new("CommitMessage.txt");
-                commitMessage = readMessage.ReadToEnd();
-            }
-            if (commitMessage == "")
-            {
-                commitMessage = $"Process started at {processStartTime}";
-            }
-
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             async Task OnReady(DiscordClient client, ReadyEventArgs e)
             {
@@ -274,8 +253,7 @@ namespace MechanicalMilkshake
                 {
                     connectTime = DateTime.Now;
 
-                    await homeChannel.SendMessageAsync($"Connected! Latest commit: `{commitHash}`"
-                        + $"\nLatest commit message:\n```\n{commitMessage}\n```");
+                    await homeChannel.SendMessageAsync($"Connected!\n{GetDebugInfo()}");
                 });
             }
 
@@ -288,6 +266,53 @@ namespace MechanicalMilkshake
                 PerServerFeatures.PizzaTime();
                 await Task.Delay(60000);
             }
+        }
+
+        public static string GetDebugInfo()
+        {
+            string commitHash = "";
+            if (File.Exists("CommitHash.txt"))
+            {
+                StreamReader readHash = new("CommitHash.txt");
+                commitHash = readHash.ReadToEnd().Trim();
+            }
+            if (commitHash == "")
+            {
+                commitHash = "dev";
+            }
+
+            string commitTime = "";
+            string commitTimeDescription = "";
+            if (File.Exists("CommitTime.txt"))
+            {
+                StreamReader readTime = new("CommitTime.txt");
+                commitTime = readTime.ReadToEnd();
+                commitTimeDescription = "Commit timestamp:";
+            }
+            if (commitTime == "")
+            {
+                commitTime = connectTime.ToString();
+                commitTimeDescription = "Last connected to Discord at";
+            }
+
+            string commitMessage = "";
+            if (File.Exists("CommitMessage.txt"))
+            {
+                StreamReader readMessage = new("CommitMessage.txt");
+                commitMessage = readMessage.ReadToEnd();
+            }
+            if (commitMessage == "")
+            {
+                commitMessage = $"Running in development mode; process started at {processStartTime}";
+            }
+
+            return $"\nFramework: `{RuntimeInformation.FrameworkDescription}`"
+                + $"\nPlatform: `{RuntimeInformation.OSDescription}`"
+                + $"\nLibrary: `DSharpPlus {discord.VersionString}`"
+                + "\n"
+                + $"\nLatest commit: `{commitHash}`"
+                + $"\n{commitTimeDescription} `{commitTime}`"
+                + $"\nLatest commit message:\n```\n{commitMessage}\n```";
         }
     }
 }
