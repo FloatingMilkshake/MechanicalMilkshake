@@ -575,7 +575,7 @@ namespace MechanicalMilkshake.Modules
         }
 
         [SlashCommand("resetactivity", "[Bot owner only] Reset the bot's activity (sets its status to online with no activity).")]
-        public async Task ResetStatus(InteractionContext ctx)
+        public async Task ResetActivity(InteractionContext ctx)
         {
             await SetActivity(ctx, "online");
         }
