@@ -481,7 +481,7 @@ namespace MechanicalMilkshake.Modules
             [SlashCommand("shutdown", "[Bot owner only] Shut down the bot.")]
             public async Task Shutdown(InteractionContext ctx)
             {
-                DiscordButtonComponent button = new(ButtonStyle.Primary, "shutdown-button", "Shut Down");
+                DiscordButtonComponent button = new(ButtonStyle.Danger, "shutdown-button", "Shut Down");
 
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Are you sure you want to shut down the bot?\n\n(To cancel, click `Dismiss message` below.)").AddComponents(button).AsEphemeral(true));
             }
