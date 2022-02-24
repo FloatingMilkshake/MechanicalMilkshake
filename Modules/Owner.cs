@@ -521,23 +521,42 @@ namespace MechanicalMilkshake.Modules
         }
 
         [SlashCommand("setactivity", "[Bot owner only] Set the bot's activity.")]
-        public async Task SetActivity(InteractionContext ctx, [Option("status", "The bot's online status. Defaults to 'online'.")] string status = "online", [Option("type", "The type of status (playing, watching, etc). Defaults to 'playing'.")] string type = "playing", [Option("activityName", "The bot's activity (for example, watching '!help'). Defaults to nothing.")] string activityName = null)
+        public async Task SetActivity(InteractionContext ctx,
+            [Option("status", "The bot's online status.")]
+                [Choice("Online", "online")]
+                [Choice("Idle", "idle")]
+                [Choice("Do Not Disturb", "dnd")]
+                [Choice("Invisible", "invisible")]  string status,
+            [Option("type", "The type of status (playing, watching, etc).")]
+                [Choice("Playing", "playing")]
+                [Choice("Watching", "watching")]
+                [Choice("Competing in", "competing")]
+                [Choice("Listening to", "listening")] string type = null,
+            [Option("activityName", "The bot's activity (for example, the '!help' in \"watching !help\").")] string activityName = null)
         {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
+
             DiscordActivity activity = new();
             ActivityType activityType = default;
             activity.Name = activityName;
-            if (activityType != ActivityType.Streaming)
+            if (type != null)
             {
-                activityType = type.ToLower() switch
+                if (activityType != ActivityType.Streaming)
                 {
-                    "playing" => ActivityType.Playing,
-                    "watching" => ActivityType.Watching,
-                    "competing" => ActivityType.Competing,
-                    "listening" => ActivityType.ListeningTo,
-                    "listeningto" => ActivityType.ListeningTo,
-                    _ => ActivityType.Playing,
-                };
-                activity.ActivityType = activityType;
+                    activityType = type.ToLower() switch
+                    {
+                        "playing" => ActivityType.Playing,
+                        "watching" => ActivityType.Watching,
+                        "competing" => ActivityType.Competing,
+                        "listening" => ActivityType.ListeningTo,
+                        _ => default,
+                    };
+                    activity.ActivityType = activityType;
+                }
+            }
+            else
+            {
+                activity.ActivityType = default;
             }
 
             UserStatus userStatus = status.ToLower() switch
@@ -552,7 +571,7 @@ namespace MechanicalMilkshake.Modules
 
             await ctx.Client.UpdateStatusAsync(activity, userStatus);
 
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Activity set successfully!").AsEphemeral(true));
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Activity set successfully!").AsEphemeral(true));
         }
 
         [SlashCommand("resetactivity", "[Bot owner only] Reset the bot's activity (sets its status to online with no activity).")]
