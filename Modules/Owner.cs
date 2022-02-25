@@ -625,14 +625,21 @@ namespace MechanicalMilkshake.Modules
             string result = proc.StandardOutput.ReadToEnd();
             proc.WaitForExit();
 
-            if (result.Length > 1947)
+            if (!string.IsNullOrWhiteSpace(result))
             {
-                Console.WriteLine(result);
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! It was too long to post here though; see the console for the full output.").AsEphemeral(isEphemeral));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! There was no output."));
             }
             else
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! Output: ```\n{result}```").AsEphemeral(isEphemeral));
+                if (result.Length > 1947)
+                {
+                    Console.WriteLine(result);
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! It was too long to post here though; see the console for the full output.").AsEphemeral(isEphemeral));
+                }
+                else
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! Output: ```\n{result}```").AsEphemeral(isEphemeral));
+                }
             }
         }
 
