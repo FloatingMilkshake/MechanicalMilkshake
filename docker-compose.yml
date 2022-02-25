@@ -11,6 +11,12 @@ services:
       - type: bind
         source: ./config.json
         target: /app/config.json
+      - type: bind
+        source: ~/id_rsa
+        target: /app/id_rsa
+      - type: bind
+        source: ~/restartsmp.sh
+        target: /app/restartsmp.sh
   watchtower:
     image: containrrr/watchtower
     volumes:
