@@ -625,7 +625,7 @@ namespace MechanicalMilkshake.Modules
             string result = proc.StandardOutput.ReadToEnd();
             proc.WaitForExit();
 
-            if (!string.IsNullOrWhiteSpace(result))
+            if (string.IsNullOrWhiteSpace(result))
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! There was no output."));
             }
