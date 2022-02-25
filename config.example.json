@@ -1,7 +1,7 @@
 {
   "botToken": "",
   "homeChannel": "",
-  "devServerId":  "",
+  "devServerId": "",
 
   "wolframAlphaAppId": "",
 
@@ -11,7 +11,7 @@
     "namespaceId": "",
     "apiKey": "",
     "accountId": "",
-    "email":  ""
+    "email": ""
   },
 
   "s3": {
@@ -27,5 +27,10 @@
     "urlPrefix": "",
     "zoneId": "",
     "token": ""
-  }
+  },
+
+  "authorizedUsers": [
+    "",
+    ""
+  ]
 }

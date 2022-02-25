@@ -2,7 +2,10 @@
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -454,6 +457,74 @@ namespace MechanicalMilkshake.Modules
                 catch (Exception e)
                 {
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Something went wrong! See details below.\n\n```\n{e}\n```").AsEphemeral(true));
+                }
+            }
+        }
+
+        // The idea for this command, and a lot of the code, is taken from Erisa's Lykos. References are linked below.
+        // https://github.com/Erisa/Lykos/blob/5f9c17c/src/Modules/Owner.cs#L116-L144
+        // https://github.com/Erisa/Lykos/blob/822e9c5/src/Modules/Helpers.cs#L36-L82
+        [SlashCommand("runcommand", "[Authorized users only] Run a shell command on the machine the bot's running on!")]
+        public async Task RunCommand(InteractionContext ctx, [Option("command", "The command to run, including any arguments.")] string command, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to False.")] bool isEphemeral = false)
+        {
+            if (!Program.configjson.AuthorizedUsers.Contains(ctx.User.Id.ToString()))
+            {
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("no"));
+            }
+
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(isEphemeral));
+            string osDescription = RuntimeInformation.OSDescription;
+            string fileName;
+            string args;
+            string escapedArgs = command.Replace("\"", "\\\"");
+
+            if (osDescription.Contains("Windows"))
+            {
+                fileName = "C:\\Windows\\System32\\cmd.exe";
+                args = $"/C \"{escapedArgs} 2>&1\"";
+            }
+            else
+            {
+                // Assume Linux if OS is not Windows because I'm too lazy to bother with specific checks right now, might implement that later
+                fileName = Environment.GetEnvironmentVariable("SHELL");
+                if (!File.Exists(fileName))
+                {
+                    fileName = "/bin/sh";
+                }
+                args = $"-c \"{escapedArgs} 2>&1\"";
+            }
+
+            Process proc = new()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    Arguments = args,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true
+                }
+            };
+
+            proc.Start();
+            string result = proc.StandardOutput.ReadToEnd();
+            proc.WaitForExit();
+
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! There was no output."));
+            }
+            else
+            {
+                if (result.Length > 1947)
+                {
+                    Console.WriteLine(result);
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! It was too long to post here though; see the console for the full output.").AsEphemeral(isEphemeral));
+                }
+                else
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! Output: ```\n{result}```").AsEphemeral(isEphemeral));
                 }
             }
         }

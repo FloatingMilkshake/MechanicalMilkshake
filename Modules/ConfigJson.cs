@@ -78,5 +78,8 @@ namespace MechanicalMilkshake.Modules
 
         [JsonProperty("cloudflare")]
         public Cloudflare Cloudflare { get; private set; }
+
+        [JsonProperty("authorizedUsers")]
+        public string[] AuthorizedUsers { get; private set; }
     }
 }
