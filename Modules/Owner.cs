@@ -2,6 +2,8 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
 using MimeTypes;
 using Minio.Exceptions;
 using Newtonsoft.Json;
@@ -576,6 +578,65 @@ namespace MechanicalMilkshake.Modules
         public async Task ResetActivity(InteractionContext ctx)
         {
             await SetActivity(ctx, "online");
+        }
+
+        // The idea for this command, and a lot of the code, is taken from DSharpPlus/DSharpPlus.Test. Reference linked below.
+        // https://github.com/DSharpPlus/DSharpPlus/blob/3a50fb3/DSharpPlus.Test/TestBotEvalCommands.cs
+        [SlashCommand("eval", "Evaluate C# code!")]
+        public async Task Eval(InteractionContext ctx, [Option("code", "The code to evaluate.")] string code, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to True.")] bool isEphemeral = true)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(isEphemeral));
+
+            try
+            {
+                var globals = new Globals(ctx.Client, ctx);
+
+                var scriptOptions = ScriptOptions.Default;
+                scriptOptions = scriptOptions.WithImports("System", "System.Collections.Generic", "System.Linq", "System.Text", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.SlashCommands", "DSharpPlus.Interactivity", "Microsoft.Extensions.Logging");
+                scriptOptions = scriptOptions.WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
+
+                var script = CSharpScript.Create(code, scriptOptions, typeof(Globals));
+                script.Compile();
+                var result = await script.RunAsync(globals).ConfigureAwait(false);
+
+                if (result != null && result.ReturnValue != null && !string.IsNullOrWhiteSpace(result.ReturnValue.ToString()))
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"{result.ReturnValue}").AsEphemeral(isEphemeral));
+                }
+                else
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Eval was successful, but there was nothing returned."));
+                }
+            }
+            catch (Exception e)
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(e.GetType() + ": " + e.Message).AsEphemeral(isEphemeral));
+            }
+        }
+
+        public class Globals
+        {
+            public DiscordMessage Message { get; set; }
+            public DiscordChannel Channel { get; set; }
+            public DiscordGuild Guild { get; set; }
+            public DiscordUser User { get; set; }
+            public DiscordMember Member { get; set; }
+            public InteractionContext Context { get; set; }
+
+            public DiscordClient Client;
+
+            public Globals(DiscordClient client, InteractionContext ctx)
+            {
+                Client = client;
+                Channel = ctx.Channel;
+                Guild = ctx.Guild;
+                User = ctx.User;
+                if (Guild != null)
+                {
+                    Member = Guild.GetMemberAsync(User.Id).ConfigureAwait(false).GetAwaiter().GetResult();
+                }
+                Context = ctx;
+            }
         }
 
         // This code is taken from https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197.
