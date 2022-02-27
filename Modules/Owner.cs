@@ -583,7 +583,7 @@ namespace MechanicalMilkshake.Modules
         // The idea for this command, and a lot of the code, is taken from DSharpPlus/DSharpPlus.Test. Reference linked below.
         // https://github.com/DSharpPlus/DSharpPlus/blob/3a50fb3/DSharpPlus.Test/TestBotEvalCommands.cs
         [SlashCommand("eval", "Evaluate C# code!")]
-        public async Task Eval(InteractionContext ctx, [Option("code", "The code to evaluate.")] string code, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to True.")] bool isEphemeral = true)
+        public async Task Eval(InteractionContext ctx, [Option("code", "The code to evaluate.")] string code, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to False.")] bool isEphemeral = false)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(isEphemeral));
 
