@@ -257,8 +257,35 @@ namespace MechanicalMilkshake
                 });
             }
 
+            async Task MessageCreated(DiscordClient client, MessageCreateEventArgs e)
+            {
+                if (!e.Channel.IsPrivate)
+                    return;
+
+                if (e.Author.IsCurrent)
+                    return;
+
+                try
+                {
+                    foreach (DiscordUser owner in client.CurrentApplication.Owners)
+                    {
+                        DiscordGuild devServer = await discord.GetGuildAsync(configjson.DevServerId);
+                        DiscordMember ownerMember = await devServer.GetMemberAsync(owner.Id);
+                        // Now we have a DiscordMember we can send a DM to.
+
+                        ownerMember.SendMessageAsync($"**DM received from {e.Author.Mention} ({e.Author.Username}#{e.Author.Discriminator})!**\nChannel ID: {e.Channel.Id} | Message ID: {e.Message.Id}\n\n{e.Message.Content}");
+                    }
+                }
+                catch
+                {
+                    Console.WriteLine($"[{DateTime.Now}] A DM was received, but I couldn't find an owner in the configured development server ('devServerId' in config.json), so I was unable to forward the message.\nMessage content: {e.Message.Content}");
+                    return;
+                }
+            }
+
             await discord.ConnectAsync();
             discord.Ready += OnReady;
+            discord.MessageCreated += MessageCreated;
 
             while (true)
             {
