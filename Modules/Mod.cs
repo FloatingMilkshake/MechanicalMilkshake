@@ -132,23 +132,21 @@ namespace MechanicalMilkshake.Modules
             {
                 throw new SlashExecutionChecksFailedException();
             }
+            
+            DiscordMember bot = await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id);
+            await bot.ModifyAsync(x =>
+            {
+                x.Nickname = nickname;
+                x.AuditLogReason = $"Nickname changed by {ctx.User.Username} (ID: {ctx.User.Id}).";
+            });
+
+            if (nickname != null)
+            {
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Nickname changed to **{nickname}** successfully!").AsEphemeral(true));
+            }
             else
             {
-                DiscordMember bot = await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id);
-                await bot.ModifyAsync(x =>
-                {
-                    x.Nickname = nickname;
-                    x.AuditLogReason = $"Nickname changed by {ctx.User.Username} (ID: {ctx.User.Id}).";
-                });
-
-                if (nickname != null)
-                {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Nickname changed to **{nickname}** successfully!").AsEphemeral(true));
-                }
-                else
-                {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Nickname cleared successfully!").AsEphemeral(true));
-                }
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Nickname cleared successfully!").AsEphemeral(true));
             }
         }
     }
