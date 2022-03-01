@@ -9,10 +9,14 @@ namespace MechanicalMilkshake.Modules
 {
     public class Mod : ApplicationCommandModule
     {
-        [SlashCommand("tellraw", "Speak through the bot! Requires the Kick Members permission.")]
-        [SlashRequireUserPermissions(Permissions.KickMembers)]
+        [SlashCommand("tellraw", "Speak through the bot! Requires that you have either the Kick Members or Ban Members permission.")]
         public async Task Tellraw(InteractionContext ctx, [Option("message", "The message to have the bot send.")] string message, [Option("channel", "The channel to send the message in.")] DiscordChannel channel = null)
         {
+            if (!ctx.Member.Permissions.HasPermission(Permissions.KickMembers) && !ctx.Member.Permissions.HasPermission(Permissions.BanMembers))
+            {
+                throw new SlashExecutionChecksFailedException();
+            }
+
             DiscordChannel targetChannel;
             if (channel != null)
             {
