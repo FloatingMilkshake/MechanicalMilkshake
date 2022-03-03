@@ -301,11 +301,11 @@ namespace MechanicalMilkshake
 
                                         if (server.Members.ContainsKey(e.Author.Id))
                                         {
-                                            mutualServers += $"- `{guild}`\n";
+                                            mutualServers += $"- `{server}`\n";
                                         }
                                     }
 
-                                    embed.AddField("Mutual Servers", mutualServers, true);
+                                    embed.AddField("Mutual Servers", mutualServers, false);
 
                                     await ownerMember.SendMessageAsync(embed: embed.Build());
                                     return;
