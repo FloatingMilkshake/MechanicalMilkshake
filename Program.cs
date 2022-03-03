@@ -293,6 +293,16 @@ namespace MechanicalMilkshake
                                     embed.AddField("Channel ID", $"`{e.Channel.Id}`", true);
                                     embed.AddField("Message ID", $"`{e.Message.Id}`", true);
 
+                                    string attachmentUrls = "";
+                                    if (e.Message.Attachments != null)
+                                    {
+                                        foreach (var attachment in e.Message.Attachments)
+                                        {
+                                            attachmentUrls += $"{attachment.Url}\n";
+                                        }
+                                    }
+                                    embed.AddField("Attachments", attachmentUrls, true);
+
                                     string mutualServers = "";
 
                                     foreach (var guildId in client.Guilds)
