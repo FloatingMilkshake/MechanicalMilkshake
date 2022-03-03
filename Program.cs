@@ -300,8 +300,8 @@ namespace MechanicalMilkshake
                                         {
                                             attachmentUrls += $"{attachment.Url}\n";
                                         }
+                                        embed.AddField("Attachments", attachmentUrls, true);
                                     }
-                                    embed.AddField("Attachments", attachmentUrls, true);
 
                                     string mutualServers = "";
 
