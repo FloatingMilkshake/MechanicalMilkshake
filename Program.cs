@@ -294,7 +294,7 @@ namespace MechanicalMilkshake
                                     embed.AddField("Message ID", $"`{e.Message.Id}`", true);
 
                                     string attachmentUrls = "";
-                                    if (e.Message.Attachments != null)
+                                    if (e.Message.Attachments.Count != 0)
                                     {
                                         foreach (var attachment in e.Message.Attachments)
                                         {
