@@ -308,6 +308,7 @@ namespace MechanicalMilkshake
                                     embed.AddField("Mutual Servers", mutualServers, true);
 
                                     await ownerMember.SendMessageAsync(embed: embed.Build());
+                                    return;
                                 }
                             }
                         }
