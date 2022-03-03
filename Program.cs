@@ -297,7 +297,7 @@ namespace MechanicalMilkshake
 
                                     foreach (var guildId in client.Guilds)
                                     {
-                                        DiscordGuild server = await client.GetGuildAsync(guildPair.Key);
+                                        DiscordGuild server = await client.GetGuildAsync(guildId.Key);
 
                                         if (server.Members.ContainsKey(e.Author.Id))
                                         {
