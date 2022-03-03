@@ -16,9 +16,11 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MechanicalMilkshake
@@ -266,6 +268,34 @@ namespace MechanicalMilkshake
 
                     if (e.Author.IsCurrent)
                         return;
+
+                    if (client.CurrentApplication.Owners.Contains(e.Author) && e.Message.ReferencedMessage != null)
+                    {
+                        // at this point we know an owner has replied. now we need to send the reply back.
+
+                        DiscordEmbedField userIdField = e.Message.ReferencedMessage.Embeds[0].Fields.Where(f => f.Name == "User ID").First();
+                        ulong userId = Convert.ToUInt64(userIdField.Value.Replace("`", ""));
+
+                        DiscordEmbedField mutualServersField = e.Message.ReferencedMessage.Embeds[0].Fields.Where(f => f.Name == "Mutual Servers").First();
+
+                        Regex mutualIdPattern = new(@"[0-9]*;");
+                        ulong firstMutualId = Convert.ToUInt64(mutualIdPattern.Match(mutualServersField.Value).ToString().Replace(";", "").Replace("`", ""));
+
+                        DiscordGuild mutualServer = await client.GetGuildAsync(firstMutualId);
+                        DiscordMember member = await mutualServer.GetMemberAsync(userId);
+
+                        DiscordEmbedField messageIdField = e.Message.ReferencedMessage.Embeds[0].Fields.Where(f => f.Name == "Message ID").First();
+                        ulong messageId = Convert.ToUInt64(messageIdField.Value.Replace("`", ""));
+
+                        var replyBuilder = new DiscordMessageBuilder().WithContent(e.Message.Content).WithReply(messageId);
+
+                        DiscordMessage reply = await member.SendMessageAsync(replyBuilder);
+
+                        var messageBuilder = new DiscordMessageBuilder().WithContent($"Sent! (`{reply.Id}` in `{reply.Channel.Id}`)").WithReply(e.Message.Id);
+                        await e.Channel.SendMessageAsync(messageBuilder);
+
+                        return;
+                    }
 
                     try
                     {
