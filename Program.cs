@@ -259,28 +259,61 @@ namespace MechanicalMilkshake
 
             async Task MessageCreated(DiscordClient client, MessageCreateEventArgs e)
             {
-                if (!e.Channel.IsPrivate)
-                    return;
-
-                if (e.Author.IsCurrent)
-                    return;
-
-                try
+                Task.Run(async () =>
                 {
-                    foreach (DiscordUser owner in client.CurrentApplication.Owners)
-                    {
-                        DiscordGuild devServer = await discord.GetGuildAsync(configjson.DevServerId);
-                        DiscordMember ownerMember = await devServer.GetMemberAsync(owner.Id);
-                        // Now we have a DiscordMember we can send a DM to.
+                    if (!e.Channel.IsPrivate)
+                        return;
 
-                        ownerMember.SendMessageAsync($"**DM received from {e.Author.Mention} ({e.Author.Username}#{e.Author.Discriminator})!**\nChannel ID: {e.Channel.Id} | Message ID: {e.Message.Id}\n\n{e.Message.Content}");
+                    if (e.Author.IsCurrent)
+                        return;
+
+                    try
+                    {
+                        foreach (DiscordUser owner in client.CurrentApplication.Owners)
+                        {
+                            foreach (var guildPair in client.Guilds)
+                            {
+                                DiscordGuild guild = await client.GetGuildAsync(guildPair.Key);
+
+                                if (guild.Members.ContainsKey(owner.Id))
+                                {
+                                    DiscordMember ownerMember = await guild.GetMemberAsync(owner.Id);
+
+                                    DiscordEmbedBuilder embed = new()
+                                    {
+                                        Color = DiscordColor.Yellow,
+                                        Title = $"DM received from {e.Author.Username}#{e.Author.Discriminator}!",
+                                        Description = $"{e.Message.Content}",
+                                        Timestamp = DateTime.UtcNow
+                                    };
+
+                                    embed.AddField("User ID", $"`{e.Author.Id}`", true);
+                                    embed.AddField("User Mention", $"{e.Author.Mention}", true);
+                                    embed.AddField("User Avatar URL", $"[Link]({e.Author.AvatarUrl})", true);
+                                    embed.AddField("Channel ID", $"`{e.Channel.Id}`", true);
+                                    embed.AddField("Message ID", $"`{e.Message.Id}`", true);
+
+                                    string mutualServers = "";
+
+                                    if (guild.Members.ContainsKey(e.Author.Id))
+                                    {
+                                        mutualServers += $"- `{guild}`\n";
+                                    }
+
+                                    embed.AddField("Mutual Servers", mutualServers, true);
+
+                                    await ownerMember.SendMessageAsync(embed: embed.Build());
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[{DateTime.Now}] A DM was received, but could not be forwarded!\nException Details: {ex.GetType}: {ex.Message}\nMessage Content: {e.Message.Content}");
+                        return;
                     }
                 }
-                catch
-                {
-                    Console.WriteLine($"[{DateTime.Now}] A DM was received, but I couldn't find an owner in the configured development server ('devServerId' in config.json), so I was unable to forward the message.\nMessage content: {e.Message.Content}");
-                    return;
-                }
+                );
             }
 
             await discord.ConnectAsync();
