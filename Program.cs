@@ -295,9 +295,14 @@ namespace MechanicalMilkshake
 
                                     string mutualServers = "";
 
-                                    if (guild.Members.ContainsKey(e.Author.Id))
+                                    foreach (var guildId in client.Guilds)
                                     {
-                                        mutualServers += $"- `{guild}`\n";
+                                        DiscordGuild server = await client.GetGuildAsync(guildPair.Key);
+
+                                        if (server.Members.ContainsKey(e.Author.Id))
+                                        {
+                                            mutualServers += $"- `{guild}`\n";
+                                        }
                                     }
 
                                     embed.AddField("Mutual Servers", mutualServers, true);
