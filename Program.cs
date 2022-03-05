@@ -287,7 +287,22 @@ namespace MechanicalMilkshake
                         DiscordEmbedField messageIdField = e.Message.ReferencedMessage.Embeds[0].Fields.Where(f => f.Name == "Message ID").First();
                         ulong messageId = Convert.ToUInt64(messageIdField.Value.Replace("`", ""));
 
-                        var replyBuilder = new DiscordMessageBuilder().WithContent(e.Message.Content).WithReply(messageId);
+                        string attachmentUrls = "";
+                        string messageToSend = "";
+                        if (e.Message.Attachments.Count != 0)
+                        {
+                            foreach (var attachment in e.Message.Attachments)
+                            {
+                                attachmentUrls += $"{attachment.Url}\n";
+                            }
+                            messageToSend = $"{e.Message.Content}\n{attachmentUrls}";
+                        }
+                        else
+                        {
+                            messageToSend = e.Message.Content;
+                        }
+
+                        var replyBuilder = new DiscordMessageBuilder().WithContent(messageToSend).WithReply(messageId);
 
                         DiscordMessage reply = await member.SendMessageAsync(replyBuilder);
 
