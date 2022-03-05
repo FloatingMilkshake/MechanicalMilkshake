@@ -361,7 +361,14 @@ namespace MechanicalMilkshake
 
                                         embed.AddField("Mutual Servers", mutualServers, false);
 
-                                        await ownerMember.SendMessageAsync(embed: embed.Build());
+                                        var messageBuilder = new DiscordMessageBuilder().WithEmbed(embed.Build());
+
+                                        if (e.Message.ReferencedMessage != null)
+                                        {
+                                            messageBuilder = messageBuilder.WithReply(e.Message.ReferencedMessage.Id);
+                                        }
+
+                                        await ownerMember.SendMessageAsync(messageBuilder);
                                         return;
                                     }
                                 }
