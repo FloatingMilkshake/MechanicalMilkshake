@@ -269,9 +269,9 @@ namespace MechanicalMilkshake
                     if (e.Author.IsCurrent)
                         return;
 
-                    if (client.CurrentApplication.Owners.Contains(e.Author) && e.Message.ReferencedMessage != null)
+                    if (client.CurrentApplication.Owners.Contains(e.Author) && e.Message.ReferencedMessage != null && e.Message.ReferencedMessage.Author.IsCurrent && e.Message.ReferencedMessage.Embeds.Count != 0 && e.Message.ReferencedMessage.Embeds[0].Title.Contains("DM received from"))
                     {
-                        // at this point we know an owner has replied. now we need to send the reply back.
+                        // If these conditions are true, a bot owner has replied to a forwarded message. Now we need to forward that reply.
 
                         DiscordEmbedField userIdField = e.Message.ReferencedMessage.Embeds[0].Fields.Where(f => f.Name == "User ID").First();
                         ulong userId = Convert.ToUInt64(userIdField.Value.Replace("`", ""));
