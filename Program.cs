@@ -293,70 +293,70 @@ namespace MechanicalMilkshake
 
                         var messageBuilder = new DiscordMessageBuilder().WithContent($"Sent! (`{reply.Id}` in `{reply.Channel.Id}`)").WithReply(e.Message.Id);
                         await e.Channel.SendMessageAsync(messageBuilder);
-
-                        return;
                     }
-
-                    try
+                    else
                     {
-                        foreach (DiscordUser owner in client.CurrentApplication.Owners)
+                        try
                         {
-                            foreach (var guildPair in client.Guilds)
+                            foreach (DiscordUser owner in client.CurrentApplication.Owners)
                             {
-                                DiscordGuild guild = await client.GetGuildAsync(guildPair.Key);
-
-                                if (guild.Members.ContainsKey(owner.Id))
+                                foreach (var guildPair in client.Guilds)
                                 {
-                                    DiscordMember ownerMember = await guild.GetMemberAsync(owner.Id);
+                                    DiscordGuild guild = await client.GetGuildAsync(guildPair.Key);
 
-                                    DiscordEmbedBuilder embed = new()
+                                    if (guild.Members.ContainsKey(owner.Id))
                                     {
-                                        Color = DiscordColor.Yellow,
-                                        Title = $"DM received from {e.Author.Username}#{e.Author.Discriminator}!",
-                                        Description = $"{e.Message.Content}",
-                                        Timestamp = DateTime.UtcNow
-                                    };
+                                        DiscordMember ownerMember = await guild.GetMemberAsync(owner.Id);
 
-                                    embed.AddField("User ID", $"`{e.Author.Id}`", true);
-                                    embed.AddField("User Mention", $"{e.Author.Mention}", true);
-                                    embed.AddField("User Avatar URL", $"[Link]({e.Author.AvatarUrl})", true);
-                                    embed.AddField("Channel ID", $"`{e.Channel.Id}`", true);
-                                    embed.AddField("Message ID", $"`{e.Message.Id}`", true);
-
-                                    string attachmentUrls = "";
-                                    if (e.Message.Attachments.Count != 0)
-                                    {
-                                        foreach (var attachment in e.Message.Attachments)
+                                        DiscordEmbedBuilder embed = new()
                                         {
-                                            attachmentUrls += $"{attachment.Url}\n";
-                                        }
-                                        embed.AddField("Attachments", attachmentUrls, true);
-                                    }
+                                            Color = DiscordColor.Yellow,
+                                            Title = $"DM received from {e.Author.Username}#{e.Author.Discriminator}!",
+                                            Description = $"{e.Message.Content}",
+                                            Timestamp = DateTime.UtcNow
+                                        };
 
-                                    string mutualServers = "";
+                                        embed.AddField("User ID", $"`{e.Author.Id}`", true);
+                                        embed.AddField("User Mention", $"{e.Author.Mention}", true);
+                                        embed.AddField("User Avatar URL", $"[Link]({e.Author.AvatarUrl})", true);
+                                        embed.AddField("Channel ID", $"`{e.Channel.Id}`", true);
+                                        embed.AddField("Message ID", $"`{e.Message.Id}`", true);
 
-                                    foreach (var guildId in client.Guilds)
-                                    {
-                                        DiscordGuild server = await client.GetGuildAsync(guildId.Key);
-
-                                        if (server.Members.ContainsKey(e.Author.Id))
+                                        string attachmentUrls = "";
+                                        if (e.Message.Attachments.Count != 0)
                                         {
-                                            mutualServers += $"- `{server}`\n";
+                                            foreach (var attachment in e.Message.Attachments)
+                                            {
+                                                attachmentUrls += $"{attachment.Url}\n";
+                                            }
+                                            embed.AddField("Attachments", attachmentUrls, true);
                                         }
+
+                                        string mutualServers = "";
+
+                                        foreach (var guildId in client.Guilds)
+                                        {
+                                            DiscordGuild server = await client.GetGuildAsync(guildId.Key);
+
+                                            if (server.Members.ContainsKey(e.Author.Id))
+                                            {
+                                                mutualServers += $"- `{server}`\n";
+                                            }
+                                        }
+
+                                        embed.AddField("Mutual Servers", mutualServers, false);
+
+                                        await ownerMember.SendMessageAsync(embed: embed.Build());
+                                        return;
                                     }
-
-                                    embed.AddField("Mutual Servers", mutualServers, false);
-
-                                    await ownerMember.SendMessageAsync(embed: embed.Build());
-                                    return;
                                 }
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"[{DateTime.Now}] A DM was received, but could not be forwarded!\nException Details: {ex.GetType}: {ex.Message}\nMessage Content: {e.Message.Content}");
-                        return;
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"[{DateTime.Now}] A DM was received, but could not be forwarded!\nException Details: {ex.GetType}: {ex.Message}\nMessage Content: {e.Message.Content}");
+                            return;
+                        }
                     }
                 }
                 );
