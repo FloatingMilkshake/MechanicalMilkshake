@@ -485,7 +485,7 @@ namespace MechanicalMilkshake.Modules
         // https://github.com/Erisa/Lykos/blob/5f9c17c/src/Modules/Owner.cs#L116-L144
         // https://github.com/Erisa/Lykos/blob/822e9c5/src/Modules/Helpers.cs#L36-L82
         [SlashCommand("runcommand", "[Authorized users only] Run a shell command on the machine the bot's running on!")]
-        public async Task RunCommand(InteractionContext ctx, [Option("command", "The command to run, including any arguments.")] string command, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to False.")] bool isEphemeral = false)
+        public async Task RunCommand(InteractionContext ctx, [Option("command", "The command to run, including any arguments.")] string command, [Option("showoutput", "Whether to show command output (as opposed to only showing the exit code). Defaults to True.")] bool showOutput = true, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to False.")] bool isEphemeral = false)
         {
             if (!Program.configjson.AuthorizedUsers.Contains(ctx.User.Id.ToString()))
             {
@@ -531,21 +531,28 @@ namespace MechanicalMilkshake.Modules
             string result = proc.StandardOutput.ReadToEnd();
             proc.WaitForExit();
 
-            if (string.IsNullOrWhiteSpace(result))
+            if (showOutput)
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! There was no output."));
-            }
-            else
-            {
-                if (result.Length > 1947)
+                if (string.IsNullOrWhiteSpace(result))
                 {
-                    Console.WriteLine(result);
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! It was too long to post here though; see the console for the full output.").AsEphemeral(isEphemeral));
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! There was no output.").AsEphemeral(isEphemeral));
                 }
                 else
                 {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! Output: ```\n{result}```").AsEphemeral(isEphemeral));
+                    if (result.Length > 1947)
+                    {
+                        Console.WriteLine(result);
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! It was too long to post here though; see the console for the full output.").AsEphemeral(isEphemeral));
+                    }
+                    else
+                    {
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`! Output: ```\n{result}```").AsEphemeral(isEphemeral));
+                    }
                 }
+            }
+            else
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Finished with exit code `{proc.ExitCode}`!").AsEphemeral(isEphemeral));
             }
         }
     }
