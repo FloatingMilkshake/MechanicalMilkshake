@@ -220,6 +220,30 @@ namespace MechanicalMilkshake
                 {
                     Owner.DebugCmds.ShutdownConfirmed(e.Interaction);
                 }
+                if (e.Id == "view-dm-reply-info")
+                {
+                    DiscordEmbedField channelIdField = e.Message.Embeds[0].Fields.Where(f => f.Name == "Channel ID").First();
+                    ulong channelId = Convert.ToUInt64(channelIdField.Value.Replace("`", ""));
+
+                    DiscordEmbedField messageIdField = e.Message.Embeds[0].Fields.Where(f => f.Name == "Message ID").First();
+                    ulong messageId = Convert.ToUInt64(messageIdField.Value.Replace("`", ""));
+
+                    DiscordChannel channel = await s.GetChannelAsync(channelId);
+                    DiscordMessage message = await channel.GetMessageAsync(messageId);
+
+                    DiscordEmbedBuilder embed = new()
+                    {
+                        Color = DiscordColor.Blurple,
+                        Title = $"DM Reply Info",
+                        Description = $"{message.ReferencedMessage.Content}",
+                    };
+
+                    embed.AddField("Reply ID", $"`{message.ReferencedMessage.Id}`");
+                    embed.AddField("Target User ID", $"`{message.ReferencedMessage.Author.Id}`", true);
+                    embed.AddField("Target User Mention", $"{message.ReferencedMessage.Author.Mention}", true);
+
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(embed.Build()).AsEphemeral(true));
+                }
             };
 
 #if DEBUG // Register slash commands for dev server only when debugging in VS; no need to wait an hour for changes to apply
@@ -359,14 +383,20 @@ namespace MechanicalMilkshake
                                             }
                                         }
 
-                                        embed.AddField("Mutual Servers", mutualServers, false);
+                                        var messageBuilder = new DiscordMessageBuilder();
 
-                                        var messageBuilder = new DiscordMessageBuilder().WithEmbed(embed.Build());
-
+                                        string isReply = "No";
                                         if (e.Message.ReferencedMessage != null)
                                         {
-                                            messageBuilder = messageBuilder.WithReply(e.Message.ReferencedMessage.Id);
+                                            isReply = "Yes";
+                                            DiscordButtonComponent button = new(ButtonStyle.Primary, "view-dm-reply-info", "View Reply Info");
+                                            messageBuilder = messageBuilder.AddComponents(button);
                                         }
+                                        embed.AddField("Is Reply", isReply);
+
+                                        embed.AddField("Mutual Servers", mutualServers, false);
+
+                                        messageBuilder = messageBuilder.AddEmbed(embed.Build());
 
                                         await ownerMember.SendMessageAsync(messageBuilder);
                                         return;
