@@ -192,7 +192,14 @@ namespace MechanicalMilkshake.Modules
                     kvListResponse += $"`{item.Name}`: {value}\n\n";
                 }
 
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(kvListResponse).AsEphemeral(true));
+                try
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(kvListResponse).AsEphemeral(true));
+                }
+                catch (Exception ex)
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Hmm, I couldn't send the list of links here!\n```\n{ex.GetType()}: {ex.Message}\n```").AsEphemeral(true));
+                }
             }
 
             public class CloudflareResponse
