@@ -322,6 +322,8 @@ namespace MechanicalMilkshake
                             .WithContent($"Sent! (`{message.Id}` in `{message.Channel.Id}`)")
                             .WithReply(e.Message.Id);
 
+                        await e.Channel.SendMessageAsync(successMsgBuilder);
+
                         return;
                     }
 
