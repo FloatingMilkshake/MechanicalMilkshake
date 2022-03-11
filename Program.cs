@@ -293,6 +293,38 @@ namespace MechanicalMilkshake
                     if (e.Author.IsCurrent)
                         return;
 
+                    if (client.CurrentApplication.Owners.Contains(e.Author) && e.Message.Content.StartsWith("sendto"))
+                    {
+                        Regex idPattern = new(@"[0-9]+");
+                        string idMatch = idPattern.Match(e.Message.Content).ToString();
+                        DiscordChannel targetChannel;
+                        try
+                        {
+                            ulong channelId = Convert.ToUInt64(idMatch);
+                            targetChannel = await discord.GetChannelAsync(channelId);
+                        }
+                        catch (Exception ex)
+                        {
+                            DiscordMessageBuilder errorMsgBuilder = new DiscordMessageBuilder()
+                                .WithContent($"Hmm, I couldn't parse the channel ID in your message! Make sure it's a channel ID and that I have permission to see the channel!\n> {ex.GetType}: {ex.Message}")
+                                .WithReply(e.Message.Id);
+                            await e.Channel.SendMessageAsync(errorMsgBuilder);
+                            return;
+                        }
+
+                        Regex getContentPattern = new(@"[0-9]+.*");
+                        string content = getContentPattern.Match(e.Message.Content).ToString();
+                        content = content.Replace(idMatch, "").Trim();
+                        
+                        DiscordMessage message = await targetChannel.SendMessageAsync(content);
+
+                        DiscordMessageBuilder successMsgBuilder = new DiscordMessageBuilder()
+                            .WithContent($"Sent! (`{message.Id}` in `{message.Channel.Id}`)")
+                            .WithReply(e.Message.Id);
+
+                        return;
+                    }
+
                     if (client.CurrentApplication.Owners.Contains(e.Author) && e.Message.ReferencedMessage != null && e.Message.ReferencedMessage.Author.IsCurrent && e.Message.ReferencedMessage.Embeds.Count != 0 && e.Message.ReferencedMessage.Embeds[0].Title.Contains("DM received from"))
                     {
                         // If these conditions are true, a bot owner has replied to a forwarded message. Now we need to forward that reply.
