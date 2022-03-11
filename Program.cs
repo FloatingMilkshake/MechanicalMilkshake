@@ -306,7 +306,7 @@ namespace MechanicalMilkshake
                         catch (Exception ex)
                         {
                             DiscordMessageBuilder errorMsgBuilder = new DiscordMessageBuilder()
-                                .WithContent($"Hmm, I couldn't parse the channel ID in your message! Make sure it's a channel ID and that I have permission to see the channel!\n> {ex.GetType}: {ex.Message}")
+                                .WithContent($"Hmm, I couldn't parse the channel ID in your message! Make sure it's a channel ID and that I have permission to see the channel!\n```\n{ex.GetType()}: {ex.Message}\n```")
                                 .WithReply(e.Message.Id);
                             await e.Channel.SendMessageAsync(errorMsgBuilder);
                             return;
