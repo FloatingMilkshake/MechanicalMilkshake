@@ -323,7 +323,7 @@ namespace MechanicalMilkshake
                         catch (Exception ex)
                         {
                             await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                                .WithContent($"Hmm, I couldn't send that message!\n```\n{ex.GetType()}: {ex.Message}")
+                                .WithContent($"Hmm, I couldn't send that message!\n```\n{ex.GetType()}: {ex.Message}\n```")
                                 .WithReply(e.Message.Id));
                             return;
                         }
