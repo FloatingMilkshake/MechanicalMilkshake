@@ -305,24 +305,32 @@ namespace MechanicalMilkshake
                         }
                         catch (Exception ex)
                         {
-                            DiscordMessageBuilder errorMsgBuilder = new DiscordMessageBuilder()
+                            await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
                                 .WithContent($"Hmm, I couldn't parse the channel ID in your message! Make sure it's a channel ID and that I have permission to see the channel!\n```\n{ex.GetType()}: {ex.Message}\n```")
-                                .WithReply(e.Message.Id);
-                            await e.Channel.SendMessageAsync(errorMsgBuilder);
+                                .WithReply(e.Message.Id));
                             return;
                         }
 
                         Regex getContentPattern = new(@"[0-9]+.*");
                         string content = getContentPattern.Match(e.Message.Content).ToString();
                         content = content.Replace(idMatch, "").Trim();
-                        
-                        DiscordMessage message = await targetChannel.SendMessageAsync(content);
 
-                        DiscordMessageBuilder successMsgBuilder = new DiscordMessageBuilder()
+                        DiscordMessage message;
+                        try
+                        {
+                            message = await targetChannel.SendMessageAsync(content);
+                        }
+                        catch (Exception ex)
+                        {
+                            await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                                .WithContent($"Hmm, I couldn't send that message!\n```\n{ex.GetType()}: {ex.Message}")
+                                .WithReply(e.Message.Id));
+                            return;
+                        }
+
+                        await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
                             .WithContent($"Sent! (`{message.Id}` in `{message.Channel.Id}`)")
-                            .WithReply(e.Message.Id);
-
-                        await e.Channel.SendMessageAsync(successMsgBuilder);
+                            .WithReply(e.Message.Id));
 
                         return;
                     }
