@@ -126,7 +126,7 @@ namespace MechanicalMilkshake.Modules
         }
 
         [SlashCommand("avatar", "Returns the avatar of the provided user. Defaults to yourself if no user is provided.")]
-        public async Task Avatar(InteractionContext ctx, [Option("member", "The server member to get the avatar for.")] DiscordUser user = null)
+        public async Task Avatar(InteractionContext ctx, [Option("user", "The user whose avatar to get.")] DiscordUser user = null)
         {
             if (user == null)
             {
