@@ -15,8 +15,8 @@ services:
         source: ~/id_rsa
         target: /app/id_rsa
       - type: bind
-        source: ~/restartsmp.sh
-        target: /app/restartsmp.sh
+        source: ~/utils.sh
+        target: /app/utils.sh
   watchtower:
     image: containrrr/watchtower
     volumes:
