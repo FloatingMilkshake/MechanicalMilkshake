@@ -506,8 +506,8 @@ namespace MechanicalMilkshake.Modules
 
             if (osDescription.Contains("Windows"))
             {
-                fileName = "C:\\Windows\\System32\\cmd.exe";
-                args = $"/C \"{escapedArgs} 2>&1\"";
+                fileName = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe";
+                args = $"-Command \"{escapedArgs} 2>&1\"";
             }
             else
             {
