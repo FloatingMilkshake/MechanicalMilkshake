@@ -81,5 +81,8 @@ namespace MechanicalMilkshake.Modules
 
         [JsonProperty("authorizedUsers")]
         public string[] AuthorizedUsers { get; private set; }
+
+        [JsonProperty("sshHosts")]
+        public string[] SshHosts { get; private set; }
     }
 }

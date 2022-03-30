@@ -456,15 +456,61 @@ namespace MechanicalMilkshake
                 );
             }
 
+            async Task PackageUpdateCheck()
+            {
+#if DEBUG
+                Console.WriteLine($"[{DateTime.Now}] PackageUpdateCheck running.");
+#endif
+                string response = "Package updates are available on the following hosts:\n";
+
+                Utility utility = new();
+                bool updatesAvailable = false;
+                foreach (string host in configjson.SshHosts)
+                {
+#if DEBUG
+                    Console.WriteLine($"[{DateTime.Now}] [PackageUpdateCheck] Checking for updates on host '{host}'.");
+#endif
+                    string cmdResult = await utility.RunCommand($"ssh {host} \"sudo apt update\"");
+                    if (cmdResult.Contains("packages can be upgraded"))
+                    {
+                        response += $"`{host}`\n";
+                        updatesAvailable = true;
+                    }
+                }
+#if DEBUG
+                Console.WriteLine($"[{DateTime.Now}] [PackageUpdateCheck] Finished checking for updates on all hosts.");
+#endif
+
+                if (updatesAvailable)
+                {
+                    string ownerMention = "";
+                    foreach (var owner in discord.CurrentApplication.Owners)
+                    {
+                        ownerMention += owner.Mention + " ";
+                    }
+
+                    await homeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{response}");
+                }
+            }
+
             await discord.ConnectAsync();
             discord.Ready += OnReady;
             discord.MessageCreated += MessageCreated;
+
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    PackageUpdateCheck();
+                    await Task.Delay(3600000); // 1 hour
+                }
+            });
 
             while (true)
             {
                 PerServerFeatures.WednesdayCheck();
                 PerServerFeatures.PizzaTime();
-                await Task.Delay(60000);
+                await Task.Delay(60000); // 1 minute
             }
         }
 

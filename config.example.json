@@ -32,5 +32,10 @@
   "authorizedUsers": [
     "",
     ""
+  ],
+
+  "sshHosts": [
+    "",
+    ""
   ]
 }
