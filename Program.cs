@@ -496,6 +496,9 @@ namespace MechanicalMilkshake
             await discord.ConnectAsync();
             discord.Ready += OnReady;
             discord.MessageCreated += MessageCreated;
+            
+            Utility utility = new();
+            utility.RunCommand("cat /app/id_rsa > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa");
 
             Task.Run(async () =>
             {

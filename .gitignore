@@ -5,6 +5,7 @@
 .env
 config.json
 config.dev.json
+id_rsa
 
 ### Csharp ###
 ## Ignore Visual Studio temporary files, build results, and

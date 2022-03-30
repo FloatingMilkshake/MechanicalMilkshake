@@ -1,7 +1,7 @@
 version: '2.3'
 services:
   bot:
-    image: ghcr.io/floatingmilkshake/mechanicalmilkshake
+    image: ghcr.io/floatingmilkshake/mechanicalmilkshake 
     restart: on-failure
     volumes:
       - type: bind
@@ -12,7 +12,7 @@ services:
         source: ./config.json
         target: /app/config.json
       - type: bind
-        source: ~/id_rsa
+        source: ./id_rsa
         target: /app/id_rsa
       - type: bind
         source: ~/utils.sh
