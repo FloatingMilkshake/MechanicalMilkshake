@@ -3,16 +3,13 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
-	  <RestoreAdditionalProjectSources>
-		  https://nuget.emzi0767.com/api/v3/index.json
-	  </RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01084" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0" />
-    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.2.0-nightly-01084" />
+    <PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01105" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.2.0-nightly-01105" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.2.0-nightly-01105" />
+    <PackageReference Include="DSharpPlus.SlashCommands" Version="4.2.0-nightly-01105" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0-1.final" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.2.0-1.final" />
     <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
