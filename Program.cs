@@ -149,13 +149,11 @@ namespace MechanicalMilkshake
 
             commands.SetHelpFormatter<CustomHelpFormatter>();
 
-            minio = new MinioClient
-            (
-                configjson.S3.Endpoint,
-                configjson.S3.AccessKey,
-                configjson.S3.SecretKey,
-                configjson.S3.Region
-            ).WithSSL();
+            minio = new MinioClient()
+                .WithEndpoint(configjson.S3.Endpoint)
+                .WithCredentials(configjson.S3.AccessKey, configjson.S3.SecretKey)
+                .WithRegion(configjson.S3.Region)
+                .WithSSL();
 
             // Most of the code for this exception handler is from Erisa's Cliptok: https://github.com/Erisa/Cliptok/blob/aabf8aa/Program.cs#L488-L527
 

@@ -5,6 +5,7 @@ using DSharpPlus.SlashCommands.Attributes;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using MimeTypes;
+using Minio;
 using Minio.Exceptions;
 using Newtonsoft.Json;
 using System;
@@ -288,7 +289,15 @@ namespace MechanicalMilkshake.Modules
                         fileName = name + extension;
                     }
 
-                    await Program.minio.PutObjectAsync(bucket, fileName, memStream, memStream.Length, MimeTypeMap.GetMimeType(extension), meta);
+                    PutObjectArgs args = new PutObjectArgs()
+                        .WithBucket(bucket)
+                        .WithObject(fileName)
+                        .WithStreamData(memStream)
+                        .WithObjectSize(memStream.Length)
+                        .WithContentType(MimeTypeMap.GetMimeType(extension))
+                        .WithHeaders(meta);
+
+                    await Program.minio.PutObjectAsync(args);
                 }
                 catch (MinioException e)
                 {
@@ -350,7 +359,11 @@ namespace MechanicalMilkshake.Modules
 
                 try
                 {
-                    await Program.minio.RemoveObjectAsync(bucket, fileName);
+                    RemoveObjectArgs args = new RemoveObjectArgs()
+                        .WithBucket(bucket)
+                        .WithObject(fileName);
+
+                    await Program.minio.RemoveObjectAsync(args);
                 }
                 catch (MinioException e)
                 {
