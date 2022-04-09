@@ -126,7 +126,7 @@ namespace MechanicalMilkshake.Modules
         }
 
         [SlashCommand("avatar", "Returns the avatar of the provided user. Defaults to yourself if no user is provided.")]
-        public async Task Avatar(InteractionContext ctx, [Option("user", "The user whose avatar to get.")] DiscordUser user = null)
+        public async Task Avatar(InteractionContext ctx, [Option("user", "The user whose avatar to get.")] DiscordUser user = null, [Option("preview", "Whether to preview the avatar. Setting this to False will get the URL instead of showing a preview.")] bool preview = true)
         {
             if (user == null)
             {
@@ -134,6 +134,11 @@ namespace MechanicalMilkshake.Modules
             }
 
             string avatarLink = $"{user.AvatarUrl}".Replace("size=1024", "size=4096");
+
+            if (!preview)
+            {
+                avatarLink = $"<{avatarLink}>";
+            }
 
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(avatarLink));
         }
