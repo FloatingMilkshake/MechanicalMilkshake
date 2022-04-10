@@ -220,9 +220,14 @@ namespace MechanicalMilkshake.Modules
         public class Cdn
         {
             [SlashCommand("upload", "[Bot owner only] Upload a file to Amazon S3-compatible cloud storage.")]
-            public async Task Upload(InteractionContext ctx, [Option("name", "The name for the uploaded file.")] string name, [Option("link", "A link to a file to upload.")] string link)
+            public async Task Upload(InteractionContext ctx, [Option("name", "The name for the uploaded file.")] string name, [Option("link", "A link to a file to upload.")] string link = null, [Option("file", "A direct file to upload. This will override a link if both are provided!")] DiscordAttachment file = null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
+
+                if (file != null)
+                {
+                    link = file.Url;
+                }
 
                 if (link.Contains('<'))
                 {
