@@ -552,5 +552,46 @@ namespace MechanicalMilkshake.Modules
                 return $"Finished with exit code `{proc.ExitCode}`! Output: ```\n{result}```";
             }
         }
+
+        [SlashCommand("stealemoji", "Fetch all of a server's emoji! Note that the bot must be in the server for this to work.")]
+        public async Task StealEmoji(InteractionContext ctx, [Option("server", "The ID of the server to fetch emoji from.")] string server)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            ulong guildId;
+            DiscordGuild guild;
+            try
+            {
+                guildId = Convert.ToUInt64(server);
+                guild = await ctx.Client.GetGuildAsync(guildId);
+            }
+            catch
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"I couldn't find that server! Make sure `{server}` is a server ID. If you're sure it is and you're still seeing this, contact the bot owner for help."));
+                return;
+            }
+
+            string response = $"Emoji for **{guild.Name}**\n\n";
+
+            string staticEmoji = "";
+            string animatedEmoji = "";
+
+            foreach (var emoji in guild.Emojis)
+            {
+                if (emoji.Value.IsAnimated)
+                {
+                    animatedEmoji += $" <a:{emoji.Value.Name}:{emoji.Key}>";
+                }
+                else
+                {
+                    staticEmoji += $" <:{emoji.Value.Name}:{emoji.Key}>";
+                }
+            }
+
+            response += $"Static Emoji:\n{staticEmoji}"
+                + $"\n\nAnimated Emoji:\n{animatedEmoji}";
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
+        }
     }
 }
