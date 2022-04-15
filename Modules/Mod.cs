@@ -3,6 +3,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MechanicalMilkshake.Modules
@@ -12,7 +13,7 @@ namespace MechanicalMilkshake.Modules
         [SlashCommand("tellraw", "Speak through the bot! Requires that you have either the Kick Members or Ban Members permission.")]
         public async Task Tellraw(InteractionContext ctx, [Option("message", "The message to have the bot send.")] string message, [Option("channel", "The channel to send the message in.")] DiscordChannel channel = null)
         {
-            if (!ctx.Member.Permissions.HasPermission(Permissions.KickMembers) && !ctx.Member.Permissions.HasPermission(Permissions.BanMembers))
+            if (!ctx.Member.Permissions.HasPermission(Permissions.KickMembers) && !ctx.Member.Permissions.HasPermission(Permissions.BanMembers) && !Program.configjson.AuthorizedUsers.Contains(ctx.User.Id.ToString()))
             {
                 throw new SlashExecutionChecksFailedException();
             }
