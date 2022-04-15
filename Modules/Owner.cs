@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace MechanicalMilkshake.Modules
 {
-    [SlashRequireOwner]
+    [SlashRequireAuth]
     public class Owner : ApplicationCommandModule
     {
         [SlashCommandGroup("link", "[Bot owner only] Set, update, or delete a short link with Cloudflare worker-links.")]

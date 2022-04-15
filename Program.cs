@@ -562,4 +562,12 @@ namespace MechanicalMilkshake
                 + $"\nLatest commit message:\n```\n{commitMessage}\n```";
         }
     }
+
+    public class SlashRequireAuthAttribute : SlashCheckBaseAttribute
+    {
+        public override Task<bool> ExecuteChecksAsync(InteractionContext ctx)
+        {
+            return Task.FromResult(Program.configjson.AuthorizedUsers.Contains(ctx.User.Id.ToString()));
+        }
+    }
 }
