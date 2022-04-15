@@ -461,14 +461,14 @@ namespace MechanicalMilkshake
 #endif
                 string response = "Package updates are available on the following hosts:\n";
 
-                Utility utility = new();
+                Owner owner = new();
                 bool updatesAvailable = false;
                 foreach (string host in configjson.SshHosts)
                 {
 #if DEBUG
                     Console.WriteLine($"[{DateTime.Now}] [PackageUpdateCheck] Checking for updates on host '{host}'.");
 #endif
-                    string cmdResult = await utility.RunCommand($"ssh {host} \"sudo apt update\"");
+                    string cmdResult = await owner.RunCommand($"ssh {host} \"sudo apt update\"");
                     if (cmdResult.Contains("packages can be upgraded"))
                     {
                         response += $"`{host}`\n";
@@ -482,9 +482,9 @@ namespace MechanicalMilkshake
                 if (updatesAvailable)
                 {
                     string ownerMention = "";
-                    foreach (var owner in discord.CurrentApplication.Owners)
+                    foreach (var user in discord.CurrentApplication.Owners)
                     {
-                        ownerMention += owner.Mention + " ";
+                        ownerMention += user.Mention + " ";
                     }
 
                     await homeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{response}");
@@ -495,8 +495,8 @@ namespace MechanicalMilkshake
             discord.Ready += OnReady;
             discord.MessageCreated += MessageCreated;
             
-            Utility utility = new();
-            utility.RunCommand("cat /app/id_rsa > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa");
+            Owner owner = new();
+            owner.RunCommand("cat /app/id_rsa > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa");
 
             Task.Run(async () =>
             {

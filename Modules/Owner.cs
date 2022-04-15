@@ -10,9 +10,11 @@ using Minio.Exceptions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -603,6 +605,73 @@ namespace MechanicalMilkshake.Modules
         public async Task ResetActivity(InteractionContext ctx)
         {
             await SetActivity(ctx, "online");
+        }
+
+        // The idea for this command, and a lot of the code, is taken from Erisa's Lykos. References are linked below.
+        // https://github.com/Erisa/Lykos/blob/5f9c17c/src/Modules/Owner.cs#L116-L144
+        // https://github.com/Erisa/Lykos/blob/822e9c5/src/Modules/Helpers.cs#L36-L82
+        [SlashCommand("runcommand", "[Authorized users only] Run a shell command on the machine the bot's running on!")]
+        public async Task RunCommand(InteractionContext ctx, [Option("command", "The command to run, including any arguments.")] string command, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to False.")] bool isEphemeral = false)
+        {
+            if (!Program.configjson.AuthorizedUsers.Contains(ctx.User.Id.ToString()))
+            {
+                throw new SlashExecutionChecksFailedException();
+            }
+
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(isEphemeral));
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(await RunCommand(command)).AsEphemeral(isEphemeral));
+        }
+
+        public async Task<string> RunCommand(string command)
+        {
+
+            string osDescription = RuntimeInformation.OSDescription;
+            string fileName;
+            string args;
+            string escapedArgs = command.Replace("\"", "\\\"");
+
+            if (osDescription.Contains("Windows"))
+            {
+                fileName = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe";
+                args = $"-Command \"{escapedArgs} 2>&1\"";
+            }
+            else
+            {
+                // Assume Linux if OS is not Windows because I'm too lazy to bother with specific checks right now, might implement that later
+                fileName = Environment.GetEnvironmentVariable("SHELL");
+                if (!File.Exists(fileName))
+                {
+                    fileName = "/bin/sh";
+                }
+                args = $"-c \"{escapedArgs} 2>&1\"";
+            }
+
+            Process proc = new()
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    Arguments = args,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true
+                }
+            };
+
+            proc.Start();
+            string result = proc.StandardOutput.ReadToEnd();
+            proc.WaitForExit();
+
+            if (result.Length > 1947)
+            {
+                Console.WriteLine(result);
+                return $"Finished with exit code `{proc.ExitCode}`! It was too long to send in a message though; see the console for the full output.";
+            }
+            else
+            {
+                return $"Finished with exit code `{proc.ExitCode}`! Output: ```\n{result}```";
+            }
         }
 
         // The idea for this command, and a lot of the code, is taken from DSharpPlus/DSharpPlus.Test. Reference linked below.
