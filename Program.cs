@@ -313,6 +313,14 @@ namespace MechanicalMilkshake
                         string content = getContentPattern.Match(e.Message.Content).ToString();
                         content = content.Replace(idMatch, "").Trim();
 
+                        if (e.Message.Attachments.Any())
+                        {
+                            foreach (DiscordAttachment attachment in e.Message.Attachments)
+                            {
+                                content += $"\n{attachment.Url}";
+                            }
+                        }
+
                         DiscordMessage message;
                         try
                         {
