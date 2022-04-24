@@ -314,7 +314,24 @@ namespace MechanicalMilkshake.Modules
         [SlashCommand("ping", "Checks my ping.")]
         public async Task Ping(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Pong! `{ctx.Client.Ping}ms`"));
+            //await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Pong! `{ctx.Client.Ping}ms`"));
+
+            DiscordMessage message = await ctx.Channel.SendMessageAsync("Pong! This is a temporary message used to check ping and should be deleted shortly.");
+
+            ulong msSinceEpoch = message.Id >> 22;
+            ulong messageTimestamp = msSinceEpoch + 1420070400000;
+            DateTimeOffset messageTimestampOffset = DateTimeOffset.FromUnixTimeMilliseconds((long)messageTimestamp);
+            DateTime messageTimestampDateTime = messageTimestampOffset.UtcDateTime;
+
+
+            var responseTime = (messageTimestampDateTime - ctx.Interaction.CreationTimestamp.UtcDateTime).ToString()
+                .Replace("0", "")
+                .Replace(":", "")
+                .Replace(".", "");
+
+            await message.DeleteAsync();
+
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Pong! Client ping is `{ctx.Client.Ping}ms`.\n\nIt took me `{responseTime}ms` to send a message after you used this command."));
         }
 
         [SlashCommand("wolframalpha", "Search WolframAlpha without leaving Discord!")]
