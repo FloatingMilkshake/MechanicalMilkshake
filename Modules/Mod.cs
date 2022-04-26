@@ -133,7 +133,7 @@ namespace MechanicalMilkshake.Modules
             {
                 throw new SlashExecutionChecksFailedException();
             }
-            
+
             DiscordMember bot = await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id);
             await bot.ModifyAsync(x =>
             {

@@ -2,10 +2,8 @@
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -547,6 +545,109 @@ namespace MechanicalMilkshake.Modules
                 + $"\n\nAnimated Emoji:\n{animatedEmoji}";
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
+        }
+
+        // Begin context menu commands
+
+        [ContextMenu(ApplicationCommandType.UserContextMenu, "User Info")]
+        public async Task ContextUserInfo(ContextMenuContext ctx)
+        {
+            DiscordMember member = null;
+
+            try
+            {
+                member = await ctx.Guild.GetMemberAsync(ctx.TargetUser.Id);
+            }
+            catch
+            {
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Hmm. It doesn't look like that user is in the server, so I can't pull up their user info.").AsEphemeral(true));
+                return;
+            }
+
+            ulong msSinceEpoch = member.Id >> 22;
+            ulong msUnix = msSinceEpoch + 1420070400000;
+            string registeredAt = ($"{msUnix / 1000}");
+
+            TimeSpan t = member.JoinedAt - new DateTime(1970, 1, 1);
+            int joinedAtTimestamp = (int)t.TotalSeconds;
+
+            string acknowledgements = null;
+            if (member.Permissions.HasPermission(Permissions.KickMembers) && member.Permissions.HasPermission(Permissions.BanMembers))
+            {
+                acknowledgements = "Server Moderator (can kick and ban members)";
+            }
+            if (member.Permissions.HasPermission(Permissions.Administrator))
+            {
+                acknowledgements = "Server Administrator";
+            }
+            if (member.IsOwner)
+            {
+                acknowledgements = "Server Owner";
+            }
+
+            string roles = "None";
+            if (member.Roles.Any())
+            {
+                roles = "";
+                foreach (DiscordRole role in member.Roles.OrderBy(role => role.Position).Reverse())
+                {
+                    roles += role.Mention + " ";
+                }
+            }
+
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
+                .WithColor(new DiscordColor($"{member.Color}"))
+                .WithFooter($"Requested by {ctx.Member.Username}#{ctx.Member.Discriminator}")
+                .AddField("User Mention", member.Mention)
+                .AddField("User ID", $"{member.Id}")
+                .AddField("Account registered on", $"<t:{registeredAt}:F> (<t:{registeredAt}:R>)")
+                .AddField("Joined server on", $"<t:{joinedAtTimestamp}:F> (<t:{joinedAtTimestamp}:R>)")
+                .AddField("Roles", roles)
+                .WithThumbnail(member.AvatarUrl)
+                .WithTimestamp(DateTime.UtcNow);
+
+            if (acknowledgements != null)
+            {
+                embed.AddField("Acknowledgements", acknowledgements);
+            }
+
+            if (member.PremiumSince != null)
+            {
+                DateTime PremiumSinceUtc = member.PremiumSince.Value.UtcDateTime;
+                long unixTime = ((DateTimeOffset)PremiumSinceUtc).ToUnixTimeSeconds();
+                string boostingSince = $"Boosting since <t:{unixTime}:R> (<t:{unixTime}:F>";
+
+                embed.AddField("Server Booster", boostingSince);
+            }
+
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"User Info for **{member.Username}#{member.Discriminator}**").AddEmbed(embed).AsEphemeral(true));
+        }
+
+        [ContextMenu(ApplicationCommandType.UserContextMenu, "Avatar")]
+        public async Task ContextAvatar(ContextMenuContext ctx)
+        {
+            DiscordButtonComponent serverAvatarButton = new(ButtonStyle.Primary, "server-avatar-ctx-cmd-button", "Server Avatar");
+            DiscordButtonComponent userAvatarButton = new(ButtonStyle.Primary, "user-avatar-ctx-cmd-button", "User Avatar");
+
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+                .WithContent($"You requested the avatar for {ctx.TargetUser.Mention}. Please choose one of the options below.")
+                .AsEphemeral(true)
+                .AddComponents(serverAvatarButton, userAvatarButton));
+        }
+
+        [ContextMenu(ApplicationCommandType.UserContextMenu, "Lookup")]
+        public async Task ContextLookup(ContextMenuContext ctx)
+        {
+            ulong msSinceEpoch = ctx.TargetUser.Id >> 22;
+            ulong msUnix = msSinceEpoch + 1420070400000;
+            string createdAt = ($"{msUnix / 1000}");
+
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
+                .WithThumbnail($"{ctx.TargetUser.AvatarUrl}")
+                .AddField("ID", $"{ctx.TargetUser.Id}")
+                .AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
+
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Information about **{ctx.TargetUser.Username}#{ctx.TargetUser.Discriminator}**:").AddEmbed(embed).AsEphemeral(true));
         }
     }
 }

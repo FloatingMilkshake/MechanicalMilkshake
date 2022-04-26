@@ -242,6 +242,39 @@ namespace MechanicalMilkshake
 
                     await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(embed.Build()).AsEphemeral(true));
                 }
+                if (e.Id == "server-avatar-ctx-cmd-button")
+                {
+                    Regex idPattern = new(@"\d+");
+                    ulong targetUserId = Convert.ToUInt64(idPattern.Match(e.Message.Content).ToString());
+                    DiscordUser targetUser = await s.GetUserAsync(targetUserId);
+
+                    DiscordMember targetMember;
+                    try
+                    {
+                        targetMember = await e.Guild.GetMemberAsync(targetUserId);
+                    }
+                    catch
+                    {
+                        await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm. It doesn't look like that user is in the server, so they don't have a server avatar.").AsEphemeral(true));
+                        return;
+                    }
+
+                    if (targetMember.GuildAvatarUrl == null)
+                    {
+                        await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{targetUser.Mention} doesn't have a Server Avatar set! Try the User Avatar button to get their avatar.").AsEphemeral(true));
+                        return;
+                    }
+
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Sure, the Server Avatar for {targetUser.Mention}. Here you go:\n{targetMember.GuildAvatarUrl.Replace("size=1024", "size=4096")}").AsEphemeral(true));
+                }
+                if (e.Id == "user-avatar-ctx-cmd-button")
+                {
+                    Regex idPattern = new(@"\d+");
+                    ulong targetUserId = Convert.ToUInt64(idPattern.Match(e.Message.Content).ToString());
+                    DiscordUser targetUser = await s.GetUserAsync(targetUserId);
+
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Sure, the User Avatar for {targetUser.Mention}. Here you go:\n{targetUser.AvatarUrl.Replace("size=1024", "size=4096")}").AsEphemeral(true));
+                }
             };
 
 #if DEBUG // Register slash commands for dev server only when debugging in VS; no need to wait an hour for changes to apply
@@ -502,7 +535,7 @@ namespace MechanicalMilkshake
             await discord.ConnectAsync();
             discord.Ready += OnReady;
             discord.MessageCreated += MessageCreated;
-            
+
             Owner owner = new();
             owner.RunCommand("cat /app/id_rsa > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa");
 
