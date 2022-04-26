@@ -5,7 +5,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Program.Main(System.String[])")]
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.PerServerFeatures.DummyCommand(DSharpPlus.CommandsNext.CommandContext)~System.Threading.Tasks.Task")]
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.Owner.DebugCmds.Uptime(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.Owner.DebugCmds.TimeCheck(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
@@ -52,3 +51,6 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.ComplaintSlashCommands.Complaint.IaComplaint(DSharpPlus.SlashCommands.InteractionContext,System.String)~System.Threading.Tasks.Task")]
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.ComplaintSlashCommands.Complaint.ItComplaint(DSharpPlus.SlashCommands.InteractionContext,System.String)~System.Threading.Tasks.Task")]
 [assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.ComplaintSlashCommands.Complaint.CorporateComplaint(DSharpPlus.SlashCommands.InteractionContext,System.String)~System.Threading.Tasks.Task")]
+[assembly: SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.Events.Errors.CommandsNextService_CommandErrored(DSharpPlus.CommandsNext.CommandsNextExtension,DSharpPlus.CommandsNext.CommandErrorEventArgs)~System.Threading.Tasks.Task")]
+[assembly: SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.Events.Errors.SlashCommandErrored(DSharpPlus.SlashCommands.SlashCommandsExtension,DSharpPlus.SlashCommands.EventArgs.SlashCommandErrorEventArgs)~System.Threading.Tasks.Task")]
+[assembly: SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>", Scope = "member", Target = "~M:MechanicalMilkshake.Modules.Events.OnReady(DSharpPlus.DiscordClient,DSharpPlus.EventArgs.ReadyEventArgs)~System.Threading.Tasks.Task")]

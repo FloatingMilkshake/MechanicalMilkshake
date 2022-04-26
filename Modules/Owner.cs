@@ -1,22 +1,8 @@
-using DSharpPlus;
-using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using MimeTypes;
-using Minio;
 using Minio.Exceptions;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace MechanicalMilkshake.Modules
 {
@@ -483,7 +469,7 @@ namespace MechanicalMilkshake.Modules
             [SlashCommand("info", "[Bot owner only] Show debug information about the bot.")]
             public async Task DebugInfo(InteractionContext ctx, [Option("ephemeralresponse", "Whether my response should be ephemeral. Defaults to False.")] bool isEphemeral = false)
             {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Debug Information:\n" + Program.GetDebugInfo()).AsEphemeral(isEphemeral));
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Debug Information:\n" + Helpers.GetDebugInfo()).AsEphemeral(isEphemeral));
             }
 
             [SlashCommand("uptime", "[Bot owner only] Check the bot's uptime (from the time it connects to Discord).")]

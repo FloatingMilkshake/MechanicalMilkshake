@@ -1,14 +1,4 @@
-﻿using DSharpPlus;
-using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using System;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Web;
-
-namespace MechanicalMilkshake.Modules
+﻿namespace MechanicalMilkshake.Modules
 {
     public class Utility : ApplicationCommandModule
     {
@@ -424,7 +414,7 @@ namespace MechanicalMilkshake.Modules
                 }
 
                 System.Collections.ObjectModel.Collection<DiscordMessage> messagesToDelete = new() { };
-                System.Collections.Generic.IReadOnlyList<DiscordMessage> messagesToConsider = await ctx.Channel.GetMessagesAsync(100);
+                IReadOnlyList<DiscordMessage> messagesToConsider = await ctx.Channel.GetMessagesAsync(100);
                 foreach (DiscordMessage msg in messagesToConsider)
                 {
                     if (msg.Author == ctx.Client.CurrentUser)

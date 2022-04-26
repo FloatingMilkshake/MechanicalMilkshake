@@ -1,10 +1,3 @@
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using System;
-using System.Threading.Tasks;
-
 namespace MechanicalMilkshake.Modules
 {
     public class ComplaintSlashCommands : ApplicationCommandModule
@@ -73,55 +66,6 @@ namespace MechanicalMilkshake.Modules
         public async Task DummyCommand(CommandContext ctx)
         {
             await ctx.RespondAsync("Hi! This command does nothing other than prevent an exception from being thrown when the bot is run. :)");
-        }
-
-        public static async Task WednesdayCheck()
-        {
-#if DEBUG
-            Console.WriteLine($"[{DateTime.Now}] WednesdayCheck running.");
-#endif
-            if (DateTime.Now.DayOfWeek != DayOfWeek.Wednesday)
-            {
-                return;
-            }
-            else if (!DateTime.Now.ToShortTimeString().Contains("10:00"))
-            {
-                return;
-            }
-
-            try
-            {
-                DiscordChannel channel = await Program.discord.GetChannelAsync(874488354786394192);
-                // await channel.SendMessageAsync("(this message will be changed at some point)");
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"An error occurred! Details: {e}");
-                return;
-            }
-        }
-
-        public static async Task PizzaTime()
-        {
-#if DEBUG
-            Console.WriteLine($"[{DateTime.Now}] PizzaTime running.");
-#endif
-            if (!DateTime.Now.ToShortTimeString().Contains("12:00"))
-            {
-                return;
-            }
-
-            try
-            {
-                DiscordChannel channel = await Program.discord.GetChannelAsync(932768798224838778);
-                await channel.SendMessageAsync("https://cdn.discordapp.com/attachments/932768798224838778/932768814284812298/IMG_9147.png");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"An error occurred! Details: {e}");
-                return;
-            }
         }
     }
 
