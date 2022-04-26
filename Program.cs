@@ -282,6 +282,7 @@ namespace MechanicalMilkshake
             slash.RegisterCommands<Fun>(configjson.DevServerId);
             slash.RegisterCommands<Mod>(configjson.DevServerId);
             slash.RegisterCommands<Utility>(configjson.DevServerId);
+            slash.RegisterCommands<ComplaintSlashCommands>(configjson.DevServerId);
             Console.WriteLine("Slash commands registered for debugging.");
 #else // Register slash commands globally for 'production' bot
             slash.RegisterCommands<Owner>();
@@ -289,6 +290,10 @@ namespace MechanicalMilkshake
             slash.RegisterCommands<Mod>();
             slash.RegisterCommands<Utility>();
             Console.WriteLine("Slash commands registered globally.");
+            
+            // Register slash commands for per-server features in respective servers & testing server for 'production' bot
+            slash.RegisterCommands<ComplaintSlashCommands>(631118217384951808);
+            slash.RegisterCommands<ComplaintSlashCommands>(configjson.DevServerId);
 #endif
             commands.RegisterCommands<PerServerFeatures>();
             commands.CommandErrored += CommandsNextService_CommandErrored;
