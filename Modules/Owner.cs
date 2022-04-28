@@ -1,9 +1,3 @@
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
-using MimeTypes;
-using Minio.Exceptions;
-using System.Diagnostics;
-
 namespace MechanicalMilkshake.Modules
 {
     [SlashRequireAuth]

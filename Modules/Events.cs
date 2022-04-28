@@ -173,6 +173,62 @@
 
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Sure, the User Avatar for {targetUser.Mention}. Here you go:\n{targetUser.AvatarUrl.Replace("size=1024", "size=4096")}").AsEphemeral(true));
             }
+            if (e.Id == "code-quick-shortcut")
+            {
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
+
+                DiscordInteraction ctx = e.Interaction;
+                try
+                {
+                    var globals = new EventGlobals(Program.discord, ctx);
+
+                    var scriptOptions = ScriptOptions.Default;
+                    scriptOptions = scriptOptions.WithImports("System", "System.Collections.Generic", "System.Linq", "System.Text", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.SlashCommands", "DSharpPlus.Interactivity", "Microsoft.Extensions.Logging");
+                    scriptOptions = scriptOptions.WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
+
+                    var script = CSharpScript.Create(e.Message.Content, scriptOptions, typeof(EventGlobals));
+                    script.Compile();
+                    var result = await script.RunAsync(globals).ConfigureAwait(false);
+
+                    if (result != null && result.ReturnValue != null && !string.IsNullOrWhiteSpace(result.ReturnValue.ToString()))
+                    {
+                        await ctx.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent($"{result.ReturnValue}").AsEphemeral(true));
+                    }
+                    else
+                    {
+                        await ctx.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent($"Eval was successful, but there was nothing returned."));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await ctx.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent(ex.GetType() + ": " + ex.Message).AsEphemeral(true));
+                }
+            }
+        }
+
+        public class EventGlobals
+        {
+            public DiscordMessage Message { get; set; }
+            public DiscordChannel Channel { get; set; }
+            public DiscordGuild Guild { get; set; }
+            public DiscordUser User { get; set; }
+            public DiscordMember Member { get; set; }
+            public DiscordInteraction Context { get; set; }
+
+            public DiscordClient Client;
+
+            public EventGlobals(DiscordClient client, DiscordInteraction ctx)
+            {
+                Client = client;
+                Channel = ctx.Channel;
+                Guild = ctx.Guild;
+                User = ctx.User;
+                if (Guild != null)
+                {
+                    Member = Guild.GetMemberAsync(User.Id).ConfigureAwait(false).GetAwaiter().GetResult();
+                }
+                Context = ctx;
+            }
         }
 
         public static async Task MessageCreated(DiscordClient client, MessageCreateEventArgs e)
