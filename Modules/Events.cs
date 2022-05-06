@@ -37,7 +37,16 @@
                     }
                     catch
                     {
-                        await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed.Build()).AsEphemeral(true));
+                        // Sometimes a follow-up also doesn't work - if that's the case, we'll forward the error to the bot's home channel.
+                        try
+                        {
+                            await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed.Build()).AsEphemeral(true));
+                        }
+                        catch
+                        {
+                            embed.Description = $"`{ex.GetType()}` occurred when {e.Context.User.Mention} used `{e.Context.CommandName}`.";
+                            await Program.homeChannel.SendMessageAsync(embed);
+                        }
                     }
                 }
             }
