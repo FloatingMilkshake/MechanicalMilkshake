@@ -256,18 +256,68 @@
                     {
                         Regex idPattern = new(@"[0-9]+");
                         string idMatch = idPattern.Match(e.Message.Content).ToString();
-                        DiscordChannel targetChannel;
+                        DiscordChannel targetChannel = default;
+                        DiscordUser targetUser = default;
+                        DiscordMember targetMember = default;
+                        ulong targetId;
+
                         try
                         {
-                            ulong channelId = Convert.ToUInt64(idMatch);
-                            targetChannel = await Program.discord.GetChannelAsync(channelId);
+                            targetId = Convert.ToUInt64(idMatch);
                         }
                         catch (Exception ex)
                         {
                             await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                                .WithContent($"Hmm, I couldn't parse the channel ID in your message! Make sure it's a channel ID and that I have permission to see the channel!\n```\n{ex.GetType()}: {ex.Message}\n```")
+                                .WithContent($"Hmm, that doesn't look like a valid ID! Make sure it's a user or channel ID!\n```\n{ex.GetType()}: {ex.Message}\n```")
                                 .WithReply(e.Message.Id));
                             return;
+                        }
+
+                        try
+                        {
+                            targetChannel = await Program.discord.GetChannelAsync(targetId);
+                        }
+                        catch
+                        {
+                            try
+                            {
+                                targetUser = await Program.discord.GetUserAsync(targetId);
+                            }
+                            catch (Exception ex)
+                            {
+                                await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                                    .WithContent($"Hmm, I couldn't parse that ID! Make sure it's either a user ID or a channel ID and, if it's a channel ID, that I have permission to see the channel.\n```\n{ex.GetType()}: {ex.Message}\n```")
+                                    .WithReply(e.Message.Id));
+                                return;
+                            }
+                        }
+
+                        if (targetChannel == default)
+                        {
+                            DiscordGuild mutualServer = default;
+                            foreach (var guildId in client.Guilds)
+                            {
+                                DiscordGuild server = await client.GetGuildAsync(guildId.Key);
+
+                                if (server.Members.ContainsKey(targetUser.Id))
+                                {
+                                    mutualServer = await client.GetGuildAsync(server.Id);
+                                    break;
+                                }
+                            }
+
+                            try
+                            {
+                                targetMember = await mutualServer.GetMemberAsync(targetUser.Id);
+                            }
+                            catch (Exception ex)
+                            {
+                                await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                                    .WithContent($"I tried to DM that user, but I don't have any mutual servers with them so Discord wouldn't let me send it. Sorry!\n```\n{ex.GetType()}: {ex.Message}\n```")
+                                    .WithReply(e.Message.Id));
+                                return;
+                            }
+                            targetChannel = await targetMember.CreateDmChannelAsync();
                         }
 
                         Regex getContentPattern = new(@"[0-9]+.*");
