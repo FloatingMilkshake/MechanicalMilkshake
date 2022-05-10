@@ -139,13 +139,56 @@
                 DiscordEmbedBuilder embed = new()
                 {
                     Color = DiscordColor.Blurple,
-                    Title = $"DM Reply Info",
+                    Title = "DM Reply Info",
                     Description = $"{message.ReferencedMessage.Content}",
                 };
 
                 embed.AddField("Reply ID", $"`{message.ReferencedMessage.Id}`");
                 embed.AddField("Target User ID", $"`{message.ReferencedMessage.Author.Id}`", true);
                 embed.AddField("Target User Mention", $"{message.ReferencedMessage.Author.Mention}", true);
+
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(embed.Build()).AsEphemeral(true));
+            }
+            if (e.Id == "view-dm-context")
+            {
+                DiscordEmbedField channelIdField = e.Message.Embeds[0].Fields.Where(f => f.Name == "Channel ID").First();
+                ulong channelId = Convert.ToUInt64(channelIdField.Value.Replace("`", ""));
+
+                DiscordEmbedField messageIdField = e.Message.Embeds[0].Fields.Where(f => f.Name == "Message ID").First();
+                ulong messageId = Convert.ToUInt64(messageIdField.Value.Replace("`", ""));
+
+                DiscordChannel channel = await s.GetChannelAsync(channelId);
+                DiscordMessage message = await channel.GetMessageAsync(messageId);
+
+                string contextContent = "";
+                ulong contextId = default;
+                DiscordUser contextAuthor = default;
+                DiscordMessage contextMsg = default;
+                foreach (var msg in await channel.GetMessagesBeforeAsync(messageId, 1))
+                {
+                    contextContent = msg.Content;
+                    contextId = msg.Id;
+                    contextAuthor = msg.Author;
+                    contextMsg = msg;
+                    // There is only 1 message in the list we're enumerating here, but this makes sure the foreach only runs once to avoid issues just in case.
+                    break; 
+                }
+
+                if (string.IsNullOrWhiteSpace(contextContent) && contextMsg.Embeds != null)
+                {
+                    contextContent = "[Embed Content]\n" + contextMsg.Embeds[0].Description;
+                } 
+
+                DiscordEmbedBuilder embed = new()
+                {
+                    Color = DiscordColor.Blurple,
+                    Title = "DM Context Info",
+                    Description = $"{contextContent}",
+                };
+
+                embed.AddField("Context Message ID", $"`{contextId}`");
+                embed.AddField("Target User ID", $"`{contextAuthor.Id}`", true);
+                embed.AddField("Target User Mention", $"{contextAuthor.Mention}", true);
 
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().AddEmbed(embed.Build()).AsEphemeral(true));
             }
@@ -452,6 +495,22 @@
                                             messageBuilder = messageBuilder.AddComponents(button);
                                         }
                                         embed.AddField("Is Reply", isReply);
+
+                                        var messages = await e.Channel.GetMessagesBeforeAsync(e.Message.Id);
+                                        bool contextExists = false;
+                                        foreach (var msg in messages)
+                                        {
+                                            if (msg.Content != null)
+                                            {
+                                                contextExists = true;
+                                            }
+                                        }
+
+                                        if (contextExists)
+                                        {
+                                            DiscordButtonComponent button = new(ButtonStyle.Primary, "view-dm-context", "View Context");
+                                            messageBuilder.AddComponents(button);
+                                        }
 
                                         embed.AddField("Mutual Servers", mutualServers, false);
 
