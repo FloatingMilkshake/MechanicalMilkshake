@@ -1,13 +1,15 @@
 # MechanicalMilkshake
-My first Discord bot, written in C# with [DSharpPlus](https://github.com/DSharpPlus/DSharpPlus)!
+A multipurpose Discord bot, written in C# with [DSharpPlus](https://github.com/DSharpPlus/DSharpPlus)! (It also happens to be my first bot! Things have progressed quite a bit since I started.)
 
-Note that this is a multipurpose bot. I'm not developing it with any particular features in mind (for example, moderation tools).
+Note that I'm not developing this bot with any particular features in mind (for example, moderation tools). Some features of this bot are somewhat specific and might not be useful to you, but I add them because they're useful to me.
 
 Huge thank you to [Erisa](https://github.com/Erisa) for putting up with my constant questions as I figure things out! You have no idea how much I appreciate it. ♥
 
 ## Running The Bot
 
 > These instructions assume you know how to create a bot application through Discord's Developer Portal and how to obtain a bot token, channel ID, etc. If you need help with any of this, feel free to reach out to me with any of the contact methods listed on [my website](https://floatingmilkshake.com)!
+> 
+> If you are a friend of mine and want to use this bot but don't want to (or don't know how to) host it yourself, feel free to reach out and I might be willing to add my private instance to your server.
 
 - Clone the repo
 - Copy `config.example.json` to `config.json`
