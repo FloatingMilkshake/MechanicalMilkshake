@@ -1,4 +1,5 @@
-FROM mcr.microsoft.com/dotnet/sdk:6.0.202-alpine3.15 AS build-env
+FROM --platform=${BUILDPLATFORM} \
+	mcr.microsoft.com/dotnet/sdk:6.0.202-alpine3.15 AS build-env
 WORKDIR /app
 COPY *.csproj ./
 RUN dotnet restore
