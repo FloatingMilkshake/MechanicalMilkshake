@@ -495,14 +495,14 @@
                     DiscordMessage msg = null;
                     try
                     {
-                        msg = await ctx.Channel.GetMessageAsync(Convert.ToUInt64(message));
+                        msg = await targetChannel.GetMessageAsync(Convert.ToUInt64(message));
                     }
                     catch
                     {
                         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"That doesn't look like a message ID! Make sure you've got the right thing. A message ID will look something like this: `{ctx.Interaction.Id}`"));
                         return;
                     }
-                    await ctx.Channel.DeleteMessageAsync(msg);
+                    await targetChannel.DeleteMessageAsync(msg);
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Message deleted successfully.").AsEphemeral(true));
                 }
                 catch (DSharpPlus.Exceptions.NotFoundException)
