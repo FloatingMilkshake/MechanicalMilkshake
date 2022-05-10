@@ -400,9 +400,30 @@
         }
 
         [SlashCommand("deletemessage", "Delete a message. This can be used to to delete direct messages with the bot.")]
-        public async Task Delete(InteractionContext ctx, [Option("message", "The ID of the message to delete.")] string message)
+        public async Task Delete(InteractionContext ctx, [Option("message", "The ID of the message to delete.")] string message, [Option("channel", "The ID of the channel the message is in. Defaults to the current channel.")] string channel = null)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
+
+            ulong channelId;
+            DiscordChannel targetChannel;
+            if (channel != null)
+            {
+                try
+                {
+                    channelId = Convert.ToUInt64(channel);
+                }
+                catch
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"I couldn't parse the ID `{channel}`! Make sure it's a valid channel ID.").AsEphemeral(true));
+                    return;
+                }
+
+                targetChannel = await Program.discord.GetChannelAsync(channelId);
+            }
+            else
+            {
+                targetChannel = ctx.Channel;
+            }
 
             DiscordMember author;
             if (message == "all")
@@ -414,7 +435,7 @@
                 }
 
                 System.Collections.ObjectModel.Collection<DiscordMessage> messagesToDelete = new() { };
-                IReadOnlyList<DiscordMessage> messagesToConsider = await ctx.Channel.GetMessagesAsync(100);
+                IReadOnlyList<DiscordMessage> messagesToConsider = await targetChannel.GetMessagesAsync(100);
                 foreach (DiscordMessage msg in messagesToConsider)
                 {
                     if (msg.Author == ctx.Client.CurrentUser)
@@ -434,7 +455,7 @@
                     {
                         try
                         {
-                            await ctx.Channel.DeleteMessageAsync(msg);
+                            await targetChannel.DeleteMessageAsync(msg);
                             await Task.Delay(3000);
                         }
                         catch (Exception e)
@@ -449,12 +470,22 @@
             }
             else
             {
-                if (!ctx.Channel.IsPrivate)
+                if (!targetChannel.IsPrivate)
                 {
                     author = await ctx.Guild.GetMemberAsync(ctx.User.Id);
                     if (!author.Permissions.HasPermission(Permissions.ManageMessages))
                     {
-                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You don't have permission to use this command here!\n`delete` requires the Manage Messages permission when being used in a non-DM channel.").AsEphemeral(true));
+                        string thisOrThat;
+                        if (targetChannel.Id == ctx.Channel.Id)
+                        {
+                            thisOrThat = "this";
+                        }
+                        else
+                        {
+                            thisOrThat = "that";
+                        }
+
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"You don't have permission to delete messages in {thisOrThat} channel!\n`/deletemessage` requires the Manage Messages permission when being used in a non-DM channel.").AsEphemeral(true));
                         return;
                     }
                 }
