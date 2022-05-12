@@ -568,6 +568,39 @@
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
         }
 
+        [SlashCommand("bigemoji", "Enlarge an emoji! Only works for custom emoji.")]
+        public async Task BigEmoji(InteractionContext ctx, [Option("emoji", "The emoji to enlarge.")] string emoji)
+        {
+            Regex emojiRegex = new(@"<(a)?:.*:([0-9]*)>");
+
+            MatchCollection matches = emojiRegex.Matches(emoji);
+            GroupCollection groups = matches[0].Groups;
+
+            if (groups[1].Value == "a")
+            {
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"https://cdn.discordapp.com/emojis/{groups[2].Value}.gif"));
+            }
+            else
+            {
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"https://cdn.discordapp.com/emojis/{groups[2].Value}"));
+            }
+
+            //foreach (var emoji in guild.Emojis)
+            //{
+            //    if (emoji.Value.IsAnimated)
+            //    {
+            //        animatedEmoji += $" <a:{emoji.Value.Name}:{emoji.Key}>";
+            //    }
+            //    else
+            //    {
+            //        staticEmoji += $" <:{emoji.Value.Name}:{emoji.Key}>";
+            //    }
+            //}
+            //
+            //response += $"Static Emoji:\n{staticEmoji}"
+            //    + $"\n\nAnimated Emoji:\n{animatedEmoji}";
+        }
+
         // Begin context menu commands
 
         [ContextMenu(ApplicationCommandType.UserContextMenu, "User Info")]
