@@ -409,7 +409,7 @@ namespace MechanicalMilkshake.Modules
                         return;
                     }
 
-                    HttpRequestMessage request = new(HttpMethod.Delete, "client/v4/zones/" + zoneId + "/purge_cache")
+                    HttpRequestMessage request = new(HttpMethod.Delete, "client/v4/zones/" + zoneId + "/purge_cache/files")
                     {
                         Content = new StringContent(cloudflareContentString, Encoding.UTF8, "application/json")
                     };
