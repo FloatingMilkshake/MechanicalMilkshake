@@ -123,7 +123,14 @@
         {
             if (e.Id == "shutdown-button")
             {
-                Owner.DebugCmds.ShutdownConfirmed(e.Interaction);
+                if (Program.configjson.AuthorizedUsers.Contains(e.User.Id.ToString()))
+                {
+                    Owner.DebugCmds.ShutdownConfirmed(e.Interaction);
+                }
+                else
+                {
+                    e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{e.User.Mention}, you are not authorized to perform this action!").AsEphemeral(true));
+                }
             }
             if (e.Id == "view-dm-reply-info")
             {

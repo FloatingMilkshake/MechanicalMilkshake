@@ -137,11 +137,11 @@ namespace MechanicalMilkshake.Modules
 
             if (nickname != null)
             {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Nickname changed to **{nickname}** successfully!").AsEphemeral(true));
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Nickname changed to **{nickname}** successfully!"));
             }
             else
             {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Nickname cleared successfully!").AsEphemeral(true));
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Nickname cleared successfully!"));
             }
         }
     }
