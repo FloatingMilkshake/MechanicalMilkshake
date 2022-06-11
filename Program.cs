@@ -126,6 +126,7 @@
 // Register slash commands for per-server features in respective servers
 // & testing server for 'production' bot
             slash.RegisterCommands<ComplaintSlashCommands>(631118217384951808);
+            slash.RegisterCommands<ComplaintSlashCommands>(984903591816990730);
             slash.RegisterCommands<ComplaintSlashCommands>(configjson.DevServerId);
 #endif
 
