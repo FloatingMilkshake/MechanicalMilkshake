@@ -3,10 +3,10 @@ namespace MechanicalMilkshake.Modules
     [SlashRequireAuth]
     public class Owner : ApplicationCommandModule
     {
-        [SlashCommandGroup("link", "[Bot owner only] Set, update, or delete a short link with Cloudflare worker-links.")]
+        [SlashCommandGroup("link", "[Authorized users only] Set, update, or delete a short link with Cloudflare worker-links.")]
         public class Link
         {
-            [SlashCommand("set", "[Bot owner only] Set or update a short link with Cloudflare worker-links.")]
+            [SlashCommand("set", "[Authorized users only] Set or update a short link with Cloudflare worker-links.")]
             public async Task SetLink(InteractionContext ctx, [Option("key", "Set a custom key for the short link.")] string key, [Option("url", "The URL the short link should point to.")] string url)
             {
                 if (url.Contains('<'))
@@ -70,7 +70,7 @@ namespace MechanicalMilkshake.Modules
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```"));
             }
 
-            [SlashCommand("delete", "[Bot owner only] Delete a short link with Cloudflare worker-links.")]
+            [SlashCommand("delete", "[Authorized users only] Delete a short link with Cloudflare worker-links.")]
             public async Task DeleteWorkerLink(InteractionContext ctx, [Option("link", "The key or URL of the short link to delete.")] string url)
             {
                 string baseUrl;
@@ -118,7 +118,7 @@ namespace MechanicalMilkshake.Modules
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```"));
             }
 
-            [SlashCommand("list", "[Bot owner only] List all short links configured with Cloudflare worker-links.")]
+            [SlashCommand("list", "[Authorized users only] List all short links configured with Cloudflare worker-links.")]
             public async Task ListWorkerLinks(InteractionContext ctx)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
@@ -197,10 +197,10 @@ namespace MechanicalMilkshake.Modules
             }
         }
 
-        [SlashCommandGroup("cdn", "[Bot owner only] Manage files uploaded to Amazon S3-compatible cloud storage.")]
+        [SlashCommandGroup("cdn", "[Authorized users only] Manage files uploaded to Amazon S3-compatible cloud storage.")]
         public class Cdn
         {
-            [SlashCommand("upload", "[Bot owner only] Upload a file to Amazon S3-compatible cloud storage.")]
+            [SlashCommand("upload", "[Authorized users only] Upload a file to Amazon S3-compatible cloud storage.")]
             public async Task Upload(InteractionContext ctx, [Option("name", "The name for the uploaded file.")] string name, [Option("link", "A link to a file to upload.")] string link = null, [Option("file", "A direct file to upload. This will override a link if both are provided!")] DiscordAttachment file = null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
@@ -308,7 +308,7 @@ namespace MechanicalMilkshake.Modules
                 }
             }
 
-            [SlashCommand("delete", "[Bot owner only] Delete a file from Amazon S3-compatible cloud storage.")]
+            [SlashCommand("delete", "[Authorized users only] Delete a file from Amazon S3-compatible cloud storage.")]
             public async Task DeleteUpload(InteractionContext ctx, [Option("file", "The file to delete.")] string fileToDelete)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
@@ -433,7 +433,7 @@ namespace MechanicalMilkshake.Modules
                 }
             }
 
-            [SlashCommand("preview", "[Bot owner only] Preview an image stored on Amazon S3-compatible cloud storage.")]
+            [SlashCommand("preview", "[Authorized users only] Preview an image stored on Amazon S3-compatible cloud storage.")]
             public async Task CdnPreview(InteractionContext ctx, [Option("name", "The name (or link) of the file to preview.")] string name)
             {
                 if (!name.Contains('.'))
@@ -457,16 +457,16 @@ namespace MechanicalMilkshake.Modules
             }
         }
 
-        [SlashCommandGroup("debug", "[Bot owner only] Commands for checking if the bot is working properly.")]
+        [SlashCommandGroup("debug", "[Authorized users only] Commands for checking if the bot is working properly.")]
         public class DebugCmds : ApplicationCommandModule
         {
-            [SlashCommand("info", "[Bot owner only] Show debug information about the bot.")]
+            [SlashCommand("info", "[Authorized users only] Show debug information about the bot.")]
             public async Task DebugInfo(InteractionContext ctx)
             {
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Debug Information:\n" + Helpers.GetDebugInfo()));
             }
 
-            [SlashCommand("uptime", "[Bot owner only] Check the bot's uptime (from the time it connects to Discord).")]
+            [SlashCommand("uptime", "[Authorized users only] Check the bot's uptime (from the time it connects to Discord).")]
             public async Task Uptime(InteractionContext ctx)
             {
                 long connectUnixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
@@ -477,14 +477,14 @@ namespace MechanicalMilkshake.Modules
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Process started at <t:{startUnixTime}:F> (<t:{startUnixTime}:R>).\n\nLast connected to Discord at <t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)."));
             }
 
-            [SlashCommand("timecheck", "[Bot owner only] Return the current time on the machine the bot is running on.")]
+            [SlashCommand("timecheck", "[Authorized users only] Return the current time on the machine the bot is running on.")]
             public async Task TimeCheck(InteractionContext ctx)
             {
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Seems to me like it's currently `{DateTime.Now}`."
                     + $"\n(Short Time: `{DateTime.Now.ToShortTimeString()}`)"));
             }
 
-            [SlashCommand("shutdown", "[Bot owner only] Shut down the bot.")]
+            [SlashCommand("shutdown", "[Authorized users only] Shut down the bot.")]
             public async Task Shutdown(InteractionContext ctx)
             {
                 DiscordButtonComponent button = new(ButtonStyle.Danger, "shutdown-button", "Shut Down");
@@ -500,7 +500,7 @@ namespace MechanicalMilkshake.Modules
                 Environment.Exit(0);
             }
 
-            [SlashCommand("restart", "[Bot owner only] Restart the bot.")]
+            [SlashCommand("restart", "[Authorized users only] Restart the bot.")]
             public async Task Restart(InteractionContext ctx)
             {
                 try
@@ -526,7 +526,7 @@ namespace MechanicalMilkshake.Modules
             }
         }
 
-        [SlashCommand("setactivity", "[Bot owner only] Set the bot's activity.")]
+        [SlashCommand("setactivity", "[Authorized users only] Set the bot's activity.")]
         public async Task SetActivity(InteractionContext ctx,
             [Option("status", "The bot's online status.")]
                 [Choice("Online", "online")]
@@ -580,7 +580,7 @@ namespace MechanicalMilkshake.Modules
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Activity set successfully!"));
         }
 
-        [SlashCommand("resetactivity", "[Bot owner only] Reset the bot's activity (sets its status to online with no activity).")]
+        [SlashCommand("resetactivity", "[Authorized users only] Reset the bot's activity (sets its status to online with no activity).")]
         public async Task ResetActivity(InteractionContext ctx)
         {
             await SetActivity(ctx, "online");
@@ -655,7 +655,7 @@ namespace MechanicalMilkshake.Modules
 
         // The idea for this command, and a lot of the code, is taken from DSharpPlus/DSharpPlus.Test. Reference linked below.
         // https://github.com/DSharpPlus/DSharpPlus/blob/3a50fb3/DSharpPlus.Test/TestBotEvalCommands.cs
-        [SlashCommand("eval", "[Bot owner only] Evaluate C# code!")]
+        [SlashCommand("eval", "[Authorized users only] Evaluate C# code!")]
         public async Task Eval(InteractionContext ctx, [Option("code", "The code to evaluate.")] string code)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
