@@ -41,6 +41,7 @@ Huge thank you to [Erisa](https://github.com/Erisa) for putting up with my const
 | **cloudflare** / urlPrefix      | The URL prefix for your S3 bucket. This should look the same as your `s3 / cdnBaseUrl` (so something like `https://cdn.floatingmilkshake.com`).                                                                        |
 | **cloudflare** / token          | A global API token for your Cloudflare account. For some reason a global API token is required to clear this cache, instead of a more specific API key which is what's used for worker-links.                          |
 | authorizedUsers                 | An array of users (user IDs) authorized to run Owner commands. There can be as many users here as you'd like.                                                                                                          |
+| sshHosts                        | An array of servers (format is user@ip-address) to automatically check for and notify of package updates. Only works with distributions that use apt for now. Checks for updates every 6 hours.                        |
 
 ## Contributing
 I'm not the best at this, so feel free to open an issue or PR if you notice anything that seems wrong or if you have a suggestion! I'm all ears. However, please note that I have some [Contribution Guidelines](CONTRIBUTING.md).
