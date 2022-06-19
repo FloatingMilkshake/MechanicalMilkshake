@@ -296,6 +296,8 @@
             {
                 try
                 {
+                    await Helpers.KeywordCheck(e);
+
                     if (!e.Channel.IsPrivate)
                         return;
 

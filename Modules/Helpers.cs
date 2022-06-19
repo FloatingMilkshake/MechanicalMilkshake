@@ -48,5 +48,34 @@
                 + $"\n{commitTimeDescription} `{commitTime}`"
                 + $"\nLatest commit message:\n```\n{commitMessage}\n```";
         }
+
+        public static async Task KeywordCheck(MessageCreateEventArgs e)
+        {
+            if (e.Author.Id == 455432936339144705)
+                return;
+            else if (e.Message.Content.Contains("floaty"))
+                await SendAlert("floaty", e);
+            else if (e.Message.Content.Contains("milkshake"))
+                await SendAlert("milkshake", e);
+
+
+            static async Task SendAlert(string keyword, MessageCreateEventArgs e)
+            {
+                var guild = await Program.discord.GetGuildAsync(799644062973427743);
+                var member = await guild.GetMemberAsync(455432936339144705);
+
+                DiscordEmbedBuilder embed = new()
+                {
+                    Color = new DiscordColor("#7287fd"),
+                    Title = $"Tracked keyword \"{keyword}\" triggered!",
+                    Description = $"{e.Message.Content}"
+                };
+                embed.AddField("Author ID", $"{e.Author.Id}", true);
+                embed.AddField("Author Mention", $"{e.Author.Mention}", true);
+                embed.AddField("Channel", $"{e.Channel.Mention} in {e.Guild.Name} | [Jump Link]({e.Message.JumpLink})");
+
+                await member.SendMessageAsync(embed);
+            }
+        }
     }
 }
