@@ -178,13 +178,13 @@
                     contextAuthor = msg.Author;
                     contextMsg = msg;
                     // There is only 1 message in the list we're enumerating here, but this makes sure the foreach only runs once to avoid issues just in case.
-                    break; 
+                    break;
                 }
 
                 if (string.IsNullOrWhiteSpace(contextContent) && contextMsg.Embeds != null)
                 {
                     contextContent = "[Embed Content]\n" + contextMsg.Embeds[0].Description;
-                } 
+                }
 
                 DiscordEmbedBuilder embed = new()
                 {
@@ -290,13 +290,28 @@
             }
         }
 
+        public static async Task MessageUpdated(DiscordClient client, MessageUpdateEventArgs e)
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await Helpers.KeywordCheck(e.Message);
+                }
+                catch (Exception ex)
+                {
+                    await ThrowMessageException(ex, e.Message);
+                }
+            });
+        }
+
         public static async Task MessageCreated(DiscordClient client, MessageCreateEventArgs e)
         {
             Task.Run(async () =>
             {
                 try
                 {
-                    await Helpers.KeywordCheck(e);
+                    await Helpers.KeywordCheck(e.Message);
 
                     if (!e.Channel.IsPrivate)
                         return;
@@ -540,18 +555,23 @@
                 }
                 catch (Exception ex)
                 {
-                    DiscordEmbedBuilder embed = new()
-                    {
-                        Color = DiscordColor.Red,
-                        Title = "An exception occurred when processing a message event",
-                        Description = $"`{ex.GetType()}` occurred when processing [this message]({e.Message.JumpLink}) (message `{e.Message.Id}` in channel `{e.Message.Channel.Id}`)."
-                    };
-                    embed.AddField("Message", $"{ex.Message}");
-                    embed.AddField("Debug Info", $"If you'd like to contact the bot owner about this, include this debug info:\n```\n{ex}\n```");
-
-                    await Program.homeChannel.SendMessageAsync(embed);
+                    await ThrowMessageException(ex, e.Message);
                 }
             });
+        }
+
+        static async Task ThrowMessageException(Exception ex, DiscordMessage message)
+        {
+            DiscordEmbedBuilder embed = new()
+            {
+                Color = DiscordColor.Red,
+                Title = "An exception occurred when processing a message event",
+                Description = $"`{ex.GetType()}` occurred when processing [this message]({message.JumpLink}) (message `{message.Id}` in channel `{message.Channel.Id}`)."
+            };
+            embed.AddField("Message", $"{ex.Message}");
+            embed.AddField("Debug Info", $"If you'd like to contact the bot owner about this, include this debug info:\n```\n{ex}\n```");
+
+            await Program.homeChannel.SendMessageAsync(embed);
         }
     }
 }

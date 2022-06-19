@@ -138,6 +138,7 @@
             // Events
             discord.Ready += Events.OnReady;
             discord.MessageCreated += Events.MessageCreated;
+            discord.MessageUpdated += Events.MessageUpdated;
             discord.ComponentInteractionCreated += Events.ComponentInteractionCreated;
             commands.CommandErrored += Events.Errors.CommandsNextService_CommandErrored;
             slash.SlashCommandErrored += Events.Errors.SlashCommandErrored;

@@ -49,17 +49,17 @@
                 + $"\nLatest commit message:\n```\n{commitMessage}\n```";
         }
 
-        public static async Task KeywordCheck(MessageCreateEventArgs e)
+        public static async Task KeywordCheck(DiscordMessage message)
         {
-            if (e.Author.Id == 455432936339144705)
+            if (message.Author.Id == 455432936339144705)
                 return;
-            else if (e.Message.Content.Contains("floaty"))
-                await SendAlert("floaty", e);
-            else if (e.Message.Content.Contains("milkshake"))
-                await SendAlert("milkshake", e);
+            else if (message.Content.Contains("floaty"))
+                await SendAlert("floaty", message);
+            else if (message.Content.Contains("milkshake"))
+                await SendAlert("milkshake", message);
 
 
-            static async Task SendAlert(string keyword, MessageCreateEventArgs e)
+            static async Task SendAlert(string keyword, DiscordMessage message)
             {
                 var guild = await Program.discord.GetGuildAsync(799644062973427743);
                 var member = await guild.GetMemberAsync(455432936339144705);
@@ -68,15 +68,15 @@
                 {
                     Color = new DiscordColor("#7287fd"),
                     Title = $"Tracked keyword \"{keyword}\" triggered!",
-                    Description = $"{e.Message.Content}"
+                    Description = $"{message.Content}"
                 };
-                embed.AddField("Author ID", $"{e.Author.Id}", true);
-                embed.AddField("Author Mention", $"{e.Author.Mention}", true);
+                embed.AddField("Author ID", $"{message.Author.Id}", true);
+                embed.AddField("Author Mention", $"{message.Author.Mention}", true);
 
-                if (e.Channel.IsPrivate)
+                if (message.Channel.IsPrivate)
                     embed.AddField("Channel", $"Message sent in DMs.");
                 else
-                    embed.AddField("Channel", $"{e.Channel.Mention} in {e.Guild.Name} | [Jump Link]({e.Message.JumpLink})");
+                    embed.AddField("Channel", $"{message.Channel.Mention} in {message.Channel.Guild.Name} | [Jump Link]({message.JumpLink})");
 
                 await member.SendMessageAsync(embed);
             }
