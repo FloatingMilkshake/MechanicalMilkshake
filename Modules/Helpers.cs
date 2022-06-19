@@ -72,7 +72,11 @@
                 };
                 embed.AddField("Author ID", $"{e.Author.Id}", true);
                 embed.AddField("Author Mention", $"{e.Author.Mention}", true);
-                embed.AddField("Channel", $"{e.Channel.Mention} in {e.Guild.Name} | [Jump Link]({e.Message.JumpLink})");
+
+                if (e.Channel.IsPrivate)
+                    embed.AddField("Channel", $"Message sent in DMs.");
+                else
+                    embed.AddField("Channel", $"{e.Channel.Mention} in {e.Guild.Name} | [Jump Link]({e.Message.JumpLink})");
 
                 await member.SendMessageAsync(embed);
             }
