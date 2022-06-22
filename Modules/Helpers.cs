@@ -53,7 +53,10 @@
         {
             if (message.Author.Id == 455432936339144705)
                 return;
-            else if (message.Content.Contains("floaty"))
+            if (message.Author.Id == Program.discord.CurrentUser.Id)
+                return;
+
+            if (message.Content.Contains("floaty"))
                 await SendAlert("floaty", message);
             else if (message.Content.Contains("milkshake"))
                 await SendAlert("milkshake", message);
