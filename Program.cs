@@ -117,7 +117,7 @@
 
             // Register slash commands globally for 'production' bot
 #else
-            slash.RegisterCommands<Owner>();
+            slash.RegisterCommands<Owner>(configjson.DevServerId);
             slash.RegisterCommands<Fun>();
             slash.RegisterCommands<Mod>();
             slash.RegisterCommands<Utility>();
