@@ -1,14 +1,14 @@
-using DSharpPlus.SlashCommands.Attributes;
-
 namespace MechanicalMilkshake.Modules
 {
+    [SlashRequireGuild]
+
     public class Mod : ApplicationCommandModule
     {
-        [SlashCommandGroup("lockdown", "Lock or unlock a channel. Requires the Timeout Members permission.")]
-        [SlashRequirePermissions(Permissions.ModerateMembers)]
+        [SlashCommandGroup("lockdown", "Lock or unlock a channel.", defaultPermission: false)]
+        [SlashCommandPermissions(Permissions.ModerateMembers)]
         public class Lockdown
         {
-            [SlashCommand("lock", "Lock a channel to prevent members from sending messages. Requires the Timeout Members permission.")]
+            [SlashCommand("lock", "Lock a channel to prevent members from sending messages.")]
             public async Task Lock(InteractionContext ctx)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
@@ -44,7 +44,7 @@ namespace MechanicalMilkshake.Modules
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Channel locked successfully.").AsEphemeral(true));
             }
 
-            [SlashCommand("unlock", "Unlock a locked channel to allow members to send messages. Requires the Timeout Members permission.")]
+            [SlashCommand("unlock", "Unlock a locked channel to allow members to send messages again.")]
             public async Task Unlock(InteractionContext ctx)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
@@ -78,14 +78,10 @@ namespace MechanicalMilkshake.Modules
             }
         }
 
-        [SlashCommand("tellraw", "Speak through the bot! Requires the Kick Members, Ban Members or Timeout Members permissions.")]
+        [SlashCommand("tellraw", "Speak through the bot!", defaultPermission: false)]
+        [SlashCommandPermissions(Permissions.ModerateMembers)]
         public async Task Tellraw(InteractionContext ctx, [Option("message", "The message to have the bot send.")] string message, [Option("channel", "The channel to send the message in.")] DiscordChannel channel = null)
         {
-            if (!ctx.Member.Permissions.HasPermission(Permissions.KickMembers) && !ctx.Member.Permissions.HasPermission(Permissions.BanMembers) && !ctx.Member.Permissions.HasPermission(Permissions.ModerateMembers) && !Program.configjson.AuthorizedUsers.Contains(ctx.User.Id.ToString()))
-            {
-                throw new SlashExecutionChecksFailedException();
-            }
-
             DiscordChannel targetChannel;
             if (channel != null)
             {
@@ -108,9 +104,8 @@ namespace MechanicalMilkshake.Modules
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"I sent your message to {targetChannel.Mention}.").AsEphemeral(true));
         }
 
-        [SlashCommand("clear", "Delete a given number of messages from a channel. Requires the Manage Messages permission.")]
-        [SlashRequirePermissions(Permissions.ManageMessages)]
-        [SlashRequireGuild]
+        [SlashCommand("clear", "Delete a given number of messages from a channel.", defaultPermission: false)]
+        [SlashCommandPermissions(Permissions.ManageMessages)]
         public async Task Clear(InteractionContext ctx, [Option("count", "The number of messages to delete.")] long count)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
@@ -119,9 +114,8 @@ namespace MechanicalMilkshake.Modules
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Deleted {messages.Count} messages!").AsEphemeral(true));
         }
 
-        [SlashCommand("kick", "Kick a user. They can rejoin the server with an invite. Requires the Kick Members permission.")]
-        [SlashRequirePermissions(Permissions.KickMembers)]
-        [SlashRequireGuild]
+        [SlashCommand("kick", "Kick a user. They can rejoin the server with an invite.", defaultPermission: false)]
+        [SlashCommandPermissions(Permissions.KickMembers)]
         public async Task Kick(InteractionContext ctx, [Option("user", "The user to kick.")] DiscordUser userToKick, [Option("reason", "The reason for the kick.")] string reason = "No reason provided.")
         {
             DiscordMember memberToKick;
@@ -147,9 +141,8 @@ namespace MechanicalMilkshake.Modules
             await ctx.Channel.SendMessageAsync($"{userToKick.Mention} has been kicked: **{reason}**");
         }
 
-        [SlashCommand("ban", "Ban a user. They will not be able to rejoin unless unbanned. Requires the Ban Members permission.")]
-        [SlashRequirePermissions(Permissions.BanMembers)]
-        [SlashRequireGuild]
+        [SlashCommand("ban", "Ban a user. They will not be able to rejoin unless unbanned.", defaultPermission: false)]
+        [SlashCommandPermissions(Permissions.BanMembers)]
         public async Task Ban(InteractionContext ctx, [Option("user", "The user to ban.")] DiscordUser userToBan, [Option("reason", "The reason for the ban.")] string reason = "No reason provided.")
         {
             try
@@ -170,9 +163,8 @@ namespace MechanicalMilkshake.Modules
             await ctx.Channel.SendMessageAsync($"{userToBan.Mention} has been banned: **{reason}**");
         }
 
-        [SlashCommand("unban", "Unban a user. Requires the Ban Members permission.")]
-        [SlashRequirePermissions(Permissions.BanMembers)]
-        [SlashRequireGuild]
+        [SlashCommand("unban", "Unban a user.", defaultPermission: false)]
+        [SlashCommandPermissions(Permissions.BanMembers)]
         public async Task Unban(InteractionContext ctx, [Option("user", "The user to unban.")] DiscordUser userToUnban)
         {
             try
@@ -192,12 +184,11 @@ namespace MechanicalMilkshake.Modules
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Successfully unbanned **{userToUnban.Username}#{userToUnban.Discriminator}**!"));
         }
 
-        [SlashCommandGroup("timeout", "Set or clear a timeout for a user. Requires the Timeout Members permission.")]
-        [SlashRequirePermissions(Permissions.ModerateMembers)]
-        [SlashRequireGuild]
+        [SlashCommandGroup("timeout", "Set or clear a timeout for a user.", defaultPermission: false)]
+        [SlashCommandPermissions(Permissions.ModerateMembers)]
         public class TimeoutCmds
         {
-            [SlashCommand("set", "Time out a user. Requires the Timeout Members permission.")]
+            [SlashCommand("set", "Time out a member.")]
             public async Task SetTimeout(InteractionContext ctx, [Option("member", "The member to time out.")] DiscordUser user, [Option("duration", "How long the timeout should last. Maximum value is 28 days due to Discord limitations.")] string duration, [Option("reason", "The reason for the timeout.")] string reason = "No reason provided.")
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
@@ -244,7 +235,7 @@ namespace MechanicalMilkshake.Modules
                 await ctx.Channel.SendMessageAsync($"{user.Mention} has been timed out, expiring <t:{unixTime}:R>: **{reason}**");
             }
 
-            [SlashCommand("clear", "Clear a timeout before it's set to expire. Requires the Timeout Members permission.")]
+            [SlashCommand("clear", "Clear a timeout before it's set to expire.")]
             public async Task ClearTimeout(InteractionContext ctx, [Option("member", "The member whose timeout to clear.")] DiscordUser user)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
@@ -280,16 +271,10 @@ namespace MechanicalMilkshake.Modules
             }
         }
 
-        [SlashCommand("nickname", "Changes my nickname. Requires that you have the Manage Nicknames or Manage Server permissions.")]
-        [SlashRequireGuild]
+        [SlashCommand("nickname", "Changes my nickname.", defaultPermission: false)]
+        [SlashCommandPermissions(Permissions.ManageNicknames)]
         public async Task Nickname(InteractionContext ctx, [Option("nickname", "What to change my nickname to. Leave this blank to clear it.")] string nickname = null)
         {
-            // Checking permissions this way instead of using the [SlashRequireUserPermissions] attribute because I don't believe there's a way to check whether a user has one permission OR another permission with that attribute.
-            if (!ctx.Member.Permissions.HasPermission(Permissions.ManageNicknames) && !ctx.Member.Permissions.HasPermission(Permissions.ManageGuild))
-            {
-                throw new SlashExecutionChecksFailedException();
-            }
-
             DiscordMember bot = await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id);
             await bot.ModifyAsync(x =>
             {

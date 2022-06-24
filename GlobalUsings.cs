@@ -9,6 +9,7 @@ global using DSharpPlus.EventArgs;
 global using DSharpPlus.Interactivity;
 global using DSharpPlus.Interactivity.Enums;
 global using DSharpPlus.Interactivity.Extensions;
+global using DSharpPlus.SlashCommands.Attributes;
 global using DSharpPlus.SlashCommands;
 global using DSharpPlus.SlashCommands.EventArgs;
 global using MechanicalMilkshake.Modules;

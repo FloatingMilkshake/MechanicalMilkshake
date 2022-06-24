@@ -3,6 +3,7 @@
     public class Utility : ApplicationCommandModule
     {
         [SlashCommand("userinfo", "Returns information about the provided user.")]
+        [SlashRequireGuild]
         public async Task UserInfo(InteractionContext ctx, [Option("member", "The member to look up information for. Defaults to yourself if no member is provided.")] DiscordUser user = null)
         {
             DiscordMember member = null;
@@ -84,6 +85,7 @@
         }
 
         [SlashCommand("serverinfo", "Returns information about the server.")]
+        [SlashRequireGuild]
         public async Task ServerInfo(InteractionContext ctx)
         {
             string description = "None";
@@ -490,6 +492,7 @@
         // Begin context menu commands
 
         [ContextMenu(ApplicationCommandType.UserContextMenu, "User Info")]
+        [SlashRequireGuild]
         public async Task ContextUserInfo(ContextMenuContext ctx)
         {
             DiscordMember member = null;
