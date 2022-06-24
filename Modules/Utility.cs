@@ -472,21 +472,6 @@
             {
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"https://cdn.discordapp.com/emojis/{groups[2].Value}"));
             }
-
-            //foreach (var emoji in guild.Emojis)
-            //{
-            //    if (emoji.Value.IsAnimated)
-            //    {
-            //        animatedEmoji += $" <a:{emoji.Value.Name}:{emoji.Key}>";
-            //    }
-            //    else
-            //    {
-            //        staticEmoji += $" <:{emoji.Value.Name}:{emoji.Key}>";
-            //    }
-            //}
-            //
-            //response += $"Static Emoji:\n{staticEmoji}"
-            //    + $"\n\nAnimated Emoji:\n{animatedEmoji}";
         }
 
         // Begin context menu commands
