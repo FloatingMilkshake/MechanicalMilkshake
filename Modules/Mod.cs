@@ -78,32 +78,6 @@ namespace MechanicalMilkshake.Modules
             }
         }
 
-        [SlashCommand("tellraw", "Speak through the bot!", defaultPermission: false)]
-        [SlashCommandPermissions(Permissions.ModerateMembers)]
-        public async Task Tellraw(InteractionContext ctx, [Option("message", "The message to have the bot send.")] string message, [Option("channel", "The channel to send the message in.")] DiscordChannel channel = null)
-        {
-            DiscordChannel targetChannel;
-            if (channel != null)
-            {
-                targetChannel = channel;
-            }
-            else
-            {
-                targetChannel = ctx.Channel;
-            }
-
-            try
-            {
-                await targetChannel.SendMessageAsync(message);
-            }
-            catch (DSharpPlus.Exceptions.UnauthorizedException)
-            {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("I don't have permission to send messages in that channel!").AsEphemeral(true));
-                return;
-            }
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"I sent your message to {targetChannel.Mention}.").AsEphemeral(true));
-        }
-
         [SlashCommand("clear", "Delete a given number of messages from a channel.", defaultPermission: false)]
         [SlashCommandPermissions(Permissions.ManageMessages)]
         public async Task Clear(InteractionContext ctx, [Option("count", "The number of messages to delete.")] long count)

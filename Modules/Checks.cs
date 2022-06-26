@@ -60,7 +60,7 @@
 #endif
             string response = "Package updates are available on the following hosts:\n";
 
-            Owner owner = new();
+            OwnerPrivate owner = new();
             bool updatesAvailable = false;
             foreach (string host in Program.configjson.SshHosts)
             {

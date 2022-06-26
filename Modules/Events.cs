@@ -125,7 +125,7 @@
             {
                 if (Program.configjson.AuthorizedUsers.Contains(e.User.Id.ToString()))
                 {
-                    Owner.DebugCmds.ShutdownConfirmed(e.Interaction);
+                    OwnerPrivate.DebugCmds.ShutdownConfirmed(e.Interaction);
                 }
                 else
                 {
