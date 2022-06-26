@@ -1,86 +1,101 @@
 namespace MechanicalMilkshake.Modules
 {
-    public class ComplaintSlashCommands : ApplicationCommandModule
+    public class PerServerFeatures
     {
-        [SlashCommandGroup("complaint", "File a complaint to a specific department.")]
-        public class Complaint
+        public class ComplaintSlashCommands : ApplicationCommandModule
         {
-            [SlashCommand("hr", "Send a complaint to HR.")]
-            public async Task HrComplaint(InteractionContext ctx, [Option("complaint", "Your complaint.")] string complaint)
+            [SlashCommandGroup("complaint", "File a complaint to a specific department.")]
+            public class Complaint
             {
-                if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 && ctx.Guild.Id != Program.configjson.DevServerId)
+                [SlashCommand("hr", "Send a complaint to HR.")]
+                public async Task HrComplaint(InteractionContext ctx, [Option("complaint", "Your complaint.")] string complaint)
                 {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("This command is not available in this server.").AsEphemeral(true));
-                }
+                    if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 && ctx.Guild.Id != Program.configjson.DevServerId)
+                    {
+                        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("This command is not available in this server.").AsEphemeral(true));
+                    }
 
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Your complaint has been recorded. You can see it below. You will be contacted soon about your issue.\n> {complaint}").AsEphemeral(true));
-                DiscordChannel logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
-                await logChannel.SendMessageAsync($"{ctx.User.Mention} to HR (in {ctx.Channel.Mention}/#{ctx.Channel.Name}, {ctx.Guild.Name}):\n> {complaint}");
-            }
-            [SlashCommand("ia", "Send a complaint to IA.")]
-            public async Task IaComplaint(InteractionContext ctx, [Option("complaint", "Your complaint.")] string complaint)
-            {
-                if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 && ctx.Guild.Id != Program.configjson.DevServerId)
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Your complaint has been recorded. You can see it below. You will be contacted soon about your issue.\n> {complaint}").AsEphemeral(true));
+                    DiscordChannel logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
+                    await logChannel.SendMessageAsync($"{ctx.User.Mention} to HR (in {ctx.Channel.Mention}/#{ctx.Channel.Name}, {ctx.Guild.Name}):\n> {complaint}");
+                }
+                [SlashCommand("ia", "Send a complaint to IA.")]
+                public async Task IaComplaint(InteractionContext ctx, [Option("complaint", "Your complaint.")] string complaint)
                 {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("This command is not available in this server.").AsEphemeral(true));
-                }
+                    if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 && ctx.Guild.Id != Program.configjson.DevServerId)
+                    {
+                        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("This command is not available in this server.").AsEphemeral(true));
+                    }
 
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Your complaint has been recorded. You can see it below. You will be contacted soon about your issue.\n> {complaint}").AsEphemeral(true));
-                DiscordChannel logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
-                await logChannel.SendMessageAsync($"{ctx.User.Mention} to IA (in {ctx.Channel.Mention}/#{ctx.Channel.Name}, {ctx.Guild.Name}):\n> {complaint}");
-            }
-            [SlashCommand("it", "Send a complaint to IT.")]
-            public async Task ItComplaint(InteractionContext ctx, [Option("complaint", "Your complaint.")] string complaint)
-            {
-                if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 && ctx.Guild.Id != Program.configjson.DevServerId)
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Your complaint has been recorded. You can see it below. You will be contacted soon about your issue.\n> {complaint}").AsEphemeral(true));
+                    DiscordChannel logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
+                    await logChannel.SendMessageAsync($"{ctx.User.Mention} to IA (in {ctx.Channel.Mention}/#{ctx.Channel.Name}, {ctx.Guild.Name}):\n> {complaint}");
+                }
+                [SlashCommand("it", "Send a complaint to IT.")]
+                public async Task ItComplaint(InteractionContext ctx, [Option("complaint", "Your complaint.")] string complaint)
                 {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("This command is not available in this server.").AsEphemeral(true));
-                }
+                    if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 && ctx.Guild.Id != Program.configjson.DevServerId)
+                    {
+                        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("This command is not available in this server.").AsEphemeral(true));
+                    }
 
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Your complaint has been recorded. You can see it below. You will be contacted soon about your issue.\n> {complaint}").AsEphemeral(true));
-                DiscordChannel logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
-                await logChannel.SendMessageAsync($"{ctx.User.Mention} to IT (in {ctx.Channel.Mention}/#{ctx.Channel.Name}, {ctx.Guild.Name}):\n> {complaint}");
-            }
-            [SlashCommand("corporate", "Send a complaint to corporate.")]
-            public async Task CorporateComplaint(InteractionContext ctx, [Option("complaint", "Your complaint.")] string complaint)
-            {
-                if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 && ctx.Guild.Id != Program.configjson.DevServerId)
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Your complaint has been recorded. You can see it below. You will be contacted soon about your issue.\n> {complaint}").AsEphemeral(true));
+                    DiscordChannel logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
+                    await logChannel.SendMessageAsync($"{ctx.User.Mention} to IT (in {ctx.Channel.Mention}/#{ctx.Channel.Name}, {ctx.Guild.Name}):\n> {complaint}");
+                }
+                [SlashCommand("corporate", "Send a complaint to corporate.")]
+                public async Task CorporateComplaint(InteractionContext ctx, [Option("complaint", "Your complaint.")] string complaint)
                 {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("This command is not available in this server.").AsEphemeral(true));
-                }
+                    if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 && ctx.Guild.Id != Program.configjson.DevServerId)
+                    {
+                        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("This command is not available in this server.").AsEphemeral(true));
+                    }
 
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Your complaint has been recorded. You can see it below. You will be contacted soon about your issue.\n> {complaint}").AsEphemeral(true));
-                DiscordChannel logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
-                await logChannel.SendMessageAsync($"{ctx.User.Mention} to Corporate (in {ctx.Channel.Mention}/#{ctx.Channel.Name}, {ctx.Guild.Name}):\n> {complaint}");
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Your complaint has been recorded. You can see it below. You will be contacted soon about your issue.\n> {complaint}").AsEphemeral(true));
+                    DiscordChannel logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
+                    await logChannel.SendMessageAsync($"{ctx.User.Mention} to Corporate (in {ctx.Channel.Mention}/#{ctx.Channel.Name}, {ctx.Guild.Name}):\n> {complaint}");
+                }
             }
         }
-    }
 
-    public class PerServerFeatures : BaseCommandModule
-    {
-        // Per-server commands go here. Use the [TargetServer(serverId)] attribute to restrict a command to a specific guild.
-
-        // Note that this command here can be removed if another command is added; there just needs to be one here to prevent an exception from being thrown when the bot is run.
-        [Command("dummycommand")]
-        [Hidden]
-        public async Task DummyCommand(CommandContext ctx)
+        public class Checks
         {
-            await ctx.RespondAsync("Hi! This command does nothing other than prevent an exception from being thrown when the bot is run. :)");
-        }
-    }
-
-    public class TargetServerAttribute : CheckBaseAttribute
-    {
-        public ulong TargetGuild { get; private set; }
-
-        public TargetServerAttribute(ulong targetGuild)
-        {
-            TargetGuild = targetGuild;
+            public static async Task MessageCreateChecks(MessageCreateEventArgs e)
+            {
+                if (e.Guild.Id == 984903591816990730 && e.Message.Content.StartsWith("ch!"))
+                {
+                    DiscordMessageBuilder message = new DiscordMessageBuilder().WithContent("bots have changed, try `m!` instead.").WithReply(e.Message.Id);
+                    await e.Channel.SendMessageAsync(message);
+                }
+            }
         }
 
-        public override async Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
+        public class MessageCommands : BaseCommandModule
         {
-            return !ctx.Channel.IsPrivate && ctx.Guild.Id == TargetGuild;
+            // Per-server commands go here. Use the [TargetServer(serverId)] attribute to restrict a command to a specific guild.
+
+            // Note that this command here can be removed if another command is added; there just needs to be one here to prevent an exception from being thrown when the bot is run.
+            [Command("dummycommand")]
+            [Hidden]
+            public async Task DummyCommand(CommandContext ctx)
+            {
+                await ctx.RespondAsync("Hi! This command does nothing other than prevent an exception from being thrown when the bot is run. :)");
+            }
+        }
+
+        public class TargetServerAttribute : CheckBaseAttribute
+        {
+            public ulong TargetGuild { get; private set; }
+
+            public TargetServerAttribute(ulong targetGuild)
+            {
+                TargetGuild = targetGuild;
+            }
+
+            public override async Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
+            {
+                return !ctx.Channel.IsPrivate && ctx.Guild.Id == TargetGuild;
+            }
         }
     }
 }

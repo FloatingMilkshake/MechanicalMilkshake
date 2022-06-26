@@ -113,7 +113,7 @@
             slash.RegisterCommands<Fun>(configjson.DevServerId);
             slash.RegisterCommands<Mod>(configjson.DevServerId);
             slash.RegisterCommands<Utility>(configjson.DevServerId);
-            slash.RegisterCommands<ComplaintSlashCommands>(configjson.DevServerId);
+            slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.DevServerId);
             Console.WriteLine("Slash commands registered for debugging.");
 
             // Register slash commands globally for 'production' bot
@@ -127,13 +127,13 @@
             
 // Register slash commands for per-server features in respective servers
 // & testing server for 'production' bot
-            slash.RegisterCommands<ComplaintSlashCommands>(631118217384951808);
-            slash.RegisterCommands<ComplaintSlashCommands>(984903591816990730);
-            slash.RegisterCommands<ComplaintSlashCommands>(configjson.DevServerId);
+            slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(631118217384951808);
+            slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(984903591816990730);
+            slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.DevServerId);
 #endif
 
             // Register CommandsNext commands
-            commands.RegisterCommands<PerServerFeatures>();
+            commands.RegisterCommands<PerServerFeatures.MessageCommands>();
 
             await discord.ConnectAsync();
 

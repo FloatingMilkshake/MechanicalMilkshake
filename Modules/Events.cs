@@ -307,6 +307,8 @@
 
         public static async Task MessageCreated(DiscordClient client, MessageCreateEventArgs e)
         {
+            await PerServerFeatures.Checks.MessageCreateChecks(e);
+
             Task.Run(async () =>
             {
                 try
