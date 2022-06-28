@@ -60,6 +60,8 @@
                 await SendAlert("floaty", message);
             else if (message.Content.Contains("milkshake"))
                 await SendAlert("milkshake", message);
+            else if (message.Content.Contains("455432936339144705"))
+                await SendAlert("455432936339144705", message);
 
 
             static async Task SendAlert(string keyword, DiscordMessage message)
