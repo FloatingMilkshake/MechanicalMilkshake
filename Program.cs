@@ -130,6 +130,7 @@
             slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(631118217384951808);
             slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(984903591816990730);
             slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.DevServerId);
+            slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
 #endif
 
             // Register CommandsNext commands

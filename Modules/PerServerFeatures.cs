@@ -58,6 +58,66 @@ namespace MechanicalMilkshake.Modules
             }
         }
 
+        public class RoleCommands : ApplicationCommandModule
+        {
+            [SlashCommand("rolename", "Change the name of your role.")]
+            public async Task RoleName(InteractionContext ctx, [Option("name", "The name to change to.")] string name)
+            {
+                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
+
+                if (ctx.Guild.Id != 984903591816990730)
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("This command is not available in this server.").AsEphemeral(true));
+                    return;
+                }
+
+                List<DiscordRole> roles = new();
+                if (ctx.Member.Roles.Any())
+                {
+                    foreach (DiscordRole role in ctx.Member.Roles.OrderBy(role => role.Position).Reverse())
+                    {
+                        roles.Add(role);
+                    }
+                }
+                else
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You don't have any roles.").AsEphemeral(true));
+                    return;
+                }
+
+                if (roles.Count == 1 && (roles.First().Id == 984903591833796659 || roles.First().Id == 984903591816990739 || roles.First().Id == 984936907874136094))
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You don't have a role that can be renamed!").AsEphemeral(true));
+                    return;
+                }
+                else
+                {
+                    DiscordRole roleToModify = default;
+                    foreach (DiscordRole role in roles)
+                    {
+                        if (role.Id == 984903591833796659 || role.Id == 984903591816990739 || role.Id == 984936907874136094)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            roleToModify = role;
+                            break;
+                        }
+                    }
+
+                    if (roleToModify == default)
+                    {
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You don't have a role that can be renamed!").AsEphemeral(true));
+                        return;
+                    }
+
+                    await roleToModify.ModifyAsync(role => role.Name = name);
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Your role has been renamed to **{name}**.").AsEphemeral(true));
+                }
+            }
+        }
+
         public class Checks
         {
             public static async Task MessageCreateChecks(MessageCreateEventArgs e)
