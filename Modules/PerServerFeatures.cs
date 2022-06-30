@@ -62,7 +62,7 @@ namespace MechanicalMilkshake.Modules
         {
             public static async Task MessageCreateChecks(MessageCreateEventArgs e)
             {
-                if (e.Guild.Id == 984903591816990730 && e.Message.Content.StartsWith("ch!"))
+                if (!e.Channel.IsPrivate && e.Guild.Id == 984903591816990730 && e.Message.Content.StartsWith("ch!"))
                 {
                     DiscordMessageBuilder message = new DiscordMessageBuilder().WithContent("bots have changed, try `m!` instead.").WithReply(e.Message.Id);
                     await e.Channel.SendMessageAsync(message);
