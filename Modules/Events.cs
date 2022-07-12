@@ -125,7 +125,11 @@
             {
                 if (Program.configjson.AuthorizedUsers.Contains(e.User.Id.ToString()))
                 {
-                    OwnerPrivate.DebugCmds.ShutdownConfirmed(e.Interaction);
+                    DiscordButtonComponent disabledButton = new(ButtonStyle.Danger, "shutdown-button", "Shut Down", true);
+                    e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().WithContent("**Warning: The bot is now shutting down. This action is permanent.**").AddComponents(disabledButton));
+
+                    Program.discord.DisconnectAsync();
+                    Environment.Exit(0);
                 }
                 else
                 {

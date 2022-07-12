@@ -492,14 +492,6 @@ namespace MechanicalMilkshake.Modules
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Are you sure you want to shut down the bot? This action cannot be undone.").AddComponents(button));
             }
 
-            // This method is called from Program.cs when the user interacts with the button created in the above method.
-            public static void ShutdownConfirmed(DiscordInteraction interaction)
-            {
-                interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("**Warning: The bot is now shutting down. This action is permanent.**"));
-                Program.discord.DisconnectAsync();
-                Environment.Exit(0);
-            }
-
             [SlashCommand("restart", "Restart the bot.")]
             public async Task Restart(InteractionContext ctx)
             {
