@@ -474,6 +474,112 @@
             }
         }
 
+        [SlashCommand("about", "View information about the bot!")]
+        public async Task About(InteractionContext ctx)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = $"About {ctx.Client.CurrentUser.Username}",
+                Description = $"A multipurpose bot with many miscellaneous commands. Type `/` and select {ctx.Client.CurrentUser.Username} to see available commands.",
+                Color = new DiscordColor("#FAA61A")
+            };
+            embed.AddField("Servers", ctx.Client.Guilds.Count.ToString(), true);
+            embed.AddField("Total User Count (not unique)", ctx.Client.Guilds.Sum(g => g.Value.MemberCount).ToString(), true);
+
+            // Unique user count
+            List<DiscordUser> uniqueUsers = new();
+            foreach (var guild in ctx.Client.Guilds)
+            {
+                foreach (var member in guild.Value.Members)
+                {
+                    var user = await ctx.Client.GetUserAsync(member.Value.Id);
+                    if (!uniqueUsers.Contains(user))
+                    {
+                        uniqueUsers.Add(user);
+                    }
+                }
+            }
+            embed.AddField("Unique Users", uniqueUsers.Count.ToString(), true);
+
+            // Commit hash / version
+            string commitHash = "";
+            if (File.Exists("CommitHash.txt"))
+            {
+                StreamReader readHash = new("CommitHash.txt");
+                commitHash = readHash.ReadToEnd().Trim();
+            }
+            if (commitHash == "")
+            {
+                commitHash = "dev";
+            }
+
+            string remoteUrl = "";
+            string commitUrl = "";
+            if (File.Exists("RemoteUrl.txt"))
+            {
+                StreamReader readUrl = new("RemoteUrl.txt");
+                remoteUrl = $"{readUrl.ReadToEnd().Trim()}";
+                commitUrl = $"{remoteUrl}/commit/{commitHash}";
+            }
+            if (remoteUrl == "")
+            {
+                remoteUrl = "N/A";
+            }
+            if (commitUrl == "")
+            {
+                commitUrl = "N/A";
+            }
+            embed.AddField("Version", $"[{commitHash}]({commitUrl})", true);
+            embed.AddField("Source Code Repository", remoteUrl, true);
+
+            List<DiscordUser> botOwners = new();
+            List<DiscordUser> authorizedUsers = new();
+
+            foreach (DiscordUser owner in ctx.Client.CurrentApplication.Owners)
+            {
+                botOwners.Add(owner);
+            }
+            foreach (var userId in Program.configjson.AuthorizedUsers)
+            {
+                authorizedUsers.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
+            }
+
+            string ownerPhrasing;
+            if (botOwners.Count > 1)
+            {
+                ownerPhrasing = "s are";
+            }
+            else
+            {
+                ownerPhrasing = " is";
+            }
+
+            List<string> botOwnerNames = new();
+            foreach (var owner in botOwners)
+            {
+                botOwnerNames.Add($"{owner.Username}#{owner.Discriminator}");
+            }
+
+            List<string> authorizedUserNames = new();
+            foreach (var user in authorizedUsers)
+            {
+                authorizedUserNames.Add($"{user.Username}#{user.Discriminator}");
+            }
+
+            embed.AddField("Owners", $"Bot owner{ownerPhrasing} {string.Join(", ", botOwnerNames)}.\n" +
+                $"Users authorized to use owner-level commands are: {string.Join(", ", authorizedUserNames)}\n\nFor any issues with the bot, DM it or a __bot owner__.", false);
+
+            DateTime startTime = Convert.ToDateTime(Program.processStartTime);
+            long startUnixTime = ((DateTimeOffset)startTime).ToUnixTimeSeconds();
+            embed.AddField("Uptime", $"Up since <t:{startUnixTime}:F> (<t:{startUnixTime}:R>!)", false);
+
+            embed.WithFooter($"Using DSharpPlus {Program.discord.VersionString} and {RuntimeInformation.FrameworkDescription}");
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+        }
+
         // Begin context menu commands
 
         [ContextMenu(ApplicationCommandType.UserContextMenu, "User Info")]
