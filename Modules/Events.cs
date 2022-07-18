@@ -245,13 +245,27 @@
                     script.Compile();
                     var result = await script.RunAsync(globals).ConfigureAwait(false);
 
-                    if (result != null && result.ReturnValue != null && !string.IsNullOrWhiteSpace(result.ReturnValue.ToString()))
+                    if (result == null)
                     {
-                        await ctx.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent($"{result.ReturnValue}").AsEphemeral(true));
+                        await ctx.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent("null"));
                     }
                     else
                     {
-                        await ctx.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent($"Eval was successful, but there was nothing returned."));
+                        if (result.ReturnValue == null)
+                        {
+                            await ctx.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent("null"));
+                        }
+                        else
+                        {
+                            if (string.IsNullOrWhiteSpace(result.ReturnValue.ToString()))
+                            {
+                                // Isn't null, so it has to be whitespace
+                                await ctx.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent($"\"{result.ReturnValue}\""));
+                                return;
+                            }
+
+                            await ctx.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent(result.ReturnValue.ToString()));
+                        }
                     }
                 }
                 catch (Exception ex)
