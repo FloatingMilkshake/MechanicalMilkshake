@@ -61,7 +61,7 @@
             string updatesAvailableResponse = "";
             string restartRequiredResponse = "A system restart is required to complete package updates.";
 
-            OwnerPrivate owner = new();
+            Owner.Private ownerPrivate = new();
             bool updatesAvailable = false;
             bool restartRequired = false;
             foreach (string host in Program.configjson.SshHosts)
@@ -69,7 +69,7 @@
 #if DEBUG
                 Console.WriteLine($"[{DateTime.Now}] [PackageUpdateCheck] Checking for updates on host '{host}'.");
 #endif
-                string cmdResult = await owner.RunCommand($"ssh {host} \"sudo apt update\"");
+                string cmdResult = await ownerPrivate.RunCommand($"ssh {host} \"sudo apt update\"");
                 if (cmdResult.Contains("packages can be upgraded"))
                 {
                     updatesAvailableResponse += $"`{host}`\n";

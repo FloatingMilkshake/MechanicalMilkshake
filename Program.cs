@@ -109,7 +109,7 @@
             // running in development mode
 #if DEBUG
             slash.RegisterCommands<Owner>(configjson.DevServerId);
-            slash.RegisterCommands<OwnerPrivate>(configjson.DevServerId);
+            slash.RegisterCommands<Owner.Private>(configjson.DevServerId);
             slash.RegisterCommands<Fun>(configjson.DevServerId);
             slash.RegisterCommands<Mod>(configjson.DevServerId);
             slash.RegisterCommands<Utility>(configjson.DevServerId);
@@ -119,7 +119,7 @@
             // Register slash commands globally for 'production' bot
 #else
             slash.RegisterCommands<Owner>();
-            slash.RegisterCommands<OwnerPrivate>(configjson.DevServerId);
+            slash.RegisterCommands<Owner.Private>(configjson.DevServerId);
             slash.RegisterCommands<Fun>();
             slash.RegisterCommands<Mod>();
             slash.RegisterCommands<Utility>();
@@ -146,11 +146,11 @@
             commands.CommandErrored += Events.Errors.CommandsNextService_CommandErrored;
             slash.SlashCommandErrored += Events.Errors.SlashCommandErrored;
 
-            /* Create an instance of the Owner class and run a command to fix SSH key permissions
+            /* Create an instance of the Owner.Private class and run a command to fix SSH key permissions
             at bot startup. I wanted to be able to do this somewhere else, but for now it seems
             like this is the best way of doing it that I'm aware of, and it works. */
-            OwnerPrivate owner = new();
-            await owner.RunCommand("cat /app/id_rsa > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa");
+            Owner.Private ownerPrivate = new();
+            await ownerPrivate.RunCommand("cat /app/id_rsa > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa");
 
             // Run checks
 
