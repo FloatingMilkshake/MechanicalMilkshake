@@ -58,10 +58,12 @@
 #if DEBUG
             Console.WriteLine($"[{DateTime.Now}] PackageUpdateCheck running.");
 #endif
-            string response = "Package updates are available on the following hosts:\n";
+            string updatesAvailableResponse = "";
+            string restartRequiredResponse = "A system restart is required to complete package updates.";
 
             OwnerPrivate owner = new();
             bool updatesAvailable = false;
+            bool restartRequired = false;
             foreach (string host in Program.configjson.SshHosts)
             {
 #if DEBUG
@@ -70,22 +72,31 @@
                 string cmdResult = await owner.RunCommand($"ssh {host} \"sudo apt update\"");
                 if (cmdResult.Contains("packages can be upgraded"))
                 {
-                    response += $"`{host}`\n";
+                    updatesAvailableResponse += $"`{host}`\n";
                     updatesAvailable = true;
+                }
+                if (cmdResult.Contains("System restart required"))
+                {
+                    restartRequired = true;
                 }
             }
 #if DEBUG
             Console.WriteLine($"[{DateTime.Now}] [PackageUpdateCheck] Finished checking for updates on all hosts.");
 #endif
 
-            if (updatesAvailable)
+            if (updatesAvailable || restartRequired)
             {
+                if (updatesAvailable)
+                {
+                    updatesAvailableResponse = "Package updates are available on the following hosts:\n" + updatesAvailableResponse;
+                }
                 string ownerMention = "";
                 foreach (var user in Program.discord.CurrentApplication.Owners)
                 {
                     ownerMention += user.Mention + " ";
                 }
 
+                string response = updatesAvailableResponse + restartRequiredResponse;
                 await Program.homeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{response}");
             }
         }
