@@ -83,24 +83,16 @@
                     };
                     embed.AddField("Message", ex.Message);
                     embed.AddField("Debug Info", $"If you'd like to contact the bot owner about this, include this debug info:\n```{ex}\n```");
+
+                    // System.ArgumentException
                     if (ex.GetType().ToString() == "System.ArgumentException")
                     {
                         embed.AddField("What's that mean?", "This usually means that you used the command incorrectly.\n" +
                             $"Please run `help {e.Command.QualifiedName}` for information about what you need to provide for the `{e.Command.QualifiedName}` command.");
                     }
-                    if (e.Command.QualifiedName == "upload")
-                    {
-                        embed.AddField("Did you forget to include a file name?", "`upload` requires that you specify a name for the file as the first argument. If you'd like to use a randomly-generated file name, use the name `random`.");
-                    }
-                    if (e.Command.QualifiedName == "tellraw" && ex.GetType().ToString() == "System.ArgumentException")
-                    {
-                        await e.Context.RespondAsync("An error occurred! Either you did not specify a target channel, or I do not have permission to see that channel.");
-                    }
-                    if (ex.GetType().ToString() == "System.InvalidOperationException" && ex.Message.Contains("this group is not executable"))
-                    {
-                        await e.Context.RespondAsync($"Did you mean to run a command inside this group? `{e.Command.QualifiedName}` cannot be run on its own. Try `help {e.Command.QualifiedName}` to see what commands are available.");
-                    }
-                    else
+                    
+                    // Check if bot has perms to send error response and send if so
+                    if (e.Context.Channel.PermissionsFor(await e.Context.Guild.GetMemberAsync(e.Context.Client.CurrentUser.Id)).HasPermission(Permissions.SendMessages))
                     {
                         await e.Context.RespondAsync(embed: embed.Build()).ConfigureAwait(false);
                     }
