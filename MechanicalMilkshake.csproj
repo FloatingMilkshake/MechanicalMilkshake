@@ -11,8 +11,8 @@
     <PackageReference Include="DSharpPlus.CommandsNext" Version="4.3.0-nightly-01155" />
     <PackageReference Include="DSharpPlus.Interactivity" Version="4.3.0-nightly-01155" />
     <PackageReference Include="DSharpPlus.SlashCommands" Version="4.3.0-nightly-01155" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0-2.final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.2.0-2.final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0-2.final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.3.0-2.final" />
     <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
     <PackageReference Include="Minio" Version="4.0.2" />
   </ItemGroup>
