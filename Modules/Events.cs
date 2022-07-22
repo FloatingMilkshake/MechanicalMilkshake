@@ -6,8 +6,13 @@
         {
             public static async Task SlashCommandErrored(SlashCommandsExtension scmds, SlashCommandErrorEventArgs e)
             {
-                if (e.Exception is SlashExecutionChecksFailedException)
+                if (e.Exception is SlashExecutionChecksFailedException exception)
                 {
+                    if (exception.FailedChecks.OfType<SlashRequireGuildAttribute>().Any())
+                    {
+                        await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("This command cannot be used in DMs. Please use it in a server. Contact the bot owner if you need help or think I messed up.").AsEphemeral(true));
+                        return;
+                    }
                     await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up.").AsEphemeral(true));
                     return;
                 }
