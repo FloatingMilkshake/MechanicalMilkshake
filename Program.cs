@@ -10,6 +10,21 @@
         public static ConfigJson configjson;
         public static readonly string processStartTime = DateTime.Now.ToString();
         public static DiscordChannel homeChannel;
+        
+        public static Dictionary<string, ulong> userFlagEmoji = new()
+        {
+            {"earlyVerifiedBotDeveloper", 1000168738970144779},
+            {"discordStaff", 1000168738022228088},
+            {"hypesquadBalance", 1000168740073242756},
+            {"hypesquadBravery", 1000168740991811704},
+            {"hypesquadBrilliance", 1000168741973266462},
+            {"hypesquadEvents", 1000168742535303312},
+            {"bugHunterLevelOne", 1000168734666793001},
+            {"bugHunterLevelTwo", 1000168735740526732},
+            {"certifiedModerator", 1000168736789118976},
+            {"partneredServerOwner", 1000168744192053298},
+            {"verifiedBot", 1000179246439878768}
+        };
 
         // Use a custom help message to show that there are no CommandsNext commands since they
         // have all been migrated to slash commands

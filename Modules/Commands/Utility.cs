@@ -20,6 +20,10 @@
                     return;
                 }
             }
+            else
+            {
+                user = ctx.User;
+            }
             if (member == null)
             {
                 member = ctx.Member;
@@ -79,6 +83,12 @@
                 string boostingSince = $"Boosting since <t:{unixTime}:R> (<t:{unixTime}:F>";
 
                 embed.AddField("Server Booster", boostingSince);
+            }
+
+            string badges = Helpers.GetBadges(user);
+            if (badges != "")
+            {
+                embed.AddField("Badges", badges);
             }
 
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"User Info for **{member.Username}#{member.Discriminator}**").AddEmbed(embed));
@@ -236,6 +246,12 @@
                 .WithThumbnail($"{user.AvatarUrl}")
                 .AddField("ID", $"{user.Id}")
                 .AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
+
+            string badges = Helpers.GetBadges(user);
+            if (badges != "")
+            {
+                embed.AddField("Badges", badges);
+            }
 
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Information about **{user.Username}#{user.Discriminator}**:").AddEmbed(embed));
         }
