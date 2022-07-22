@@ -116,21 +116,34 @@
         }
 
         [SlashCommand("avatar", "Returns the avatar of the provided user. Defaults to yourself if no user is provided.")]
-        public async Task Avatar(InteractionContext ctx, [Option("user", "The user whose avatar to get.")] DiscordUser user = null, [Option("preview", "Whether to preview the avatar. Setting this to False will get the URL instead of showing a preview.")] bool preview = true)
+        public async Task Avatar(InteractionContext ctx, [Option("user", "The user whose avatar to get.")] DiscordUser user = null)
         {
+            DiscordButtonComponent serverAvatarButton = new(ButtonStyle.Primary, "server-avatar-ctx-cmd-button", "Server Avatar");
+            DiscordButtonComponent userAvatarButton = new(ButtonStyle.Primary, "user-avatar-ctx-cmd-button", "User Avatar");
+
             if (user == null)
             {
                 user = ctx.User;
             }
 
-            string avatarLink = $"{user.AvatarUrl}".Replace("size=1024", "size=4096");
-
-            if (!preview)
+            DiscordMember member = default;
+            try
             {
-                avatarLink = $"<{avatarLink}>";
+                member = await ctx.Guild.GetMemberAsync(user.Id);
+            }
+            catch
+            {
+                // User is not in the server, so no guild avatar available
             }
 
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(avatarLink));
+            if (member == default || member.GuildAvatarUrl == null)
+            {
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"{user.AvatarUrl}".Replace("size=1024", "size=4096")));
+            }
+            else
+            {
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"You requested the avatar for {user.Mention}. Please choose one of the options below.").AddComponents(serverAvatarButton, userAvatarButton));
+            }
         }
 
         [SlashCommandGroup("timestamp", "Returns the Unix timestamp of a given date.")]
@@ -665,10 +678,24 @@
             DiscordButtonComponent serverAvatarButton = new(ButtonStyle.Primary, "server-avatar-ctx-cmd-button", "Server Avatar");
             DiscordButtonComponent userAvatarButton = new(ButtonStyle.Primary, "user-avatar-ctx-cmd-button", "User Avatar");
 
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-                .WithContent($"You requested the avatar for {ctx.TargetUser.Mention}. Please choose one of the options below.")
-                .AsEphemeral(true)
-                .AddComponents(serverAvatarButton, userAvatarButton));
+            DiscordMember member = default;
+            try
+            {
+                member = await ctx.Guild.GetMemberAsync(ctx.TargetUser.Id);
+            }
+            catch
+            {
+                // User is not in the server, so no guild avatar available
+            }
+
+            if (member == default || member.GuildAvatarUrl == null)
+            {
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"{ctx.TargetUser.AvatarUrl}".Replace("size=1024", "size=4096")).AsEphemeral(true));
+            }
+            else
+            {
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"You requested the avatar for {ctx.TargetUser.Mention}. Please choose one of the options below.").AddComponents(serverAvatarButton, userAvatarButton).AsEphemeral(true));
+            }
         }
 
         [ContextMenu(ApplicationCommandType.UserContextMenu, "Lookup")]

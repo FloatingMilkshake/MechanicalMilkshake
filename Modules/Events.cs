@@ -263,11 +263,11 @@
 
                 if (targetMember.GuildAvatarUrl == null)
                 {
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{targetUser.Mention} doesn't have a Server Avatar set! Try the User Avatar button to get their avatar.").AsEphemeral(true));
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{targetUser.Mention} doesn't have a Server Avatar set! Try using the User Avatar button to get their avatar.").AsEphemeral(true));
                     return;
                 }
 
-                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Sure, the Server Avatar for {targetUser.Mention}. Here you go:\n{targetMember.GuildAvatarUrl.Replace("size=1024", "size=4096")}").AsEphemeral(true));
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{targetMember.GuildAvatarUrl.Replace("size=1024", "size=4096")}").AsEphemeral(true));
             }
             if (e.Id == "user-avatar-ctx-cmd-button")
             {
@@ -275,7 +275,7 @@
                 ulong targetUserId = Convert.ToUInt64(idPattern.Match(e.Message.Content).ToString());
                 DiscordUser targetUser = await s.GetUserAsync(targetUserId);
 
-                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"Sure, the User Avatar for {targetUser.Mention}. Here you go:\n{targetUser.AvatarUrl.Replace("size=1024", "size=4096")}").AsEphemeral(true));
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{targetUser.AvatarUrl.Replace("size=1024", "size=4096")}").AsEphemeral(true));
             }
             if (e.Id == "code-quick-shortcut")
             {
