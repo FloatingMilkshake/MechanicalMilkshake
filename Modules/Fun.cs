@@ -70,40 +70,5 @@ namespace MechanicalMilkshake.Modules
                 }
             }
         }
-
-        [SlashCommandGroup("letter", "Repeat a single letter, or many.")]
-        public class LetterCmds : ApplicationCommandModule
-        {
-            [SlashCommand("spam", "Spam letters. Think of a keyboard smash.")]
-            public async Task LetterSpam(InteractionContext ctx, [Option("size", "The number of letters.")] long size)
-            {
-                const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                string kbSmash = new(Enumerable.Repeat(chars, (int)size).Select(s => s[Program.random.Next(s.Length)]).ToArray());
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(kbSmash));
-            }
-
-            [SlashCommand("repeat", "Repeat a single letter.")]
-            public async Task LetterRepeat(InteractionContext ctx, [Option("letter", "The letter to repeat.")] string letter, [Option("count", "The number of times to repeat it.")] long count)
-            {
-                if (letter.Length > 1)
-                {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Only one letter can be repeated."));
-                    return;
-                }
-                if (count > 2000)
-                {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Character limit exceeded! Messages can only be up to 2000 characters in size."));
-                    return;
-                }
-                if (count == 0)
-                {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("I can't repeat a letter 0 times!"));
-                    return;
-                }
-
-                string response = new(Enumerable.Repeat(letter, (int)count).Select(s => s[Program.random.Next(s.Length)]).ToArray());
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(response));
-            }
-        }
     }
 }
