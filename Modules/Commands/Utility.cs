@@ -304,6 +304,8 @@
         [SlashCommand("ping", "Checks my ping.")]
         public async Task Ping(InteractionContext ctx)
         {
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Pong! Client ping is `{ctx.Client.Ping}ms`.\n\nChecking round-trip time..."));
+
             DiscordMessage message;
             try
             {
@@ -330,7 +332,7 @@
 
             await message.DeleteAsync();
 
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Pong! Client ping is `{ctx.Client.Ping}ms`.\n\nIt took me `{responseTime}ms` to send a message after you used this command."));
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Pong! Client ping is `{ctx.Client.Ping}ms`.\n\nIt took me `{responseTime}ms` to send a message after you used this command."));
         }
 
         [SlashCommand("wolframalpha", "Search WolframAlpha without leaving Discord!")]
