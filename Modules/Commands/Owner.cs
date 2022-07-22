@@ -156,7 +156,7 @@
 
                     string responseText = await response.Content.ReadAsStringAsync();
 
-                    var parsedResponse = JsonConvert.DeserializeObject<CloudflareResponse>(responseText);
+                    CloudflareResponse parsedResponse = JsonConvert.DeserializeObject<CloudflareResponse>(responseText);
 
                     string kvListResponse = "";
 
@@ -677,15 +677,15 @@
 
                 try
                 {
-                    var globals = new Globals(ctx.Client, ctx);
+                    Globals globals = new(ctx.Client, ctx);
 
-                    var scriptOptions = ScriptOptions.Default;
+                    ScriptOptions scriptOptions = ScriptOptions.Default;
                     scriptOptions = scriptOptions.WithImports("System", "System.Collections.Generic", "System.Linq", "System.Text", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.SlashCommands", "DSharpPlus.Interactivity", "Microsoft.Extensions.Logging");
                     scriptOptions = scriptOptions.WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
 
-                    var script = CSharpScript.Create(code, scriptOptions, typeof(Globals));
+                    Script<object> script = CSharpScript.Create(code, scriptOptions, typeof(Globals));
                     script.Compile();
-                    var result = await script.RunAsync(globals).ConfigureAwait(false);
+                    ScriptState<object> result = await script.RunAsync(globals).ConfigureAwait(false);
 
                     if (result == null)
                     {
@@ -753,7 +753,7 @@
                 public List<string> Files { get; }
             }
         }
-        
+
         [SlashCommand("tellraw", "[Authorized users only] Speak through the bot!")]
         [SlashRequireAuth]
         public async Task Tellraw(InteractionContext ctx, [Option("message", "The message to have the bot send.")] string message, [Option("channel", "The channel to send the message in.")] DiscordChannel channel = null)

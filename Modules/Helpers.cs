@@ -66,8 +66,8 @@
 
             static async Task SendAlert(string keyword, DiscordMessage message)
             {
-                var guild = await Program.discord.GetGuildAsync(799644062973427743);
-                var member = await guild.GetMemberAsync(455432936339144705);
+                DiscordGuild guild = await Program.discord.GetGuildAsync(799644062973427743);
+                DiscordMember member = await guild.GetMemberAsync(455432936339144705);
 
                 DiscordEmbedBuilder embed = new()
                 {

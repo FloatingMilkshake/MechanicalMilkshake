@@ -91,7 +91,7 @@
                     updatesAvailableResponse = "Package updates are available on the following hosts:\n" + updatesAvailableResponse;
                 }
                 string ownerMention = "";
-                foreach (var user in Program.discord.CurrentApplication.Owners)
+                foreach (DiscordUser user in Program.discord.CurrentApplication.Owners)
                 {
                     ownerMention += user.Mention + " ";
                 }

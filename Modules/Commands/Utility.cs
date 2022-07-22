@@ -323,7 +323,7 @@
             DateTime messageTimestampDateTime = messageTimestampOffset.UtcDateTime;
 
 
-            var responseTime = (messageTimestampDateTime - ctx.Interaction.CreationTimestamp.UtcDateTime).ToString()
+            string responseTime = (messageTimestampDateTime - ctx.Interaction.CreationTimestamp.UtcDateTime).ToString()
                 .Replace("0", "")
                 .Replace(":", "")
                 .Replace(".", "");
@@ -386,7 +386,7 @@
             {
                 try
                 {
-                    var data = await Program.httpClient.GetByteArrayAsync($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={query}");
+                    byte[] data = await Program.httpClient.GetByteArrayAsync($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={query}");
                     await File.WriteAllBytesAsync("result.gif", data);
 
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"> {queryEscaped}\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)").AddFile(File.OpenRead("result.gif")));
@@ -438,7 +438,7 @@
             string staticEmoji = "";
             string animatedEmoji = "";
 
-            foreach (var emoji in guild.Emojis)
+            foreach (KeyValuePair<ulong, DiscordEmoji> emoji in guild.Emojis)
             {
                 if (emoji.Value.IsAnimated)
                 {
@@ -490,11 +490,11 @@
 
             // Unique user count
             List<DiscordUser> uniqueUsers = new();
-            foreach (var guild in ctx.Client.Guilds)
+            foreach (KeyValuePair<ulong, DiscordGuild> guild in ctx.Client.Guilds)
             {
-                foreach (var member in guild.Value.Members)
+                foreach (KeyValuePair<ulong, DiscordMember> member in guild.Value.Members)
                 {
-                    var user = await ctx.Client.GetUserAsync(member.Value.Id);
+                    DiscordUser user = await ctx.Client.GetUserAsync(member.Value.Id);
                     if (!uniqueUsers.Contains(user))
                     {
                         uniqueUsers.Add(user);
@@ -541,7 +541,7 @@
             {
                 botOwners.Add(owner);
             }
-            foreach (var userId in Program.configjson.AuthorizedUsers)
+            foreach (string userId in Program.configjson.AuthorizedUsers)
             {
                 authorizedUsers.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
             }
@@ -557,13 +557,13 @@
             }
 
             List<string> botOwnerNames = new();
-            foreach (var owner in botOwners)
+            foreach (DiscordUser owner in botOwners)
             {
                 botOwnerNames.Add($"{owner.Username}#{owner.Discriminator}");
             }
 
             List<string> authorizedUserNames = new();
-            foreach (var user in authorizedUsers)
+            foreach (DiscordUser user in authorizedUsers)
             {
                 authorizedUserNames.Add($"{user.Username}#{user.Discriminator}");
             }

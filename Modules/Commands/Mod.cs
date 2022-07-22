@@ -13,13 +13,13 @@ namespace MechanicalMilkshake.Modules.Commands
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
 
-                var existingOverwrites = ctx.Channel.PermissionOverwrites.ToArray();
+                DiscordOverwrite[] existingOverwrites = ctx.Channel.PermissionOverwrites.ToArray();
 
                 await ctx.Channel.AddOverwriteAsync(ctx.Member, Permissions.SendMessages, Permissions.None);
                 await ctx.Channel.AddOverwriteAsync(await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id), Permissions.SendMessages, Permissions.None);
                 await ctx.Channel.AddOverwriteAsync(ctx.Guild.EveryoneRole, Permissions.None, Permissions.SendMessages);
 
-                foreach (var overwrite in existingOverwrites)
+                foreach (DiscordOverwrite overwrite in existingOverwrites)
                 {
                     if (overwrite.Type == OverwriteType.Role)
                     {
@@ -49,7 +49,7 @@ namespace MechanicalMilkshake.Modules.Commands
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
 
-                foreach (var permission in ctx.Channel.PermissionOverwrites.ToArray())
+                foreach (DiscordOverwrite permission in ctx.Channel.PermissionOverwrites.ToArray())
                 {
                     if (permission.Type == OverwriteType.Role)
                     {
@@ -139,7 +139,7 @@ namespace MechanicalMilkshake.Modules.Commands
             List<DiscordMessage> messagesToClear;
             if (upTo == "")
             {
-                var messages = await ctx.Channel.GetMessagesAsync((int)count);
+                IReadOnlyList<DiscordMessage> messages = await ctx.Channel.GetMessagesAsync((int)count);
                 messagesToClear = messages.ToList();
             }
             else
@@ -170,7 +170,7 @@ namespace MechanicalMilkshake.Modules.Commands
                 message = await ctx.Channel.GetMessageAsync(messageId);
 
                 // List of messages to delete, up to (not including) the one we just got.
-                var messages = await ctx.Channel.GetMessagesAfterAsync(message.Id);
+                IReadOnlyList<DiscordMessage> messages = await ctx.Channel.GetMessagesAfterAsync(message.Id);
                 messagesToClear = messages.ToList();
             }
 
@@ -180,7 +180,7 @@ namespace MechanicalMilkshake.Modules.Commands
             // Match user
             if (user != default)
             {
-                foreach (var message in messagesToClear.ToList())
+                foreach (DiscordMessage message in messagesToClear.ToList())
                 {
                     if (message.Author.Id != user.Id)
                     {
@@ -192,7 +192,7 @@ namespace MechanicalMilkshake.Modules.Commands
             // Ignore me
             if (ignoreMe)
             {
-                foreach (var message in messagesToClear.ToList())
+                foreach (DiscordMessage message in messagesToClear.ToList())
                 {
                     if (message.Author == ctx.User)
                     {
@@ -204,7 +204,7 @@ namespace MechanicalMilkshake.Modules.Commands
             // Match text
             if (match != "")
             {
-                foreach (var message in messagesToClear.ToList())
+                foreach (DiscordMessage message in messagesToClear.ToList())
                 {
                     if (!message.Content.ToLower().Contains(match.ToLower()))
                     {
@@ -222,7 +222,7 @@ namespace MechanicalMilkshake.Modules.Commands
                     return;
                 }
 
-                foreach (var message in messagesToClear.ToList())
+                foreach (DiscordMessage message in messagesToClear.ToList())
                 {
                     if (!message.Author.IsBot)
                     {
@@ -234,7 +234,7 @@ namespace MechanicalMilkshake.Modules.Commands
             // Humans only
             if (humansOnly)
             {
-                foreach (var message in messagesToClear.ToList())
+                foreach (DiscordMessage message in messagesToClear.ToList())
                 {
                     if (message.Author.IsBot)
                     {
@@ -252,7 +252,7 @@ namespace MechanicalMilkshake.Modules.Commands
                     return;
                 }
 
-                foreach (var message in messagesToClear.ToList())
+                foreach (DiscordMessage message in messagesToClear.ToList())
                 {
                     if (message.Attachments.Count == 0)
                     {
@@ -264,7 +264,7 @@ namespace MechanicalMilkshake.Modules.Commands
             // Links only
             if (linksOnly)
             {
-                foreach (var message in messagesToClear.ToList())
+                foreach (DiscordMessage message in messagesToClear.ToList())
                 {
                     if (!url_rx.IsMatch(message.Content.ToLower()))
                     {
@@ -276,7 +276,7 @@ namespace MechanicalMilkshake.Modules.Commands
             // Skip messages older than 2 weeks, since Discord won't let us delete them anyway
 
             bool skipped = false;
-            foreach (var message in messagesToClear.ToList())
+            foreach (DiscordMessage message in messagesToClear.ToList())
             {
                 if (message.CreationTimestamp.ToUniversalTime() < DateTime.UtcNow.AddDays(-14))
                 {

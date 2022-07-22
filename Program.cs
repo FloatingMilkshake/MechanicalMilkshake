@@ -45,13 +45,13 @@
         internal static async Task Main(string[] args)
         {
             // Read config.json, or config.dev.json if running in development mode
-            var json = "";
+            string json = "";
             string configFile = "config.json";
 #if DEBUG
             configFile = "config.dev.json";
 #endif
-            using (var fs = File.OpenRead(configFile))
-            using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
+            using (FileStream fs = File.OpenRead(configFile))
+            using (StreamReader sr = new(fs, new UTF8Encoding(false)))
                 json = await sr.ReadToEndAsync();
             configjson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
@@ -88,7 +88,7 @@
             homeChannel = await discord.GetChannelAsync(homeChannelId);
 
             // Set up slash commands and CommandsNext
-            var slash = discord.UseSlashCommands();
+            SlashCommandsExtension slash = discord.UseSlashCommands();
 
             CommandsNextExtension commands = discord.UseCommandsNext(new CommandsNextConfiguration
             {
@@ -140,7 +140,7 @@
                 DiscordButtonComponent restartButton = new(ButtonStyle.Danger, "Restart", "slash-fail-restart-button");
 
                 string ownerMention = "";
-                foreach (var user in discord.CurrentApplication.Owners)
+                foreach (DiscordUser user in discord.CurrentApplication.Owners)
                 {
                     ownerMention += user.Mention + " ";
                 }

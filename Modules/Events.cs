@@ -90,7 +90,7 @@
                         embed.AddField("What's that mean?", "This usually means that you used the command incorrectly.\n" +
                             $"Please run `help {e.Command.QualifiedName}` for information about what you need to provide for the `{e.Command.QualifiedName}` command.");
                     }
-                    
+
                     // Check if bot has perms to send error response and send if so
                     if (e.Context.Channel.PermissionsFor(await e.Context.Guild.GetMemberAsync(e.Context.Client.CurrentUser.Id)).HasPermission(Permissions.SendMessages))
                     {
@@ -118,7 +118,7 @@
                 if (Program.configjson.AuthorizedUsers.Contains(e.User.Id.ToString()))
                 {
                     DiscordButtonComponent restartButton = new(ButtonStyle.Danger, "slash-fail-restart-button", "Restart", true);
-                    
+
                     try
                     {
                         string dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
@@ -211,7 +211,7 @@
                 ulong contextId = default;
                 DiscordUser contextAuthor = default;
                 DiscordMessage contextMsg = default;
-                foreach (var msg in await channel.GetMessagesBeforeAsync(messageId, 1))
+                foreach (DiscordMessage msg in await channel.GetMessagesBeforeAsync(messageId, 1))
                 {
                     contextContent = msg.Content;
                     contextId = msg.Id;
@@ -279,15 +279,15 @@
                 DiscordInteraction ctx = e.Interaction;
                 try
                 {
-                    var globals = new EventGlobals(Program.discord, ctx);
+                    EventGlobals globals = new(Program.discord, ctx);
 
-                    var scriptOptions = ScriptOptions.Default;
+                    ScriptOptions scriptOptions = ScriptOptions.Default;
                     scriptOptions = scriptOptions.WithImports("System", "System.Collections.Generic", "System.Linq", "System.Text", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.SlashCommands", "DSharpPlus.Interactivity", "Microsoft.Extensions.Logging");
                     scriptOptions = scriptOptions.WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
 
-                    var script = CSharpScript.Create(e.Message.Content, scriptOptions, typeof(EventGlobals));
+                    Script<object> script = CSharpScript.Create(e.Message.Content, scriptOptions, typeof(EventGlobals));
                     script.Compile();
-                    var result = await script.RunAsync(globals).ConfigureAwait(false);
+                    ScriptState<object> result = await script.RunAsync(globals).ConfigureAwait(false);
 
                     if (result == null)
                     {
@@ -418,7 +418,7 @@
                         if (targetChannel == default)
                         {
                             DiscordGuild mutualServer = default;
-                            foreach (var guildId in client.Guilds)
+                            foreach (KeyValuePair<ulong, DiscordGuild> guildId in client.Guilds)
                             {
                                 DiscordGuild server = await client.GetGuildAsync(guildId.Key);
 
@@ -497,7 +497,7 @@
                         string messageToSend = "";
                         if (e.Message.Attachments.Count != 0)
                         {
-                            foreach (var attachment in e.Message.Attachments)
+                            foreach (DiscordAttachment attachment in e.Message.Attachments)
                             {
                                 attachmentUrls += $"{attachment.Url}\n";
                             }
@@ -508,11 +508,11 @@
                             messageToSend = e.Message.Content;
                         }
 
-                        var replyBuilder = new DiscordMessageBuilder().WithContent(messageToSend).WithReply(messageId);
+                        DiscordMessageBuilder replyBuilder = new DiscordMessageBuilder().WithContent(messageToSend).WithReply(messageId);
 
                         DiscordMessage reply = await member.SendMessageAsync(replyBuilder);
 
-                        var messageBuilder = new DiscordMessageBuilder().WithContent($"Sent! (`{reply.Id}` in `{reply.Channel.Id}`)").WithReply(e.Message.Id);
+                        DiscordMessageBuilder messageBuilder = new DiscordMessageBuilder().WithContent($"Sent! (`{reply.Id}` in `{reply.Channel.Id}`)").WithReply(e.Message.Id);
                         await e.Channel.SendMessageAsync(messageBuilder);
                     }
                     else
@@ -521,7 +521,7 @@
                         {
                             foreach (DiscordUser owner in client.CurrentApplication.Owners)
                             {
-                                foreach (var guildPair in client.Guilds)
+                                foreach (KeyValuePair<ulong, DiscordGuild> guildPair in client.Guilds)
                                 {
                                     DiscordGuild guild = await client.GetGuildAsync(guildPair.Key);
 
@@ -546,7 +546,7 @@
                                         string attachmentUrls = "";
                                         if (e.Message.Attachments.Count != 0)
                                         {
-                                            foreach (var attachment in e.Message.Attachments)
+                                            foreach (DiscordAttachment attachment in e.Message.Attachments)
                                             {
                                                 attachmentUrls += $"{attachment.Url}\n";
                                             }
@@ -555,7 +555,7 @@
 
                                         string mutualServers = "";
 
-                                        foreach (var guildId in client.Guilds)
+                                        foreach (KeyValuePair<ulong, DiscordGuild> guildId in client.Guilds)
                                         {
                                             DiscordGuild server = await client.GetGuildAsync(guildId.Key);
 
@@ -565,7 +565,7 @@
                                             }
                                         }
 
-                                        var messageBuilder = new DiscordMessageBuilder();
+                                        DiscordMessageBuilder messageBuilder = new();
 
                                         string isReply = "No";
                                         if (e.Message.ReferencedMessage != null)
@@ -576,9 +576,9 @@
                                         }
                                         embed.AddField("Is Reply", isReply);
 
-                                        var messages = await e.Channel.GetMessagesBeforeAsync(e.Message.Id);
+                                        IReadOnlyList<DiscordMessage> messages = await e.Channel.GetMessagesBeforeAsync(e.Message.Id);
                                         bool contextExists = false;
-                                        foreach (var msg in messages)
+                                        foreach (DiscordMessage msg in messages)
                                         {
                                             if (msg.Content != null)
                                             {
