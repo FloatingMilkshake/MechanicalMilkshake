@@ -1,4 +1,4 @@
-﻿namespace MechanicalMilkshake.Modules
+﻿namespace MechanicalMilkshake.Modules.Commands
 {
     public class Owner : ApplicationCommandModule
     {

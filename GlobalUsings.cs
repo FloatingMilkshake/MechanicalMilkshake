@@ -13,6 +13,7 @@ global using DSharpPlus.SlashCommands.Attributes;
 global using DSharpPlus.SlashCommands;
 global using DSharpPlus.SlashCommands.EventArgs;
 global using MechanicalMilkshake.Modules;
+global using MechanicalMilkshake.Modules.Commands;
 global using Microsoft.CodeAnalysis.CSharp.Scripting;
 global using Microsoft.CodeAnalysis.Scripting;
 global using MimeTypes;
