@@ -135,7 +135,7 @@
             slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
 #endif
             }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("Slash commands failed to register"))
+            catch (Exception ex)
             {
                 DiscordButtonComponent restartButton = new(ButtonStyle.Danger, "Restart", "slash-fail-restart-button");
 
