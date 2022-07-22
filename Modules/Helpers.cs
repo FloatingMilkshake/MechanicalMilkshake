@@ -51,9 +51,14 @@
 
         public static async Task KeywordCheck(DiscordMessage message)
         {
-            if (message.Author.Id == 455432936339144705)
-                return;
-            if (message.Author.Id == Program.discord.CurrentUser.Id)
+            List<ulong> excludedIds = new()
+            {
+                Program.discord.CurrentUser.Id,
+                455432936339144705,
+                849370001009016852
+            };
+
+            if (excludedIds.Contains(message.Author.Id))
                 return;
 
             if (message.Content.Contains("floaty"))
