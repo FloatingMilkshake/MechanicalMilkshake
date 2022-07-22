@@ -105,18 +105,20 @@
                 .WithRegion(configjson.S3.Region)
                 .WithSSL();
 
-            // Register slash commands as guild commands in configured development server when
-            // running in development mode
+            try
+            {
+                // Register slash commands as guild commands in configured development server when
+                // running in development mode
 #if DEBUG
-            slash.RegisterCommands<Owner>(configjson.DevServerId);
-            slash.RegisterCommands<Owner.Private>(configjson.DevServerId);
-            slash.RegisterCommands<Fun>(configjson.DevServerId);
-            slash.RegisterCommands<Mod>(configjson.DevServerId);
-            slash.RegisterCommands<Utility>(configjson.DevServerId);
-            slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.DevServerId);
-            Console.WriteLine("Slash commands registered for debugging.");
+                slash.RegisterCommands<Owner>(configjson.DevServerId);
+                slash.RegisterCommands<Owner.Private>(configjson.DevServerId);
+                slash.RegisterCommands<Fun>(configjson.DevServerId);
+                slash.RegisterCommands<Mod>(configjson.DevServerId);
+                slash.RegisterCommands<Utility>(configjson.DevServerId);
+                slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.DevServerId);
+                Console.WriteLine("Slash commands registered for debugging.");
 
-            // Register slash commands globally for 'production' bot
+                // Register slash commands globally for 'production' bot
 #else
             slash.RegisterCommands<Owner>();
             slash.RegisterCommands<Owner.Private>(configjson.DevServerId);
@@ -132,6 +134,26 @@
             slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.DevServerId);
             slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
 #endif
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("Slash commands failed to register"))
+            {
+                DiscordButtonComponent restartButton = new(ButtonStyle.Danger, "Restart", "slash-fail-restart-button");
+
+                string ownerMention = "";
+                foreach (var user in discord.CurrentApplication.Owners)
+                {
+                    ownerMention += user.Mention + " ";
+                }
+
+                DiscordMessageBuilder message = new()
+                {
+                    Content = $"{ownerMention.Trim()}\nSlash commands failed to register properly! Click the button to restart the bot. Exception details are below.\n```cs\n{ex.Message}\n```",
+                };
+                message.AddComponents(restartButton);
+
+                await homeChannel.SendMessageAsync(message);
+            }
+
 
             // Register CommandsNext commands
             commands.RegisterCommands<PerServerFeatures.MessageCommands>();

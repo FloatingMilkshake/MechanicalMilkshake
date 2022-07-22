@@ -113,6 +113,36 @@
 
         public static async Task ComponentInteractionCreated(DiscordClient s, ComponentInteractionCreateEventArgs e)
         {
+            if (e.Id == "slash-fail-restart-button")
+            {
+                if (Program.configjson.AuthorizedUsers.Contains(e.User.Id.ToString()))
+                {
+                    DiscordButtonComponent restartButton = new(ButtonStyle.Danger, "slash-fail-restart-button", "Restart", true);
+                    
+                    try
+                    {
+                        string dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
+                        if (string.IsNullOrWhiteSpace(dockerCheckFile))
+                        {
+                            await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().WithContent("The bot may not be running under Docker and as such cannot be restarted this way! Please restart the bot manually.").AddComponents(restartButton));
+                            return;
+                        }
+                    }
+                    catch
+                    {
+                        // /proc/self/cgroup could not be found, which means the bot is not running in Docker.
+                        await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().WithContent("The bot may not be running under Docker and as such cannot be restarted this way! Please restart the bot manually.").AddComponents(restartButton));
+                        return;
+                    }
+
+                    e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().WithContent("Restarting!").AddComponents(restartButton));
+                    Environment.Exit(1);
+                }
+                else
+                {
+                    e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{e.User.Mention}, you are not authorized to perform this action!").AsEphemeral(true));
+                }
+            }
             if (e.Id == "shutdown-button")
             {
                 if (Program.configjson.AuthorizedUsers.Contains(e.User.Id.ToString()))
