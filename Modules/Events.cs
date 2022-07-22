@@ -117,11 +117,25 @@
             {
                 if (Program.configjson.AuthorizedUsers.Contains(e.User.Id.ToString()))
                 {
-                    DiscordButtonComponent disabledButton = new(ButtonStyle.Danger, "shutdown-button", "Shut Down", true);
-                    e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().WithContent("**Warning: The bot is now shutting down. This action is permanent.**").AddComponents(disabledButton));
+                    DiscordButtonComponent shutdownButton = new(ButtonStyle.Danger, "shutdown-button", "Shut Down", true);
+                    DiscordButtonComponent cancelButton = new(ButtonStyle.Primary, "shutdown-cancel-button", "Cancel", true);
+                    e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().WithContent("**Warning: The bot is now shutting down. This action is permanent.**").AddComponents(shutdownButton, cancelButton));
 
                     Program.discord.DisconnectAsync();
                     Environment.Exit(0);
+                }
+                else
+                {
+                    e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{e.User.Mention}, you are not authorized to perform this action!").AsEphemeral(true));
+                }
+            }
+            if (e.Id == "shutdown-cancel-button")
+            {
+                if (Program.configjson.AuthorizedUsers.Contains(e.User.Id.ToString()))
+                {
+                    DiscordButtonComponent shutdownButton = new(ButtonStyle.Danger, "shutdown-button", "Shut Down", true);
+                    DiscordButtonComponent cancelButton = new(ButtonStyle.Primary, "shutdown-cancel-button", "Cancel", true);
+                    e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().WithContent("Shutdown canceled.").AddComponents(shutdownButton, cancelButton));
                 }
                 else
                 {

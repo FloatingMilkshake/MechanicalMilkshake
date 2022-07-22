@@ -509,9 +509,10 @@
                 [SlashCommand("shutdown", "Shut down the bot.")]
                 public async Task Shutdown(InteractionContext ctx)
                 {
-                    DiscordButtonComponent button = new(ButtonStyle.Danger, "shutdown-button", "Shut Down");
+                    DiscordButtonComponent shutdownButton = new(ButtonStyle.Danger, "shutdown-button", "Shut Down");
+                    DiscordButtonComponent cancelButton = new(ButtonStyle.Primary, "shutdown-cancel-button", "Cancel");
 
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Are you sure you want to shut down the bot? This action cannot be undone.").AddComponents(button));
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Are you sure you want to shut down the bot? This action cannot be undone.").AddComponents(shutdownButton, cancelButton));
                 }
 
                 [SlashCommand("restart", "Restart the bot.")]
