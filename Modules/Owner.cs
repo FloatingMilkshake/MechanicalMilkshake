@@ -123,28 +123,28 @@
                 [SlashCommand("list", "List all short links configured with Cloudflare worker-links.")]
                 public async Task ListWorkerLinks(InteractionContext ctx)
                 {
-                    await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
+                    await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
 
                     if (Program.configjson.WorkerLinks.ApiKey == null)
                     {
-                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Error: missing Cloudflare API Key! Make sure the apiKey field under workerLinks in your config.json file is set."));
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Error: missing Cloudflare API Key! Make sure the apiKey field under workerLinks in your config.json file is set.").AsEphemeral(true));
                         return;
                     }
 
                     if (Program.configjson.WorkerLinks.NamespaceId == null)
                     {
-                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Error: missing KV Namespace ID! Make sure the namespaceId field under workerLinks in your config.json file is set."));
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Error: missing KV Namespace ID! Make sure the namespaceId field under workerLinks in your config.json file is set.").AsEphemeral(true));
                         return;
                     }
 
                     if (Program.configjson.WorkerLinks.AccountId == null)
                     {
-                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Error: missing Cloudflare Account ID! Make sure the accountId field under workerLinks in your config.json file is set."));
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Error: missing Cloudflare Account ID! Make sure the accountId field under workerLinks in your config.json file is set.").AsEphemeral(true));
                     }
 
                     if (Program.configjson.WorkerLinks.Email == null)
                     {
-                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Error: missing email address for Cloudflare! Make sure the email field under workerLinks in your config.json file is set."));
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Error: missing email address for Cloudflare! Make sure the email field under workerLinks in your config.json file is set.").AsEphemeral(true));
                     }
 
                     string requestUri = $"https://api.cloudflare.com/client/v4/accounts/{Program.configjson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId}/keys";
@@ -176,13 +176,33 @@
                         kvListResponse += $"`{item.Name}`: {value}\n\n";
                     }
 
+                    DiscordEmbedBuilder embed = new()
+                    {
+                        Title = "Link List"
+                    };
                     try
                     {
-                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(kvListResponse));
+                        embed.Description = kvListResponse;
+                    }
+                    catch (ArgumentException ex) when (ex.Message.Contains("length cannot exceed"))
+                    {
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"I couldn't send the list of links here! It's too long to fit into a message. You can see the full list on Cloudflare's website [here](https://dash.cloudflare.com/{Program.configjson.WorkerLinks.AccountId}/workers/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId}).").AsEphemeral(true));
+                        return;
                     }
                     catch (Exception ex)
                     {
-                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Hmm, I couldn't send the list of links here!\n```\n{ex.GetType()}: {ex.Message}\n```"));
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Hmm, I couldn't send the list of links here! You can see the full list on Cloudflare's website [here](https://dash.cloudflare.com/{Program.configjson.WorkerLinks.AccountId}/workers/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId}). Exception details are below.\n```\n{ex.GetType()}: {ex.Message}\n```").AsEphemeral(true));
+                        return;
+                    }
+
+                    try
+                    {
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral(true));
+                    }
+                    catch (Exception ex)
+                    {
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Hmm, I couldn't send the list of links here! You can see the full list on Cloudflare's website [here](https://dash.cloudflare.com/{Program.configjson.WorkerLinks.AccountId}/workers/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId}). Exception details are below.\n```\n{ex.GetType()}: {ex.Message}\n```").AsEphemeral(true));
+                        return;
                     }
                 }
 
