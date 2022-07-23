@@ -502,8 +502,14 @@
                 }
             }
 
-            response += $"Static Emoji:\n{staticEmoji}"
-                + $"\n\nAnimated Emoji:\n{animatedEmoji}";
+            if (staticEmoji != "")
+            {
+                response += $"Static Emoji:\n{staticEmoji}";
+            }
+            if (animatedEmoji != "")
+            {
+                response += $"Animated Emoji:\n{animatedEmoji}";
+            }
 
             if (copySuccess)
             {
