@@ -137,7 +137,7 @@
             }
             if (user.Flags.Value.HasFlag(UserFlags.VerifiedBot))
             {
-                badges += $"<:verifiedBot:{Program.userFlagEmoji.GetValueOrDefault("verifiedBot")}> Verified Bot\n";
+                badges += $"<:verifiedBot1:{Program.userFlagEmoji.GetValueOrDefault("verifiedBot1")}><:verifiedBot2:{Program.userFlagEmoji.GetValueOrDefault("verifiedBot2")}> Verified Bot\n";
             }
 
             return badges.Trim();

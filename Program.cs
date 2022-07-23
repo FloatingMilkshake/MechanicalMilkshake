@@ -23,7 +23,8 @@
             {"bugHunterLevelTwo", 1000168735740526732},
             {"certifiedModerator", 1000168736789118976},
             {"partneredServerOwner", 1000168744192053298},
-            {"verifiedBot", 1000179246439878768}
+            {"verifiedBot1", 1000229381563744397},
+            {"verifiedBot2", 1000229382431977582}
         };
 
         // Use a custom help message to show that there are no CommandsNext commands since they
