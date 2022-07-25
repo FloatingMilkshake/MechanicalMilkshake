@@ -4,57 +4,34 @@ namespace MechanicalMilkshake.Modules
     {
         public class ComplaintSlashCommands : ApplicationCommandModule
         {
-            [SlashCommandGroup("complaint", "File a complaint to a specific department.")]
-            public class Complaint
+            [SlashCommand("complaint", "File a complaint to a specific department.")]
+            public async Task Complaint(InteractionContext ctx,
+                [Choice("hr", "HR")]
+                [Choice("ia", "IA")]
+                [Choice("it", "IT")]
+                [Choice("corporate", "Corporate")]
+                [Option("department", "The department to send the complaint to.")] string department,
+                [Option("complaint", "Your complaint.")] string complaint)
             {
-                [SlashCommand("hr", "Send a complaint to HR.")]
-                public async Task HrComplaint(InteractionContext ctx, [Option("complaint", "Your complaint.")] string complaint)
+                if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 && ctx.Guild.Id != Program.configjson.DevServerId)
                 {
-                    if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 && ctx.Guild.Id != Program.configjson.DevServerId)
-                    {
-                        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("This command is not available in this server.").AsEphemeral(true));
-                    }
-
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Your complaint has been recorded. You can see it below. You will be contacted soon about your issue.\n> {complaint}").AsEphemeral(true));
-                    DiscordChannel logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
-                    await logChannel.SendMessageAsync($"{ctx.User.Mention} to HR (in {ctx.Channel.Mention}/#{ctx.Channel.Name}, {ctx.Guild.Name}):\n> {complaint}");
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("This command is not available in this server.").AsEphemeral(true));
+                    return;
                 }
-                [SlashCommand("ia", "Send a complaint to IA.")]
-                public async Task IaComplaint(InteractionContext ctx, [Option("complaint", "Your complaint.")] string complaint)
+
+                if (department != "HR" && department != "IA" && department != "IT" && department != "Corporate")
                 {
-                    if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 && ctx.Guild.Id != Program.configjson.DevServerId)
-                    {
-                        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("This command is not available in this server.").AsEphemeral(true));
-                    }
-
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Your complaint has been recorded. You can see it below. You will be contacted soon about your issue.\n> {complaint}").AsEphemeral(true));
-                    DiscordChannel logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
-                    await logChannel.SendMessageAsync($"{ctx.User.Mention} to IA (in {ctx.Channel.Mention}/#{ctx.Channel.Name}, {ctx.Guild.Name}):\n> {complaint}");
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Please choose from one of the four departments to send your complaint to.").AsEphemeral(true));
+                    return;
                 }
-                [SlashCommand("it", "Send a complaint to IT.")]
-                public async Task ItComplaint(InteractionContext ctx, [Option("complaint", "Your complaint.")] string complaint)
+
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Your complaint has been recorded. You can see it below. You will be contacted soon about your issue.\n> {complaint}").AsEphemeral(true));
+                DiscordChannel logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
+                DiscordMessageBuilder message = new()
                 {
-                    if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 && ctx.Guild.Id != Program.configjson.DevServerId)
-                    {
-                        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("This command is not available in this server.").AsEphemeral(true));
-                    }
-
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Your complaint has been recorded. You can see it below. You will be contacted soon about your issue.\n> {complaint}").AsEphemeral(true));
-                    DiscordChannel logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
-                    await logChannel.SendMessageAsync($"{ctx.User.Mention} to IT (in {ctx.Channel.Mention}/#{ctx.Channel.Name}, {ctx.Guild.Name}):\n> {complaint}");
-                }
-                [SlashCommand("corporate", "Send a complaint to corporate.")]
-                public async Task CorporateComplaint(InteractionContext ctx, [Option("complaint", "Your complaint.")] string complaint)
-                {
-                    if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 && ctx.Guild.Id != Program.configjson.DevServerId)
-                    {
-                        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("This command is not available in this server.").AsEphemeral(true));
-                    }
-
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Your complaint has been recorded. You can see it below. You will be contacted soon about your issue.\n> {complaint}").AsEphemeral(true));
-                    DiscordChannel logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
-                    await logChannel.SendMessageAsync($"{ctx.User.Mention} to Corporate (in {ctx.Channel.Mention}/#{ctx.Channel.Name}, {ctx.Guild.Name}):\n> {complaint}");
-                }
+                    Content = $"{ctx.User.Mention} to {department} (in {ctx.Channel.Mention}/#{ctx.Channel.Name}, {ctx.Guild.Name}):\n> {complaint}"
+                };
+                await logChannel.SendMessageAsync(message.WithAllowedMentions(Mentions.None));
             }
         }
 
