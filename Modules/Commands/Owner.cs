@@ -553,7 +553,7 @@
                 [Choice("Watching", "watching")]
                 [Choice("Competing in", "competing")]
                 [Choice("Listening to", "listening")] string type = null,
-                [Option("activityName", "The bot's activity (for example, the '!help' in \"watching !help\").")] string activityName = null)
+                [Option("activity_name", "The bot's activity (for example, the '!help' in \"watching !help\").")] string activityName = null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
 

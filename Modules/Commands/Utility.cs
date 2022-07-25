@@ -170,7 +170,7 @@
                 [Choice("Relative Time", "R")]
                 [Choice("Raw Timestamp", "")]
                 [Option("format", "The format to convert the timestamp to.")] string format = "",
-                [Option("includecode", "Whether to include the code for the timestamp.")] bool includeCode = false)
+                [Option("include_code", "Whether to include the code for the timestamp.")] bool includeCode = false)
             {
                 ulong snowflake;
                 try
@@ -213,7 +213,7 @@
                 [Choice("Relative Time", "R")]
                 [Choice("Raw Timestamp", "")]
                 [Option("format", "The format to convert the timestamp to. Options are F/D/T/R/f/d/t.")] string format = "",
-                [Option("includecode", "Whether to include the code for the timestamp.")] bool includeCode = false)
+                [Option("include_code", "Whether to include the code for the timestamp.")] bool includeCode = false)
             {
                 DateTime dateToConvert = Convert.ToDateTime(date);
                 long unixTime = ((DateTimeOffset)dateToConvert).ToUnixTimeSeconds();
@@ -366,7 +366,7 @@
 
         [SlashCommand("wolframalpha", "Search WolframAlpha without leaving Discord!")]
         public async Task WolframAlpha(InteractionContext ctx, [Option("query", "What to search for.")] string query,
-            [Option("responsetype", "Whether the response should be simple text only or a more-detailed image. Defaults to Text.")]
+            [Option("response_type", "Whether the response should be simple text only or a more-detailed image. Defaults to Text.")]
             [Choice("Text", "text")]
             [Choice("Image", "image")] string responseType = "text")
         {
@@ -442,7 +442,7 @@
         }
 
         [SlashCommand("stealemoji", "Fetch all of a server's emoji! Note that the bot must be in the server for this to work.")]
-        public async Task StealEmoji(InteractionContext ctx, [Option("server", "The ID of the server to fetch emoji from.")] string server, [Option("addtoserver", "Whether to add all of the emoji to the server you're running the command in.")] bool addToServer = false)
+        public async Task StealEmoji(InteractionContext ctx, [Option("server", "The ID of the server to fetch emoji from.")] string server, [Option("add_to_server", "Whether to add all of the emoji to the server you're running the command in.")] bool addToServer = false)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
