@@ -1,7 +1,9 @@
 version: '2.3'
 services:
   bot:
-    image: ghcr.io/floatingmilkshake/mechanicalmilkshake 
+    image: ghcr.io/floatingmilkshake/mechanicalmilkshake
+    depends_on:
+      - redis
     restart: on-failure
     volumes:
       - type: bind
@@ -17,6 +19,14 @@ services:
       - type: bind
         source: ~/utils.sh
         target: /app/utils.sh
+  redis:
+    image: 'redis:alpine3.16'
+    restart: always
+    volumes:
+      - type: bind
+        source: ./db
+        target: /db
+    command: --appendonly yes
   watchtower:
     image: containrrr/watchtower
     volumes:

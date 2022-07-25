@@ -10,6 +10,12 @@
         public static ConfigJson configjson;
         public static readonly string processStartTime = DateTime.Now.ToString();
         public static DiscordChannel homeChannel;
+#if DEBUG
+        public static ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:6379");
+#else
+        public static ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("redis");
+#endif
+        public static IDatabase db = redis.GetDatabase();
         
         public static Dictionary<string, ulong> userFlagEmoji = new()
         {
@@ -84,7 +90,12 @@
             {
                 Token = configjson.BotToken,
                 TokenType = TokenType.Bot,
-                Intents = DiscordIntents.All
+                Intents = DiscordIntents.All,
+#if DEBUG
+                MinimumLogLevel = LogLevel.Debug
+#else
+                MinimumLogLevel = LogLevel.Information
+#endif
             });
             discord.UseInteractivity(new InteractivityConfiguration()
             {
@@ -132,23 +143,25 @@
                 slash.RegisterCommands<Mod>(configjson.DevServerId);
                 slash.RegisterCommands<Utility>(configjson.DevServerId);
                 slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.DevServerId);
+                slash.RegisterCommands<KeywordTracking>(configjson.DevServerId);
                 Console.WriteLine("Slash commands registered for debugging.");
 
                 // Register slash commands globally for 'production' bot
 #else
-            slash.RegisterCommands<Owner>();
-            slash.RegisterCommands<Owner.Private>(configjson.DevServerId);
-            slash.RegisterCommands<Fun>();
-            slash.RegisterCommands<Mod>();
-            slash.RegisterCommands<Utility>();
-            Console.WriteLine("Slash commands registered globally.");
+                slash.RegisterCommands<Owner>();
+                slash.RegisterCommands<Owner.Private>(configjson.DevServerId);
+                slash.RegisterCommands<Fun>();
+                slash.RegisterCommands<Mod>();
+                slash.RegisterCommands<Utility>();
+                slash.RegisterCommands<KeywordTracking>();
+                Console.WriteLine("Slash commands registered globally.");
             
 // Register slash commands for per-server features in respective servers
 // & testing server for 'production' bot
-            slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(631118217384951808);
-            slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(984903591816990730);
-            slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.DevServerId);
-            slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
+                slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(631118217384951808);
+                slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(984903591816990730);
+                slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.DevServerId);
+                slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
 #endif
             }
             catch (Exception ex)

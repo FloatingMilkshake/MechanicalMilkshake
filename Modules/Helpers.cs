@@ -49,49 +49,6 @@
                 + $"\nLatest commit message:\n```\n{commitMessage}\n```";
         }
 
-        public static async Task KeywordCheck(DiscordMessage message)
-        {
-            List<ulong> excludedIds = new()
-            {
-                Program.discord.CurrentUser.Id,
-                455432936339144705,
-                849370001009016852
-            };
-
-            if (excludedIds.Contains(message.Author.Id))
-                return;
-
-            if (message.Content.Contains("floaty"))
-                await SendAlert("floaty", message);
-            else if (message.Content.Contains("milkshake"))
-                await SendAlert("milkshake", message);
-            else if (message.Content.Contains("455432936339144705"))
-                await SendAlert("455432936339144705", message);
-
-
-            static async Task SendAlert(string keyword, DiscordMessage message)
-            {
-                DiscordGuild guild = await Program.discord.GetGuildAsync(799644062973427743);
-                DiscordMember member = await guild.GetMemberAsync(455432936339144705);
-
-                DiscordEmbedBuilder embed = new()
-                {
-                    Color = new DiscordColor("#7287fd"),
-                    Title = $"Tracked keyword \"{keyword}\" triggered!",
-                    Description = $"{message.Content}"
-                };
-                embed.AddField("Author ID", $"{message.Author.Id}", true);
-                embed.AddField("Author Mention", $"{message.Author.Mention}", true);
-
-                if (message.Channel.IsPrivate)
-                    embed.AddField("Channel", $"Message sent in DMs.");
-                else
-                    embed.AddField("Channel", $"{message.Channel.Mention} in {message.Channel.Guild.Name} | [Jump Link]({message.JumpLink})");
-
-                await member.SendMessageAsync(embed);
-            }
-        }
-
         public static string GetBadges(DiscordUser user)
         {
             string badges = "";
@@ -141,6 +98,102 @@
             }
 
             return badges.Trim();
+        }
+
+        public static async Task KeywordCheck(DiscordMessage message)
+        {
+            if (message.Author.Id == Program.discord.CurrentUser.Id)
+                return;
+
+            Owner.Private ownerPrivate = new();
+#if DEBUG
+            string keys = await ownerPrivate.RunCommand("redis-cli keys \\*");
+#else
+            string keys = await ownerPrivate.RunCommand("redis-cli -h redis keys \\*");
+#endif
+            keys = Regex.Replace(keys, @".*: ```", "").Replace("`", "");
+            string[] splitKeys = keys.Replace("\r", "").Split("\n");
+            List<ulong> userIds = new();
+            foreach (string key in splitKeys)
+            {
+                if (key == "")
+                    continue;
+                userIds.Add(Convert.ToUInt64(key));
+            }
+
+            foreach (ulong id in userIds)
+            {
+                var data = await Program.db.HashGetAllAsync(id.ToString());
+                foreach (var field in data)
+                {
+                    if (message.Author == await Program.discord.GetUserAsync(id))
+                        break;
+
+                    KeywordConfig fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+                    if (fieldValue.IgnoreList.Contains(message.Author.Id))
+                        continue;
+
+                    if (fieldValue.IgnoreBots == true && message.Author.IsBot)
+                        continue;
+
+                    DiscordMember member;
+                    try
+                    {
+                        member = await message.Channel.Guild.GetMemberAsync(id);
+                    }
+                    catch
+                    {
+                        // User is not in guild. Skip.
+                        break;
+                    }
+                    if (!message.Channel.PermissionsFor(member).HasPermission(Permissions.AccessChannels))
+                        break;
+
+                    if (message.Content.ToLower().Contains(field.Name))
+                    {
+                        await KeywordAlert(id, message, field.Name);
+                        return;
+                    }
+                }
+            }
+        }
+
+        public static async Task KeywordAlert(ulong targetUserId, DiscordMessage message, string keyword)
+        {
+            DiscordMember member;
+            try
+            {
+                member = await message.Channel.Guild.GetMemberAsync(targetUserId);
+            }
+            catch
+            {
+                // User is not in guild. Skip.
+                return;
+            }
+
+            DiscordEmbedBuilder embed = new()
+            {
+                Color = new DiscordColor("#7287fd"),
+                Title = $"Tracked keyword \"{keyword}\" triggered!",
+                Description = message.Content
+            };
+
+            embed.AddField("Author ID", $"{message.Author.Id}", true);
+            embed.AddField("Author Mention", $"{message.Author.Mention}", true);
+            
+            if (message.Channel.IsPrivate)
+                embed.AddField("Channel", $"Message sent in DMs.");
+            else
+                embed.AddField("Channel", $"{message.Channel.Mention} in {message.Channel.Guild.Name} | [Jump Link]({message.JumpLink})");
+            
+            try
+            {
+                await member.SendMessageAsync(embed);
+            }
+            catch
+            {
+                // User has DMs disabled.
+            }
         }
     }
 }
