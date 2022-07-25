@@ -8,6 +8,7 @@
             [SlashCommand("add", "Track a new keyword.")]
             public static async Task TrackAdd(InteractionContext ctx,
                 [Option("keyword", "The keyword or phrase to track.")] string keyword,
+                [Option("match_whole_word", "Whether you want to match the keyword only when it is a whole word. Defaults to False.")] bool matchWholeWord = false,
                 [Option("ignore_bots", "Whether to ignore messages from bots. Defaults to True.")] bool ignoreBots = true,
                 [Option("ignore_list", "Users to ignore. Use IDs and/or mentions. Separate with spaces.")] string ignoreList = null)
             {
@@ -50,21 +51,13 @@
 
                 KeywordConfig keywordConfig = new()
                 {
+                    MatchWholeWord = matchWholeWord,
                     IgnoreBots = ignoreBots,
                     IgnoreList = usersToIgnore
                 };
 
                 await Program.db.HashSetAsync(ctx.User.Id.ToString(), keyword, JsonConvert.SerializeObject(keywordConfig));
-                string response = $"Tracking for \"{keyword}\" set up successfully. ";
-                if (ignoreBots)
-                {
-                    response += "Bots will be ignored.";
-                }
-                else
-                {
-                    response += "Bots will not be ignored, unless you specified any you would like to ignore specifically.";
-                }
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response).AsEphemeral(true));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Tracking for \"{keyword}\" set up successfully.").AsEphemeral(true));
             }
 
             [SlashCommand("list", "List tracked keywords.")]
@@ -96,9 +89,12 @@
                         ignoredUserMentions = " None\n";
                     }
 
+                    string matchWholeWord = fieldValue.MatchWholeWord.ToString().Trim();
+
                     response += $"**{field.Name}**\n"
                         + $"Ignore Bots: {fieldValue.IgnoreBots}\n"
-                        + $"Ignored Users:{ignoredUserMentions}\n";
+                        + $"Ignored Users:{ignoredUserMentions}"
+                        + $"Match Whole Word: {matchWholeWord}\n\n";
                 }
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response.Trim()).AsEphemeral(true));
@@ -118,6 +114,9 @@
 
     public class KeywordConfig
     {
+        [JsonProperty("matchWholeWord")]
+        public bool MatchWholeWord { get; set; }
+
         [JsonProperty("ignoreBots")]
         public bool IgnoreBots { get; set; }
 

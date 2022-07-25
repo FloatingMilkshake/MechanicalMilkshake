@@ -107,7 +107,7 @@
 
             Owner.Private ownerPrivate = new();
 #if DEBUG
-            string keys = await ownerPrivate.RunCommand("redis-cli keys \\*");
+            string keys = await ownerPrivate.RunCommand("redis-cli keys *");
 #else
             string keys = await ownerPrivate.RunCommand("redis-cli -h redis keys \\*");
 #endif
@@ -124,15 +124,21 @@
             foreach (ulong id in userIds)
             {
                 var data = await Program.db.HashGetAllAsync(id.ToString());
+                // For each keyword in the user's list of tracked keywords
                 foreach (var field in data)
                 {
+                    // Checks
+
+                    // If message was sent by (this) bot, ignore
                     if (message.Author == await Program.discord.GetUserAsync(id))
                         break;
 
+                    // If message was sent by a user in the list of users to ignore for this keyword, ignore
                     KeywordConfig fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
                     if (fieldValue.IgnoreList.Contains(message.Author.Id))
                         continue;
 
+                    // If message was sent by a bot and bots should be ignored for this keyword, ignore
                     if (fieldValue.IgnoreBots == true && message.Author.IsBot)
                         continue;
 
@@ -146,13 +152,29 @@
                         // User is not in guild. Skip.
                         break;
                     }
+
+                    // Don't DM the user if their keyword was mentioned in a channel they do not have permissions to view.
+                    // If we don't do this we may leak private channels, which - even if the user might want to - I don't want to be doing.
                     if (!message.Channel.PermissionsFor(member).HasPermission(Permissions.AccessChannels))
                         break;
 
-                    if (message.Content.ToLower().Contains(field.Name))
+                    // If keyword is set to only match whole word, use regex to check
+                    if (fieldValue.MatchWholeWord)
                     {
-                        await KeywordAlert(id, message, field.Name);
-                        return;
+                        if (Regex.IsMatch(message.Content.ToLower(), $"\\b{field.Name}\\b"))
+                        {
+                            await KeywordAlert(id, message, field.Name);
+                            return;
+                        }
+                    }
+                    // Otherwise, use a simple .Contains()
+                    else
+                    {
+                        if (message.Content.ToLower().Contains(field.Name))
+                        {
+                            await KeywordAlert(id, message, field.Name);
+                            return;
+                        }
                     }
                 }
             }
