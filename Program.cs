@@ -144,6 +144,7 @@
                 slash.RegisterCommands<Utility>(configjson.DevServerId);
                 slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.DevServerId);
                 slash.RegisterCommands<KeywordTracking>(configjson.DevServerId);
+                slash.RegisterCommands<Reminders>(configjson.DevServerId);
                 Console.WriteLine("Slash commands registered for debugging.");
 
                 // Register slash commands globally for 'production' bot
@@ -154,6 +155,7 @@
                 slash.RegisterCommands<Mod>();
                 slash.RegisterCommands<Utility>();
                 slash.RegisterCommands<KeywordTracking>();
+                slash.RegisterCommands<Reminders>();
                 Console.WriteLine("Slash commands registered globally.");
             
 // Register slash commands for per-server features in respective servers
@@ -212,6 +214,15 @@
                 {
                     await Checks.PackageUpdateCheck();
                     await Task.Delay(21600000); // 6 hours
+                }
+            });
+
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    await Checks.ReminderCheck();
+                    await Task.Delay(10000); // 10 seconds
                 }
             });
 

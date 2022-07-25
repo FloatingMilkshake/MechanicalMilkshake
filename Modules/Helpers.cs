@@ -118,7 +118,11 @@
             {
                 if (key == "")
                     continue;
-                userIds.Add(Convert.ToUInt64(key));
+                Regex idRegex = new("[0-9]+");
+                if (idRegex.IsMatch(key))
+                {
+                    userIds.Add(Convert.ToUInt64(key));
+                }
             }
 
             foreach (ulong id in userIds)

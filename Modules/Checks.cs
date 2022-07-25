@@ -100,5 +100,32 @@
                 await Program.homeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{response}");
             }
         }
+
+        public static async Task ReminderCheck()
+        {
+            var reminders = await Program.db.HashGetAllAsync("reminders");
+
+            foreach (var reminder in reminders)
+            {
+                var reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
+
+                if (reminderData.ReminderTime <= DateTime.Now)
+                {
+                    long setTime = ((DateTimeOffset)reminderData.SetTime).ToUnixTimeSeconds();
+                    DiscordEmbedBuilder embed = new()
+                    {
+                        Color = new DiscordColor("#7287fd"),
+                        Title = $"Reminder from <t:{setTime}:R>",
+                        Description = $"{reminderData.ReminderText}"
+                    };
+                    embed.AddField("Context", $"[Jump Link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId})");
+
+                    DiscordChannel targetChannel = await Program.discord.GetChannelAsync(reminderData.ChannelId);
+                    await targetChannel.SendMessageAsync($"<@{reminderData.UserId}>, I have a reminder for you:", embed);
+
+                    await Program.db.HashDeleteAsync("reminders", reminderData.ReminderId);
+                }
+            }
+        }
     }
 }
