@@ -721,6 +721,12 @@
                 embed.AddField("Server Booster", boostingSince);
             }
 
+            string badges = Helpers.GetBadges(ctx.TargetUser);
+            if (badges != "")
+            {
+                embed.AddField("Badges", badges);
+            }
+
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"User Info for **{member.Username}#{member.Discriminator}**").AddEmbed(embed).AsEphemeral(true));
         }
 
@@ -761,6 +767,12 @@
                 .WithThumbnail($"{ctx.TargetUser.AvatarUrl}")
                 .AddField("ID", $"{ctx.TargetUser.Id}")
                 .AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
+
+            string badges = Helpers.GetBadges(ctx.TargetUser);
+            if (badges != "")
+            {
+                embed.AddField("Badges", badges);
+            }
 
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"Information about **{ctx.TargetUser.Username}#{ctx.TargetUser.Discriminator}**:").AddEmbed(embed).AsEphemeral(true));
         }
