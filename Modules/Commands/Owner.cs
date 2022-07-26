@@ -592,6 +592,9 @@
 
                 await ctx.Client.UpdateStatusAsync(activity, userStatus);
 
+                await Program.db.HashSetAsync("customStatus", "activity", JsonConvert.SerializeObject(activity));
+                await Program.db.HashSetAsync("customStatus", "userStatus", JsonConvert.SerializeObject(userStatus));
+
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Activity set successfully!"));
             }
 
