@@ -98,6 +98,11 @@
                         + $"Match Whole Word: {matchWholeWord}\n\n";
                 }
 
+                if (string.IsNullOrWhiteSpace(response))
+                {
+                    response = "You don't have any tracked keywords! Add some with `/track add`.";
+                }
+
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response.Trim()).AsEphemeral(true));
             }
 
