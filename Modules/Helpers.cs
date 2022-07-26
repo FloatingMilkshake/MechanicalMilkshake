@@ -105,80 +105,62 @@
             if (message.Author.Id == Program.discord.CurrentUser.Id)
                 return;
 
-            Owner.Private ownerPrivate = new();
-#if DEBUG
-            string keys = await ownerPrivate.RunCommand("redis-cli keys *");
-#else
-            string keys = await ownerPrivate.RunCommand("redis-cli -h redis keys \\*");
-#endif
-            keys = Regex.Replace(keys, @".*: ```", "").Replace("`", "");
-            string[] splitKeys = keys.Replace("\r", "").Split("\n");
-            List<ulong> userIds = new();
-            foreach (string key in splitKeys)
+            var fields = await Program.db.HashGetAllAsync("keywords");
+
+            foreach (var field in fields)
             {
-                if (key == "")
+                // Checks
+
+                KeywordConfig fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+
+                // If message was sent by (this) bot, ignore
+                if (message.Author.Id == Program.discord.CurrentUser.Id)
+                    break;
+
+                // Ignore messages sent by self
+                if (message.Author.Id == fieldValue.UserId)
                     continue;
-                Regex idRegex = new("[0-9]+");
-                if (idRegex.IsMatch(key))
+
+                // If message was sent by a user in the list of users to ignore for this keyword, ignore
+                if (fieldValue.IgnoreList.Contains(message.Author.Id))
+                    continue;
+
+                // If message was sent by a bot and bots should be ignored for this keyword, ignore
+                if (fieldValue.IgnoreBots == true && message.Author.IsBot)
+                    continue;
+
+                DiscordMember member;
+                try
                 {
-                    userIds.Add(Convert.ToUInt64(key));
+                    member = await message.Channel.Guild.GetMemberAsync(fieldValue.UserId);
                 }
-            }
-
-            foreach (ulong id in userIds)
-            {
-                var data = await Program.db.HashGetAllAsync(id.ToString());
-                // For each keyword in the user's list of tracked keywords
-                foreach (var field in data)
+                catch
                 {
-                    // Checks
+                    // User is not in guild. Skip.
+                    break;
+                }
 
-                    // If message was sent by (this) bot, ignore
-                    if (message.Author == await Program.discord.GetUserAsync(id))
-                        break;
+                // Don't DM the user if their keyword was mentioned in a channel they do not have permissions to view.
+                // If we don't do this we may leak private channels, which - even if the user might want to - I don't want to be doing.
+                if (!message.Channel.PermissionsFor(member).HasPermission(Permissions.AccessChannels))
+                    break;
 
-                    // If message was sent by a user in the list of users to ignore for this keyword, ignore
-                    KeywordConfig fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
-                    if (fieldValue.IgnoreList.Contains(message.Author.Id))
-                        continue;
-
-                    // If message was sent by a bot and bots should be ignored for this keyword, ignore
-                    if (fieldValue.IgnoreBots == true && message.Author.IsBot)
-                        continue;
-
-                    DiscordMember member;
-                    try
+                // If keyword is set to only match whole word, use regex to check
+                if (fieldValue.MatchWholeWord)
+                {
+                    if (Regex.IsMatch(message.Content.ToLower(), $"\\b{field.Name}\\b"))
                     {
-                        member = await message.Channel.Guild.GetMemberAsync(id);
+                        await KeywordAlert(fieldValue.UserId, message, field.Name);
+                        return;
                     }
-                    catch
+                }
+                // Otherwise, use a simple .Contains()
+                else
+                {
+                    if (message.Content.ToLower().Contains(fieldValue.Keyword))
                     {
-                        // User is not in guild. Skip.
-                        break;
-                    }
-
-                    // Don't DM the user if their keyword was mentioned in a channel they do not have permissions to view.
-                    // If we don't do this we may leak private channels, which - even if the user might want to - I don't want to be doing.
-                    if (!message.Channel.PermissionsFor(member).HasPermission(Permissions.AccessChannels))
-                        break;
-
-                    // If keyword is set to only match whole word, use regex to check
-                    if (fieldValue.MatchWholeWord)
-                    {
-                        if (Regex.IsMatch(message.Content.ToLower(), $"\\b{field.Name}\\b"))
-                        {
-                            await KeywordAlert(id, message, field.Name);
-                            return;
-                        }
-                    }
-                    // Otherwise, use a simple .Contains()
-                    else
-                    {
-                        if (message.Content.ToLower().Contains(field.Name))
-                        {
-                            await KeywordAlert(id, message, field.Name);
-                            return;
-                        }
+                        await KeywordAlert(fieldValue.UserId, message, field.Name);
+                        return;
                     }
                 }
             }

@@ -51,12 +51,15 @@
 
                 KeywordConfig keywordConfig = new()
                 {
+                    Keyword = keyword,
+                    UserId = ctx.User.Id,
                     MatchWholeWord = matchWholeWord,
                     IgnoreBots = ignoreBots,
-                    IgnoreList = usersToIgnore
+                    IgnoreList = usersToIgnore,
+                    Id = ctx.InteractionId
                 };
 
-                await Program.db.HashSetAsync(ctx.User.Id.ToString(), keyword, JsonConvert.SerializeObject(keywordConfig));
+                await Program.db.HashSetAsync("keywords", ctx.InteractionId, JsonConvert.SerializeObject(keywordConfig));
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Tracking for \"{keyword}\" set up successfully.").AsEphemeral(true));
             }
 
@@ -65,17 +68,15 @@
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
 
-                var data = await Program.db.HashGetAllAsync(ctx.User.Id.ToString());
-                if (data.Length == 0)
-                {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You don't have any tracked keywords! Add some with `/track add`.").AsEphemeral(true));
-                    return;
-                }
+                var data = await Program.db.HashGetAllAsync("keywords");
 
                 string response = "";
                 foreach (var field in data)
                 {
                     KeywordConfig fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+
+                    if (fieldValue.UserId != ctx.User.Id)
+                        continue;
 
                     string ignoredUserMentions = "\n";
                     foreach (var userToIgnore in fieldValue.IgnoreList)
@@ -91,7 +92,7 @@
 
                     string matchWholeWord = fieldValue.MatchWholeWord.ToString().Trim();
 
-                    response += $"**{field.Name}**\n"
+                    response += $"**{fieldValue.Keyword}**\n"
                         + $"Ignore Bots: {fieldValue.IgnoreBots}\n"
                         + $"Ignored Users:{ignoredUserMentions}"
                         + $"Match Whole Word: {matchWholeWord}\n\n";
@@ -105,6 +106,15 @@
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
 
+                var data = await Program.db.HashGetAllAsync("reminders");
+                foreach (var field in data)
+                {
+                    KeywordConfig keywordConfig = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+                    if (keywordConfig.UserId == ctx.User.Id && keywordConfig.Keyword == keyword)
+                    {
+                        await Program.db.HashDeleteAsync("keywords", keywordConfig.Id);
+                    }
+                }
                 await Program.db.HashDeleteAsync(ctx.User.Id.ToString(), keyword);
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Tracked keyword \"{keyword}\" deleted successfully.").AsEphemeral(true));
@@ -114,6 +124,12 @@
 
     public class KeywordConfig
     {
+        [JsonProperty("keyword")]
+        public string Keyword { get; set; }
+
+        [JsonProperty("userId")]
+        public ulong UserId { get; set; }
+
         [JsonProperty("matchWholeWord")]
         public bool MatchWholeWord { get; set; }
 
@@ -122,5 +138,8 @@
 
         [JsonProperty("ignoreList")]
         public List<ulong> IgnoreList { get; set; }
+
+        [JsonProperty("id")]
+        public ulong Id { get; set; }
     }
 }
