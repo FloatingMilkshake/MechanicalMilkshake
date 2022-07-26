@@ -163,7 +163,7 @@
                 {
                     if (message.Content.ToLower().Contains(fieldValue.Keyword))
                     {
-                        await KeywordAlert(fieldValue.UserId, message, field.Name);
+                        await KeywordAlert(fieldValue.UserId, message, fieldValue.Keyword);
                         return;
                     }
                 }
