@@ -96,6 +96,10 @@
             {
                 badges += $"<:verifiedBot1:{Program.userFlagEmoji.GetValueOrDefault("verifiedBot1")}><:verifiedBot2:{Program.userFlagEmoji.GetValueOrDefault("verifiedBot2")}> Verified Bot\n";
             }
+            if (user.Flags.Value.HasFlag(UserFlags.EarlySupporter))
+            {
+                badges += $"<:earlySupporter:{Program.userFlagEmoji.GetValueOrDefault("earlySupporter")}> Early Supporter\n";
+            }
 
             return badges.Trim();
         }

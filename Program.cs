@@ -30,7 +30,8 @@
             {"certifiedModerator", 1000168736789118976},
             {"partneredServerOwner", 1000168744192053298},
             {"verifiedBot1", 1000229381563744397},
-            {"verifiedBot2", 1000229382431977582}
+            {"verifiedBot2", 1000229382431977582},
+            {"earlySupporter", 1001317583124971582}
         };
 
         // Use a custom help message to show that there are no CommandsNext commands since they
