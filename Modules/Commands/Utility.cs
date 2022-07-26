@@ -504,20 +504,20 @@
 
             if (staticEmoji != "")
             {
-                response += $"Static Emoji:\n{staticEmoji}";
+                response += $"Static Emoji:\n{staticEmoji}\n\n";
             }
             if (animatedEmoji != "")
             {
-                response += $"Animated Emoji:\n{animatedEmoji}";
+                response += $"Animated Emoji:\n{animatedEmoji}\n\n";
             }
 
             if (copySuccess)
             {
-                response += "\n\nThese emoji have been copied to this server.";
+                response += "These emoji have been copied to this server.";
             }
             if (copyFail)
             {
-                response += "\n\nI couldn't copy these emoji to this server! Make sure you and I both have the \"Manage Emojis and Stickers\" permission.";
+                response += "I couldn't copy these emoji to this server! Make sure you and I both have the \"Manage Emojis and Stickers\" permission.";
             }
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
