@@ -14,6 +14,20 @@
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
 
+                HashEntry[] fields = await Program.db.HashGetAllAsync("keywords");
+                foreach (HashEntry field in fields)
+                {
+                    KeywordConfig fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+
+                    // If the keyword is already being tracked, delete the current entry
+                    // This way we don't end up with duplicate entries for keywords
+                    if (fieldValue.Keyword == keyword)
+                    {
+                        await Program.db.HashDeleteAsync("keywords", fieldValue.Id);
+                        break;
+                    }
+                }
+
                 List<ulong> usersToIgnore = new();
                 if (ignoreList is not null)
                 {
@@ -111,7 +125,7 @@
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
 
-                HashEntry[] data = await Program.db.HashGetAllAsync("reminders");
+                HashEntry[] data = await Program.db.HashGetAllAsync("keywords");
                 foreach (HashEntry field in data)
                 {
                     KeywordConfig keywordConfig = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
@@ -120,7 +134,6 @@
                         await Program.db.HashDeleteAsync("keywords", keywordConfig.Id);
                     }
                 }
-                await Program.db.HashDeleteAsync(ctx.User.Id.ToString(), keyword);
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Tracked keyword \"{keyword}\" deleted successfully.").AsEphemeral(true));
             }
