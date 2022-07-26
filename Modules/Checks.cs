@@ -103,11 +103,11 @@
 
         public static async Task ReminderCheck()
         {
-            var reminders = await Program.db.HashGetAllAsync("reminders");
+            HashEntry[] reminders = await Program.db.HashGetAllAsync("reminders");
 
-            foreach (var reminder in reminders)
+            foreach (HashEntry reminder in reminders)
             {
-                var reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
+                Reminder reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
 
                 if (reminderData.ReminderTime <= DateTime.Now)
                 {

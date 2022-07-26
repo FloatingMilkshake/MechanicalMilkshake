@@ -491,7 +491,7 @@
                     }
 
                     Stream stream = await Program.httpClient.GetStreamAsync(emoji.Value.Url);
-                    using (var ms = new MemoryStream())
+                    using (MemoryStream ms = new())
                     {
                         stream.CopyTo(ms);
                         ms.Position = 0;

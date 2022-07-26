@@ -18,7 +18,7 @@
                 if (ignoreList is not null)
                 {
                     string[] users = ignoreList.Split(' ');
-                    foreach (var user in users)
+                    foreach (string user in users)
                     {
                         string id;
                         // Mention
@@ -68,10 +68,10 @@
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
 
-                var data = await Program.db.HashGetAllAsync("keywords");
+                HashEntry[] data = await Program.db.HashGetAllAsync("keywords");
 
                 string response = "";
-                foreach (var field in data)
+                foreach (HashEntry field in data)
                 {
                     KeywordConfig fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
 
@@ -79,7 +79,7 @@
                         continue;
 
                     string ignoredUserMentions = "\n";
-                    foreach (var userToIgnore in fieldValue.IgnoreList)
+                    foreach (ulong userToIgnore in fieldValue.IgnoreList)
                     {
                         DiscordUser user = await Program.discord.GetUserAsync(userToIgnore);
                         ignoredUserMentions += $"- {user.Mention}\n";
@@ -106,8 +106,8 @@
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
 
-                var data = await Program.db.HashGetAllAsync("reminders");
-                foreach (var field in data)
+                HashEntry[] data = await Program.db.HashGetAllAsync("reminders");
+                foreach (HashEntry field in data)
                 {
                     KeywordConfig keywordConfig = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
                     if (keywordConfig.UserId == ctx.User.Id && keywordConfig.Keyword == keyword)

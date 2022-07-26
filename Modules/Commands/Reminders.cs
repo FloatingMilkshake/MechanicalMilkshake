@@ -66,16 +66,16 @@
 
                 List<Reminder> userReminders = new();
 
-                var reminders = await Program.db.HashGetAllAsync("reminders");
+                HashEntry[] reminders = await Program.db.HashGetAllAsync("reminders");
                 if (reminders.Length == 0)
                 {
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You don't have any reminders! Set one with `/reminder set`.").AsEphemeral(true));
                     return;
                 }
 
-                foreach (var reminder in reminders)
+                foreach (HashEntry reminder in reminders)
                 {
-                    var reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
+                    Reminder reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
 
                     if (reminderData.UserId == ctx.User.Id)
                     {
@@ -86,10 +86,10 @@
 
                 string output = "";
                 // Now we have a list of only the reminders that belong to the user using the command.
-                foreach (var reminder in userReminders)
+                foreach (Reminder reminder in userReminders)
                 {
                     long setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
-                    long reminderTime = ((DateTimeOffset) reminder.ReminderTime).ToUnixTimeSeconds();
+                    long reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
 
                     Regex idRegex = new("[0-9]+");
                     string guildName;

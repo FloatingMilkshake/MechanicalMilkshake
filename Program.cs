@@ -16,7 +16,7 @@
         public static ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("redis");
 #endif
         public static IDatabase db = redis.GetDatabase();
-        
+
         public static Dictionary<string, ulong> userFlagEmoji = new()
         {
             {"earlyVerifiedBotDeveloper", 1000168738970144779},

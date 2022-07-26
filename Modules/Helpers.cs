@@ -105,9 +105,9 @@
             if (message.Author.Id == Program.discord.CurrentUser.Id)
                 return;
 
-            var fields = await Program.db.HashGetAllAsync("keywords");
+            HashEntry[] fields = await Program.db.HashGetAllAsync("keywords");
 
-            foreach (var field in fields)
+            foreach (HashEntry field in fields)
             {
                 // Checks
 
@@ -188,12 +188,12 @@
 
             embed.AddField("Author ID", $"{message.Author.Id}", true);
             embed.AddField("Author Mention", $"{message.Author.Mention}", true);
-            
+
             if (message.Channel.IsPrivate)
                 embed.AddField("Channel", $"Message sent in DMs.");
             else
                 embed.AddField("Channel", $"{message.Channel.Mention} in {message.Channel.Guild.Name} | [Jump Link]({message.JumpLink})");
-            
+
             try
             {
                 await member.SendMessageAsync(embed);
