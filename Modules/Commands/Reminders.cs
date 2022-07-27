@@ -40,12 +40,15 @@
                     guildId = ctx.Guild.Id.ToString();
                 }
 
+                Random random = new();
+                int reminderId = random.Next(1000, 9999);
+
                 Reminder reminder = new()
                 {
                     UserId = ctx.User.Id,
                     ChannelId = ctx.Channel.Id,
                     GuildId = guildId,
-                    ReminderId = ctx.InteractionId,
+                    ReminderId = reminderId,
                     ReminderText = text,
                     ReminderTime = reminderTime,
                     SetTime = DateTime.Now
@@ -55,8 +58,7 @@
                 DiscordMessage message = await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!"));
                 reminder.MessageId = message.Id;
 
-                await Program.db.HashSetAsync("reminders", ctx.InteractionId, JsonConvert.SerializeObject(reminder));
-
+                await Program.db.HashSetAsync("reminders", reminderId, JsonConvert.SerializeObject(reminder));
             }
 
             [SlashCommand("list", "List your reminders.")]
@@ -192,7 +194,7 @@
         public ulong MessageId { get; set; }
 
         [JsonProperty("reminderId")]
-        public ulong ReminderId { get; set; }
+        public int ReminderId { get; set; }
 
         [JsonProperty("reminderText")]
         public string ReminderText { get; set; }
