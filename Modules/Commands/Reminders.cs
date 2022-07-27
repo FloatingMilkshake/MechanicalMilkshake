@@ -43,6 +43,16 @@
                 Random random = new();
                 int reminderId = random.Next(1000, 9999);
 
+                var reminders = await Program.db.HashGetAllAsync("reminders");
+                foreach (var rem in reminders)
+                {
+                    while (rem.Name == reminderId)
+                    {
+                        reminderId = random.Next(1000, 9999);
+                        // This is to avoid the potential for duplicate reminders
+                    }
+                }
+
                 Reminder reminder = new()
                 {
                     UserId = ctx.User.Id,
