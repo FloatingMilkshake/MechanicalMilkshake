@@ -132,23 +132,30 @@
             }
 
             [SlashCommand("delete", "Delete a reminder using its unique ID.")]
-            public async Task DeleteReminder(InteractionContext ctx, [Option("reminder", "The ID of the reminder to delete. You can get this with `/reminder list`.")] string reminderToDelete)
+            public async Task DeleteReminder(InteractionContext ctx, [Option("reminder", "The ID of the reminder to delete. You can get this with `/reminder list`.")] long reminderToDelete)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
 
-                ulong reminderId;
-                try
+                var reminders = await Program.db.HashGetAllAsync("reminders");
+                bool reminderExists = false;
+                foreach (var reminder in reminders)
                 {
-                    reminderId = Convert.ToUInt64(reminderToDelete);
-                }
-                catch
-                {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("The reminder ID you provided isn't correct! You can get a reminder ID with `/reminder list`. It should look something like this: `1001230509856260276`").AsEphemeral(true));
-                    return;
+                    if (reminder.Name.ToString().Contains(reminderToDelete.ToString()))
+                    {
+                        reminderExists = true;
+                        break;
+                    }
                 }
 
-                await Program.db.HashDeleteAsync("reminders", reminderToDelete.ToString());
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Reminder deleted successfully.").AsEphemeral(true));
+                if (reminderExists)
+                {
+                    await Program.db.HashDeleteAsync("reminders", reminderToDelete);
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Reminder deleted successfully.").AsEphemeral(true));
+                }
+                else
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find a reminder with that ID! Make sure it's correct. You can check the IDs of your reminders with `/reminder list`.").AsEphemeral(true));
+                }
             }
 
             [SlashCommand("modify", "Modify an existing reminder using its unique ID.")]
