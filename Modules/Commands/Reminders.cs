@@ -79,12 +79,6 @@
                 List<Reminder> userReminders = new();
 
                 HashEntry[] reminders = await Program.db.HashGetAllAsync("reminders");
-                if (reminders.Length == 0)
-                {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You don't have any reminders! Set one with `/reminder set`.").AsEphemeral(true));
-                    return;
-                }
-
                 foreach (HashEntry reminder in reminders)
                 {
                     Reminder reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
@@ -97,7 +91,15 @@
                 }
 
                 string output = "";
+                
                 // Now we have a list of only the reminders that belong to the user using the command.
+
+                if (userReminders.Count == 0)
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You don't have any reminders! Set one with `/reminder set`.").AsEphemeral(true));
+                    return;
+                }
+
                 foreach (Reminder reminder in userReminders)
                 {
                     long setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
