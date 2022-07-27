@@ -174,6 +174,12 @@
 
                 await Program.db.HashSetAsync("reminders", reminder.ReminderId, JsonConvert.SerializeObject(reminder));
 
+                DiscordChannel reminderChannel = await Program.discord.GetChannelAsync(reminder.ChannelId);
+                DiscordMessage reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
+
+                long unixTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
+                await reminderMessage.ModifyAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!");
+
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Reminder modified successfully.").AsEphemeral(true));
             }
         }
