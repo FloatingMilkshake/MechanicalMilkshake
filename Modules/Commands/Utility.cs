@@ -471,6 +471,7 @@
 
             bool copySuccess = false;
             bool copyFail = false;
+            bool dm = false;
 
             foreach (KeyValuePair<ulong, DiscordEmoji> emoji in guild.Emojis)
             {
@@ -485,6 +486,12 @@
 
                 if (addToServer)
                 {
+                    if (ctx.Channel.IsPrivate)
+                    {
+                        dm = true;
+                        continue;
+                    }
+
                     if (!ctx.Member.Permissions.HasPermission(Permissions.ManageEmojis) || !ctx.Guild.CurrentMember.Permissions.HasPermission(Permissions.ManageEmojis))
                     {
                         copyFail = true;
@@ -518,6 +525,10 @@
             if (copyFail)
             {
                 response += "I couldn't copy these emoji to this server! Make sure you and I both have the \"Manage Emojis and Stickers\" permission.";
+            }
+            if (dm)
+            {
+                response += "I can't add emoji when you use this command in DMs! Please use it in the server you want to add the emoji to.";
             }
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
