@@ -647,6 +647,45 @@
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
         }
 
+        [SlashCommand("Version", "Show version information.")]
+        public async Task CommitInfo(InteractionContext ctx)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            string commitHash = "";
+            if (File.Exists("CommitHash.txt"))
+            {
+                StreamReader readHash = new("CommitHash.txt");
+                commitHash = readHash.ReadToEnd().Trim();
+            }
+            if (commitHash == "")
+            {
+                commitHash = "dev";
+            }
+
+            string commitMessage = "";
+            if (File.Exists("CommitMessage.txt"))
+            {
+                StreamReader readMessage = new("CommitMessage.txt");
+                commitMessage = readMessage.ReadToEnd().Trim();
+            }
+            if (commitMessage == "")
+            {
+                commitMessage = "dev";
+            }
+
+            string remoteUrl;
+            string commitUrl = "";
+            if (File.Exists("RemoteUrl.txt"))
+            {
+                StreamReader readUrl = new("RemoteUrl.txt");
+                remoteUrl = $"{readUrl.ReadToEnd().Trim()}";
+                commitUrl = $"{remoteUrl}/commit/{commitHash}";
+            }
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Running commit [{commitHash}]({commitUrl}): \"{commitMessage}\""));
+        }
+
         // Begin context menu commands
 
         [ContextMenu(ApplicationCommandType.UserContextMenu, "User Info")]
