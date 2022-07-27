@@ -105,10 +105,11 @@
                         guildName = "DMs";
                     }
 
+                    string reminderLink = $"<https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}>";
+
                     output += $"`{reminder.ReminderId}`:\n"
                         + $"> {reminder.ReminderText}\n"
-                        + $"Set <t:{setTime}:R> to go off <t:{reminderTime}:R>\n"
-                        + $"Set in {guildName}";
+                        + $"[Set <t:{setTime}:R>]({reminderLink}) to go off <t:{reminderTime}:R> in {guildName}";
 
                     if (guildName != "DMs")
                     {
