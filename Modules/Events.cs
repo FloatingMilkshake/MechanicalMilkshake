@@ -387,60 +387,37 @@
 
                     if (client.CurrentApplication.Owners.Contains(e.Author) && e.Message.Content.StartsWith("sendto"))
                     {
-                        Regex idPattern = new("[0-9]+");
-                        bool idMatchSuccess = false;
-                        string idMatch = "";
-                        if (idPattern.IsMatch(e.Message.Content))
-                        {
-                            idMatch = idPattern.Match(e.Message.Content).ToString();
-                            idMatchSuccess = true;
-                        }
-
                         Regex usernamePattern = new(".*#[0-9]{4}");
-                        bool usernameMatchSuccess = false;
-                        string usernameMatch = "";
-                        if (usernamePattern.IsMatch(e.Message.Content))
-                        {
-                            usernameMatch = usernamePattern.Match(e.Message.Content).ToString();
-                            usernameMatchSuccess = true;
-                        }
-
+                        Regex idPattern = new("[0-9]{5,}");
                         DiscordChannel targetChannel = default;
                         DiscordUser targetUser = default;
                         DiscordMember targetMember = default;
-                        ulong targetId = default;
 
-                        if (idMatchSuccess)
+                        if (usernamePattern.IsMatch(e.Message.Content))
                         {
-                            try
-                            {
-                                targetId = Convert.ToUInt64(idMatch);
-                            }
-                            catch (Exception ex)
-                            {
-                                await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                                    .WithContent($"Hmm, that doesn't look like a valid ID! Make sure it's a user or channel ID!\n```\n{ex.GetType()}: {ex.Message}\n```")
-                                    .WithReply(e.Message.Id));
-                                return;
-                            }
-                        }
-                        else if (usernameMatchSuccess)
-                        {
+                            string usernameMatch = usernamePattern.Match(e.Message.Content).ToString().Replace("sendto ", "").Trim();
+
                             DiscordGuild mutualServer = default;
                             foreach (KeyValuePair<ulong, DiscordGuild> guild in client.Guilds)
                             {
-                                DiscordGuild server = await client.GetGuildAsync(guild.Key);
-
-                                if (server.Members.ContainsKey(targetUser.Id))
+                                if (guild.Value.Members.Any(m => $"{m.Value.Username}#{m.Value.Discriminator}" == usernameMatch))
                                 {
-                                    mutualServer = await client.GetGuildAsync(server.Id);
+                                    mutualServer = await client.GetGuildAsync(guild.Value.Id);
                                     break;
                                 }
                             }
 
+                            if (mutualServer == default)
+                            {
+                                await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                                    .WithContent("I tried to DM that user, but I don't have any mutual servers with them so Discord wouldn't let me send it. Sorry!")
+                                    .WithReply(e.Message.Id));
+                                return;
+                            }
+
                             try
                             {
-                                targetMember = await mutualServer.GetMemberAsync(targetUser.Id);
+                                targetMember = mutualServer.Members.FirstOrDefault(m => $"{m.Value.Username}#{m.Value.Discriminator}" == usernameMatch).Value;
                             }
                             catch (Exception ex)
                             {
@@ -451,31 +428,33 @@
                             }
                             targetChannel = await targetMember.CreateDmChannelAsync();
                         }
+                        else if (idPattern.IsMatch(e.Message.Content))
+                        {
+                            try
+                            {
+                                targetChannel = await client.GetChannelAsync(Convert.ToUInt64(idPattern.Match(e.Message.Content).ToString()));
+                            }
+                            catch
+                            {
+                                try
+                                {
+                                    targetUser = await client.GetUserAsync(Convert.ToUInt64(idPattern.Match(e.Message.Content).ToString()));
+                                }
+                                catch (Exception ex)
+                                {
+                                    await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                                        .WithContent($"Hmm, that doesn't look like a valid ID! Make sure it's a user or channel ID!\n```\n{ex.GetType()}: {ex.Message}\n```")
+                                        .WithReply(e.Message.Id));
+                                    return;
+                                }
+                            }
+                        }
                         else
                         {
                             await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
                                 .WithContent("Hmm, I couldn't find an ID or username in your message, so I don't know who to send it to! Please include a user ID, channel ID, or username.")
                                 .WithReply(e.Message.Id));
-                        }
-
-
-                        try
-                        {
-                            targetChannel = await Program.discord.GetChannelAsync(targetId);
-                        }
-                        catch
-                        {
-                            try
-                            {
-                                targetUser = await Program.discord.GetUserAsync(targetId);
-                            }
-                            catch (Exception ex)
-                            {
-                                await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                                    .WithContent($"Hmm, I couldn't parse that ID! Make sure it's either a user ID or a channel ID and, if it's a channel ID, that I have permission to see the channel.\n```\n{ex.GetType()}: {ex.Message}\n```")
-                                    .WithReply(e.Message.Id));
-                                return;
-                            }
+                            return;
                         }
 
                         if (targetChannel == default)
@@ -506,9 +485,9 @@
                             targetChannel = await targetMember.CreateDmChannelAsync();
                         }
 
-                        Regex getContentPattern = new(@"[0-9]+.*");
-                        string content = getContentPattern.Match(e.Message.Content).ToString();
-                        content = content.Replace(idMatch, "").Trim();
+                        Regex getContentPattern = new(".*[0-9]+ ");
+                        Match getContentMatch = getContentPattern.Match(e.Message.Content);
+                        string content = e.Message.Content.Replace(getContentMatch.ToString(), "");
 
                         if (e.Message.Attachments.Any())
                         {
