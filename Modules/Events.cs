@@ -395,7 +395,7 @@
                             idMatch = idPattern.Match(e.Message.Content).ToString();
                             idMatchSuccess = true;
                         }
-                        
+
                         Regex usernamePattern = new(".*#[0-9]{4}");
                         bool usernameMatchSuccess = false;
                         string usernameMatch = "";
@@ -457,7 +457,7 @@
                                 .WithContent("Hmm, I couldn't find an ID or username in your message, so I don't know who to send it to! Please include a user ID, channel ID, or username.")
                                 .WithReply(e.Message.Id));
                         }
-                        
+
 
                         try
                         {

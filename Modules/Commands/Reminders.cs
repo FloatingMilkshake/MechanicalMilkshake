@@ -43,8 +43,8 @@
                 Random random = new();
                 int reminderId = random.Next(1000, 9999);
 
-                var reminders = await Program.db.HashGetAllAsync("reminders");
-                foreach (var rem in reminders)
+                HashEntry[] reminders = await Program.db.HashGetAllAsync("reminders");
+                foreach (HashEntry rem in reminders)
                 {
                     while (rem.Name == reminderId)
                     {
@@ -91,7 +91,7 @@
                 }
 
                 string output = "";
-                
+
                 // Now we have a list of only the reminders that belong to the user using the command.
 
                 if (userReminders.Count == 0)
@@ -138,9 +138,9 @@
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
 
-                var reminders = await Program.db.HashGetAllAsync("reminders");
+                HashEntry[] reminders = await Program.db.HashGetAllAsync("reminders");
                 bool reminderExists = false;
-                foreach (var reminder in reminders)
+                foreach (HashEntry reminder in reminders)
                 {
                     if (reminder.Name.ToString().Contains(reminderToDelete.ToString()))
                     {
