@@ -189,6 +189,7 @@
 
             // Register CommandsNext commands
             commands.RegisterCommands<PerServerFeatures.MessageCommands>();
+            commands.RegisterCommands<Owner.DebugCmds>();
 
             await discord.ConnectAsync();
 
