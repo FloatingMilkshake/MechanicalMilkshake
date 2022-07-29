@@ -247,4 +247,13 @@
             return Task.FromResult(Program.configjson.AuthorizedUsers.Contains(ctx.User.Id.ToString()));
         }
     }
+
+    // Message command version of [SlashRequireAuth]
+    public class RequireAuthAttribute : CheckBaseAttribute
+    {
+        public override Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
+        {
+            return Task.FromResult(Program.configjson.AuthorizedUsers.Contains(ctx.User.Id.ToString()));
+        }
+    }
 }

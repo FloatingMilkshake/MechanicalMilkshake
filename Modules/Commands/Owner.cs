@@ -2,6 +2,35 @@
 {
     public class Owner : ApplicationCommandModule
     {
+        [RequireAuth]
+        public class DebugCmds : BaseCommandModule
+        {
+            [Command("restart"), Description("Restart the bot if something is broken.")]
+            public async Task RestartCmd(CommandContext ctx)
+            {
+                try
+                {
+                    string dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
+                    if (string.IsNullOrWhiteSpace(dockerCheckFile))
+                    {
+                        await ctx.RespondAsync("The bot may not be running under Docker; this means that `/debug restart` will behave like `/debug shutdown`."
+                            + "\n\nOperation aborted. Use `/debug shutdown` if you wish to shut down the bot.");
+                        return;
+                    }
+                }
+                catch
+                {
+                    // /proc/self/cgroup could not be found, which means the bot is not running in Docker.
+                    await ctx.RespondAsync("The bot may not be running under Docker; this means that `/debug restart` will behave like `/debug shutdown`.)"
+                            + "\n\nOperation aborted. Use `/debug shutdown` if you wish to shut down the bot.");
+                    return;
+                }
+
+                await ctx.RespondAsync("Restarting...");
+                Environment.Exit(1);
+            }
+        }
+
         [SlashRequireAuth]
         public class Private : ApplicationCommandModule
         {
