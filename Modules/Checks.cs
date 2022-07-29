@@ -59,7 +59,7 @@
             Console.WriteLine($"[{DateTime.Now}] PackageUpdateCheck running.");
 #endif
             string updatesAvailableResponse = "";
-            string restartRequiredResponse = "A system restart is required to complete package updates.";
+            string restartRequiredResponse = "";
 
             Owner.Private ownerPrivate = new();
             bool updatesAvailable = false;
@@ -83,6 +83,11 @@
 #if DEBUG
             Console.WriteLine($"[{DateTime.Now}] [PackageUpdateCheck] Finished checking for updates on all hosts.");
 #endif
+
+            if (restartRequired)
+            {
+                restartRequiredResponse = "A system restart is required to complete package updates.";
+            }
 
             if (updatesAvailable || restartRequired)
             {
