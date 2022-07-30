@@ -317,10 +317,15 @@
                 }
                 catch
                 {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("I wasn't able to read that message! Make sure I have permisison to access it."));
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("I wasn't able to read that message! Make sure I have permission to access it."));
                 }
             }
 
+            if (string.IsNullOrWhiteSpace(message.Content))
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("That message doesn't have any text content! I can only parse the Markdown data from messages with content (not including embeds...maybe some time in the future?)"));
+                return;
+            }
 
             string msgContentEscaped = message.Content.Replace("`", @"\`");
             msgContentEscaped = msgContentEscaped.Replace("*", @"\*");
