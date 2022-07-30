@@ -118,10 +118,7 @@
             // Set up slash commands and CommandsNext
             SlashCommandsExtension slash = discord.UseSlashCommands();
 
-            CommandsNextExtension commands = discord.UseCommandsNext(new CommandsNextConfiguration
-            {
-                StringPrefixes = new[] { "!", "~", "-", "mm" }
-            });
+            CommandsNextExtension commands = discord.UseCommandsNext(new CommandsNextConfiguration { });
 
             // Use the custom help message set with CustomHelpFormatter
             commands.SetHelpFormatter<CustomHelpFormatter>();
