@@ -570,8 +570,77 @@
                 }
             }
 
-            [SlashCommand("setactivity", "Set the bot's activity.")]
-            public async Task SetActivity(InteractionContext ctx,
+            [SlashCommandGroup("activity", "Configure the bot's activity!")]
+            public class ActivityCmds
+            {
+                [SlashCommand("add", "Add a custom status message to the list that the bot cycles through, or modify an existing entry.")]
+                public async Task AddActivity(InteractionContext ctx,
+                    [Option("type", "The type of status (playing, watching, etc).")]
+                    [Choice("Playing", "playing")]
+                    [Choice("Watching", "watching")]
+                    [Choice("Competing in", "competing")]
+                    [Choice("Listening to", "listening")] string type,
+                    [Option("message", "The message to show after the status type.")] string message)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+                    await Program.db.HashSetAsync("customStatusList", message, type);
+
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Activity added successfully!"));
+                }
+
+                [SlashCommand("list", "List the custom status messages that the bot cycles through.")]
+                public async Task ListActivity(InteractionContext ctx)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+                    HashEntry[] dbList = await Program.db.HashGetAllAsync("customStatusList");
+                    if (dbList.Length == 0)
+                    {
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("There are no custom status messages in the list! Add some with `/activity add`."));
+                        return;
+                    }
+                    string output = "";
+                    int index = 1;
+                    foreach (HashEntry item in dbList)
+                    {
+                        output += $"{index}: **{item.Value.ToString().First().ToString().ToUpper() + item.Value.ToString()[1..]}** {item.Name}\n";
+                        index++;
+                    }
+
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(output));
+                }
+
+                [SlashCommand("remove", "Remove a custom status message from the list that the bot cycles through.")]
+                public async Task RemoveActivity(InteractionContext ctx, [Option("id", "The ID number of the status to remove. You can get this with /activity list.")] long id)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+                    HashEntry[] dbList = await Program.db.HashGetAllAsync("customStatusList");
+                    int index = 1;
+                    foreach (HashEntry item in dbList)
+                    {
+                        if (id == index)
+                        {
+                            await Program.db.HashDeleteAsync("customStatusList", item.Name);
+                            break;
+                        }
+                        index++;
+                    }
+
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Activity removed successfully."));
+                }
+
+                [SlashCommand("randomize", "Choose a random custom status message from the list.")]
+                public async Task RandomizeActivity(InteractionContext ctx)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+                    await Helpers.SetCustomStatus();
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Activity randomized!"));
+                }
+
+                [SlashCommand("set", "Set the bot's activity. This overrides the list of status messages to cycle through.")]
+                public async Task SetActivity(InteractionContext ctx,
                 [Option("status", "The bot's online status.")]
                 [Choice("Online", "online")]
                 [Choice("Idle", "idle")]
@@ -582,55 +651,88 @@
                 [Choice("Watching", "watching")]
                 [Choice("Competing in", "competing")]
                 [Choice("Listening to", "listening")] string type = null,
-                [Option("activity_name", "The bot's activity (for example, the '!help' in \"watching !help\").")] string activityName = null)
-            {
-                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
-
-                DiscordActivity activity = new();
-                ActivityType activityType = default;
-                activity.Name = activityName;
-                if (type != null)
+                [Option("message", "The message to show after the status type.")] string message = null)
                 {
-                    if (activityType != ActivityType.Streaming)
+                    await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+                    RedisValue customStatusDisabled = await Program.db.StringGetAsync("customStatusDisabled");
+                    if (customStatusDisabled == "true")
                     {
-                        activityType = type.ToLower() switch
-                        {
-                            "playing" => ActivityType.Playing,
-                            "watching" => ActivityType.Watching,
-                            "competing" => ActivityType.Competing,
-                            "listening" => ActivityType.ListeningTo,
-                            _ => default,
-                        };
-                        activity.ActivityType = activityType;
+                        // Custom status messages are disabled; warn user and don't bother going through with the rest of this command
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Custom status messages are disabled! Use `/activity enable` to enable them first."));
+                        return;
                     }
+
+                    DiscordActivity activity = new();
+                    ActivityType activityType = default;
+                    activity.Name = message;
+                    if (type != null)
+                    {
+                        if (activityType != ActivityType.Streaming)
+                        {
+                            activityType = type.ToLower() switch
+                            {
+                                "playing" => ActivityType.Playing,
+                                "watching" => ActivityType.Watching,
+                                "competing" => ActivityType.Competing,
+                                "listening" => ActivityType.ListeningTo,
+                                _ => default,
+                            };
+                            activity.ActivityType = activityType;
+                        }
+                    }
+                    else
+                    {
+                        activity.ActivityType = default;
+                    }
+
+                    UserStatus userStatus = status.ToLower() switch
+                    {
+                        "online" => UserStatus.Online,
+                        "idle" => UserStatus.Idle,
+                        "dnd" => UserStatus.DoNotDisturb,
+                        "offline" => UserStatus.Invisible,
+                        "invisible" => UserStatus.Invisible,
+                        _ => UserStatus.Online,
+                    };
+
+                    await ctx.Client.UpdateStatusAsync(activity, userStatus);
+
+                    await Program.db.HashSetAsync("customStatus", "activity", JsonConvert.SerializeObject(activity));
+                    await Program.db.HashSetAsync("customStatus", "userStatus", JsonConvert.SerializeObject(userStatus));
+
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Activity set successfully!"));
                 }
-                else
+
+                [SlashCommand("reset", "Reset the bot's activity; it will cycle through the list of custom status messages.")]
+                public async Task ResetActivity(InteractionContext ctx)
                 {
-                    activity.ActivityType = default;
+                    await SetActivity(ctx, "online");
                 }
 
-                UserStatus userStatus = status.ToLower() switch
+                [SlashCommand("disable", "Clear the bot's status and stop it from cycling through the list.")]
+                public async Task DisableActivity(InteractionContext ctx)
                 {
-                    "online" => UserStatus.Online,
-                    "idle" => UserStatus.Idle,
-                    "dnd" => UserStatus.DoNotDisturb,
-                    "offline" => UserStatus.Invisible,
-                    "invisible" => UserStatus.Invisible,
-                    _ => UserStatus.Online,
-                };
+                    await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-                await ctx.Client.UpdateStatusAsync(activity, userStatus);
+                    await Program.discord.UpdateStatusAsync(new DiscordActivity(), UserStatus.Online);
 
-                await Program.db.HashSetAsync("customStatus", "activity", JsonConvert.SerializeObject(activity));
-                await Program.db.HashSetAsync("customStatus", "userStatus", JsonConvert.SerializeObject(userStatus));
+                    await Program.db.StringSetAsync("customStatusDisabled", "true");
 
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Activity set successfully!"));
-            }
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Custom status messages disabled. Note that the bot's status may not be cleared right away due to caching."));
+                }
 
-            [SlashCommand("resetactivity", "Reset the bot's activity (sets its status to online with no activity).")]
-            public async Task ResetActivity(InteractionContext ctx)
-            {
-                await SetActivity(ctx, "online");
+                [SlashCommand("enable", "Allow the bot to cycle through its list of custom status messages or use one set with /activity set.")]
+                public async Task EnableActivity(InteractionContext ctx)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+                    await Program.db.StringSetAsync("customStatusDisabled", "false");
+
+                    await Helpers.SetCustomStatus();
+
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Custom status messages enabled."));
+                }
             }
 
             // The idea for this command, and a lot of the code, is taken from Erisa's Lykos. References are linked below.

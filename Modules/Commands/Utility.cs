@@ -31,7 +31,7 @@
 
             ulong msSinceEpoch = member.Id >> 22;
             ulong msUnix = msSinceEpoch + 1420070400000;
-            string registeredAt = ($"{msUnix / 1000}");
+            string registeredAt = $"{msUnix / 1000}";
 
             TimeSpan t = member.JoinedAt - new DateTime(1970, 1, 1);
             int joinedAtTimestamp = (int)t.TotalSeconds;
@@ -240,7 +240,7 @@
         {
             ulong msSinceEpoch = user.Id >> 22;
             ulong msUnix = msSinceEpoch + 1420070400000;
-            string createdAt = ($"{msUnix / 1000}");
+            string createdAt = $"{msUnix / 1000}";
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
                 .WithThumbnail($"{user.AvatarUrl}")
@@ -722,7 +722,7 @@
 
             ulong msSinceEpoch = member.Id >> 22;
             ulong msUnix = msSinceEpoch + 1420070400000;
-            string registeredAt = ($"{msUnix / 1000}");
+            string registeredAt = $"{msUnix / 1000}";
 
             TimeSpan t = member.JoinedAt - new DateTime(1970, 1, 1);
             int joinedAtTimestamp = (int)t.TotalSeconds;
@@ -816,7 +816,7 @@
         {
             ulong msSinceEpoch = ctx.TargetUser.Id >> 22;
             ulong msUnix = msSinceEpoch + 1420070400000;
-            string createdAt = ($"{msUnix / 1000}");
+            string createdAt = $"{msUnix / 1000}";
 
             DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
                 .WithThumbnail($"{ctx.TargetUser.AvatarUrl}")

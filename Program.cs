@@ -220,6 +220,15 @@
             {
                 while (true)
                 {
+                    await Helpers.SetCustomStatus();
+                    await Task.Delay(3600000); // 1 hour
+                }
+            });
+
+            Task.Run(async () =>
+            {
+                while (true)
+                {
                     await Checks.ReminderCheck();
                     await Task.Delay(10000); // 10 seconds
                 }

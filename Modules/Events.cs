@@ -113,11 +113,6 @@
                 Program.connectTime = DateTime.Now;
 
                 await Program.homeChannel.SendMessageAsync($"Connected!\n{Helpers.GetDebugInfo()}");
-
-                // Reapply custom status if one was set before the bot was restarted or disconnected
-                DiscordActivity activity = JsonConvert.DeserializeObject<DiscordActivity>(await Program.db.HashGetAsync("customStatus", "activity"));
-                UserStatus userStatus = JsonConvert.DeserializeObject<UserStatus>(await Program.db.HashGetAsync("customStatus", "userStatus"));
-                await Program.discord.UpdateStatusAsync(activity, userStatus);
             });
         }
 
