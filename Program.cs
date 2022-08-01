@@ -221,7 +221,7 @@
                 while (true)
                 {
                     await Helpers.SetCustomStatus();
-                    await Task.Delay(3600000); // 1 hour
+                    await Task.Delay(1800000); // 30 minutes
                 }
             });
 
