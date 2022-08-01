@@ -351,7 +351,6 @@
                     Timestamp = DateTime.UtcNow
                 };
                 embed.AddField("Message", ex.Message);
-                embed.AddField("Debug Info", $"If you'd like to contact the bot owner about this, include this debug info:\n```{ex}\n```");
 
                 await Program.homeChannel.SendMessageAsync(embed);
             }

@@ -33,7 +33,6 @@
                         Timestamp = DateTime.UtcNow
                     };
                     embed.AddField("Message", ex.Message);
-                    embed.AddField("Debug Info", $"If you'd like to contact the bot owner about this, include this debug info:\n```{ex}\n```");
 
                     // I don't know how to tell whether the command response was deferred or not, so we're going to try both an interaction response and follow-up so that the interaction doesn't time-out.
                     try
@@ -87,7 +86,6 @@
                         Timestamp = DateTime.UtcNow
                     };
                     embed.AddField("Message", ex.Message);
-                    embed.AddField("Debug Info", $"If you'd like to contact the bot owner about this, include this debug info:\n```{ex}\n```");
 
                     // System.ArgumentException
                     if (ex.GetType().ToString() == "System.ArgumentException")
@@ -662,7 +660,6 @@
                 Description = $"`{ex.GetType()}` occurred when processing [this message]({message.JumpLink}) (message `{message.Id}` in channel `{message.Channel.Id}`)."
             };
             embed.AddField("Message", $"{ex.Message}");
-            embed.AddField("Debug Info", $"If you'd like to contact the bot owner about this, include this debug info:\n```\n{ex}\n```");
 
             await Program.homeChannel.SendMessageAsync(embed);
         }
