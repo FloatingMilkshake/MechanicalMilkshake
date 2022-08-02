@@ -257,6 +257,25 @@
                     if (activityName.Contains("{uptime}"))
                     {
                         TimeSpan uptime = DateTime.Now.Subtract(Convert.ToDateTime(Program.processStartTime));
+
+                        // Don't set a custom status message containing {activity} if uptime is less than 1 hour.
+                        if (uptime.CompareTo(DateTime.Now.AddHours(-1).TimeOfDay) < 0)
+                        {
+                            if (customStatusList.Length == 1)
+                            {
+                                await Program.discord.UpdateStatusAsync(new DiscordActivity(), UserStatus.Online);
+                                return;
+                            }
+                            else
+                            {
+                                while (customStatusList[chosenStatus].Name.ToString().Contains("{uptime}"))
+                                {
+                                    customStatusList = await Program.db.HashGetAllAsync("customStatusList");
+                                    chosenStatus = random.Next(0, customStatusList.Length);
+                                }
+                            }
+                        }
+
                         activityName = activityName.Replace("{uptime}", uptime.Humanize());
                     }
                     if (activityName.Contains("{userCount}"))
