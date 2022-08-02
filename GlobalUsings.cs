@@ -15,6 +15,8 @@ global using DSharpPlus.SlashCommands.EventArgs;
 global using Humanizer;
 global using MechanicalMilkshake.Modules;
 global using MechanicalMilkshake.Modules.Commands;
+global using MechanicalMilkshake.Modules.Events;
+global using MechanicalMilkshake.Modules.Helpers;
 global using Microsoft.CodeAnalysis.CSharp.Scripting;
 global using Microsoft.CodeAnalysis.Scripting;
 global using Microsoft.Extensions.Logging;

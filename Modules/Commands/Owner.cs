@@ -514,7 +514,7 @@
                 [SlashCommand("info", "Show debug information about the bot.")]
                 public async Task DebugInfo(InteractionContext ctx)
                 {
-                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Debug Information:\n" + Helpers.GetDebugInfo()));
+                    await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Debug Information:\n" + DebugInfoHelper.GetDebugInfo()));
                 }
 
                 [SlashCommand("uptime", "Check the bot's uptime (from the time it connects to Discord).")]
@@ -635,7 +635,7 @@
                 public async Task RandomizeActivity(InteractionContext ctx)
                 {
                     await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-                    await Helpers.SetCustomStatus();
+                    await CustomStatusHelper.SetCustomStatus();
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Activity randomized!"));
                 }
 
@@ -729,7 +729,7 @@
 
                     await Program.db.StringSetAsync("customStatusDisabled", "false");
 
-                    await Helpers.SetCustomStatus();
+                    await CustomStatusHelper.SetCustomStatus();
 
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Custom status messages enabled."));
                 }

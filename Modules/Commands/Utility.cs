@@ -85,7 +85,7 @@
                 embed.AddField("Server Booster", boostingSince);
             }
 
-            string badges = Helpers.GetBadges(user);
+            string badges = UserBadgeHelper.GetBadges(user);
             if (badges != "")
             {
                 embed.AddField("Badges", badges);
@@ -247,7 +247,7 @@
                 .AddField("ID", $"{user.Id}")
                 .AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
 
-            string badges = Helpers.GetBadges(user);
+            string badges = UserBadgeHelper.GetBadges(user);
             if (badges != "")
             {
                 embed.AddField("Badges", badges);
@@ -776,7 +776,7 @@
                 embed.AddField("Server Booster", boostingSince);
             }
 
-            string badges = Helpers.GetBadges(ctx.TargetUser);
+            string badges = UserBadgeHelper.GetBadges(ctx.TargetUser);
             if (badges != "")
             {
                 embed.AddField("Badges", badges);
@@ -823,7 +823,7 @@
                 .AddField("ID", $"{ctx.TargetUser.Id}")
                 .AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
 
-            string badges = Helpers.GetBadges(ctx.TargetUser);
+            string badges = UserBadgeHelper.GetBadges(ctx.TargetUser);
             if (badges != "")
             {
                 embed.AddField("Badges", badges);

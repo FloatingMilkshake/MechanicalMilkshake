@@ -191,12 +191,12 @@
             await discord.ConnectAsync();
 
             // Events
-            discord.Ready += Events.OnReady;
-            discord.MessageCreated += Events.MessageCreated;
-            discord.MessageUpdated += Events.MessageUpdated;
-            discord.ComponentInteractionCreated += Events.ComponentInteractionCreated;
-            commands.CommandErrored += Events.Errors.CommandsNextService_CommandErrored;
-            slash.SlashCommandErrored += Events.Errors.SlashCommandErrored;
+            discord.Ready += ReadyEvent.OnReady;
+            discord.MessageCreated += MessageEvents.MessageCreated;
+            discord.MessageUpdated += MessageEvents.MessageUpdated;
+            discord.ComponentInteractionCreated += ComponentInteractionEvent.ComponentInteractionCreated;
+            commands.CommandErrored += ErrorEvents.CommandsNextService_CommandErrored;
+            slash.SlashCommandErrored += ErrorEvents.SlashCommandErrored;
 
             /* Create an instance of the Owner.Private class and run a command to fix SSH key permissions
             at bot startup. I wanted to be able to do this somewhere else, but for now it seems
@@ -220,7 +220,7 @@
             {
                 while (true)
                 {
-                    await Helpers.SetCustomStatus();
+                    await CustomStatusHelper.SetCustomStatus();
                     await Task.Delay(1800000); // 30 minutes
                 }
             });
