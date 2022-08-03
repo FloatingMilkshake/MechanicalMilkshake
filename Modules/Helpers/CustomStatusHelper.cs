@@ -145,7 +145,9 @@
                             await Program.homeChannel.SendMessageAsync(invalidErrorEmbed);
                             return;
                     }
+
                     await Program.discord.UpdateStatusAsync(activity, userStatus);
+                    await Program.db.StringSetAsync("customStatusLastUpdated", $"{DateTime.Now}");
                 }
                 else
                 {
