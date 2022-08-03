@@ -611,6 +611,76 @@
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(output));
                 }
 
+                [SlashCommand("choose", "Choose a custom status message from the list to set now.")]
+                public async Task ChooseActvity(InteractionContext ctx, [Option("id", "The ID number of the status to set. You can get this with /activity list.")] long id)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+                    HashEntry[] dbList = await Program.db.HashGetAllAsync("customStatusList");
+                    int index = 1;
+                    foreach (HashEntry item in dbList)
+                    {
+                        if (id == index)
+                        {
+                            DiscordActivity activity = new()
+                            {
+                                Name = item.Name
+                            };
+                            string targetActivityType = item.Value;
+                            // TODO: make this a helper or something
+                            switch (targetActivityType.ToLower())
+                            {
+                                case "playing":
+                                    activity.ActivityType = ActivityType.Playing;
+                                    break;
+                                case "watching":
+                                    activity.ActivityType = ActivityType.Watching;
+                                    break;
+                                case "listening":
+                                    activity.ActivityType = ActivityType.ListeningTo;
+                                    break;
+                                case "listening to":
+                                    activity.ActivityType = ActivityType.ListeningTo;
+                                    break;
+                                case "competing":
+                                    activity.ActivityType = ActivityType.Competing;
+                                    break;
+                                case "competing in":
+                                    activity.ActivityType = ActivityType.Competing;
+                                    break;
+                                case "streaming":
+                                    DiscordEmbedBuilder streamingErrorEmbed = new()
+                                    {
+                                        Color = new DiscordColor("FF0000"),
+                                        Title = "An error occurred while processing a custom status message",
+                                        Description = "The activity type \"Streaming\" is not currently supported.",
+                                        Timestamp = DateTime.UtcNow
+                                    };
+                                    streamingErrorEmbed.AddField("Custom Status Message", item.Name);
+                                    streamingErrorEmbed.AddField("Target Activity Type", targetActivityType);
+                                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(streamingErrorEmbed));
+                                    return;
+                                default:
+                                    DiscordEmbedBuilder invalidErrorEmbed = new()
+                                    {
+                                        Color = new DiscordColor("FF0000"),
+                                        Title = "An error occurred while processing a custom status message",
+                                        Description = "The target activity type was invalid.",
+                                        Timestamp = DateTime.UtcNow
+                                    };
+                                    invalidErrorEmbed.AddField("Custom Status Message", item.Name);
+                                    invalidErrorEmbed.AddField("Target Activity Type", targetActivityType);
+                                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(invalidErrorEmbed));
+                                    return;
+                            }
+                            await Program.discord.UpdateStatusAsync(activity, UserStatus.Online);
+                            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Activity updated successfully!"));
+                            break;
+                        }
+                        index++;
+                    }
+                }
+
                 [SlashCommand("remove", "Remove a custom status message from the list that the bot cycles through.")]
                 public async Task RemoveActivity(InteractionContext ctx, [Option("id", "The ID number of the status to remove. You can get this with /activity list.")] long id)
                 {
