@@ -673,6 +673,33 @@
                                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(invalidErrorEmbed));
                                     return;
                             }
+
+                            if (activity.Name.Contains("{uptime}"))
+                            {
+                                TimeSpan uptime = DateTime.Now.Subtract(Convert.ToDateTime(Program.processStartTime));
+                                activity.Name = activity.Name.Replace("{uptime}", uptime.Humanize());
+                            }
+                            if (activity.Name.Contains("{userCount}"))
+                            {
+                                List<DiscordUser> uniqueUsers = new();
+                                foreach (KeyValuePair<ulong, DiscordGuild> guild in Program.discord.Guilds)
+                                {
+                                    foreach (KeyValuePair<ulong, DiscordMember> member in guild.Value.Members)
+                                    {
+                                        DiscordUser user = await Program.discord.GetUserAsync(member.Value.Id);
+                                        if (!uniqueUsers.Contains(user))
+                                        {
+                                            uniqueUsers.Add(user);
+                                        }
+                                    }
+                                }
+                                activity.Name = activity.Name.Replace("{userCount}", uniqueUsers.Count.ToString());
+                            }
+                            if (activity.Name.Contains("{serverCount}"))
+                            {
+                                activity.Name = activity.Name.Replace("{serverCount}", Program.discord.Guilds.Count.ToString());
+                            }
+
                             await Program.discord.UpdateStatusAsync(activity, UserStatus.Online);
                             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Activity updated successfully!"));
                             break;
@@ -706,22 +733,31 @@
                 {
                     await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
                     await CustomStatusHelper.SetCustomStatus();
+
+                    var list = await Program.db.HashGetAllAsync("customStatusList");
+                    if (list.Length == 0 && Program.discord.CurrentUser.Presence.Activity.Name == null)
+                    {
+                        // Activity was cleared; list is empty
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("There are no custom status messages in the list! Activity cleared."));
+                        return;
+                    }
+
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Activity randomized!"));
                 }
 
                 [SlashCommand("set", "Set the bot's activity. This overrides the list of status messages to cycle through.")]
                 public async Task SetActivity(InteractionContext ctx,
-                [Option("status", "The bot's online status.")]
-                [Choice("Online", "online")]
-                [Choice("Idle", "idle")]
-                [Choice("Do Not Disturb", "dnd")]
-                [Choice("Invisible", "invisible")]  string status,
-                [Option("type", "The type of status (playing, watching, etc).")]
-                [Choice("Playing", "playing")]
-                [Choice("Watching", "watching")]
-                [Choice("Competing in", "competing")]
-                [Choice("Listening to", "listening")] string type = null,
-                [Option("message", "The message to show after the status type.")] string message = null)
+                    [Option("status", "The bot's online status.")]
+                    [Choice("Online", "online")]
+                    [Choice("Idle", "idle")]
+                    [Choice("Do Not Disturb", "dnd")]
+                    [Choice("Invisible", "invisible")]  string status,
+                    [Option("type", "The type of status (playing, watching, etc).")]
+                    [Choice("Playing", "playing")]
+                    [Choice("Watching", "watching")]
+                    [Choice("Competing in", "competing")]
+                    [Choice("Listening to", "listening")] string type = null,
+                    [Option("message", "The message to show after the status type.")] string message = null)
                 {
                     await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
@@ -766,10 +802,39 @@
                         _ => UserStatus.Online,
                     };
 
-                    await ctx.Client.UpdateStatusAsync(activity, userStatus);
-
                     await Program.db.HashSetAsync("customStatus", "activity", JsonConvert.SerializeObject(activity));
                     await Program.db.HashSetAsync("customStatus", "userStatus", JsonConvert.SerializeObject(userStatus));
+
+                    if (activity.Name is not null)
+                    {
+                        if (activity.Name.Contains("{uptime}"))
+                        {
+                            TimeSpan uptime = DateTime.Now.Subtract(Convert.ToDateTime(Program.processStartTime));
+                            activity.Name = activity.Name.Replace("{uptime}", uptime.Humanize());
+                        }
+                        if (activity.Name.Contains("{userCount}"))
+                        {
+                            List<DiscordUser> uniqueUsers = new();
+                            foreach (KeyValuePair<ulong, DiscordGuild> guild in Program.discord.Guilds)
+                            {
+                                foreach (KeyValuePair<ulong, DiscordMember> member in guild.Value.Members)
+                                {
+                                    DiscordUser user = await Program.discord.GetUserAsync(member.Value.Id);
+                                    if (!uniqueUsers.Contains(user))
+                                    {
+                                        uniqueUsers.Add(user);
+                                    }
+                                }
+                            }
+                            activity.Name = activity.Name.Replace("{userCount}", uniqueUsers.Count.ToString());
+                        }
+                        if (activity.Name.Contains("{serverCount}"))
+                        {
+                            activity.Name = activity.Name.Replace("{serverCount}", Program.discord.Guilds.Count.ToString());
+                        }
+                    }
+
+                    await ctx.Client.UpdateStatusAsync(activity, userStatus);
 
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Activity set successfully!"));
                 }
