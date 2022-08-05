@@ -1,6 +1,4 @@
-﻿using DSharpPlus.Exceptions;
-
-namespace MechanicalMilkshake.Commands;
+﻿namespace MechanicalMilkshake.Commands;
 
 public class Owner : ApplicationCommandModule
 {

@@ -1,5 +1,3 @@
-using DSharpPlus.Exceptions;
-
 namespace MechanicalMilkshake.Commands;
 
 [SlashRequireGuild]
