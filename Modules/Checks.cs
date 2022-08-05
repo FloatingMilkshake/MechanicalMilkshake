@@ -1,135 +1,118 @@
-﻿namespace MechanicalMilkshake.Modules
+﻿namespace MechanicalMilkshake.Modules;
+
+public class Checks
 {
-    public class Checks
+    public static async Task PackageUpdateCheck()
     {
-        public class PerServerFeatures
-        {
-            public static async Task WednesdayCheck()
-            {
 #if DEBUG
-                Console.WriteLine($"[{DateTime.Now}] WednesdayCheck running.");
+        Console.WriteLine($"[{DateTime.Now}] PackageUpdateCheck running.");
 #endif
-                if (DateTime.Now.DayOfWeek != DayOfWeek.Wednesday)
-                {
-                    return;
-                }
-                else if (!DateTime.Now.ToShortTimeString().Contains("10:00"))
-                {
-                    return;
-                }
+        var updatesAvailableResponse = "";
+        var restartRequiredResponse = "";
 
-                try
-                {
-                    DiscordChannel channel = await Program.discord.GetChannelAsync(874488354786394192);
-
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"An error occurred! Details: {e}");
-                    return;
-                }
+        Owner.Private ownerPrivate = new();
+        var updatesAvailable = false;
+        var restartRequired = false;
+        foreach (var host in Program.configjson.SshHosts)
+        {
+#if DEBUG
+            Console.WriteLine($"[{DateTime.Now}] [PackageUpdateCheck] Checking for updates on host '{host}'.");
+#endif
+            var cmdResult = await ownerPrivate.RunCommand($"ssh {host} \"sudo apt update\"");
+            if (cmdResult.Contains("packages can be upgraded"))
+            {
+                updatesAvailableResponse += $"`{host}`\n";
+                updatesAvailable = true;
             }
 
-            public static async Task PizzaTime()
-            {
+            if (cmdResult.Contains("System restart required")) restartRequired = true;
+        }
 #if DEBUG
-                Console.WriteLine($"[{DateTime.Now}] PizzaTime running.");
+        Console.WriteLine($"[{DateTime.Now}] [PackageUpdateCheck] Finished checking for updates on all hosts.");
 #endif
-                if (!DateTime.Now.ToShortTimeString().Contains("12:00"))
-                {
-                    return;
-                }
 
-                try
+        if (restartRequired) restartRequiredResponse = "A system restart is required to complete package updates.";
+
+        if (updatesAvailable || restartRequired)
+        {
+            if (updatesAvailable)
+                updatesAvailableResponse = "Package updates are available on the following hosts:\n" +
+                                           updatesAvailableResponse;
+
+            var ownerMention = "";
+            foreach (var user in Program.discord.CurrentApplication.Owners) ownerMention += user.Mention + " ";
+
+            var response = updatesAvailableResponse + restartRequiredResponse;
+            await Program.homeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{response}");
+        }
+    }
+
+    public static async Task ReminderCheck()
+    {
+        var reminders = await Program.db.HashGetAllAsync("reminders");
+
+        foreach (var reminder in reminders)
+        {
+            var reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
+
+            if (reminderData.ReminderTime <= DateTime.Now)
+            {
+                var setTime = ((DateTimeOffset)reminderData.SetTime).ToUnixTimeSeconds();
+                DiscordEmbedBuilder embed = new()
                 {
-                    DiscordChannel channel = await Program.discord.GetChannelAsync(932768798224838778);
-                    await channel.SendMessageAsync("https://cdn.discordapp.com/attachments/932768798224838778/932768814284812298/IMG_9147.png");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"An error occurred! Details: {e}");
-                    return;
-                }
+                    Color = new DiscordColor("#7287fd"),
+                    Title = $"Reminder from <t:{setTime}:R>",
+                    Description = $"{reminderData.ReminderText}"
+                };
+                embed.AddField("Context",
+                    $"[Jump Link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId})");
+
+                var targetChannel = await Program.discord.GetChannelAsync(reminderData.ChannelId);
+                await targetChannel.SendMessageAsync($"<@{reminderData.UserId}>, I have a reminder for you:",
+                    embed);
+
+                await Program.db.HashDeleteAsync("reminders", reminderData.ReminderId);
+            }
+        }
+    }
+
+    public class PerServerFeatures
+    {
+        public static async Task WednesdayCheck()
+        {
+#if DEBUG
+            Console.WriteLine($"[{DateTime.Now}] WednesdayCheck running.");
+#endif
+            if (DateTime.Now.DayOfWeek != DayOfWeek.Wednesday)
+                return;
+            if (!DateTime.Now.ToShortTimeString().Contains("10:00")) return;
+
+            try
+            {
+                var channel = await Program.discord.GetChannelAsync(874488354786394192);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"An error occurred! Details: {e}");
             }
         }
 
-        public static async Task PackageUpdateCheck()
+        public static async Task PizzaTime()
         {
 #if DEBUG
-            Console.WriteLine($"[{DateTime.Now}] PackageUpdateCheck running.");
+            Console.WriteLine($"[{DateTime.Now}] PizzaTime running.");
 #endif
-            string updatesAvailableResponse = "";
-            string restartRequiredResponse = "";
+            if (!DateTime.Now.ToShortTimeString().Contains("12:00")) return;
 
-            Owner.Private ownerPrivate = new();
-            bool updatesAvailable = false;
-            bool restartRequired = false;
-            foreach (string host in Program.configjson.SshHosts)
+            try
             {
-#if DEBUG
-                Console.WriteLine($"[{DateTime.Now}] [PackageUpdateCheck] Checking for updates on host '{host}'.");
-#endif
-                string cmdResult = await ownerPrivate.RunCommand($"ssh {host} \"sudo apt update\"");
-                if (cmdResult.Contains("packages can be upgraded"))
-                {
-                    updatesAvailableResponse += $"`{host}`\n";
-                    updatesAvailable = true;
-                }
-                if (cmdResult.Contains("System restart required"))
-                {
-                    restartRequired = true;
-                }
+                var channel = await Program.discord.GetChannelAsync(932768798224838778);
+                await channel.SendMessageAsync(
+                    "https://cdn.discordapp.com/attachments/932768798224838778/932768814284812298/IMG_9147.png");
             }
-#if DEBUG
-            Console.WriteLine($"[{DateTime.Now}] [PackageUpdateCheck] Finished checking for updates on all hosts.");
-#endif
-
-            if (restartRequired)
+            catch (Exception e)
             {
-                restartRequiredResponse = "A system restart is required to complete package updates.";
-            }
-
-            if (updatesAvailable || restartRequired)
-            {
-                if (updatesAvailable)
-                {
-                    updatesAvailableResponse = "Package updates are available on the following hosts:\n" + updatesAvailableResponse;
-                }
-                string ownerMention = "";
-                foreach (DiscordUser user in Program.discord.CurrentApplication.Owners)
-                {
-                    ownerMention += user.Mention + " ";
-                }
-
-                string response = updatesAvailableResponse + restartRequiredResponse;
-                await Program.homeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{response}");
-            }
-        }
-
-        public static async Task ReminderCheck()
-        {
-            HashEntry[] reminders = await Program.db.HashGetAllAsync("reminders");
-
-            foreach (HashEntry reminder in reminders)
-            {
-                Reminder reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
-
-                if (reminderData.ReminderTime <= DateTime.Now)
-                {
-                    long setTime = ((DateTimeOffset)reminderData.SetTime).ToUnixTimeSeconds();
-                    DiscordEmbedBuilder embed = new()
-                    {
-                        Color = new DiscordColor("#7287fd"),
-                        Title = $"Reminder from <t:{setTime}:R>",
-                        Description = $"{reminderData.ReminderText}"
-                    };
-                    embed.AddField("Context", $"[Jump Link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId})");
-
-                    DiscordChannel targetChannel = await Program.discord.GetChannelAsync(reminderData.ChannelId);
-                    await targetChannel.SendMessageAsync($"<@{reminderData.UserId}>, I have a reminder for you:", embed);
-
-                    await Program.db.HashDeleteAsync("reminders", reminderData.ReminderId);
-                }
+                Console.WriteLine($"An error occurred! Details: {e}");
             }
         }
     }

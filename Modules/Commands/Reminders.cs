@@ -1,234 +1,236 @@
-﻿namespace MechanicalMilkshake.Modules.Commands
+﻿namespace MechanicalMilkshake.Modules.Commands;
+
+public class Reminders : ApplicationCommandModule
 {
-    public class Reminders : ApplicationCommandModule
+    [SlashCommandGroup("reminder", "Set, modify and delete reminders.")]
+    public class ReminderCmds
     {
-        [SlashCommandGroup("reminder", "Set, modify and delete reminders.")]
-        public class ReminderCmds
+        [SlashCommand("set", "Set a reminder.")]
+        public async Task SetReminder(InteractionContext ctx,
+            [Option("text", "What should the reminder say?")]
+            string text,
+            [Option("time", "When do you want to be reminded?")]
+            string time)
         {
-            [SlashCommand("set", "Set a reminder.")]
-            public async Task SetReminder(InteractionContext ctx,
-                [Option("text", "What should the reminder say?")] string text,
-                [Option("time", "When do you want to be reminded?")] string time)
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder());
+
+            DateTime reminderTime;
+            try
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
+                reminderTime = HumanDateParser.HumanDateParser.Parse(time);
+            }
+            catch
+            {
+                // Parse error, either because the user did it wrong or because HumanDateParser is weird
 
-                DateTime reminderTime;
-                try
-                {
-                    reminderTime = HumanDateParser.HumanDateParser.Parse(time);
-                }
-                catch
-                {
-                    // Parse error, either because the user did it wrong or because HumanDateParser is weird
-
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"I couldn't parse \"{time}\" as a time! Please try again."));
-                    return;
-                }
-                if (reminderTime <= DateTime.Now)
-                {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You can't set a reminder to go off in the past!"));
-                    return;
-                }
-
-                string guildId;
-                if (ctx.Channel.IsPrivate)
-                {
-                    guildId = "@me";
-                }
-                else
-                {
-                    guildId = ctx.Guild.Id.ToString();
-                }
-
-                Random random = new();
-                int reminderId = random.Next(1000, 9999);
-
-                HashEntry[] reminders = await Program.db.HashGetAllAsync("reminders");
-                foreach (HashEntry rem in reminders)
-                {
-                    while (rem.Name == reminderId)
-                    {
-                        reminderId = random.Next(1000, 9999);
-                        // This is to avoid the potential for duplicate reminders
-                    }
-                }
-
-                Reminder reminder = new()
-                {
-                    UserId = ctx.User.Id,
-                    ChannelId = ctx.Channel.Id,
-                    GuildId = guildId,
-                    ReminderId = reminderId,
-                    ReminderText = text,
-                    ReminderTime = reminderTime,
-                    SetTime = DateTime.Now
-                };
-
-                long unixTime = ((DateTimeOffset)reminderTime).ToUnixTimeSeconds();
-                DiscordMessage message = await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!"));
-                reminder.MessageId = message.Id;
-
-                await Program.db.HashSetAsync("reminders", reminderId, JsonConvert.SerializeObject(reminder));
+                await ctx.FollowUpAsync(
+                    new DiscordFollowupMessageBuilder().WithContent(
+                        $"I couldn't parse \"{time}\" as a time! Please try again."));
+                return;
             }
 
-            [SlashCommand("list", "List your reminders.")]
-            public async Task ListReminders(InteractionContext ctx)
+            if (reminderTime <= DateTime.Now)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
-
-                List<Reminder> userReminders = new();
-
-                HashEntry[] reminders = await Program.db.HashGetAllAsync("reminders");
-                foreach (HashEntry reminder in reminders)
-                {
-                    Reminder reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
-
-                    if (reminderData.UserId == ctx.User.Id)
-                    {
-                        // Reminder belongs to user. Add to list.
-                        userReminders.Add(reminderData);
-                    }
-                }
-
-                string output = "";
-
-                // Now we have a list of only the reminders that belong to the user using the command.
-
-                if (userReminders.Count == 0)
-                {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You don't have any reminders! Set one with `/reminder set`.").AsEphemeral(true));
-                    return;
-                }
-
-                foreach (Reminder reminder in userReminders)
-                {
-                    long setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
-                    long reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
-
-                    Regex idRegex = new("[0-9]+");
-                    string guildName;
-                    if (idRegex.IsMatch(reminder.GuildId))
-                    {
-                        DiscordGuild targetGuild = await Program.discord.GetGuildAsync(Convert.ToUInt64(reminder.GuildId));
-                        guildName = targetGuild.Name;
-                    }
-                    else
-                    {
-                        guildName = "DMs";
-                    }
-
-                    string reminderLink = $"<https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}>";
-
-                    output += $"`{reminder.ReminderId}`:\n"
-                        + $"> {reminder.ReminderText}\n"
-                        + $"[Set <t:{setTime}:R>]({reminderLink}) to go off <t:{reminderTime}:R> in {guildName}";
-
-                    if (guildName != "DMs")
-                    {
-                        output += $" <#{reminder.ChannelId}>";
-                    }
-                    output += "\n\n";
-                }
-
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(output).AsEphemeral(true));
+                await ctx.FollowUpAsync(
+                    new DiscordFollowupMessageBuilder().WithContent(
+                        "You can't set a reminder to go off in the past!"));
+                return;
             }
 
-            [SlashCommand("delete", "Delete a reminder using its unique ID.")]
-            public async Task DeleteReminder(InteractionContext ctx, [Option("reminder", "The ID of the reminder to delete. You can get this with `/reminder list`.")] long reminderToDelete)
+            string guildId;
+            if (ctx.Channel.IsPrivate)
+                guildId = "@me";
+            else
+                guildId = ctx.Guild.Id.ToString();
+
+            Random random = new();
+            var reminderId = random.Next(1000, 9999);
+
+            var reminders = await Program.db.HashGetAllAsync("reminders");
+            foreach (var rem in reminders)
+                while (rem.Name == reminderId)
+                    reminderId = random.Next(1000, 9999);
+            // This is to avoid the potential for duplicate reminders
+            Reminder reminder = new()
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
+                UserId = ctx.User.Id,
+                ChannelId = ctx.Channel.Id,
+                GuildId = guildId,
+                ReminderId = reminderId,
+                ReminderText = text,
+                ReminderTime = reminderTime,
+                SetTime = DateTime.Now
+            };
 
-                HashEntry[] reminders = await Program.db.HashGetAllAsync("reminders");
-                bool reminderExists = false;
-                foreach (HashEntry reminder in reminders)
-                {
-                    if (reminder.Name.ToString().Contains(reminderToDelete.ToString()))
-                    {
-                        reminderExists = true;
-                        break;
-                    }
-                }
+            var unixTime = ((DateTimeOffset)reminderTime).ToUnixTimeSeconds();
+            var message = await ctx.FollowUpAsync(
+                new DiscordFollowupMessageBuilder().WithContent(
+                    $"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!"));
+            reminder.MessageId = message.Id;
 
-                if (reminderExists)
-                {
-                    await Program.db.HashDeleteAsync("reminders", reminderToDelete);
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Reminder deleted successfully.").AsEphemeral(true));
-                }
-                else
-                {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find a reminder with that ID! Make sure it's correct. You can check the IDs of your reminders with `/reminder list`.").AsEphemeral(true));
-                }
+            await Program.db.HashSetAsync("reminders", reminderId, JsonConvert.SerializeObject(reminder));
+        }
+
+        [SlashCommand("list", "List your reminders.")]
+        public async Task ListReminders(InteractionContext ctx)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().AsEphemeral());
+
+            List<Reminder> userReminders = new();
+
+            var reminders = await Program.db.HashGetAllAsync("reminders");
+            foreach (var reminder in reminders)
+            {
+                var reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
+
+                if (reminderData.UserId == ctx.User.Id)
+                    // Reminder belongs to user. Add to list.
+                    userReminders.Add(reminderData);
             }
 
-            [SlashCommand("modify", "Modify an existing reminder using its unique ID.")]
-            public async Task ModifyReminder(InteractionContext ctx,
-                [Option("reminder", "The ID of the reminder to modify. You can get this with `/reminder list`.")] string reminderToModify,
-                [Option("text", "What should the reminder say? Leave this blank if you don't want to change it.")] string text = null,
-                [Option("time", "When do you want to be reminded? Leave this blank if you don't want to change it.")] string time = null)
+            var output = "";
+
+            // Now we have a list of only the reminders that belong to the user using the command.
+
+            if (userReminders.Count == 0)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("You don't have any reminders! Set one with `/reminder set`.").AsEphemeral());
+                return;
+            }
+
+            foreach (var reminder in userReminders)
+            {
+                var setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
+                var reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
 
                 Regex idRegex = new("[0-9]+");
-                if (!idRegex.IsMatch(reminderToModify))
+                string guildName;
+                if (idRegex.IsMatch(reminder.GuildId))
                 {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("The reminder ID you provided isn't correct! You can get a reminder ID with `/reminder list`. It should look something like this: `1001230509856260276`").AsEphemeral(true));
-                    return;
+                    var targetGuild =
+                        await Program.discord.GetGuildAsync(Convert.ToUInt64(reminder.GuildId));
+                    guildName = targetGuild.Name;
+                }
+                else
+                {
+                    guildName = "DMs";
                 }
 
-                if (text == null && time == null)
+                var reminderLink =
+                    $"<https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}>";
+
+                output += $"`{reminder.ReminderId}`:\n"
+                          + $"> {reminder.ReminderText}\n"
+                          + $"[Set <t:{setTime}:R>]({reminderLink}) to go off <t:{reminderTime}:R> in {guildName}";
+
+                if (guildName != "DMs") output += $" <#{reminder.ChannelId}>";
+
+                output += "\n\n";
+            }
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(output).AsEphemeral());
+        }
+
+        [SlashCommand("delete", "Delete a reminder using its unique ID.")]
+        public async Task DeleteReminder(InteractionContext ctx,
+            [Option("reminder", "The ID of the reminder to delete. You can get this with `/reminder list`.")]
+            long reminderToDelete)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().AsEphemeral());
+
+            var reminders = await Program.db.HashGetAllAsync("reminders");
+            var reminderExists = false;
+            foreach (var reminder in reminders)
+                if (reminder.Name.ToString().Contains(reminderToDelete.ToString()))
                 {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Reminder unchanged.").AsEphemeral(true));
-                    return;
+                    reminderExists = true;
+                    break;
                 }
 
-                Reminder reminder = JsonConvert.DeserializeObject<Reminder>(await Program.db.HashGetAsync("reminders", reminderToModify));
-                if (text != null)
-                {
-                    reminder.ReminderText = text;
-                }
-                if (time != null)
-                {
-                    reminder.ReminderTime = HumanDateParser.HumanDateParser.Parse(time);
-                }
-
-                await Program.db.HashSetAsync("reminders", reminder.ReminderId, JsonConvert.SerializeObject(reminder));
-
-                DiscordChannel reminderChannel = await Program.discord.GetChannelAsync(reminder.ChannelId);
-                DiscordMessage reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
-
-                long unixTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
-                await reminderMessage.ModifyAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!");
-
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Reminder modified successfully.").AsEphemeral(true));
+            if (reminderExists)
+            {
+                await Program.db.HashDeleteAsync("reminders", reminderToDelete);
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("Reminder deleted successfully.").AsEphemeral());
+            }
+            else
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent(
+                        "I couldn't find a reminder with that ID! Make sure it's correct. You can check the IDs of your reminders with `/reminder list`.")
+                    .AsEphemeral());
             }
         }
+
+        [SlashCommand("modify", "Modify an existing reminder using its unique ID.")]
+        public async Task ModifyReminder(InteractionContext ctx,
+            [Option("reminder", "The ID of the reminder to modify. You can get this with `/reminder list`.")]
+            string reminderToModify,
+            [Option("text", "What should the reminder say? Leave this blank if you don't want to change it.")]
+            string text = null,
+            [Option("time", "When do you want to be reminded? Leave this blank if you don't want to change it.")]
+            string time = null)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().AsEphemeral());
+
+            Regex idRegex = new("[0-9]+");
+            if (!idRegex.IsMatch(reminderToModify))
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent(
+                        "The reminder ID you provided isn't correct! You can get a reminder ID with `/reminder list`. It should look something like this: `1001230509856260276`")
+                    .AsEphemeral());
+                return;
+            }
+
+            if (text == null && time == null)
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Reminder unchanged.")
+                    .AsEphemeral());
+                return;
+            }
+
+            var reminder =
+                JsonConvert.DeserializeObject<Reminder>(
+                    await Program.db.HashGetAsync("reminders", reminderToModify));
+            if (text != null) reminder.ReminderText = text;
+
+            if (time != null) reminder.ReminderTime = HumanDateParser.HumanDateParser.Parse(time);
+
+            await Program.db.HashSetAsync("reminders", reminder.ReminderId, JsonConvert.SerializeObject(reminder));
+
+            var reminderChannel = await Program.discord.GetChannelAsync(reminder.ChannelId);
+            var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
+
+            var unixTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
+            await reminderMessage.ModifyAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!");
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("Reminder modified successfully.").AsEphemeral());
+        }
     }
+}
 
+public class Reminder
+{
+    [JsonProperty("userId")] public ulong UserId { get; set; }
 
-    public class Reminder
-    {
-        [JsonProperty("userId")]
-        public ulong UserId { get; set; }
+    [JsonProperty("channelId")] public ulong ChannelId { get; set; }
 
-        [JsonProperty("channelId")]
-        public ulong ChannelId { get; set; }
+    [JsonProperty("guildId")] public string GuildId { get; set; }
 
-        [JsonProperty("guildId")]
-        public string GuildId { get; set; }
+    [JsonProperty("messageId")] public ulong MessageId { get; set; }
 
-        [JsonProperty("messageId")]
-        public ulong MessageId { get; set; }
+    [JsonProperty("reminderId")] public int ReminderId { get; set; }
 
-        [JsonProperty("reminderId")]
-        public int ReminderId { get; set; }
+    [JsonProperty("reminderText")] public string ReminderText { get; set; }
 
-        [JsonProperty("reminderText")]
-        public string ReminderText { get; set; }
+    [JsonProperty("reminderTime")] public DateTime ReminderTime { get; set; }
 
-        [JsonProperty("reminderTime")]
-        public DateTime ReminderTime { get; set; }
-
-        [JsonProperty("setTime")]
-        public DateTime SetTime { get; set; }
-    }
+    [JsonProperty("setTime")] public DateTime SetTime { get; set; }
 }
