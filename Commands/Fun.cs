@@ -1,4 +1,4 @@
-namespace MechanicalMilkshake.Modules.Commands;
+namespace MechanicalMilkshake.Commands;
 
 public class Fun : ApplicationCommandModule
 {

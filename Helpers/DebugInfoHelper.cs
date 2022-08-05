@@ -1,4 +1,4 @@
-﻿namespace MechanicalMilkshake.Modules.Helpers;
+﻿namespace MechanicalMilkshake.Helpers;
 
 public class DebugInfoHelper
 {

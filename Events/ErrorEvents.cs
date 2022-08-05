@@ -1,4 +1,4 @@
-﻿namespace MechanicalMilkshake.Modules.Events;
+﻿namespace MechanicalMilkshake.Events;
 
 public class ErrorEvents
 {

@@ -1,6 +1,6 @@
 using DSharpPlus.Exceptions;
 
-namespace MechanicalMilkshake.Modules.Commands;
+namespace MechanicalMilkshake.Commands;
 
 [SlashRequireGuild]
 public class Mod : ApplicationCommandModule

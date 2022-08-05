@@ -1,4 +1,4 @@
-namespace MechanicalMilkshake.Modules;
+namespace MechanicalMilkshake;
 
 public class WorkerLinks
 {
