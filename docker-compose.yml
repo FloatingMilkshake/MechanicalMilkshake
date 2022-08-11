@@ -25,7 +25,7 @@ services:
     volumes:
       - type: bind
         source: ./db
-        target: /db
+        target: /data
     command: --appendonly yes
   watchtower:
     image: containrrr/watchtower
