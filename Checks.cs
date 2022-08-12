@@ -18,7 +18,7 @@ public class Checks
 #if DEBUG
             Console.WriteLine($"[{DateTime.Now}] [PackageUpdateCheck] Checking for updates on host '{host}'.");
 #endif
-            var cmdResult = await ownerPrivate.RunCommand($"ssh {host} \"sudo apt update\"");
+            var cmdResult = await ownerPrivate.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
             if (cmdResult.Contains("packages can be upgraded"))
             {
                 updatesAvailableResponse += $"`{host}`\n";
