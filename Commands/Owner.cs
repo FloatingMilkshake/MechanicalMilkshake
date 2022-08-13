@@ -944,6 +944,22 @@ public class Owner : ApplicationCommandModule
             public async Task RandomizeActivity(InteractionContext ctx)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+                var storedActivity = JsonConvert.DeserializeObject<DiscordActivity>(await Program.db.HashGetAsync("customStatus", "activity"));
+
+                if (storedActivity is not null && !string.IsNullOrWhiteSpace(storedActivity.Name))
+                {
+                    await Program.discord.UpdateStatusAsync(storedActivity,
+                        JsonConvert.DeserializeObject<UserStatus>(
+                            await Program.db.HashGetAsync("customStatus", "userStatus")));
+
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                        "The bot's activity was previously set with `/activity set` and has thus not been changed." +
+                        "\nIf you wish to proceed with this command, please first clear the current status with `/activity reset`."));
+
+                    return;
+                }
+
                 await CustomStatusHelper.SetCustomStatus();
 
                 var list = await Program.db.HashGetAllAsync("customStatusList");
