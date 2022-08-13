@@ -134,15 +134,24 @@ public class KeywordTracking : ApplicationCommandModule
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
             var data = await Program.db.HashGetAllAsync("keywords");
+            bool keywordReached = false;
             foreach (var field in data)
             {
                 var keywordConfig = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
                 if (keywordConfig.UserId == ctx.User.Id && keywordConfig.Keyword == keyword)
+                {
+                    keywordReached = true;
                     await Program.db.HashDeleteAsync("keywords", keywordConfig.Id);
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                        .WithContent($"Tracked keyword \"{keyword}\" deleted successfully."));
+                }
             }
 
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"Tracked keyword \"{keyword}\" deleted successfully.").AsEphemeral());
+            if (!keywordReached)
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("You're not currently tracking that keyword!"));
+            }
         }
     }
 }

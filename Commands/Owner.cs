@@ -911,20 +911,33 @@ public class Owner : ApplicationCommandModule
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
                 var dbList = await Program.db.HashGetAllAsync("customStatusList");
+
+                if (dbList.Length == 0)
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("There are no custom status messages in the list! Add some with `/activity add`."));
+                    return;
+                }
+
                 var index = 1;
+                bool itemReached = false;
                 foreach (var item in dbList)
                 {
+                    itemReached = false;
                     if (id == index)
                     {
                         await Program.db.HashDeleteAsync("customStatusList", item.Name);
-                        break;
+                        await ctx.FollowUpAsync(
+                            new DiscordFollowupMessageBuilder().WithContent("Activity removed successfully."));
+                        return;
                     }
-
                     index++;
                 }
 
-                await ctx.FollowUpAsync(
-                    new DiscordFollowupMessageBuilder().WithContent("Activity removed successfully."));
+                if (!itemReached)
+                {
+                    await ctx.FollowUpAsync(
+                        new DiscordFollowupMessageBuilder().WithContent("There's no activity with that ID!"));
+                }
             }
 
             [SlashCommand("randomize", "Choose a random custom status message from the list.")]
