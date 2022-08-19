@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake.Commands;
+﻿using System.Net.Sockets;
+
+namespace MechanicalMilkshake.Commands;
 
 public class Owner : ApplicationCommandModule
 {
@@ -401,6 +403,65 @@ public class Owner : ApplicationCommandModule
                             $"Hmm, I couldn't send the list of links here! You can see the full list on Cloudflare's website [here](https://dash.cloudflare.com/{Program.configjson.WorkerLinks.AccountId}/workers/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId}). Exception details are below.\n```\n{ex.GetType()}: {ex.Message}\n```")
                         .AsEphemeral());
                 }
+            }
+
+            [SlashCommand("get", "Get the long URL for a short link.")]
+            public async Task LinkShow(InteractionContext ctx,
+                [Option("link", "The key or URL of the short link to delete.")]
+                string url)
+            {
+                string baseUrl;
+                if (Program.configjson.WorkerLinks.BaseUrl == null)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                        new DiscordInteractionResponseBuilder().WithContent(
+                            "Error: No base URL provided! Make sure the baseUrl field under workerLinks in your config.json file is set."));
+                    return;
+                }
+
+                string secret;
+                if (Program.configjson.WorkerLinks.Secret == null)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                        new DiscordInteractionResponseBuilder().WithContent(
+                            "Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set."));
+                    return;
+                }
+
+                secret = Program.configjson.WorkerLinks.Secret;
+
+                baseUrl = Program.configjson.WorkerLinks.BaseUrl;
+
+                var handler = new HttpClientHandler
+                {
+                    AllowAutoRedirect = false
+                };
+
+                using HttpClient httpClient = new(handler)
+                {
+                    BaseAddress = new Uri(baseUrl)
+                };
+
+                if (!url.Contains(baseUrl)) url = $"{baseUrl}/{url}";
+
+                HttpRequestMessage request = new(HttpMethod.Get, url);
+                request.Headers.Add("Authorization", secret);
+
+                var response = await httpClient.SendAsync(request);
+                var httpStatusCode = (int)response.StatusCode;
+                var httpStatus = response.StatusCode.ToString();
+
+                if (response.Headers.Location is null)
+                {
+                    await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                        new DiscordInteractionResponseBuilder().WithContent(
+                            "That link doesn't exist!"));
+                    return;
+                }
+
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder().WithContent(
+                        $"<{url}>\npoints to:\n<{response.Headers.Location}>"));
             }
 
             public class CloudflareResponse

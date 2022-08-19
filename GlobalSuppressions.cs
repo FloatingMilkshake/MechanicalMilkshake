@@ -268,3 +268,7 @@ using System.Diagnostics.CodeAnalysis;
     SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
         Target =
             "~M:MechanicalMilkshake.Commands.Owner.Private.ActivityCmds.ChooseActvity(DSharpPlus.SlashCommands.InteractionContext,System.Int64)~System.Threading.Tasks.Task")]
+[assembly:
+    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
+        Target =
+            "~M:MechanicalMilkshake.Commands.Owner.Private.Link.LinkShow(DSharpPlus.SlashCommands.InteractionContext,System.String)~System.Threading.Tasks.Task")]
