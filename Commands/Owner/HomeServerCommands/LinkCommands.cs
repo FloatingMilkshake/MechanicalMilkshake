@@ -222,7 +222,7 @@
 
             [SlashCommand("get", "Get the long URL for a short link.")]
             public async Task LinkShow(InteractionContext ctx,
-                [Option("link", "The key or URL of the short link to delete.")]
+                [Option("link", "The key or URL of the short link to get.")]
                 string url)
             {
                 string baseUrl;
