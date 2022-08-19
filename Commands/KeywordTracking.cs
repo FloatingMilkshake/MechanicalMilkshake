@@ -23,7 +23,7 @@ public class KeywordTracking : ApplicationCommandModule
             var fields = await Program.db.HashGetAllAsync("keywords");
             foreach (var field in fields)
             {
-                var fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+                var fieldValue = JsonConvert.DeserializeObject<Refs.KeywordConfig>(field.Value);
 
                 // If the keyword is already being tracked, delete the current entry
                 // This way we don't end up with duplicate entries for keywords
@@ -69,7 +69,7 @@ public class KeywordTracking : ApplicationCommandModule
                 }
             }
 
-            KeywordConfig keywordConfig = new()
+            Refs.KeywordConfig keywordConfig = new()
             {
                 Keyword = keyword,
                 UserId = ctx.User.Id,
@@ -96,7 +96,7 @@ public class KeywordTracking : ApplicationCommandModule
             var response = "";
             foreach (var field in data)
             {
-                var fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+                var fieldValue = JsonConvert.DeserializeObject<Refs.KeywordConfig>(field.Value);
 
                 if (fieldValue.UserId != ctx.User.Id)
                     continue;
@@ -137,7 +137,7 @@ public class KeywordTracking : ApplicationCommandModule
             bool keywordReached = false;
             foreach (var field in data)
             {
-                var keywordConfig = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+                var keywordConfig = JsonConvert.DeserializeObject<Refs.KeywordConfig>(field.Value);
                 if (keywordConfig.UserId == ctx.User.Id && keywordConfig.Keyword == keyword)
                 {
                     keywordReached = true;
@@ -154,19 +154,4 @@ public class KeywordTracking : ApplicationCommandModule
             }
         }
     }
-}
-
-public class KeywordConfig
-{
-    [JsonProperty("keyword")] public string Keyword { get; set; }
-
-    [JsonProperty("userId")] public ulong UserId { get; set; }
-
-    [JsonProperty("matchWholeWord")] public bool MatchWholeWord { get; set; }
-
-    [JsonProperty("ignoreBots")] public bool IgnoreBots { get; set; }
-
-    [JsonProperty("ignoreList")] public List<ulong> IgnoreList { get; set; }
-
-    [JsonProperty("id")] public ulong Id { get; set; }
 }

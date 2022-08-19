@@ -10,7 +10,7 @@ public class Checks
         var updatesAvailableResponse = "";
         var restartRequiredResponse = "";
 
-        Owner.Private ownerPrivate = new();
+        Commands.Owner.HomeServerCommands.EvalCommands evalCommands = new();
         var updatesAvailable = false;
         var restartRequired = false;
         foreach (var host in Program.configjson.SshHosts)
@@ -18,7 +18,7 @@ public class Checks
 #if DEBUG
             Console.WriteLine($"[{DateTime.Now}] [PackageUpdateCheck] Checking for updates on host '{host}'.");
 #endif
-            var cmdResult = await ownerPrivate.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
+            var cmdResult = await evalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
             if (cmdResult.Contains("packages can be upgraded"))
             {
                 updatesAvailableResponse += $"`{host}`\n";
@@ -53,7 +53,7 @@ public class Checks
 
         foreach (var reminder in reminders)
         {
-            var reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
+            var reminderData = JsonConvert.DeserializeObject<Refs.Reminder>(reminder.Value);
 
             if (reminderData.ReminderTime <= DateTime.Now)
             {

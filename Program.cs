@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake;
+﻿using System.Reflection;
+
+namespace MechanicalMilkshake;
 
 internal class Program
 {
@@ -135,31 +137,39 @@ internal class Program
             .WithRegion(configjson.S3.Region)
             .WithSSL();
 
-        try
-        {
-            // Register slash commands as guild commands in configured development server when
+        //try
+        //{
+            // Register slash commands as guild commands in home server when
             // running in development mode
 #if DEBUG
-            slash.RegisterCommands<Owner>(configjson.DevServerId);
-            slash.RegisterCommands<Owner.Private>(configjson.DevServerId);
-            slash.RegisterCommands<Fun>(configjson.DevServerId);
-            slash.RegisterCommands<Mod>(configjson.DevServerId);
-            slash.RegisterCommands<Utility>(configjson.DevServerId);
-            slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.DevServerId);
-            slash.RegisterCommands<KeywordTracking>(configjson.DevServerId);
-            slash.RegisterCommands<Reminders>(configjson.DevServerId);
+            var slashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
+                t.IsClass && t.Namespace != null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
+                !t.IsNested);
+
+            foreach (var type in slashCommandClasses)
+                slash.RegisterCommands(type, configjson.DevServerId);
+
+
             Console.WriteLine("Slash commands registered for debugging.");
 
-            // Register slash commands globally for 'production' bot
+        // Register slash commands globally for 'production' bot
 #else
-                slash.RegisterCommands<Owner>();
-                slash.RegisterCommands<Owner.Private>(configjson.DevServerId);
-                slash.RegisterCommands<Fun>();
-                slash.RegisterCommands<Mod>();
-                slash.RegisterCommands<Utility>();
-                slash.RegisterCommands<KeywordTracking>();
-                slash.RegisterCommands<Reminders>();
-                Console.WriteLine("Slash commands registered globally.");
+            var globalSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
+                t.IsClass && t.Namespace != null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
+                !t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") && !t.IsNested);
+
+            foreach (var type in globalSlashCommandClasses)
+                slash.RegisterCommands(type);
+
+
+            var ownerSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
+                t.IsClass && t.Namespace != null && t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") &&
+                !t.IsNested);
+
+            foreach (var type in ownerSlashCommandClasses)
+                slash.RegisterCommands(type, configjson.DevServerId);
+
+            Console.WriteLine("Slash commands registered globally.");
             
 // Register slash commands for per-server features in respective servers
 // & testing server for 'production' bot
@@ -168,28 +178,27 @@ internal class Program
                 slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.DevServerId);
                 slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
 #endif
-        }
-        catch (Exception ex)
-        {
-            DiscordButtonComponent restartButton = new(ButtonStyle.Danger, "Restart", "slash-fail-restart-button");
-
-            var ownerMention = "";
-            foreach (var user in discord.CurrentApplication.Owners) ownerMention += user.Mention + " ";
-
-            DiscordMessageBuilder message = new()
-            {
-                Content =
-                    $"{ownerMention.Trim()}\nSlash commands failed to register properly! Click the button to restart the bot. Exception details are below.\n```cs\n{ex.Message}\n```"
-            };
-            message.AddComponents(restartButton);
-
-            await homeChannel.SendMessageAsync(message);
-        }
+        //}
+        //catch (Exception ex)
+        //{
+        //    DiscordButtonComponent restartButton = new(ButtonStyle.Danger, "Restart", "slash-fail-restart-button");
+        //
+        //    var ownerMention = "";
+        //    foreach (var user in discord.CurrentApplication.Owners) ownerMention += user.Mention + " ";
+        //
+        //    DiscordMessageBuilder message = new()
+        //    {
+        //        Content =
+        //            $"{ownerMention.Trim()}\nSlash commands failed to register properly! Click the button to restart the bot. Exception details are below.\n```cs\n{ex.Message}\n```"
+        //    };
+        //    message.AddComponents(restartButton);
+        //
+        //    await homeChannel.SendMessageAsync(message);
+        //}
 
 
         // Register CommandsNext commands
         commands.RegisterCommands<PerServerFeatures.MessageCommands>();
-        commands.RegisterCommands<Owner.DebugCmds>();
 
         await discord.ConnectAsync();
 
@@ -204,8 +213,8 @@ internal class Program
         /* Create an instance of the Owner.Private class and run a command to fix SSH key permissions
         at bot startup. I wanted to be able to do this somewhere else, but for now it seems
         like this is the best way of doing it that I'm aware of, and it works. */
-        Owner.Private ownerPrivate = new();
-        await ownerPrivate.RunCommand("cat /app/id_rsa > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa");
+        Commands.Owner.HomeServerCommands.EvalCommands evalCommands = new();
+        await evalCommands.RunCommand("cat /app/id_rsa > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa");
 
         // Run checks
 
