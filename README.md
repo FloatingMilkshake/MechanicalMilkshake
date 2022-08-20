@@ -22,7 +22,7 @@ This is the other way to get the bot into one of your servers, and is best for d
 
 - Clone the repo
 - Copy `config.example.json` to `config.json`
-- In `config.json`, provide values for at least `botToken`, `homeChannel` and `devServerId`. Other values are optional, but some functionality may not work without them (the bot should tell you what's missing though if you try to use a feature that requires a value you didn't set).
+- In `config.json`, provide values for at least `botToken`, `homeChannel` and `homeServerId`. Other values are optional, but some functionality may not work without them (the bot should tell you what's missing though if you try to use a feature that requires a value you didn't set).
 - Run `docker-compose up -d`
 
 ## `config.json` Keys
@@ -32,7 +32,7 @@ Here are explanations for each of the keys in `config.json`. If you need a more 
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | botToken                        | The token for your bot.                                                                                                                                                                                                |
 | homeChannel                     | The ID of the channel where your bot will send messages at startup, like [this one](https://cdn.floatingmilkshake.com/o3QvkP5PES.png).                                                                                 |
-| devServerId                     | Owner commands are only available in this server. Additionally, slash commands are registered only for this server if you're developing the bot, so you don't have to wait an hour for Discord to cache them.          |
+| homeServerId                     | Owner commands are only available in this server. Additionally, slash commands are registered only for this server if you're developing the bot, so you don't have to wait an hour for Discord to cache them.          |
 | wolframAlphaAppId               | Your App ID from WolframAlpha. This is like an API key, and is required for the `/wolframalpha` command.                                                                                                               |
 | **workerLinks**                 | These values are used for interacting with short links created with [Erisa](https://github.com/Erisa)'s [worker-links](https://github.com/Erisa/worker-links).                                                         |
 | **workerLinks** / baseUrl       | Your worker-links base URL. This should look something like `https://link.floatingmilkshake.com`.                                                                                                                      |

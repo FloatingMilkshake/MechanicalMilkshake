@@ -148,7 +148,7 @@ internal class Program
                 !t.IsNested);
 
             foreach (var type in slashCommandClasses)
-                slash.RegisterCommands(type, configjson.DevServerId);
+                slash.RegisterCommands(type, configjson.HomeServerId);
 
             discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging.");
 
@@ -167,7 +167,7 @@ internal class Program
                 !t.IsNested);
 
             foreach (var type in ownerSlashCommandClasses)
-                slash.RegisterCommands(type, configjson.DevServerId);
+                slash.RegisterCommands(type, configjson.HomeServerId);
 
             discord.Logger.LogInformation(BotEventId, "Slash commands registered globally.");
             
@@ -175,7 +175,7 @@ internal class Program
 // & testing server for 'production' bot
                 slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(631118217384951808);
                 slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(984903591816990730);
-                slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.DevServerId);
+                slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.HomeServerId);
                 slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
 #endif
         //}
