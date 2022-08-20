@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 namespace MechanicalMilkshake;
 
@@ -12,6 +13,7 @@ internal class Program
     public static ConfigJson configjson;
     public static readonly string processStartTime = DateTime.Now.ToString();
     public static DiscordChannel homeChannel;
+    public static EventId BotEventId { get; } = new EventId(1000, "MechanicalMilkshake");
 #if DEBUG
     public static ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:6379");
 #else
@@ -87,8 +89,8 @@ internal class Program
         // If the bot token is not set, we cannot continue. Display error and exit.
         if (configjson.BotToken == null || configjson.BotToken == "")
         {
-            Console.WriteLine("ERROR: No token provided! Make sure the botToken field in your "
-                              + "config.json file is set.");
+            discord.Logger.LogError(BotEventId,
+                "ERROR: No token provided! Make sure the botToken field in your config.json file is set.");
             Environment.Exit(1);
         }
 
@@ -114,8 +116,7 @@ internal class Program
         // Display error and exit.
         if (configjson.HomeChannel == null)
         {
-            Console.WriteLine("ERROR: No home channel provided! Make sure the homeChannel "
-                              + "field in your config.json file is set.");
+            discord.Logger.LogError(BotEventId, "No home channel provided! Make sure the homeChannel field in your config.json file is set.");
             Environment.Exit(1);
         }
 
@@ -149,8 +150,7 @@ internal class Program
             foreach (var type in slashCommandClasses)
                 slash.RegisterCommands(type, configjson.DevServerId);
 
-
-            Console.WriteLine("Slash commands registered for debugging.");
+            discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging.");
 
         // Register slash commands globally for 'production' bot
 #else
@@ -169,7 +169,7 @@ internal class Program
             foreach (var type in ownerSlashCommandClasses)
                 slash.RegisterCommands(type, configjson.DevServerId);
 
-            Console.WriteLine("Slash commands registered globally.");
+            discord.Logger.LogInformation(BotEventId, "Slash commands registered globally.");
             
 // Register slash commands for per-server features in respective servers
 // & testing server for 'production' bot

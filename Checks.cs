@@ -5,7 +5,7 @@ public class Checks
     public static async Task PackageUpdateCheck()
     {
 #if DEBUG
-        Console.WriteLine($"[{DateTime.Now}] PackageUpdateCheck running.");
+        Program.discord.Logger.LogInformation(Program.BotEventId, "PackageUpdateCheck running.");
 #endif
         var updatesAvailableResponse = "";
         var restartRequiredResponse = "";
@@ -16,7 +16,7 @@ public class Checks
         foreach (var host in Program.configjson.SshHosts)
         {
 #if DEBUG
-            Console.WriteLine($"[{DateTime.Now}] [PackageUpdateCheck] Checking for updates on host '{host}'.");
+            Program.discord.Logger.LogInformation(Program.BotEventId, "[PackageUpdateCheck] Checking for updates on host '{host}'.\"", host);
 #endif
             var cmdResult = await evalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
             if (cmdResult.Contains("packages can be upgraded"))
@@ -28,7 +28,7 @@ public class Checks
             if (cmdResult.Contains("System restart required")) restartRequired = true;
         }
 #if DEBUG
-        Console.WriteLine($"[{DateTime.Now}] [PackageUpdateCheck] Finished checking for updates on all hosts.");
+        Program.discord.Logger.LogInformation(Program.BotEventId, "[PackageUpdateCheck] Finished checking for updates on all hosts.");
 #endif
 
         if (restartRequired) restartRequiredResponse = "A system restart is required to complete package updates.";
@@ -81,7 +81,7 @@ public class Checks
         public static async Task WednesdayCheck()
         {
 #if DEBUG
-            Console.WriteLine($"[{DateTime.Now}] WednesdayCheck running.");
+            Program.discord.Logger.LogInformation(Program.BotEventId, "WednesdayCheck running.");
 #endif
             if (DateTime.Now.DayOfWeek != DayOfWeek.Wednesday)
                 return;
@@ -93,14 +93,14 @@ public class Checks
             }
             catch (Exception e)
             {
-                Console.WriteLine($"An error occurred! Details: {e}");
+                Program.discord.Logger.LogError(Program.BotEventId, "An error occurred! Details: {e}", e);
             }
         }
 
         public static async Task PizzaTime()
         {
 #if DEBUG
-            Console.WriteLine($"[{DateTime.Now}] PizzaTime running.");
+            Program.discord.Logger.LogInformation(Program.BotEventId, "PizzaTime running.");
 #endif
             if (!DateTime.Now.ToShortTimeString().Contains("12:00")) return;
 
@@ -112,7 +112,7 @@ public class Checks
             }
             catch (Exception e)
             {
-                Console.WriteLine($"An error occurred! Details: {e}");
+                Program.discord.Logger.LogError(Program.BotEventId, "An error occurred! Details: {e}", e);
             }
         }
     }

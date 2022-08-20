@@ -304,8 +304,7 @@ public class MessageEvents
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine(
-                            $"[{DateTime.Now}] A DM was received, but could not be forwarded!\nException Details: {ex.GetType}: {ex.Message}\nMessage Content: {e.Message.Content}");
+                        Program.discord.Logger.LogError(Program.BotEventId, "A DM was received, but could not be forwarded!\nException Details: {ex.GetType()}: {ex.Message}\nMessage Content: {e.Message.Content}", ex.GetType(), ex.Message, e.Message.Content);
                     }
                 }
             }
