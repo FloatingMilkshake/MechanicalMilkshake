@@ -7,10 +7,10 @@
         {
             [SlashCommand("set", "Set a reminder.")]
             public async Task SetReminder(InteractionContext ctx,
-                [Option("text", "What should the reminder say?")]
-            string text,
                 [Option("time", "When do you want to be reminded?")]
-            string time)
+            string time,
+                [Option("text", "What should the reminder say?")]
+            string text)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder());
@@ -170,10 +170,10 @@
             public async Task ModifyReminder(InteractionContext ctx,
                 [Option("reminder", "The ID of the reminder to modify. You can get this with `/reminder list`.")]
             string reminderToModify,
-                [Option("text", "What should the reminder say? Leave this blank if you don't want to change it.")]
-            string text = null,
                 [Option("time", "When do you want to be reminded? Leave this blank if you don't want to change it.")]
-            string time = null)
+            string time = null,
+            [Option("text", "What should the reminder say? Leave this blank if you don't want to change it.")]
+            string text = null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().AsEphemeral());
