@@ -138,63 +138,45 @@ internal class Program
             .WithRegion(configjson.S3.Region)
             .WithSSL();
 
-        //try
-        //{
-            // Register slash commands as guild commands in home server when
-            // running in development mode
+
+         // Register slash commands as guild commands in home server when
+         // running in development mode
 #if DEBUG
-            var slashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-                t.IsClass && t.Namespace != null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
-                !t.IsNested);
+         var slashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
+             t.IsClass && t.Namespace != null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
+             !t.IsNested);
 
-            foreach (var type in slashCommandClasses)
-                slash.RegisterCommands(type, configjson.HomeServerId);
+         foreach (var type in slashCommandClasses)
+             slash.RegisterCommands(type, configjson.HomeServerId);
 
-            discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging.");
+         discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging.");
 
         // Register slash commands globally for 'production' bot
 #else
-            var globalSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-                t.IsClass && t.Namespace != null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
-                !t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") && !t.IsNested);
+        var globalSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
+            t.IsClass && t.Namespace != null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
+            !t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") && !t.IsNested);
 
-            foreach (var type in globalSlashCommandClasses)
-                slash.RegisterCommands(type);
+        foreach (var type in globalSlashCommandClasses)
+            slash.RegisterCommands(type);
 
 
-            var ownerSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-                t.IsClass && t.Namespace != null && t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") &&
-                !t.IsNested);
+        var ownerSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
+            t.IsClass && t.Namespace != null && t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") &&
+            !t.IsNested);
 
-            foreach (var type in ownerSlashCommandClasses)
-                slash.RegisterCommands(type, configjson.HomeServerId);
+        foreach (var type in ownerSlashCommandClasses)
+            slash.RegisterCommands(type, configjson.HomeServerId);
 
-            discord.Logger.LogInformation(BotEventId, "Slash commands registered globally.");
+        discord.Logger.LogInformation(BotEventId, "Slash commands registered globally.");
             
 // Register slash commands for per-server features in respective servers
 // & testing server for 'production' bot
-                slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(631118217384951808);
-                slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(984903591816990730);
-                slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.HomeServerId);
-                slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
+        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(631118217384951808);
+        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(984903591816990730);
+        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.HomeServerId);
+        slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
 #endif
-        //}
-        //catch (Exception ex)
-        //{
-        //    DiscordButtonComponent restartButton = new(ButtonStyle.Danger, "Restart", "slash-fail-restart-button");
-        //
-        //    var ownerMention = "";
-        //    foreach (var user in discord.CurrentApplication.Owners) ownerMention += user.Mention + " ";
-        //
-        //    DiscordMessageBuilder message = new()
-        //    {
-        //        Content =
-        //            $"{ownerMention.Trim()}\nSlash commands failed to register properly! Click the button to restart the bot. Exception details are below.\n```cs\n{ex.Message}\n```"
-        //    };
-        //    message.AddComponents(restartButton);
-        //
-        //    await homeChannel.SendMessageAsync(message);
-        //}
 
 
         // Register CommandsNext commands
