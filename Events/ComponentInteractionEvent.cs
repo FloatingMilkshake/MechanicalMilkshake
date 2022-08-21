@@ -263,6 +263,30 @@ public class ComponentInteractionEvent
                     .WithContent(ex.GetType() + ": " + ex.Message).AsEphemeral());
             }
         }
+        else if (e.Id == "clear-confirm-callback")
+        {
+            Task.Run(async () =>
+            {
+                Dictionary<ulong, List<DiscordMessage>> messagesToClear = Commands.Clear.MessagesToClear;
+
+                if (!messagesToClear.ContainsKey(e.Message.Id))
+                {
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                        new DiscordInteractionResponseBuilder().WithContent("These messages have already been deleted!").AsEphemeral(true));
+                    return;
+                }
+
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
+
+                List<DiscordMessage> messages = messagesToClear.GetValueOrDefault(e.Message.Id);
+
+                await e.Channel.DeleteMessagesAsync(messages, $"[Clear by {e.User.Username}#{e.User.Discriminator}]");
+
+                messagesToClear.Remove(e.Message.Id);
+
+                await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent("Done!").AsEphemeral(true));
+            });
+        }
         else
         {
             e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
