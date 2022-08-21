@@ -7,6 +7,9 @@ public class AboutCommands : ApplicationCommandModule
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
+        // Set this to an empty string to disable the Privacy Policy notice in `/about`, or change it to your own Privacy Policy URL if you have one.
+        string privacyPolicyUrl = "https://floatingmilkshake.com/privacy#MechanicalMilkshake";
+
         DiscordEmbedBuilder embed = new()
         {
             Title = $"About {ctx.Client.CurrentUser.Username}",
@@ -17,6 +20,11 @@ public class AboutCommands : ApplicationCommandModule
         embed.AddField("Servers", ctx.Client.Guilds.Count.ToString(), true);
         embed.AddField("Total User Count (not unique)", ctx.Client.Guilds.Sum(g => g.Value.MemberCount).ToString(),
             true);
+
+        if (!string.IsNullOrWhiteSpace(privacyPolicyUrl))
+        {
+            embed.Description += $"\n\nThis bot's Privacy Policy can be found [here]({privacyPolicyUrl}).";
+        }
 
         // Unique user count
         List<DiscordUser> uniqueUsers = new();
