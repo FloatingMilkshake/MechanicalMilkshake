@@ -1,6 +1,4 @@
-﻿using MechanicalMilkshake.Refs;
-
-namespace MechanicalMilkshake.Commands.Owner.HomeServerCommands;
+﻿namespace MechanicalMilkshake.Commands.Owner.HomeServerCommands;
 
 public class EvalCommands : ApplicationCommandModule
 {

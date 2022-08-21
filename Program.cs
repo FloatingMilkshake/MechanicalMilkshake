@@ -1,7 +1,4 @@
-﻿using System.Reflection;
-using MechanicalMilkshake.Commands.Owner.HomeServerCommands;
-
-namespace MechanicalMilkshake;
+﻿namespace MechanicalMilkshake;
 
 internal class Program
 {

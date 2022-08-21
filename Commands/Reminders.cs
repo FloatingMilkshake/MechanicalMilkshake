@@ -1,6 +1,4 @@
-﻿using MechanicalMilkshake.Refs;
-
-namespace MechanicalMilkshake.Commands;
+﻿namespace MechanicalMilkshake.Commands;
 
 public class Reminders : ApplicationCommandModule
 {

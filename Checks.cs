@@ -1,7 +1,4 @@
-﻿using MechanicalMilkshake.Commands.Owner.HomeServerCommands;
-using MechanicalMilkshake.Refs;
-
-namespace MechanicalMilkshake;
+﻿namespace MechanicalMilkshake;
 
 public class Checks
 {

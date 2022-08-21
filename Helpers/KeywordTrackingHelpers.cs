@@ -1,6 +1,4 @@
-﻿using MechanicalMilkshake.Refs;
-
-namespace MechanicalMilkshake.Helpers;
+﻿namespace MechanicalMilkshake.Helpers;
 
 public class KeywordTrackingHelpers
 {
