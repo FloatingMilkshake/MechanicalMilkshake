@@ -3,7 +3,7 @@
 public class MessageEvents
 {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-    public static async Task MessageUpdated(DiscordClient client, MessageUpdateEventArgs e)
+    public static async Task MessageUpdated(DiscordClient _, MessageUpdateEventArgs e)
     {
         Task.Run(async () =>
         {
@@ -13,7 +13,7 @@ public class MessageEvents
             }
             catch (Exception ex)
             {
-                await ThrowMessageException(ex, e.Message);
+                await ThrowMessageException(ex, e.Message, true);
             }
         });
     }
@@ -310,20 +310,25 @@ public class MessageEvents
             }
             catch (Exception ex)
             {
-                await ThrowMessageException(ex, e.Message);
+                await ThrowMessageException(ex, e.Message, false);
             }
         });
     }
 
-    private static async Task ThrowMessageException(Exception ex, DiscordMessage message)
+    private static async Task ThrowMessageException(Exception ex, DiscordMessage message, bool isEdit)
     {
         DiscordEmbedBuilder embed = new()
         {
             Color = DiscordColor.Red,
-            Title = "An exception occurred when processing a message event",
             Description =
                 $"`{ex.GetType()}` occurred when processing [this message]({message.JumpLink}) (message `{message.Id}` in channel `{message.Channel.Id}`)."
         };
+
+        if (isEdit)
+            embed.Title = "An exception occurred when processing a message update event";
+        else
+            embed.Title = "An exception occurred when processing a message create event";
+
         embed.AddField("Message", $"{ex.Message}");
 
         await Program.homeChannel.SendMessageAsync(embed);
