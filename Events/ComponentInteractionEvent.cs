@@ -49,8 +49,7 @@ public class ComponentInteractionEvent
                         .AsEphemeral());
             }
         }
-
-        if (e.Id == "shutdown-button")
+        else if (e.Id == "shutdown-button")
         {
             if (Program.configjson.AuthorizedUsers.Contains(e.User.Id.ToString()))
             {
@@ -74,8 +73,7 @@ public class ComponentInteractionEvent
                         .AsEphemeral());
             }
         }
-
-        if (e.Id == "shutdown-cancel-button")
+        else if (e.Id == "shutdown-cancel-button")
         {
             if (Program.configjson.AuthorizedUsers.Contains(e.User.Id.ToString()))
             {
@@ -95,8 +93,7 @@ public class ComponentInteractionEvent
                         .AsEphemeral());
             }
         }
-
-        if (e.Id == "view-dm-reply-info")
+        else if (e.Id == "view-dm-reply-info")
         {
             var channelIdField =
                 e.Message.Embeds[0].Fields.Where(f => f.Name == "Channel ID").First();
@@ -123,8 +120,7 @@ public class ComponentInteractionEvent
             await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AddEmbed(embed.Build()).AsEphemeral());
         }
-
-        if (e.Id == "view-dm-context")
+        else if (e.Id == "view-dm-context")
         {
             var channelIdField =
                 e.Message.Embeds[0].Fields.Where(f => f.Name == "Channel ID").First();
@@ -168,8 +164,7 @@ public class ComponentInteractionEvent
             await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AddEmbed(embed.Build()).AsEphemeral());
         }
-
-        if (e.Id == "server-avatar-ctx-cmd-button")
+        else if (e.Id == "server-avatar-ctx-cmd-button")
         {
             Regex idPattern = new(@"\d+");
             var targetUserId = Convert.ToUInt64(idPattern.Match(e.Message.Content).ToString());
@@ -205,8 +200,7 @@ public class ComponentInteractionEvent
                     .WithContent($"{targetMember.GuildAvatarUrl.Replace("size=1024", "size=4096")}")
                     .AsEphemeral());
         }
-
-        if (e.Id == "user-avatar-ctx-cmd-button")
+        else if (e.Id == "user-avatar-ctx-cmd-button")
         {
             Regex idPattern = new(@"\d+");
             var targetUserId = Convert.ToUInt64(idPattern.Match(e.Message.Content).ToString());
@@ -216,8 +210,7 @@ public class ComponentInteractionEvent
                 new DiscordInteractionResponseBuilder()
                     .WithContent($"{targetUser.AvatarUrl.Replace("size=1024", "size=4096")}").AsEphemeral());
         }
-
-        if (e.Id == "code-quick-shortcut")
+        else if (e.Id == "code-quick-shortcut")
         {
             await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
@@ -269,6 +262,12 @@ public class ComponentInteractionEvent
                 await ctx.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(ex.GetType() + ": " + ex.Message).AsEphemeral());
             }
+        }
+        else
+        {
+            e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().WithContent(
+                    "Unknown interaction ID! Contact the bot developer for assistance.").AsEphemeral(true));
         }
     }
 }
