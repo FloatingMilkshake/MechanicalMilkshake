@@ -1,65 +1,65 @@
-﻿namespace MechanicalMilkshake.Commands
+﻿namespace MechanicalMilkshake.Commands;
+
+[SlashRequireGuild]
+public class BanCommands : ApplicationCommandModule
 {
-    [SlashRequireGuild]
-    public class BanCommands : ApplicationCommandModule
-    {
-        [SlashCommand("ban", "Ban a user. They will not be able to rejoin unless unbanned.", false)]
-        [SlashCommandPermissions(Permissions.BanMembers)]
-        public async Task BanCommand(InteractionContext ctx, [Option("user", "The user to ban.")] DiscordUser userToBan,
+    [SlashCommand("ban", "Ban a user. They will not be able to rejoin unless unbanned.", false)]
+    [SlashCommandPermissions(Permissions.BanMembers)]
+    public async Task BanCommand(InteractionContext ctx, [Option("user", "The user to ban.")] DiscordUser userToBan,
         [Option("reason", "The reason for the ban.")]
         string reason = "No reason provided.")
+    {
+        try
         {
-            try
-            {
-                await ctx.Guild.BanMemberAsync(userToBan.Id, 0, reason);
-            }
-            catch (UnauthorizedException)
-            {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-                    .WithContent(
-                        $"Something went wrong. You or I may not be allowed to ban **{userToBan.Username}#{userToBan.Discriminator}**! Please check the role hierarchy and permissions.")
-                    .AsEphemeral());
-                return;
-            }
-            catch (Exception e)
-            {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
-                        $"Hmm, something went wrong while trying to ban that user!\n\nThis was Discord's response:\n> {e.Message}\n\nIf you'd like to contact the bot owner about this, include this debug info:\n```{e}\n```")
-                    .AsEphemeral());
-                return;
-            }
-
+            await ctx.Guild.BanMemberAsync(userToBan.Id, 0, reason);
+        }
+        catch (UnauthorizedException)
+        {
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-                .WithContent("User banned successfully.").AsEphemeral());
-            await ctx.Channel.SendMessageAsync($"{userToBan.Mention} has been banned: **{reason}**");
+                .WithContent(
+                    $"Something went wrong. You or I may not be allowed to ban **{userToBan.Username}#{userToBan.Discriminator}**! Please check the role hierarchy and permissions.")
+                .AsEphemeral());
+            return;
         }
-
-        [SlashCommand("unban", "Unban a user.", false)]
-        [SlashCommandPermissions(Permissions.BanMembers)]
-        public async Task UnbanCommand(InteractionContext ctx, [Option("user", "The user to unban.")] DiscordUser userToUnban)
+        catch (Exception e)
         {
-            try
-            {
-                await ctx.Guild.UnbanMemberAsync(userToUnban);
-            }
-            catch (UnauthorizedException)
-            {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-                    .WithContent(
-                        $"Something went wrong. You or I may not be allowed to unban **{userToUnban.Username}#{userToUnban.Discriminator}**! Please check the role hierarchy and permissions.")
-                    .AsEphemeral());
-                return;
-            }
-            catch (Exception e)
-            {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
-                        $"Hmm, something went wrong while trying to unban that user!\n\nThis was Discord's response:\n> {e.Message}\n\nIf you'd like to contact the bot owner about this, include this debug info:\n```{e}\n```")
-                    .AsEphemeral());
-                return;
-            }
-
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
-                $"Successfully unbanned **{userToUnban.Username}#{userToUnban.Discriminator}**!"));
+                    $"Hmm, something went wrong while trying to ban that user!\n\nThis was Discord's response:\n> {e.Message}\n\nIf you'd like to contact the bot owner about this, include this debug info:\n```{e}\n```")
+                .AsEphemeral());
+            return;
         }
+
+        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+            .WithContent("User banned successfully.").AsEphemeral());
+        await ctx.Channel.SendMessageAsync($"{userToBan.Mention} has been banned: **{reason}**");
+    }
+
+    [SlashCommand("unban", "Unban a user.", false)]
+    [SlashCommandPermissions(Permissions.BanMembers)]
+    public async Task UnbanCommand(InteractionContext ctx,
+        [Option("user", "The user to unban.")] DiscordUser userToUnban)
+    {
+        try
+        {
+            await ctx.Guild.UnbanMemberAsync(userToUnban);
+        }
+        catch (UnauthorizedException)
+        {
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+                .WithContent(
+                    $"Something went wrong. You or I may not be allowed to unban **{userToUnban.Username}#{userToUnban.Discriminator}**! Please check the role hierarchy and permissions.")
+                .AsEphemeral());
+            return;
+        }
+        catch (Exception e)
+        {
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
+                    $"Hmm, something went wrong while trying to unban that user!\n\nThis was Discord's response:\n> {e.Message}\n\nIf you'd like to contact the bot owner about this, include this debug info:\n```{e}\n```")
+                .AsEphemeral());
+            return;
+        }
+
+        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
+            $"Successfully unbanned **{userToUnban.Username}#{userToUnban.Discriminator}**!"));
     }
 }

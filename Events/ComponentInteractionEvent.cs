@@ -267,31 +267,34 @@ public class ComponentInteractionEvent
         {
             Task.Run(async () =>
             {
-                Dictionary<ulong, List<DiscordMessage>> messagesToClear = Commands.Clear.MessagesToClear;
+                var messagesToClear = Clear.MessagesToClear;
 
                 if (!messagesToClear.ContainsKey(e.Message.Id))
                 {
                     await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                        new DiscordInteractionResponseBuilder().WithContent("These messages have already been deleted!").AsEphemeral(true));
+                        new DiscordInteractionResponseBuilder().WithContent("These messages have already been deleted!")
+                            .AsEphemeral());
                     return;
                 }
 
-                await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(true));
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder().AsEphemeral());
 
-                List<DiscordMessage> messages = messagesToClear.GetValueOrDefault(e.Message.Id);
+                var messages = messagesToClear.GetValueOrDefault(e.Message.Id);
 
                 await e.Channel.DeleteMessagesAsync(messages, $"[Clear by {e.User.Username}#{e.User.Discriminator}]");
 
                 messagesToClear.Remove(e.Message.Id);
 
-                await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent("Done!").AsEphemeral(true));
+                await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent("Done!")
+                    .AsEphemeral());
             });
         }
         else
         {
             e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().WithContent(
-                    "Unknown interaction ID! Contact the bot developer for assistance.").AsEphemeral(true));
+                    "Unknown interaction ID! Contact the bot developer for assistance.").AsEphemeral());
         }
     }
 }

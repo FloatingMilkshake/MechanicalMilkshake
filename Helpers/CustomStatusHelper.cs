@@ -10,8 +10,10 @@ public class CustomStatusHelper
 
             if (string.IsNullOrWhiteSpace(currentStatus))
             {
-                await Program.db.HashSetAsync("customStatus", "activity", JsonConvert.SerializeObject(new DiscordActivity()));
-                await Program.db.HashSetAsync("customStatus", "userStatus", JsonConvert.SerializeObject(UserStatus.Online));
+                await Program.db.HashSetAsync("customStatus", "activity",
+                    JsonConvert.SerializeObject(new DiscordActivity()));
+                await Program.db.HashSetAsync("customStatus", "userStatus",
+                    JsonConvert.SerializeObject(UserStatus.Online));
             }
 
             currentStatus = await Program.db.HashGetAsync("customStatus", "activity");
@@ -25,7 +27,7 @@ public class CustomStatusHelper
                 await Program.discord.UpdateStatusAsync(emptyActivity, UserStatus.Online);
                 return;
             }
-            
+
             if (currentActivity.Name is null && currentActivity.ActivityType is 0)
             {
                 // No custom status set. Pick random from list.
@@ -72,6 +74,7 @@ public class CustomStatusHelper
                             customStatusList = await Program.db.HashGetAllAsync("customStatusList");
                             chosenStatus = random.Next(0, customStatusList.Length);
                         }
+
                         activityName = customStatusList[chosenStatus].Name.ToString();
                     }
 
@@ -82,11 +85,11 @@ public class CustomStatusHelper
                 {
                     List<DiscordUser> uniqueUsers = new();
                     foreach (var guild in Program.discord.Guilds)
-                        foreach (var member in guild.Value.Members)
-                        {
-                            var user = await Program.discord.GetUserAsync(member.Value.Id);
-                            if (!uniqueUsers.Contains(user)) uniqueUsers.Add(user);
-                        }
+                    foreach (var member in guild.Value.Members)
+                    {
+                        var user = await Program.discord.GetUserAsync(member.Value.Id);
+                        if (!uniqueUsers.Contains(user)) uniqueUsers.Add(user);
+                    }
 
                     activityName = activityName.Replace("{userCount}", uniqueUsers.Count.ToString());
                 }

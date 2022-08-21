@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Reflection;
+﻿using System.Reflection;
+using MechanicalMilkshake.Commands.Owner.HomeServerCommands;
 
 namespace MechanicalMilkshake;
 
@@ -13,7 +13,7 @@ internal class Program
     public static ConfigJson configjson;
     public static readonly string processStartTime = DateTime.Now.ToString();
     public static DiscordChannel homeChannel;
-    public static EventId BotEventId { get; } = new EventId(1000, "MechanicalMilkshake");
+    public static EventId BotEventId { get; } = new(1000, "MechanicalMilkshake");
 #if DEBUG
     public static ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:6379");
 #else
@@ -116,7 +116,8 @@ internal class Program
         // Display error and exit.
         if (configjson.HomeChannel == null)
         {
-            discord.Logger.LogError(BotEventId, "No home channel provided! Make sure the homeChannel field in your config.json file is set.");
+            discord.Logger.LogError(BotEventId,
+                "No home channel provided! Make sure the homeChannel field in your config.json file is set.");
             Environment.Exit(1);
         }
 
@@ -139,17 +140,17 @@ internal class Program
             .WithSSL();
 
 
-         // Register slash commands as guild commands in home server when
-         // running in development mode
+        // Register slash commands as guild commands in home server when
+        // running in development mode
 #if DEBUG
-         var slashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-             t.IsClass && t.Namespace != null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
-             !t.IsNested);
+        var slashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
+            t.IsClass && t.Namespace != null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
+            !t.IsNested);
 
-         foreach (var type in slashCommandClasses)
-             slash.RegisterCommands(type, configjson.HomeServerId);
+        foreach (var type in slashCommandClasses)
+            slash.RegisterCommands(type, configjson.HomeServerId);
 
-         discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging.");
+        discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging.");
 
         // Register slash commands globally for 'production' bot
 #else
@@ -195,7 +196,7 @@ internal class Program
         /* Create an instance of the Owner.Private class and run a command to fix SSH key permissions
         at bot startup. I wanted to be able to do this somewhere else, but for now it seems
         like this is the best way of doing it that I'm aware of, and it works. */
-        Commands.Owner.HomeServerCommands.EvalCommands evalCommands = new();
+        EvalCommands evalCommands = new();
         await evalCommands.RunCommand("cat /app/id_rsa > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa");
 
         // Run checks

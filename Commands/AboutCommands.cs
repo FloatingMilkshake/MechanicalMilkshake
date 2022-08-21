@@ -8,7 +8,7 @@ public class AboutCommands : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
         // Set this to an empty string to disable the Privacy Policy notice in `/about`, or change it to your own Privacy Policy URL if you have one.
-        string privacyPolicyUrl = "https://floatingmilkshake.com/privacy#MechanicalMilkshake";
+        var privacyPolicyUrl = "https://floatingmilkshake.com/privacy#MechanicalMilkshake";
 
         DiscordEmbedBuilder embed = new()
         {
@@ -22,9 +22,7 @@ public class AboutCommands : ApplicationCommandModule
             true);
 
         if (!string.IsNullOrWhiteSpace(privacyPolicyUrl))
-        {
             embed.Description += $"\n\nThis bot's Privacy Policy can be found [here]({privacyPolicyUrl}).";
-        }
 
         // Unique user count
         List<DiscordUser> uniqueUsers = new();

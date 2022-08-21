@@ -1,4 +1,7 @@
-﻿namespace MechanicalMilkshake;
+﻿using MechanicalMilkshake.Commands.Owner.HomeServerCommands;
+using MechanicalMilkshake.Refs;
+
+namespace MechanicalMilkshake;
 
 public class Checks
 {
@@ -10,15 +13,17 @@ public class Checks
         var updatesAvailableResponse = "";
         var restartRequiredResponse = "";
 
-        Commands.Owner.HomeServerCommands.EvalCommands evalCommands = new();
+        EvalCommands evalCommands = new();
         var updatesAvailable = false;
         var restartRequired = false;
         foreach (var host in Program.configjson.SshHosts)
         {
 #if DEBUG
-            Program.discord.Logger.LogInformation(Program.BotEventId, "[PackageUpdateCheck] Checking for updates on host '{host}'.\"", host);
+            Program.discord.Logger.LogInformation(Program.BotEventId,
+                "[PackageUpdateCheck] Checking for updates on host '{host}'.\"", host);
 #endif
-            var cmdResult = await evalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
+            var cmdResult =
+                await evalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
             if (cmdResult.Contains("packages can be upgraded"))
             {
                 updatesAvailableResponse += $"`{host}`\n";
@@ -28,7 +33,8 @@ public class Checks
             if (cmdResult.Contains("System restart required")) restartRequired = true;
         }
 #if DEBUG
-        Program.discord.Logger.LogInformation(Program.BotEventId, "[PackageUpdateCheck] Finished checking for updates on all hosts.");
+        Program.discord.Logger.LogInformation(Program.BotEventId,
+            "[PackageUpdateCheck] Finished checking for updates on all hosts.");
 #endif
 
         if (restartRequired) restartRequiredResponse = "A system restart is required to complete package updates.";
@@ -53,7 +59,7 @@ public class Checks
 
         foreach (var reminder in reminders)
         {
-            var reminderData = JsonConvert.DeserializeObject<Refs.Reminder>(reminder.Value);
+            var reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
 
             if (reminderData.ReminderTime <= DateTime.Now)
             {

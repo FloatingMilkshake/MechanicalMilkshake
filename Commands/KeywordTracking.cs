@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake.Commands;
+﻿using MechanicalMilkshake.Refs;
+
+namespace MechanicalMilkshake.Commands;
 
 public class KeywordTracking : ApplicationCommandModule
 {
@@ -23,7 +25,7 @@ public class KeywordTracking : ApplicationCommandModule
             var fields = await Program.db.HashGetAllAsync("keywords");
             foreach (var field in fields)
             {
-                var fieldValue = JsonConvert.DeserializeObject<Refs.KeywordConfig>(field.Value);
+                var fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
 
                 // If the keyword is already being tracked, delete the current entry
                 // This way we don't end up with duplicate entries for keywords
@@ -69,7 +71,7 @@ public class KeywordTracking : ApplicationCommandModule
                 }
             }
 
-            Refs.KeywordConfig keywordConfig = new()
+            KeywordConfig keywordConfig = new()
             {
                 Keyword = keyword,
                 UserId = ctx.User.Id,
@@ -96,7 +98,7 @@ public class KeywordTracking : ApplicationCommandModule
             var response = "";
             foreach (var field in data)
             {
-                var fieldValue = JsonConvert.DeserializeObject<Refs.KeywordConfig>(field.Value);
+                var fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
 
                 if (fieldValue.UserId != ctx.User.Id)
                     continue;
@@ -134,10 +136,10 @@ public class KeywordTracking : ApplicationCommandModule
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
             var data = await Program.db.HashGetAllAsync("keywords");
-            bool keywordReached = false;
+            var keywordReached = false;
             foreach (var field in data)
             {
-                var keywordConfig = JsonConvert.DeserializeObject<Refs.KeywordConfig>(field.Value);
+                var keywordConfig = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
                 if (keywordConfig.UserId == ctx.User.Id && keywordConfig.Keyword == keyword)
                 {
                     keywordReached = true;
@@ -148,10 +150,8 @@ public class KeywordTracking : ApplicationCommandModule
             }
 
             if (!keywordReached)
-            {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("You're not currently tracking that keyword!"));
-            }
         }
     }
 }

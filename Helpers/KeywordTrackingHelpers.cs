@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake.Helpers;
+﻿using MechanicalMilkshake.Refs;
+
+namespace MechanicalMilkshake.Helpers;
 
 public class KeywordTrackingHelpers
 {
@@ -13,7 +15,7 @@ public class KeywordTrackingHelpers
         {
             // Checks
 
-            var fieldValue = JsonConvert.DeserializeObject<Refs.KeywordConfig>(field.Value);
+            var fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
 
             // If message was sent by (this) bot, ignore
             if (message.Author.Id == Program.discord.CurrentUser.Id)
