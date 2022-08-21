@@ -72,6 +72,7 @@ public class CustomStatusHelper
                             customStatusList = await Program.db.HashGetAllAsync("customStatusList");
                             chosenStatus = random.Next(0, customStatusList.Length);
                         }
+                        activityName = customStatusList[chosenStatus].Name.ToString();
                     }
 
                     activityName = activityName.Replace("{uptime}", uptime.Humanize());
