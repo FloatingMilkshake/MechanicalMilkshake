@@ -213,5 +213,85 @@ public class Reminders : ApplicationCommandModule
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                 .WithContent("Reminder modified successfully.").AsEphemeral());
         }
+
+        [SlashCommand("pushback", "Push back a reminder that just went off.")]
+        public async Task PushBackReminder(InteractionContext ctx,
+            [Option("message", "The message for the reminder to push back. Accepts message IDs.")]
+            string msgId,
+            [Option("time", "When do you want to be reminded?")]
+            string time)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            DiscordMessage message;
+            try
+            {
+                message = await ctx.Channel.GetMessageAsync(Convert.ToUInt64(msgId));
+            }
+            catch
+            {
+                await ctx.FollowUpAsync(
+                    new DiscordFollowupMessageBuilder().WithContent(
+                        $"I couldn't parse \"{msgId}\" as a message ID! Please try again."));
+                return;
+            }
+
+            DateTime reminderTime;
+            try
+            {
+                reminderTime = HumanDateParser.HumanDateParser.Parse(time);
+            }
+            catch
+            {
+                // Parse error, either because the user did it wrong or because HumanDateParser is weird
+
+                await ctx.FollowUpAsync(
+                    new DiscordFollowupMessageBuilder().WithContent(
+                        $"I couldn't parse \"{time}\" as a time! Please try again."));
+                return;
+            }
+
+            if (reminderTime <= DateTime.Now)
+            {
+                await ctx.FollowUpAsync(
+                    new DiscordFollowupMessageBuilder().WithContent(
+                        "You can't set a reminder to go off in the past!"));
+                return;
+            }
+
+            string guildId;
+            if (ctx.Channel.IsPrivate)
+                guildId = "@me";
+            else
+                guildId = ctx.Guild.Id.ToString();
+
+            Random random = new();
+            var reminderId = random.Next(1000, 9999);
+
+            var reminders = await Program.db.HashGetAllAsync("reminders");
+            foreach (var rem in reminders)
+                while (rem.Name == reminderId)
+                    reminderId = random.Next(1000, 9999);
+            // This is to avoid the potential for duplicate reminders
+            Reminder reminder = new()
+            {
+                UserId = ctx.User.Id,
+                ChannelId = ctx.Channel.Id,
+                GuildId = guildId,
+                ReminderId = reminderId,
+                ReminderText = message.Embeds[0].Description,
+                ReminderTime = reminderTime,
+                SetTime = DateTime.Now
+            };
+
+            var unixTime = ((DateTimeOffset)reminderTime).ToUnixTimeSeconds();
+
+            var response = await ctx.FollowUpAsync(
+                new DiscordFollowupMessageBuilder().WithContent(
+                    $"[Reminder](https://discord.com/channels/{ctx.Guild.Id}/{ctx.Channel.Id}/{msgId}) pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!"));
+            reminder.MessageId = response.Id;
+
+            await Program.db.HashSetAsync("reminders", reminderId, JsonConvert.SerializeObject(reminder));
+        }
     }
 }
