@@ -29,8 +29,7 @@ public class RandomCommands : ApplicationCommandModule
         [SlashCommand("fact", "Get a random fact.")]
         public async Task RandomFact(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(
-                new DiscordInteractionResponseBuilder().WithContent("*Getting a random fact...*"));
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
             var fact = await Program.httpClient.GetStringAsync("https://uselessfacts.jsph.pl/random.md");
 
@@ -40,29 +39,27 @@ public class RandomCommands : ApplicationCommandModule
                 fact = fact.Replace("http", "<http");
             }
 
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(fact));
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(fact));
         }
 
         [SlashCommand("cat", "Get a random cat picture from the internet.")]
         public async Task RandomCat(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(
-                new DiscordInteractionResponseBuilder().WithContent("*Looking for a cat...*"));
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
             var data = await Program.httpClient.GetStringAsync("https://api.thecatapi.com/v1/images/search");
             Regex pattern = new(@"https:\/\/cdn2.thecatapi.com\/images\/.*(.png|.jpg)");
             var cat = pattern.Match(data);
             if (cat is not null)
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"{cat}"));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"{cat}"));
             else
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                     "I found a cat, but something happened and I wasn't able to send it here. Try again."));
         }
 
         [SlashCommand("dog", "Get a random dog picture from the internet.")]
         public async Task RandomDog(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(
-                new DiscordInteractionResponseBuilder().WithContent("*Looking for a dog...*"));
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
             var data = await Program.httpClient.GetStringAsync("https://dog.ceo/api/breeds/image/random");
             Regex pattern = new(@"https:\\\/\\\/images.dog.ceo\\\/breeds\\\/.*(.png|.jpg)");
             var dogMatch = pattern.Match(data);
@@ -70,11 +67,11 @@ public class RandomCommands : ApplicationCommandModule
             {
                 var dog = dogMatch.ToString();
                 dog = dog.Replace("\\", "");
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"{dog}"));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"{dog}"));
             }
             else
             {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                     "I found a dog, but something happened and I wasn't able to send it here. Try again."));
             }
         }
