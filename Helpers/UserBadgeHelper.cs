@@ -34,7 +34,7 @@ public class UserBadgeHelper
 
         if (user.Flags.Value.HasFlag(UserFlags.BugHunterLevelTwo))
             badges +=
-                $"<:bugHunterLevelTwo:{Program.userFlagEmoji.GetValueOrDefault("bugHunterLevelTwo")}> BugHunterLevelTwo\n";
+                $"<:bugHunterLevelTwo:{Program.userFlagEmoji.GetValueOrDefault("bugHunterLevelTwo")}> Bug Hunter Level Two\n";
 
         if (user.Flags.Value.HasFlag(UserFlags.DiscordCertifiedModerator))
             badges +=
