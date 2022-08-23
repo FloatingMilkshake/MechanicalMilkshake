@@ -10,6 +10,9 @@ public class AboutCommands : ApplicationCommandModule
         // Set this to an empty string to disable the Privacy Policy notice in `/about`, or change it to your own Privacy Policy URL if you have one.
         var privacyPolicyUrl = "https://floatingmilkshake.com/privacy#MechanicalMilkshake";
 
+        // Set this to an empty string to disable the Support Server notice in /about, or change it your own Support Server invite if you have one.
+        var supportServerInvite = "https://link.floatingmilkshake.com/botsupport";
+
         DiscordEmbedBuilder embed = new()
         {
             Title = $"About {ctx.Client.CurrentUser.Username}",
@@ -23,6 +26,9 @@ public class AboutCommands : ApplicationCommandModule
 
         if (!string.IsNullOrWhiteSpace(privacyPolicyUrl))
             embed.Description += $"\n\nThis bot's Privacy Policy can be found [here]({privacyPolicyUrl}).";
+
+        if (!string.IsNullOrWhiteSpace(supportServerInvite))
+            embed.Description += $"\nNeed help? Join the bot's support server [here]({supportServerInvite})!";
 
         // Unique user count
         List<DiscordUser> uniqueUsers = new();
