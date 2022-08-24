@@ -70,5 +70,47 @@ public class DebugCommands : ApplicationCommandModule
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Restarting..."));
             Environment.Exit(1);
         }
+
+        [SlashCommand("owners", "Show the bot's owners.")]
+        public async Task Owners(InteractionContext ctx)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            List<DiscordUser> botOwners = new();
+            List<DiscordUser> authorizedUsers = new();
+
+            foreach (var owner in ctx.Client.CurrentApplication.Owners) botOwners.Add(owner);
+
+            foreach (var userId in Program.configjson.AuthorizedUsers)
+                authorizedUsers.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
+
+            var ownerOutput = "Bot owners are:";
+
+            foreach (var owner in botOwners) ownerOutput += $"\n- {owner.Username}#{owner.Discriminator}";
+
+            ownerOutput = ownerOutput.Trim() + "\n\nUsers authorized to use owner-level commands are:";
+
+            foreach (var user in authorizedUsers) ownerOutput += $"\n- {user.Username}#{user.Discriminator}";
+
+            ownerOutput = ownerOutput.Trim();
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(ownerOutput));
+        }
+
+        [SlashCommand("guilds", "Show the guilds that the bot is in.")]
+        public async Task Guilds(InteractionContext ctx)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = "Joined Guilds"
+            };
+
+            foreach (var guild in Program.discord.Guilds)
+                embed.Description += $"- `{guild.Value.Id}`: {guild.Value.Name}\n";
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+        }
     }
 }

@@ -75,16 +75,18 @@ public class AboutCommands : ApplicationCommandModule
         foreach (var userId in Program.configjson.AuthorizedUsers)
             authorizedUsers.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
 
-        var ownerOutput = "Bot owners are:";
+        string ownerOutput;
+        if (botOwners.Count == 1)
+        {
+            ownerOutput = $"Bot owner is {botOwners.First().Username}#{botOwners.First().Discriminator}.";
+        }
+        else
+        {
+            ownerOutput = "Bot owners are:";
+            foreach (var owner in botOwners) ownerOutput += $"\n- {owner.Username}#{owner.Discriminator}";
+        }
 
-        foreach (var owner in botOwners) ownerOutput += $"\n- {owner.Username}#{owner.Discriminator}";
-
-        ownerOutput = ownerOutput.Trim() + "\n\nUsers authorized to use owner-level commands are:";
-
-        foreach (var user in authorizedUsers) ownerOutput += $"\n- {user.Username}#{user.Discriminator}";
-
-        ownerOutput = ownerOutput.Trim() + "\n\nFor any issues with the bot, DM it or one of these people:";
-        foreach (var owner in botOwners) ownerOutput += $"\n- {owner.Username}#{owner.Discriminator}";
+        ownerOutput = ownerOutput.Trim() + "\n\nFor any issues with the bot, DM it or a bot owner.";
 
         ownerOutput = ownerOutput.Trim();
 

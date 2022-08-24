@@ -272,3 +272,11 @@ using System.Diagnostics.CodeAnalysis;
     SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
         Target =
             "~M:MechanicalMilkshake.Commands.Reminders.ReminderCmds.PushBackReminder(DSharpPlus.SlashCommands.InteractionContext,System.String,System.String)~System.Threading.Tasks.Task")]
+[assembly:
+    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
+        Target =
+            "~M:MechanicalMilkshake.Commands.Owner.HomeServerCommands.DebugCommands.DebugCmds.Guilds(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
+[assembly:
+    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
+        Target =
+            "~M:MechanicalMilkshake.Commands.Owner.HomeServerCommands.DebugCommands.DebugCmds.Owners(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
