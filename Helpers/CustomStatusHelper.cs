@@ -81,19 +81,6 @@ public class CustomStatusHelper
                     activityName = activityName.Replace("{uptime}", uptime.Humanize());
                 }
 
-                if (activityName.Contains("{userCount}"))
-                {
-                    List<DiscordUser> uniqueUsers = new();
-                    foreach (var guild in Program.discord.Guilds)
-                    foreach (var member in guild.Value.Members)
-                    {
-                        var user = await Program.discord.GetUserAsync(member.Value.Id);
-                        if (!uniqueUsers.Contains(user)) uniqueUsers.Add(user);
-                    }
-
-                    activityName = activityName.Replace("{userCount}", uniqueUsers.Count.ToString());
-                }
-
                 if (activityName.Contains("{serverCount}"))
                     activityName = activityName.Replace("{serverCount}", Program.discord.Guilds.Count.ToString());
 
