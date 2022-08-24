@@ -30,17 +30,6 @@ public class AboutCommands : ApplicationCommandModule
         if (!string.IsNullOrWhiteSpace(supportServerInvite))
             embed.Description += $"\nNeed help? Join the bot's support server [here]({supportServerInvite})!";
 
-        // Unique user count
-        List<DiscordUser> uniqueUsers = new();
-        foreach (var guild in ctx.Client.Guilds)
-        foreach (var member in guild.Value.Members)
-        {
-            var user = await ctx.Client.GetUserAsync(member.Value.Id);
-            if (!uniqueUsers.Contains(user)) uniqueUsers.Add(user);
-        }
-
-        embed.AddField("Unique Users", uniqueUsers.Count.ToString(), true);
-
         // Commit hash / version
         var commitHash = "";
         if (File.Exists("CommitHash.txt"))
@@ -65,7 +54,7 @@ public class AboutCommands : ApplicationCommandModule
         if (commitUrl == "") commitUrl = "N/A";
 
         embed.AddField("Version", $"[{commitHash}]({commitUrl})", true);
-        embed.AddField("Source Code Repository", remoteUrl, true);
+        embed.AddField("Source Code Repository", remoteUrl, false);
 
         List<DiscordUser> botOwners = new();
         List<DiscordUser> authorizedUsers = new();
