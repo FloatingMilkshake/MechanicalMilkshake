@@ -5,10 +5,6 @@ public class Ping : ApplicationCommandModule
     [SlashCommand("ping", "Checks my ping.")]
     public async Task PingCommand(InteractionContext ctx)
     {
-        await ctx.CreateResponseAsync(
-            new DiscordInteractionResponseBuilder().WithContent(
-                $"Pong! Client ping is `{ctx.Client.Ping}ms`.\n\nChecking round-trip time..."));
-
         DiscordMessage message;
         try
         {
@@ -37,7 +33,7 @@ public class Ping : ApplicationCommandModule
 
         await message.DeleteAsync();
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(
+        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
             $"Pong! Client ping is `{ctx.Client.Ping}ms`.\n\nIt took me `{responseTime}ms` to send a message after you used this command."));
     }
 }
