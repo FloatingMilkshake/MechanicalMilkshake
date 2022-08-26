@@ -15,7 +15,7 @@ global using DSharpPlus.SlashCommands.Attributes;
 global using DSharpPlus.SlashCommands.EventArgs;
 global using Humanizer;
 global using MechanicalMilkshake.Commands;
-global using MechanicalMilkshake.Commands.Owner.HomeServerCommands;
+global using MechanicalMilkshake.Commands.Owner;
 global using MechanicalMilkshake.Events;
 global using MechanicalMilkshake.Helpers;
 global using MechanicalMilkshake.Refs;

@@ -1,11 +1,12 @@
-﻿namespace MechanicalMilkshake.Commands.Owner.HomeServerCommands;
+﻿namespace MechanicalMilkshake.Commands.Owner;
 
+[SlashRequireAuth]
 public class EvalCommands : ApplicationCommandModule
 {
     // The idea for this command, and a lot of the code, is taken from Erisa's Lykos. References are linked below.
     // https://github.com/Erisa/Lykos/blob/5f9c17c/src/Modules/Owner.cs#L116-L144
     // https://github.com/Erisa/Lykos/blob/822e9c5/src/Modules/Helpers.cs#L36-L82
-    [SlashCommand("runcommand", "Run a shell command on the machine the bot's running on!")]
+    [SlashCommand("runcommand", "[Authorized users only] Run a shell command on the machine the bot's running on!")]
     public async Task RunCommand(InteractionContext ctx,
         [Option("command", "The command to run, including any arguments.")]
         string command)
@@ -68,7 +69,7 @@ public class EvalCommands : ApplicationCommandModule
 
     // The idea for this command, and a lot of the code, is taken from DSharpPlus/DSharpPlus.Test. Reference linked below.
     // https://github.com/DSharpPlus/DSharpPlus/blob/3a50fb3/DSharpPlus.Test/TestBotEvalCommands.cs
-    [SlashCommand("eval", "Evaluate C# code!")]
+    [SlashCommand("eval", "[Authorized users only] Evaluate C# code!")]
     public async Task Eval(InteractionContext ctx, [Option("code", "The code to evaluate.")] string code)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,

@@ -1,8 +1,9 @@
-﻿namespace MechanicalMilkshake.Commands.Owner.HomeServerCommands;
+﻿namespace MechanicalMilkshake.Commands.Owner;
 
+[SlashRequireAuth]
 public class DebugCommands : ApplicationCommandModule
 {
-    [SlashCommandGroup("debug", "Commands for checking if the bot is working properly.")]
+    [SlashCommandGroup("debug", "[Authorized users only] Commands for checking if the bot is working properly.")]
     public class DebugCmds : ApplicationCommandModule
     {
         [SlashCommand("info", "Show debug information about the bot.")]
@@ -13,7 +14,7 @@ public class DebugCommands : ApplicationCommandModule
                                                                     DebugInfoHelper.GetDebugInfo()));
         }
 
-        [SlashCommand("uptime", "Check the bot's uptime (from the time it connects to Discord).")]
+        [SlashCommand("uptime", "[Authorized users only] Check the bot's uptime (from the time it connects to Discord).")]
         public async Task Uptime(InteractionContext ctx)
         {
             var connectUnixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
@@ -25,7 +26,7 @@ public class DebugCommands : ApplicationCommandModule
                 $"Process started at <t:{startUnixTime}:F> (<t:{startUnixTime}:R>).\n\nLast connected to Discord at <t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)."));
         }
 
-        [SlashCommand("timecheck", "Return the current time on the machine the bot is running on.")]
+        [SlashCommand("timecheck", "[Authorized users only] Return the current time on the machine the bot is running on.")]
         public async Task TimeCheck(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
@@ -33,7 +34,7 @@ public class DebugCommands : ApplicationCommandModule
                 + $"\n(Short Time: `{DateTime.Now.ToShortTimeString()}`)"));
         }
 
-        [SlashCommand("shutdown", "Shut down the bot.")]
+        [SlashCommand("shutdown", "[Authorized users only] Shut down the bot.")]
         public async Task Shutdown(InteractionContext ctx)
         {
             DiscordButtonComponent shutdownButton = new(ButtonStyle.Danger, "shutdown-button", "Shut Down");
@@ -44,7 +45,7 @@ public class DebugCommands : ApplicationCommandModule
                 .AddComponents(shutdownButton, cancelButton));
         }
 
-        [SlashCommand("restart", "Restart the bot.")]
+        [SlashCommand("restart", "[Authorized users only] Restart the bot.")]
         public async Task Restart(InteractionContext ctx)
         {
             try
@@ -71,7 +72,7 @@ public class DebugCommands : ApplicationCommandModule
             Environment.Exit(1);
         }
 
-        [SlashCommand("owners", "Show the bot's owners.")]
+        [SlashCommand("owners", "[Authorized users only] Show the bot's owners.")]
         public async Task Owners(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
@@ -97,7 +98,7 @@ public class DebugCommands : ApplicationCommandModule
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(ownerOutput));
         }
 
-        [SlashCommand("guilds", "Show the guilds that the bot is in.")]
+        [SlashCommand("guilds", "[Authorized users only] Show the guilds that the bot is in.")]
         public async Task Guilds(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);

@@ -72,34 +72,6 @@ using System.Diagnostics.CodeAnalysis;
 [assembly:
     SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
         Target =
-            "~M:MechanicalMilkshake.Commands.Owner.HomeServerCommands.EvalCommands.Eval(DSharpPlus.SlashCommands.InteractionContext,System.String)~System.Threading.Tasks.Task")]
-[assembly:
-    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
-        Target =
-            "~M:MechanicalMilkshake.Commands.Owner.HomeServerCommands.EvalCommands.RunCommand(System.String)~System.Threading.Tasks.Task{System.String}")]
-[assembly:
-    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
-        Target =
-            "~M:MechanicalMilkshake.Commands.Owner.HomeServerCommands.DebugCommands.DebugCmds.DebugInfo(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
-[assembly:
-    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
-        Target =
-            "~M:MechanicalMilkshake.Commands.Owner.HomeServerCommands.DebugCommands.DebugCmds.Restart(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
-[assembly:
-    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
-        Target =
-            "~M:MechanicalMilkshake.Commands.Owner.HomeServerCommands.DebugCommands.DebugCmds.Shutdown(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
-[assembly:
-    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
-        Target =
-            "~M:MechanicalMilkshake.Commands.Owner.HomeServerCommands.DebugCommands.DebugCmds.TimeCheck(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
-[assembly:
-    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
-        Target =
-            "~M:MechanicalMilkshake.Commands.Owner.HomeServerCommands.DebugCommands.DebugCmds.Uptime(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
-[assembly:
-    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
-        Target =
             "~M:MechanicalMilkshake.Commands.Owner.HomeServerCommands.CdnCommands.Cdn.CdnPreview(DSharpPlus.SlashCommands.InteractionContext,System.String)~System.Threading.Tasks.Task")]
 [assembly:
     SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
@@ -275,8 +247,36 @@ using System.Diagnostics.CodeAnalysis;
 [assembly:
     SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
         Target =
-            "~M:MechanicalMilkshake.Commands.Owner.HomeServerCommands.DebugCommands.DebugCmds.Guilds(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
+            "~M:MechanicalMilkshake.Commands.Owner.EvalCommands.Eval(DSharpPlus.SlashCommands.InteractionContext,System.String)~System.Threading.Tasks.Task")]
 [assembly:
     SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
         Target =
-            "~M:MechanicalMilkshake.Commands.Owner.HomeServerCommands.DebugCommands.DebugCmds.Owners(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
+            "~M:MechanicalMilkshake.Commands.Owner.EvalCommands.RunCommand(System.String)~System.Threading.Tasks.Task{System.String}")]
+[assembly:
+    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
+        Target =
+            "~M:MechanicalMilkshake.Commands.Owner.DebugCommands.DebugCmds.DebugInfo(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
+[assembly:
+    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
+        Target =
+            "~M:MechanicalMilkshake.Commands.Owner.DebugCommands.DebugCmds.Guilds(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
+[assembly:
+    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
+        Target =
+            "~M:MechanicalMilkshake.Commands.Owner.DebugCommands.DebugCmds.Owners(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
+[assembly:
+    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
+        Target =
+            "~M:MechanicalMilkshake.Commands.Owner.DebugCommands.DebugCmds.Restart(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
+[assembly:
+    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
+        Target =
+            "~M:MechanicalMilkshake.Commands.Owner.DebugCommands.DebugCmds.Shutdown(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
+[assembly:
+    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
+        Target =
+            "~M:MechanicalMilkshake.Commands.Owner.DebugCommands.DebugCmds.TimeCheck(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
+[assembly:
+    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
+        Target =
+            "~M:MechanicalMilkshake.Commands.Owner.DebugCommands.DebugCmds.Uptime(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
