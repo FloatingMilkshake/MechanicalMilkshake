@@ -21,7 +21,7 @@ public class Checks
 #endif
             var cmdResult =
                 await evalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
-            if (cmdResult.Contains("packages can be upgraded"))
+            if (cmdResult.Contains(" can be upgraded"))
             {
                 updatesAvailableResponse += $"`{host}`\n";
                 updatesAvailable = true;
