@@ -122,8 +122,14 @@ public class Reminders : ApplicationCommandModule
                 var reminderLink =
                     $"<https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}>";
 
+                string reminderText;
+                if (reminder.ReminderText.Length > 350)
+                    reminderText = $"{reminder.ReminderText.Truncate(350)} *(truncated)*";
+                else
+                    reminderText = reminder.ReminderText;
+
                 output += $"`{reminder.ReminderId}`:\n"
-                          + $"> {reminder.ReminderText}\n"
+                          + $"> {reminderText}\n"
                           + $"[Set <t:{setTime}:R>]({reminderLink}) to go off <t:{reminderTime}:R> in {guildName}";
 
                 if (guildName != "DMs") output += $" <#{reminder.ChannelId}>";
