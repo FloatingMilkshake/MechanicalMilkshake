@@ -183,8 +183,24 @@ public class Reminders : ApplicationCommandModule
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
-                        "The reminder ID you provided isn't correct! You can get a reminder ID with `/reminder list`. It should look something like this: `1001230509856260276`")
+                        "The reminder ID you provided isn't correct! You can get a reminder ID with `/reminder list`. It should look something like this: `1234`")
                     .AsEphemeral());
+                return;
+            }
+
+            var currentReminders = await Program.db.HashGetAllAsync("reminders");
+            List<string> keys = new();
+            foreach (var item in currentReminders)
+            {
+                var key = item.Name.ToString();
+                keys.Add(key);
+            }
+
+            if (!keys.Contains(reminderToModify))
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                        "A reminder with that ID doesn't exist! Make sure you've got the right ID. You can get it with `/reminder list`. It should look something like this: `1234`")
+                    .AsEphemeral(true));
                 return;
             }
 
