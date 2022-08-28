@@ -153,6 +153,14 @@ public class Reminders : ApplicationCommandModule
 
             if (reminderExists)
             {
+                var reminder = JsonConvert.DeserializeObject<Reminder>(await Program.db.HashGetAsync("reminders", reminderToDelete));
+                if (reminder.UserId != ctx.User.Id)
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                        .WithContent("Only the person who set that reminder can delete it!").AsEphemeral(true));
+                    return;
+                }
+
                 await Program.db.HashDeleteAsync("reminders", reminderToDelete);
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("Reminder deleted successfully.").AsEphemeral());
@@ -204,16 +212,25 @@ public class Reminders : ApplicationCommandModule
                 return;
             }
 
+            var reminder =
+                JsonConvert.DeserializeObject<Reminder>(
+                    await Program.db.HashGetAsync("reminders", reminderToModify));
+
+            if (reminder.UserId != ctx.User.Id)
+            {
+                await ctx.FollowUpAsync(
+                    new DiscordFollowupMessageBuilder().WithContent(
+                        "Only the person who set that reminder can modify it!").AsEphemeral(true));
+                return;
+            }
+
             if (text == null && time == null)
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Reminder unchanged.")
                     .AsEphemeral());
                 return;
             }
-
-            var reminder =
-                JsonConvert.DeserializeObject<Reminder>(
-                    await Program.db.HashGetAsync("reminders", reminderToModify));
+            
             if (text != null) reminder.ReminderText = text;
 
             if (time != null) reminder.ReminderTime = HumanDateParser.HumanDateParser.Parse(time);
@@ -272,6 +289,18 @@ public class Reminders : ApplicationCommandModule
                 await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder().WithContent(
                         "You can't set a reminder to go off in the past!"));
+                return;
+            }
+
+            Regex userIdRegex = new("[0-9]+");
+
+            ulong origUserId = Convert.ToUInt64(userIdRegex.Matches(message.Content)[0].ToString());
+
+            if (origUserId != ctx.User.Id)
+            {
+                await ctx.FollowUpAsync(
+                    new DiscordFollowupMessageBuilder().WithContent(
+                        "Only the person who set that reminder can push it back!"));
                 return;
             }
 
