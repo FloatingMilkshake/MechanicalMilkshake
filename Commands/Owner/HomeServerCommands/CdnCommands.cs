@@ -39,7 +39,7 @@ public class CdnCommands : ApplicationCommandModule
             {
                 Dictionary<string, string> meta = new();
 
-                meta["x-amz-acl"] = "public-read";
+                //meta["x-amz-acl"] = "public-read";
 
                 string bucket = null;
                 if (Program.configjson.S3.Bucket == null)
