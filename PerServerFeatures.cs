@@ -1,3 +1,5 @@
+using System.Reflection.Metadata;
+
 namespace MechanicalMilkshake;
 
 public class PerServerFeatures
@@ -115,6 +117,28 @@ public class PerServerFeatures
                 var message = new DiscordMessageBuilder()
                     .WithContent("bots have changed, try `m!` instead.").WithReply(e.Message.Id);
                 await e.Channel.SendMessageAsync(message);
+            }
+
+            if (e.Channel.Id == 1012735880869466152 && e.Message.Author.Id == 1012735924284702740)
+            {
+                Regex ipRegex = new(@"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}");
+                string ipAddr = ipRegex.Match(e.Message.Content).ToString();
+
+                Regex attemptCountRegex = new("after ([0-9].*) failed");
+                int attemptCount = int.Parse(attemptCountRegex.Match(e.Message.Content).Groups[1].ToString());
+
+                if (attemptCount > 1)
+                {
+                    var msg = await e.Channel.SendMessageAsync($"<@455432936339144705> `{ipAddr}` attempted to connect {attemptCount} times before being banned. Waiting for approval to ban permanently...");
+
+
+                    EvalCommands evalCommands = new();
+                    await evalCommands.RunCommand($"ssh ubuntu@lxd \"echo | sudo -S ufw deny from {ipAddr} to any && echo | sudo -S ufw reload\"");
+                    await evalCommands.RunCommand($"ssh ubuntu@lxd \"lxc exec cdnupload -- ufw deny from {ipAddr} to any\"");
+                    await evalCommands.RunCommand("ssh ubuntu@lxd \"lxc exec cdnupload -- ufw reload\"");
+
+                    await msg.ModifyAsync($"<@455432936339144705> `{ipAddr}` attempted to connect {attemptCount} times before being banned. It has been permanently banned automatically.");
+                }
             }
         }
     }
