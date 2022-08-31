@@ -232,7 +232,6 @@ internal class Program
         while (true)
         {
             await Checks.PerServerFeatures.WednesdayCheck();
-            await Checks.PerServerFeatures.PizzaTime();
             await Task.Delay(60000); // 1 minute
         }
     }

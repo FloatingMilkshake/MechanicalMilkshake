@@ -99,24 +99,5 @@ public class Checks
                 Program.discord.Logger.LogError(Program.BotEventId, "An error occurred! Details: {e}", e);
             }
         }
-
-        public static async Task PizzaTime()
-        {
-#if DEBUG
-            Program.discord.Logger.LogInformation(Program.BotEventId, "PizzaTime running.");
-#endif
-            if (!DateTime.Now.ToShortTimeString().Contains("12:00")) return;
-
-            try
-            {
-                var channel = await Program.discord.GetChannelAsync(932768798224838778);
-                await channel.SendMessageAsync(
-                    "https://cdn.discordapp.com/attachments/932768798224838778/932768814284812298/IMG_9147.png");
-            }
-            catch (Exception e)
-            {
-                Program.discord.Logger.LogError(Program.BotEventId, "An error occurred! Details: {e}", e);
-            }
-        }
     }
 }
