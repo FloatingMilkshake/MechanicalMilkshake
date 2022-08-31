@@ -127,7 +127,7 @@ public class PerServerFeatures
                 Regex attemptCountRegex = new("after ([0-9].*) failed");
                 int attemptCount = int.Parse(attemptCountRegex.Match(e.Message.Content).Groups[1].ToString());
 
-                if (attemptCount > 1)
+                if (attemptCount > 3)
                 {
                     var msg = await e.Channel.SendMessageAsync($"<@455432936339144705> `{ipAddr}` attempted to connect {attemptCount} times before being banned. Waiting for approval to ban permanently...");
 
