@@ -137,8 +137,12 @@ public class CustomStatusHelper
                         return;
                 }
 
+                if (string.IsNullOrWhiteSpace(Program.discord.CurrentUser.Presence.Activity.Name))
+                    await Program.db.StringSetAsync("customStatusLastUpdated", $"{DateTime.Now}");
+                else
+                    await Program.db.StringSetAsync("customStatusLastUpdated", $"{DateTime.Now}\nPrevious Status: {Program.discord.CurrentUser.Presence.Activity.ActivityType} {Program.discord.CurrentUser.Presence.Activity.Name}");
+
                 await Program.discord.UpdateStatusAsync(activity, userStatus);
-                await Program.db.StringSetAsync("customStatusLastUpdated", $"{DateTime.Now}");
             }
             else
             {
