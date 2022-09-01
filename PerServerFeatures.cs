@@ -133,7 +133,7 @@ public class PerServerFeatures
 
 
                     EvalCommands evalCommands = new();
-                    await evalCommands.RunCommand($"ssh ubuntu@lxd \"echo | sudo -S ufw deny from {ipAddr} to any && echo | sudo -S ufw reload\"");
+                    await evalCommands.RunCommand($"ssh ubuntu@lxd \"sudo ufw deny from {ipAddr} to any && sudo ufw reload\"");
                     await evalCommands.RunCommand($"ssh ubuntu@lxd \"lxc exec cdnupload -- ufw deny from {ipAddr} to any\"");
                     await evalCommands.RunCommand("ssh ubuntu@lxd \"lxc exec cdnupload -- ufw reload\"");
 
