@@ -9,6 +9,9 @@ public class Kick : ApplicationCommandModule
         [Option("reason", "The reason for the kick.")]
         string reason = "No reason provided.")
     {
+        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            new DiscordInteractionResponseBuilder().AsEphemeral());
+
         DiscordMember memberToKick;
         try
         {
@@ -16,7 +19,7 @@ public class Kick : ApplicationCommandModule
         }
         catch
         {
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
                     $"Hmm, **{userToKick.Username}#{userToKick.Discriminator}** doesn't seem to be in the server.")
                 .AsEphemeral());
@@ -29,14 +32,14 @@ public class Kick : ApplicationCommandModule
         }
         catch
         {
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
                     $"Something went wrong. You or I may not be allowed to kick **{userToKick.Username}#{userToKick.Discriminator}**! Please check the role hierarchy and permissions.")
                 .AsEphemeral());
             return;
         }
 
-        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
             .WithContent("User kicked successfully.").AsEphemeral());
         await ctx.Channel.SendMessageAsync($"{userToKick.Mention} has been kicked: **{reason}**");
     }
