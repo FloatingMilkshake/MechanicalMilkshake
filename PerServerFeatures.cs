@@ -119,7 +119,7 @@ public class PerServerFeatures
                 await e.Channel.SendMessageAsync(message);
             }
 
-            if (e.Channel.Id == 1012735880869466152 && e.Message.Author.Id == 1012735924284702740)
+            if (e.Channel.Id == 1012735880869466152 && e.Message.Author.Id == 1012735924284702740 && e.Message.Content.Contains("has banned the IP"))
             {
                 Regex ipRegex = new(@"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}");
                 string ipAddr = ipRegex.Match(e.Message.Content).ToString();
