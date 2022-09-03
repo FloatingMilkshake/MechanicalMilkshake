@@ -84,6 +84,12 @@ public class Markdown : ApplicationCommandModule
         msgContentEscaped = msgContentEscaped.Replace("_", @"\_");
         msgContentEscaped = msgContentEscaped.Replace("~", @"\~");
         msgContentEscaped = msgContentEscaped.Replace(">", @"\>");
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"{msgContentEscaped}"));
+        msgContentEscaped = msgContentEscaped.Replace("[", @"\[");
+        msgContentEscaped = msgContentEscaped.Replace("]", @"\]");
+        msgContentEscaped = msgContentEscaped.Replace("(", @"\(");
+        msgContentEscaped = msgContentEscaped.Replace(")", @"\)");
+        
+        var msg = await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"{msgContentEscaped}"));
+        await msg.ModifyEmbedSuppressionAsync(true);
     }
 }
