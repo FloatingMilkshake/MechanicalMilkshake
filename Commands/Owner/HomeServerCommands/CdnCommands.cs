@@ -73,10 +73,8 @@ public class CdnCommands : ApplicationCommandModule
                 if (name == "random" || name == "generate")
                     fileName = new string(Enumerable.Repeat(chars, 10)
                         .Select(s => s[Program.random.Next(s.Length)]).ToArray()) + extension;
-                else if (name == "existing" || name == "preserve" || name == "keep")
-                    fileName = fileNameAndExtension;
                 else
-                    fileName = name + extension;
+                    fileName = fileNameAndExtension;
 
                 var args = new PutObjectArgs()
                     .WithBucket(bucket)
