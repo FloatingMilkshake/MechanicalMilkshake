@@ -13,4 +13,6 @@ public class KeywordConfig
     [JsonProperty("ignoreList")] public List<ulong> IgnoreList { get; set; }
 
     [JsonProperty("id")] public ulong Id { get; set; }
+
+    [JsonProperty("guildId")] public ulong GuildId { get; set; }
 }

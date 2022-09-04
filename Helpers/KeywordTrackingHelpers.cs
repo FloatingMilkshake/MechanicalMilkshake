@@ -31,6 +31,10 @@ public class KeywordTrackingHelpers
             if (fieldValue.IgnoreBots && message.Author.IsBot)
                 continue;
 
+            // If keyword is limited to a guild and this is not that guild, ignore
+            if (fieldValue.GuildId != default && fieldValue.GuildId != message.Channel.Guild.Id)
+                continue;
+
             DiscordMember member;
             try
             {

@@ -15,7 +15,10 @@ public class KeywordTracking : ApplicationCommandModule
             [Option("ignore_bots", "Whether to ignore messages from bots. Defaults to True.")]
             bool ignoreBots = true,
             [Option("ignore_list", "Users to ignore. Use IDs and/or mentions. Separate with spaces.")]
-            string ignoreList = null)
+            string ignoreList = null,
+            [Option("this_server_only",
+                "Whether to only notify you if the keyword is mentioned in this server. Defaults to True.")]
+            bool currentGuildOnly = true)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
@@ -69,6 +72,12 @@ public class KeywordTracking : ApplicationCommandModule
                 }
             }
 
+            ulong guildId = default;
+            if (currentGuildOnly)
+            {
+                guildId = ctx.Guild.Id;
+            }
+
             KeywordConfig keywordConfig = new()
             {
                 Keyword = keyword,
@@ -76,7 +85,8 @@ public class KeywordTracking : ApplicationCommandModule
                 MatchWholeWord = matchWholeWord,
                 IgnoreBots = ignoreBots,
                 IgnoreList = usersToIgnore,
-                Id = ctx.InteractionId
+                Id = ctx.InteractionId,
+                GuildId = guildId
             };
 
             await Program.db.HashSetAsync("keywords", ctx.InteractionId,
@@ -112,10 +122,17 @@ public class KeywordTracking : ApplicationCommandModule
 
                 var matchWholeWord = fieldValue.MatchWholeWord.ToString().Trim();
 
+                string limitedGuild;
+                if (fieldValue.GuildId == default)
+                    limitedGuild = "None";
+                else
+                    limitedGuild = (await Program.discord.GetGuildAsync(fieldValue.GuildId)).Name;
+
                 response += $"**{fieldValue.Keyword}**\n"
                             + $"Ignore Bots: {fieldValue.IgnoreBots}\n"
                             + $"Ignored Users:{ignoredUserMentions}"
-                            + $"Match Whole Word: {matchWholeWord}\n\n";
+                            + $"Match Whole Word: {matchWholeWord}\n"
+                            + $"Limited to Server: {limitedGuild}\n\n";
             }
 
             if (string.IsNullOrWhiteSpace(response))
