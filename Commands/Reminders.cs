@@ -268,7 +268,7 @@ public class Reminders : ApplicationCommandModule
 
             if (reminderMessage.Content.Contains("pushed back"))
                 await reminderMessage.ModifyAsync(
-                    $"[Reminder](https://discord.com/channels/{ctx.Guild.Id}/{reminder.ChannelId}/{reminder.MessageId}) pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!");
+                    $"[Reminder](https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}) pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!");
             else
                 await reminderMessage.ModifyAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!");
 
@@ -362,7 +362,7 @@ public class Reminders : ApplicationCommandModule
 
             var response = await ctx.FollowUpAsync(
                 new DiscordFollowupMessageBuilder().WithContent(
-                    $"[Reminder](https://discord.com/channels/{ctx.Guild.Id}/{ctx.Channel.Id}/{msgId}) pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!"));
+                    $"[Reminder](https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{msgId}) pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!"));
             reminder.MessageId = response.Id;
 
             await Program.db.HashSetAsync("reminders", reminderId, JsonConvert.SerializeObject(reminder));
