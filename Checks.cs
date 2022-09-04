@@ -69,10 +69,24 @@ public class Checks
                 };
                 embed.AddField("Context",
                     $"[Jump Link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId})");
+                
+                var slashCommands = await Program.discord.GetGuildApplicationCommandsAsync(799644062973427743);
+                var reminderCommand = slashCommands.Where(sc => sc.Name == "reminder").FirstOrDefault();
+                var reminderPushbackCommand =
+                    reminderCommand.Options.Where(opt => opt.Name == "pushback").FirstOrDefault();
+
+                embed.AddField("Need to delay this reminder?",
+                    $"Use </{reminderCommand.Name} {reminderPushbackCommand.Name}:{reminderCommand.Id}> and set `message` to [loading...].");
 
                 var targetChannel = await Program.discord.GetChannelAsync(reminderData.ChannelId);
-                await targetChannel.SendMessageAsync($"<@{reminderData.UserId}>, I have a reminder for you:",
+                var msg = await targetChannel.SendMessageAsync($"<@{reminderData.UserId}>, I have a reminder for you:",
                     embed);
+
+                embed.RemoveFieldAt(1);
+                embed.AddField("Need to delay this reminder?",
+                    $"Use </{reminderCommand.Name} {reminderPushbackCommand.Name}:{reminderCommand.Id}> and set `message` to `{msg.Id}`.");
+
+                await msg.ModifyAsync(msg.Content, embed.Build());
 
                 await Program.db.HashDeleteAsync("reminders", reminderData.ReminderId);
             }
