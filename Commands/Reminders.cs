@@ -265,7 +265,12 @@ public class Reminders : ApplicationCommandModule
             var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
 
             var unixTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
-            await reminderMessage.ModifyAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!");
+
+            if (reminderMessage.Content.Contains("pushed back"))
+                await reminderMessage.ModifyAsync(
+                    $"[Reminder](https://discord.com/channels/{ctx.Guild.Id}/{reminder.ChannelId}/{reminder.MessageId}) pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!");
+            else
+                await reminderMessage.ModifyAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!");
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                 .WithContent("Reminder modified successfully.").AsEphemeral());
