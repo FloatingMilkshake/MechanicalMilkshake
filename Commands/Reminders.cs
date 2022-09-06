@@ -108,7 +108,7 @@ public class Reminders : ApplicationCommandModule
                 return;
             }
 
-            foreach (var reminder in userReminders)
+            foreach (var reminder in userReminders.OrderBy(r => r.ReminderTime))
             {
                 var setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
                 var reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
