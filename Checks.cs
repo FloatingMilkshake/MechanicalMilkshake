@@ -70,7 +70,7 @@ public class Checks
                 embed.AddField("Context",
                     $"[Jump Link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId})");
                 
-                var slashCommands = await Program.discord.GetGuildApplicationCommandsAsync(799644062973427743);
+                var slashCommands = await Program.discord.GetGlobalApplicationCommandsAsync();
                 var reminderCommand = slashCommands.Where(sc => sc.Name == "reminder").FirstOrDefault();
                 var reminderPushbackCommand =
                     reminderCommand.Options.Where(opt => opt.Name == "pushback").FirstOrDefault();
