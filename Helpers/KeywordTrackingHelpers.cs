@@ -46,7 +46,7 @@ public class KeywordTrackingHelpers
             catch
             {
                 // User is not in guild. Skip.
-                break;
+                continue;
             }
 
             // Don't DM the user if their keyword was mentioned in a channel they do not have permissions to view.
