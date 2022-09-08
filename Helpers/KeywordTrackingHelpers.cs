@@ -7,6 +7,9 @@ public class KeywordTrackingHelpers
         if (message.Author.Id == Program.discord.CurrentUser.Id)
             return;
 
+        if (message.Channel.IsPrivate)
+            return;
+
         var fields = await Program.db.HashGetAllAsync("keywords");
 
         foreach (var field in fields)
