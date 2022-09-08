@@ -24,6 +24,14 @@ public class AboutCommands : ApplicationCommandModule
         embed.AddField("Total User Count (not unique)", ctx.Client.Guilds.Sum(g => g.Value.MemberCount).ToString(),
             true);
 
+        int commandCount;
+#if DEBUG
+        commandCount = (await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.HomeServerId)).Count;
+#else
+        commandCount = (await Program.discord.GetGlobalApplicationCommandsAsync()).Count;
+#endif
+        embed.AddField("Commands", commandCount.ToString(), true);
+
         if (!string.IsNullOrWhiteSpace(privacyPolicyUrl))
             embed.Description += $"\n\nThis bot's Privacy Policy can be found [here]({privacyPolicyUrl}).";
 
@@ -53,8 +61,8 @@ public class AboutCommands : ApplicationCommandModule
 
         if (commitUrl == "") commitUrl = "N/A";
 
-        embed.AddField("Version", $"[{commitHash}]({commitUrl})", true);
-        embed.AddField("Source Code Repository", remoteUrl, false);
+        //embed.AddField("Version", $"[{commitHash}]({commitUrl})", true);
+        embed.AddField("Source Code Repository", "https://github.com/FloatingMilkshake/MechanicalMilkshake", false);
 
         List<DiscordUser> botOwners = new();
         List<DiscordUser> authorizedUsers = new();
@@ -86,7 +94,7 @@ public class AboutCommands : ApplicationCommandModule
         embed.AddField("Uptime", $"Up since <t:{startUnixTime}:F> (<t:{startUnixTime}:R>!)");
 
         embed.WithFooter(
-            $"Using DSharpPlus {Program.discord.VersionString} and {RuntimeInformation.FrameworkDescription}");
+            $"Using DSharpPlus {Program.discord.VersionString} and {RuntimeInformation.FrameworkDescription}\nRunning commit {commitHash}");
 
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
     }
