@@ -220,20 +220,11 @@ internal class Program
             }
         });
 
-        Task.Run(async () =>
+        bool returnValue = true;
+        while (returnValue)
         {
-            bool returnValue = true;
-            while (returnValue)
-            {
-                returnValue = await Checks.ReminderCheck();
-                await Task.Delay(10000); // 10 seconds
-            }
-        });
-
-        while (true)
-        {
-            await Checks.PerServerFeatures.WednesdayCheck();
-            await Task.Delay(60000); // 1 minute
+            returnValue = await Checks.ReminderCheck();
+            await Task.Delay(10000); // 10 seconds
         }
     }
 }

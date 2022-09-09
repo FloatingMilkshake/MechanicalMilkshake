@@ -145,26 +145,4 @@ public class Checks
 
         return true;
     }
-
-    public class PerServerFeatures
-    {
-        public static async Task WednesdayCheck()
-        {
-#if DEBUG
-            Program.discord.Logger.LogInformation(Program.BotEventId, "WednesdayCheck running.");
-#endif
-            if (DateTime.Now.DayOfWeek != DayOfWeek.Wednesday)
-                return;
-            if (!DateTime.Now.ToShortTimeString().Contains("10:00")) return;
-
-            try
-            {
-                var channel = await Program.discord.GetChannelAsync(874488354786394192);
-            }
-            catch (Exception e)
-            {
-                Program.discord.Logger.LogError(Program.BotEventId, "An error occurred! Details: {e}", e);
-            }
-        }
-    }
 }
