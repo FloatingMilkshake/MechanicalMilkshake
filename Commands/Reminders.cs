@@ -155,7 +155,41 @@ public class Reminders : ApplicationCommandModule
                 output += "\n\n";
             }
 
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(output).AsEphemeral());
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = "Reminders",
+                Color = new DiscordColor("#FAA61A")
+            };
+
+            if (output.Length > 4096)
+            {
+                embed.WithColor(DiscordColor.Red);
+
+#if DEBUG
+                var slashCmds = await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.HomeServerId);
+#else
+                var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
+#endif
+                var reminderCmd = slashCmds.FirstOrDefault(c => c.Name == "reminder");
+                var reminderShowCmd = reminderCmd.Options.FirstOrDefault(c => c.Name == "show");
+
+                string desc = $"You have too many reminders to list here! Here are the IDs of each one. Use </{reminderCmd.Name} {reminderShowCmd.Name}:{reminderCmd.Id}> for details.\n\n";
+                foreach (var reminder in userReminders.OrderBy(r => r.ReminderTime))
+                {
+                    var setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
+                    var reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
+
+                    desc += $"`{reminder.ReminderId}` - set <t:{setTime}:R> to go off <t:{reminderTime}:R>\n";
+                }
+                
+                embed.WithDescription(desc.Trim());
+            }
+            else
+            {
+                embed.WithDescription(output);
+            }
+            
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral());
         }
 
         [SlashCommand("delete", "Delete a reminder using its unique ID.")]
@@ -366,6 +400,62 @@ public class Reminders : ApplicationCommandModule
             reminder.MessageId = response.Id;
 
             await Program.db.HashSetAsync("reminders", reminderId, JsonConvert.SerializeObject(reminder));
+        }
+
+        [SlashCommand("show", "Show the details for a reminder.")]
+        public async Task ReminderShow(InteractionContext ctx,
+            [Option("id", "The ID of the reminder to show details for. You can get this with /reminder list.")] long id)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral());
+
+            Regex idRegex = new("[0-9]+");
+            if (!idRegex.IsMatch(id.ToString()))
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent(
+                        "The reminder ID you provided isn't correct! You can get a reminder ID with `/reminder list`. It should look something like this: `1234`")
+                    .AsEphemeral());
+                return;
+            }
+
+            var currentReminders = await Program.db.HashGetAllAsync("reminders");
+            List<string> keys = new();
+            foreach (var item in currentReminders)
+            {
+                var key = item.Name.ToString();
+                keys.Add(key);
+            }
+
+            if (!keys.Contains(id.ToString()))
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                        "A reminder with that ID doesn't exist! Make sure you've got the right ID. You can get it with `/reminder list`. It should look something like this: `1234`")
+                    .AsEphemeral(true));
+                return;
+            }
+
+            var reminder =
+                JsonConvert.DeserializeObject<Reminder>(
+                    await Program.db.HashGetAsync("reminders", id));
+
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = $"Reminder `{id}`",
+                Description = reminder.ReminderText,
+                Color = new DiscordColor("#FAA61A")
+            };
+            embed.AddField("Server",
+                $"{(await Program.discord.GetGuildAsync(Convert.ToUInt64(reminder.GuildId))).Name}");
+            embed.AddField("Channel", $"<#{reminder.ChannelId}>");
+            embed.AddField("Jump Link", $"https://discord.com/channels/{reminder.ChannelId}/{reminder.MessageId}/");
+
+            var setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
+            var reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
+
+            embed.AddField("Set At", $"<t:{setTime}:F> (<t:{setTime}:R>)");
+            embed.AddField("Set For", $"<t:{reminderTime}:F> (<t:{reminderTime}:R>)");
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral());
         }
     }
 }
