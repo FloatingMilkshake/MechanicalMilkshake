@@ -235,7 +235,7 @@ public class Reminders : ApplicationCommandModule
         [SlashCommand("modify", "Modify an existing reminder using its unique ID.")]
         public async Task ModifyReminder(InteractionContext ctx,
             [Option("reminder", "The ID of the reminder to modify. You can get this with `/reminder list`.")]
-            string reminderToModify,
+            long reminderToModify,
             [Option("time", "When do you want to be reminded? Leave this blank if you don't want to change it.")]
             string time = null,
             [Option("text", "What should the reminder say? Leave this blank if you don't want to change it.")]
@@ -245,7 +245,7 @@ public class Reminders : ApplicationCommandModule
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
             Regex idRegex = new("[0-9]+");
-            if (!idRegex.IsMatch(reminderToModify))
+            if (!idRegex.IsMatch(reminderToModify.ToString()))
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
@@ -262,7 +262,7 @@ public class Reminders : ApplicationCommandModule
                 keys.Add(key);
             }
 
-            if (!keys.Contains(reminderToModify))
+            if (!keys.Contains(reminderToModify.ToString()))
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                         "A reminder with that ID doesn't exist! Make sure you've got the right ID. You can get it with `/reminder list`. It should look something like this: `1234`")
