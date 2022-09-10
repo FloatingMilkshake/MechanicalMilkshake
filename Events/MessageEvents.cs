@@ -9,7 +9,7 @@ public class MessageEvents
         {
             try
             {
-                await KeywordTrackingHelpers.KeywordCheck(e.Message);
+                await KeywordTrackingHelpers.KeywordCheck(e.Message, true);
             }
             catch (Exception ex)
             {

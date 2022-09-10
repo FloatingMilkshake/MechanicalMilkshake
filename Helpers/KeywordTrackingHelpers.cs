@@ -2,14 +2,14 @@
 
 public class KeywordTrackingHelpers
 {
-    public static async Task KeywordCheck(DiscordMessage message)
+    public static async Task KeywordCheck(DiscordMessage message, bool isEdit = false)
     {
         if (message.Author.Id == Program.discord.CurrentUser.Id)
             return;
 
         if (message.Channel.IsPrivate)
             return;
-
+        
         var fields = await Program.db.HashGetAllAsync("keywords");
 
         foreach (var field in fields)
@@ -59,7 +59,7 @@ public class KeywordTrackingHelpers
             {
                 if (Regex.IsMatch(message.Content.ToLower(), $"\\b{field.Name}\\b"))
                 {
-                    await KeywordAlert(fieldValue.UserId, message, field.Name);
+                    await KeywordAlert(fieldValue.UserId, message, field.Name, isEdit);
                     return;
                 }
             }
@@ -68,14 +68,14 @@ public class KeywordTrackingHelpers
             {
                 if (message.Content.ToLower().Contains(fieldValue.Keyword))
                 {
-                    await KeywordAlert(fieldValue.UserId, message, fieldValue.Keyword);
+                    await KeywordAlert(fieldValue.UserId, message, fieldValue.Keyword, isEdit);
                     return;
                 }
             }
         }
     }
 
-    public static async Task KeywordAlert(ulong targetUserId, DiscordMessage message, string keyword)
+    public static async Task KeywordAlert(ulong targetUserId, DiscordMessage message, string keyword, bool isEdit = false)
     {
         DiscordMember member;
         try
@@ -94,6 +94,9 @@ public class KeywordTrackingHelpers
             Title = $"Tracked keyword \"{keyword}\" triggered!",
             Description = message.Content
         };
+
+        if (isEdit)
+            embed.WithFooter("This alert was triggered by an edit to the message.");
 
         embed.AddField("Author ID", $"{message.Author.Id}", true);
         embed.AddField("Author Mention", $"{message.Author.Mention}", true);
