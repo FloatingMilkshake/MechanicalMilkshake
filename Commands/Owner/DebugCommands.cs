@@ -6,12 +6,38 @@ public class DebugCommands : ApplicationCommandModule
     [SlashCommandGroup("debug", "[Authorized users only] Commands for checking if the bot is working properly.")]
     public class DebugCmds : ApplicationCommandModule
     {
-        [SlashCommand("info", "Show debug information about the bot.")]
+        [SlashCommand("info", "[Authorized users only] Show debug information about the bot.")]
         public async Task DebugInfo(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(
-                new DiscordInteractionResponseBuilder().WithContent("Debug Information:\n" +
-                                                                    DebugInfoHelper.GetDebugInfo()));
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = "Debug Info",
+                Color = new DiscordColor("#FAA61A")
+            };
+
+            var debugInfo = DebugInfoHelper.GetDebugInfo();
+
+            embed.AddField("Framework", debugInfo.Framework, true);
+            embed.AddField("Platform", debugInfo.Platform, true);
+            embed.AddField("Library", debugInfo.Library, true);
+            embed.AddField("Commit Hash", $"`{debugInfo.CommitHash}`", true);
+            embed.AddField(debugInfo.CommitTimeDescription, debugInfo.CommitTimestamp, true);
+            embed.AddField("Commit Message", debugInfo.CommitMessage, false);
+
+            embed.AddField("Server Count", Program.discord.Guilds.Count.ToString(), true);
+
+            int commandCount;
+#if DEBUG
+            commandCount = (await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.HomeServerId)).Count;
+#else
+        commandCount = (await Program.discord.GetGlobalApplicationCommandsAsync()).Count;
+#endif
+            embed.AddField("Command Count", commandCount.ToString(), true);
+            embed.AddField("Load Time", debugInfo.LoadTime, true);
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
         }
 
         [SlashCommand("uptime", "[Authorized users only] Check the bot's uptime (from the time it connects to Discord).")]
