@@ -19,12 +19,18 @@ public class DebugInfoHelper
         {
             StreamReader readTime = new("CommitTime.txt");
             commitTime = readTime.ReadToEnd();
-            commitTimeDescription = "Commit timestamp:";
+
+            var dateToConvert = Convert.ToDateTime(commitTime);
+            var unixTime = ((DateTimeOffset)dateToConvert).ToUnixTimeSeconds();
+            commitTime = $"<t:{unixTime}:F>";
+
+            commitTimeDescription = "Commit Timestamp";
         }
 
         if (commitTime == "")
         {
-            commitTime = Program.connectTime.ToString();
+            var unixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
+            commitTime = $"<t:{unixTime}:F>";
             commitTimeDescription = "Last connected to Discord at";
         }
 
