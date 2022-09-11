@@ -101,11 +101,8 @@ public class KeywordTrackingHelpers
         embed.AddField("Author ID", $"{message.Author.Id}", true);
         embed.AddField("Author Mention", $"{message.Author.Mention}", true);
 
-        if (message.Channel.IsPrivate)
-            embed.AddField("Channel", "Message sent in DMs.");
-        else
-            embed.AddField("Channel",
-                $"{message.Channel.Mention} in {message.Channel.Guild.Name} | [Jump Link]({message.JumpLink})");
+        embed.AddField("Channel",
+            $"{message.Channel.Mention} in {message.Channel.Guild.Name} | [Jump Link]({message.JumpLink})");
 
         try
         {
