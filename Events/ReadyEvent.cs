@@ -22,13 +22,14 @@ public class ReadyEvent
             embed.AddField("Library", debugInfo.Library, true);
             embed.AddField("Commit Hash", $"`{debugInfo.CommitHash}`", true);
             embed.AddField(debugInfo.CommitTimeDescription, debugInfo.CommitTimestamp, true);
-            embed.AddField("Commit Message", debugInfo.CommitMessage, false);
+            embed.AddField("Commit Message", debugInfo.CommitMessage);
 
             embed.AddField("Server Count", client.Guilds.Count.ToString(), true);
 
             int commandCount;
 #if DEBUG
-            commandCount = (await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.HomeServerId)).Count;
+            commandCount = (await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.HomeServerId))
+                .Count;
 #else
         commandCount = (await Program.discord.GetGlobalApplicationCommandsAsync()).Count;
 #endif

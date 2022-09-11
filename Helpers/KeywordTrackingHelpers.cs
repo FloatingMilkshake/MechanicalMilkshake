@@ -9,7 +9,7 @@ public class KeywordTrackingHelpers
 
         if (message.Channel.IsPrivate)
             return;
-        
+
         var fields = await Program.db.HashGetAllAsync("keywords");
 
         foreach (var field in fields)
@@ -75,7 +75,8 @@ public class KeywordTrackingHelpers
         }
     }
 
-    public static async Task KeywordAlert(ulong targetUserId, DiscordMessage message, string keyword, bool isEdit = false)
+    public static async Task KeywordAlert(ulong targetUserId, DiscordMessage message, string keyword,
+        bool isEdit = false)
     {
         DiscordMember member;
         try

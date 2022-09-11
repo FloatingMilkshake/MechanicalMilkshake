@@ -12,7 +12,7 @@ public class DebugInfoHelper
         }
 
         if (commitHash == "") commitHash = "dev";
-        
+
         var commitTime = "";
         var commitTimeDescription = "";
         if (File.Exists("CommitTime.txt"))
@@ -47,28 +47,19 @@ public class DebugInfoHelper
         var loadTime = (Program.connectTime - Convert.ToDateTime(Program.processStartTime)).Humanize();
 
         return new DebugInfo(
-            framework: RuntimeInformation.FrameworkDescription,
-            platform: RuntimeInformation.OSDescription,
-            library: $"DSharpPlus {Program.discord.VersionString}",
-            loadTime: loadTime,
-            commitHash: commitHash,
-            commitTimeDescription: commitTimeDescription,
-            commitTimestamp: commitTime,
-            commitMessage: commitMessage
-            );
+            RuntimeInformation.FrameworkDescription,
+            RuntimeInformation.OSDescription,
+            $"DSharpPlus {Program.discord.VersionString}",
+            loadTime,
+            commitHash,
+            commitTimeDescription,
+            commitTime,
+            commitMessage
+        );
     }
 
     public class DebugInfo
     {
-        public string Framework { get; set; }
-        public string Platform { get; set; }
-        public string Library { get; set; }
-        public string LoadTime { get; set; }
-        public string CommitHash { get; set; }
-        public string CommitTimeDescription { get; set; }
-        public string CommitTimestamp { get; set; }
-        public string CommitMessage { get; set; }
-
         public DebugInfo(string framework = null, string platform = null, string library = null,
             string loadTime = null, string commitHash = null, string commitTimeDescription = null,
             string commitTimestamp = null, string commitMessage = null)
@@ -82,5 +73,14 @@ public class DebugInfoHelper
             CommitTimestamp = commitTimestamp;
             CommitMessage = commitMessage;
         }
+
+        public string Framework { get; set; }
+        public string Platform { get; set; }
+        public string Library { get; set; }
+        public string LoadTime { get; set; }
+        public string CommitHash { get; set; }
+        public string CommitTimeDescription { get; set; }
+        public string CommitTimestamp { get; set; }
+        public string CommitMessage { get; set; }
     }
 }

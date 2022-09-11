@@ -71,7 +71,8 @@ public class Checks
                     $"[Jump Link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId})");
 
 #if DEBUG
-                var slashCommands = await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.HomeServerId);
+                var slashCommands =
+                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.HomeServerId);
 #else
                 var slashCommands = await Program.discord.GetGlobalApplicationCommandsAsync();
 #endif
@@ -85,7 +86,8 @@ public class Checks
                 try
                 {
                     var targetChannel = await Program.discord.GetChannelAsync(reminderData.ChannelId);
-                    var msg = await targetChannel.SendMessageAsync($"<@{reminderData.UserId}>, I have a reminder for you:",
+                    var msg = await targetChannel.SendMessageAsync(
+                        $"<@{reminderData.UserId}>, I have a reminder for you:",
                         embed);
 
                     embed.RemoveFieldAt(1);
@@ -105,11 +107,12 @@ public class Checks
                         // Couldn't send the reminder in the channel it was created in.
                         // Try to DM user instead.
 
-                        ulong guildId = Convert.ToUInt64(reminderData.GuildId);
-                        DiscordGuild guild = await Program.discord.GetGuildAsync(guildId);
-                        DiscordMember targetMember = await guild.GetMemberAsync(reminderData.UserId);
+                        var guildId = Convert.ToUInt64(reminderData.GuildId);
+                        var guild = await Program.discord.GetGuildAsync(guildId);
+                        var targetMember = await guild.GetMemberAsync(reminderData.UserId);
 
-                        var msg = await targetMember.SendMessageAsync($"<@{reminderData.UserId}>, I have a reminder for you:",
+                        var msg = await targetMember.SendMessageAsync(
+                            $"<@{reminderData.UserId}>, I have a reminder for you:",
                             embed);
 
                         embed.RemoveFieldAt(1);

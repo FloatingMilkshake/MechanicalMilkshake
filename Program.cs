@@ -220,7 +220,7 @@ internal class Program
             }
         });
 
-        bool returnValue = true;
+        var returnValue = true;
         while (returnValue)
         {
             returnValue = await Checks.ReminderCheck();

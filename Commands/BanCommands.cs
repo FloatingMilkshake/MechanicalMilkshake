@@ -10,7 +10,7 @@ public class BanCommands : ApplicationCommandModule
         string reason = "No reason provided.")
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
-            new DiscordInteractionResponseBuilder().AsEphemeral(true));
+            new DiscordInteractionResponseBuilder().AsEphemeral());
 
         try
         {

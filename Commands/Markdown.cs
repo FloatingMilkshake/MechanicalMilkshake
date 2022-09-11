@@ -88,7 +88,7 @@ public class Markdown : ApplicationCommandModule
         msgContentEscaped = msgContentEscaped.Replace("]", @"\]");
         msgContentEscaped = msgContentEscaped.Replace("(", @"\(");
         msgContentEscaped = msgContentEscaped.Replace(")", @"\)");
-        
+
         var msg = await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"{msgContentEscaped}"));
         await msg.ModifyEmbedSuppressionAsync(true);
     }

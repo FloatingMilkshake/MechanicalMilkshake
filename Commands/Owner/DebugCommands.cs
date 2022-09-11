@@ -24,13 +24,14 @@ public class DebugCommands : ApplicationCommandModule
             embed.AddField("Library", debugInfo.Library, true);
             embed.AddField("Commit Hash", $"`{debugInfo.CommitHash}`", true);
             embed.AddField(debugInfo.CommitTimeDescription, debugInfo.CommitTimestamp, true);
-            embed.AddField("Commit Message", debugInfo.CommitMessage, false);
+            embed.AddField("Commit Message", debugInfo.CommitMessage);
 
             embed.AddField("Server Count", Program.discord.Guilds.Count.ToString(), true);
 
             int commandCount;
 #if DEBUG
-            commandCount = (await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.HomeServerId)).Count;
+            commandCount = (await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.HomeServerId))
+                .Count;
 #else
         commandCount = (await Program.discord.GetGlobalApplicationCommandsAsync()).Count;
 #endif
@@ -40,7 +41,8 @@ public class DebugCommands : ApplicationCommandModule
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
         }
 
-        [SlashCommand("uptime", "[Authorized users only] Check the bot's uptime (from the time it connects to Discord).")]
+        [SlashCommand("uptime",
+            "[Authorized users only] Check the bot's uptime (from the time it connects to Discord).")]
         public async Task Uptime(InteractionContext ctx)
         {
             var connectUnixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
@@ -52,7 +54,8 @@ public class DebugCommands : ApplicationCommandModule
                 $"Process started at <t:{startUnixTime}:F> (<t:{startUnixTime}:R>).\n\nLast connected to Discord at <t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)."));
         }
 
-        [SlashCommand("timecheck", "[Authorized users only] Return the current time on the machine the bot is running on.")]
+        [SlashCommand("timecheck",
+            "[Authorized users only] Return the current time on the machine the bot is running on.")]
         public async Task TimeCheck(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(

@@ -62,7 +62,7 @@ public class AboutCommands : ApplicationCommandModule
         if (commitUrl == "") commitUrl = "N/A";
 
         //embed.AddField("Version", $"[{commitHash}]({commitUrl})", true);
-        embed.AddField("Source Code Repository", "https://github.com/FloatingMilkshake/MechanicalMilkshake", false);
+        embed.AddField("Source Code Repository", "https://github.com/FloatingMilkshake/MechanicalMilkshake");
 
         List<DiscordUser> botOwners = new();
         List<DiscordUser> authorizedUsers = new();

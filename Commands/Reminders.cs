@@ -138,13 +138,9 @@ public class Reminders : ApplicationCommandModule
                 Regex urlRegex = new(@"http(?:s)?://.*\..*");
 
                 if (urlRegex.IsMatch(reminderText))
-                {
                     // Output has URLs. Surround with <> to suppress embeds.
-                    foreach (Match match in urlRegex.Matches(reminderText).Cast<Match>())
-                    {
+                    foreach (var match in urlRegex.Matches(reminderText).Cast<Match>())
                         reminderText = reminderText.Replace(match.ToString(), $"<{match}>");
-                    }
-                }
 
                 output += $"`{reminder.ReminderId}`:\n"
                           + $"> {reminderText}\n"
@@ -173,7 +169,8 @@ public class Reminders : ApplicationCommandModule
                 var reminderCmd = slashCmds.FirstOrDefault(c => c.Name == "reminder");
                 var reminderShowCmd = reminderCmd.Options.FirstOrDefault(c => c.Name == "show");
 
-                string desc = $"You have too many reminders to list here! Here are the IDs of each one. Use </{reminderCmd.Name} {reminderShowCmd.Name}:{reminderCmd.Id}> for details.\n\n";
+                var desc =
+                    $"You have too many reminders to list here! Here are the IDs of each one. Use </{reminderCmd.Name} {reminderShowCmd.Name}:{reminderCmd.Id}> for details.\n\n";
                 foreach (var reminder in userReminders.OrderBy(r => r.ReminderTime))
                 {
                     var setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
@@ -181,14 +178,14 @@ public class Reminders : ApplicationCommandModule
 
                     desc += $"`{reminder.ReminderId}` - set <t:{setTime}:R> to go off <t:{reminderTime}:R>\n";
                 }
-                
+
                 embed.WithDescription(desc.Trim());
             }
             else
             {
                 embed.WithDescription(output);
             }
-            
+
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral());
         }
 
@@ -211,11 +208,13 @@ public class Reminders : ApplicationCommandModule
 
             if (reminderExists)
             {
-                var reminder = JsonConvert.DeserializeObject<Reminder>(await Program.db.HashGetAsync("reminders", reminderToDelete));
+                var reminder =
+                    JsonConvert.DeserializeObject<Reminder>(
+                        await Program.db.HashGetAsync("reminders", reminderToDelete));
                 if (reminder.UserId != ctx.User.Id)
                 {
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent("Only the person who set that reminder can delete it!").AsEphemeral(true));
+                        .WithContent("Only the person who set that reminder can delete it!").AsEphemeral());
                     return;
                 }
 
@@ -271,7 +270,7 @@ public class Reminders : ApplicationCommandModule
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                         "A reminder with that ID doesn't exist! Make sure you've got the right ID. You can get it with `/reminder list`. It should look something like this: `1234`")
-                    .AsEphemeral(true));
+                    .AsEphemeral());
                 return;
             }
 
@@ -283,7 +282,7 @@ public class Reminders : ApplicationCommandModule
             {
                 await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder().WithContent(
-                        "Only the person who set that reminder can modify it!").AsEphemeral(true));
+                        "Only the person who set that reminder can modify it!").AsEphemeral());
                 return;
             }
 
@@ -293,7 +292,7 @@ public class Reminders : ApplicationCommandModule
                     .AsEphemeral());
                 return;
             }
-            
+
             if (text != null) reminder.ReminderText = text;
 
             if (time != null) reminder.ReminderTime = HumanDateParser.HumanDateParser.Parse(time);
@@ -362,7 +361,7 @@ public class Reminders : ApplicationCommandModule
 
             Regex userIdRegex = new("[0-9]+");
 
-            ulong origUserId = Convert.ToUInt64(userIdRegex.Matches(message.Content)[0].ToString());
+            var origUserId = Convert.ToUInt64(userIdRegex.Matches(message.Content)[0].ToString());
 
             if (origUserId != ctx.User.Id)
             {
@@ -409,9 +408,11 @@ public class Reminders : ApplicationCommandModule
 
         [SlashCommand("show", "Show the details for a reminder.")]
         public async Task ReminderShow(InteractionContext ctx,
-            [Option("id", "The ID of the reminder to show details for. You can get this with /reminder list.")] long id)
+            [Option("id", "The ID of the reminder to show details for. You can get this with /reminder list.")]
+            long id)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral());
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().AsEphemeral());
 
             Regex idRegex = new("[0-9]+");
             if (!idRegex.IsMatch(id.ToString()))
@@ -435,7 +436,7 @@ public class Reminders : ApplicationCommandModule
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                         "A reminder with that ID doesn't exist! Make sure you've got the right ID. You can get it with `/reminder list`. It should look something like this: `1234`")
-                    .AsEphemeral(true));
+                    .AsEphemeral());
                 return;
             }
 

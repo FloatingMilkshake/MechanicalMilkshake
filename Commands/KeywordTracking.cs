@@ -73,10 +73,7 @@ public class KeywordTracking : ApplicationCommandModule
             }
 
             ulong guildId = default;
-            if (currentGuildOnly)
-            {
-                guildId = ctx.Guild.Id;
-            }
+            if (currentGuildOnly) guildId = ctx.Guild.Id;
 
             KeywordConfig keywordConfig = new()
             {
