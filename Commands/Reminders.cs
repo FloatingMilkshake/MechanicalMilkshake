@@ -219,6 +219,11 @@ public class Reminders : ApplicationCommandModule
                     return;
                 }
 
+                var reminderChannel = await Program.discord.GetChannelAsync(reminder.ChannelId);
+                var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
+
+                await reminderMessage.ModifyAsync("This reminder was deleted.");
+
                 await Program.db.HashDeleteAsync("reminders", reminderToDelete);
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("Reminder deleted successfully.").AsEphemeral());
