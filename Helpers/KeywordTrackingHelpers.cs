@@ -4,6 +4,9 @@ public class KeywordTrackingHelpers
 {
     public static async Task KeywordCheck(DiscordMessage message, bool isEdit = false)
     {
+        if (message.Author is null || message.Content is null)
+            return;
+
         if (message.Author.Id == Program.discord.CurrentUser.Id)
             return;
 
