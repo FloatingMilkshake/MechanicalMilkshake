@@ -1,11 +1,11 @@
 FROM --platform=${BUILDPLATFORM} \
-	mcr.microsoft.com/dotnet/sdk:6.0.400-alpine3.16 AS build-env
+	mcr.microsoft.com/dotnet/sdk:6.0.401-alpine3.16 AS build-env
 WORKDIR /app
 COPY *.csproj ./
 RUN dotnet restore
 COPY . ./
 RUN dotnet build -c Release -o out
-FROM mcr.microsoft.com/dotnet/runtime:6.0.8-alpine3.16
+FROM mcr.microsoft.com/dotnet/runtime:6.0.9-alpine3.16
 LABEL com.centurylinklabs.watchtower.enable true
 WORKDIR /app
 COPY --from=build-env /app/out .
