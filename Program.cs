@@ -187,6 +187,8 @@ internal class Program
         discord.MessageCreated += MessageEvents.MessageCreated;
         discord.MessageUpdated += MessageEvents.MessageUpdated;
         discord.ComponentInteractionCreated += ComponentInteractionEvent.ComponentInteractionCreated;
+        discord.GuildCreated += GuildEvents.GuildCreated;
+        discord.GuildDeleted += GuildEvents.GuildDeleted;
         commands.CommandErrored += ErrorEvents.CommandsNextService_CommandErrored;
         slash.SlashCommandErrored += ErrorEvents.SlashCommandErrored;
 
