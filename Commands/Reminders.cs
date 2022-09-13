@@ -39,10 +39,18 @@ public class Reminders : ApplicationCommandModule
 
             if (reminderTime <= DateTime.Now)
             {
-                await ctx.FollowUpAsync(
-                    new DiscordFollowupMessageBuilder().WithContent(
-                        "You can't set a reminder to go off in the past!"));
-                return;
+                // If user says something like "4pm" and its past 4pm, assume they mean "4pm tomorrow"
+                if (reminderTime.Date == DateTime.Now.Date && reminderTime.TimeOfDay < DateTime.Now.TimeOfDay)
+                {
+                    reminderTime = reminderTime.AddDays(1);
+                }
+                else
+                {
+                    await ctx.FollowUpAsync(
+                        new DiscordFollowupMessageBuilder().WithContent(
+                            "You can't set a reminder to go off in the past!"));
+                    return;
+                }
             }
 
             string guildId;
