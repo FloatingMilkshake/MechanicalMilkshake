@@ -44,7 +44,7 @@ public class WolframAlpha : ApplicationCommandModule
             {
                 var data =
                     await Program.httpClient.GetStringAsync(
-                        $"https://api.wolframalpha.com/v1/result?appid={appid}&i={query}");
+                        $"https://api.wolframalpha.com/v1/result?appid={appid}&i={queryEncoded}");
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"> {queryEscaped}\n" +
                     data + $"\n\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
             }
@@ -58,7 +58,7 @@ public class WolframAlpha : ApplicationCommandModule
             {
                 var data =
                     await Program.httpClient.GetByteArrayAsync(
-                        $"https://api.wolframalpha.com/v1/simple?appid={appid}&i={query}");
+                        $"https://api.wolframalpha.com/v1/simple?appid={appid}&i={queryEncoded}");
                 await File.WriteAllBytesAsync("result.gif", data);
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
