@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake.Commands;
+﻿using Emzi0767.Utilities;
+
+namespace MechanicalMilkshake.Commands;
 
 public class InviteInfo : ApplicationCommandModule
 {
@@ -28,30 +30,44 @@ public class InviteInfo : ApplicationCommandModule
 
         var embed = new DiscordEmbedBuilder
         {
-            Title = $"Invite Info for {invite.Guild.Name}",
+            Title = invite.Guild.VanityUrlCode == null ? $"Invite Info for {invite.Guild.Name}" : $"Invite info for {invite.Guild.Name}\n(discord.gg/{invite.Guild.VanityUrlCode})",
+            //Title = $"Invite Info for {invite.Guild.Name}",
+            Description = invite.Guild.Description,
             Color = new DiscordColor("#FAA61A")
         };
-        embed.AddField("Code", $"`{invite.Code}`");
-        embed.AddField("Guild", $"{invite.Guild.Name} (`{invite.Guild.Id}`)", true);
-        embed.AddField("Channel", $"{invite.Channel.Name} (`{invite.Channel.Id}`)", true);
+        
         if (invite.Guild.VanityUrlCode == null)
         {
             embed.AddField("Inviter",
                 invite.Inviter == null
                     ? "unknown"
                     : $"{invite.Inviter.Username}#{invite.Inviter.Discriminator} (`{invite.Inviter.Id}`)");
-            embed.AddField("Approximate Member Count",
-                invite.ApproximateMemberCount == null ? "unknown" : invite.ApproximateMemberCount.ToString(), true);
+
             embed.AddField("Expires At",
-                invite.ExpiresAt == null
-                    ? "Invite does not expire."
-                    : $"<t:{((DateTimeOffset)invite.ExpiresAt).ToUnixTimeSeconds()}:F> (<t:{((DateTimeOffset)invite.ExpiresAt).ToUnixTimeSeconds()}:R>)");
+                    invite.ExpiresAt == null
+                        ? "Invite does not expire."
+                        : $"<t:{((DateTimeOffset)invite.ExpiresAt).ToUnixTimeSeconds()}:F> (<t:{((DateTimeOffset)invite.ExpiresAt).ToUnixTimeSeconds()}:R>)");
         }
-        else
+
+        string verifLevelDesc = invite.Guild.VerificationLevel switch
         {
-            embed.AddField("Approximate Member Count",
-                invite.ApproximateMemberCount == null ? "unknown" : invite.ApproximateMemberCount.ToString());
-        }
+            VerificationLevel.None => "None - unrestricted access to the server",
+            VerificationLevel.Low => "Low - members must have a verified email address on their Discord account",
+            VerificationLevel.Medium => "Medium - members must be registered on Discord for longer than 5 minutes",
+            VerificationLevel.High => "High - members must be a member of the server for longer than 10 minutes",
+            VerificationLevel.Highest => "Highest - members must have a verified phone number on their Discord account",
+            _ => "unknown",
+        };
+        embed.AddField("Verification Level", verifLevelDesc);
+
+        embed.AddField("Server Created On",
+            $"<t:{invite.Guild.CreationTimestamp.ToUnixTimeSeconds()}:F> (<t:{invite.Guild.CreationTimestamp.ToUnixTimeSeconds()}:R>)");
+
+        embed.AddField("Members",
+            invite.ApproximateMemberCount == null ? "unknown" : invite.ApproximateMemberCount.ToString(), true);
+
+        embed.AddField("Online",
+            invite.ApproximatePresenceCount == null ? "unknown" : invite.ApproximatePresenceCount.ToString(), true);
 
         embed.WithThumbnail(invite.Guild.IconUrl);
 
