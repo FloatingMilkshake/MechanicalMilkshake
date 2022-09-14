@@ -20,11 +20,7 @@ public class ReadyEvent
             embed.AddField("Framework", debugInfo.Framework, true);
             embed.AddField("Platform", debugInfo.Platform, true);
             embed.AddField("Library", debugInfo.Library, true);
-            embed.AddField("Commit Hash", $"`{debugInfo.CommitHash}`", true);
-            embed.AddField(debugInfo.CommitTimeDescription, debugInfo.CommitTimestamp, true);
-            embed.AddField("Commit Message", debugInfo.CommitMessage);
-
-            embed.AddField("Server Count", client.Guilds.Count.ToString(), true);
+            embed.AddField("Server Count", Program.discord.Guilds.Count.ToString(), true);
 
             int commandCount;
 #if DEBUG
@@ -35,6 +31,9 @@ public class ReadyEvent
 #endif
             embed.AddField("Command Count", commandCount.ToString(), true);
             embed.AddField("Load Time", debugInfo.LoadTime, true);
+            embed.AddField("Commit Hash", $"`{debugInfo.CommitHash}`", true);
+            embed.AddField(debugInfo.CommitTimeDescription, debugInfo.CommitTimestamp, true);
+            embed.AddField("Commit Message", debugInfo.CommitMessage);
 
             await Program.homeChannel.SendMessageAsync(embed);
 
