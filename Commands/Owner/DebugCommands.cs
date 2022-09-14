@@ -157,5 +157,30 @@ public class DebugCommands : ApplicationCommandModule
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
         }
+
+        [SlashCommand("humandateparser",
+            "[Authorized users only] See what happens when HumanDateParser tries to parse a date.")]
+        public async Task HumanDateParserCmd(InteractionContext ctx,
+            [Option("date", "The date (or time) for HumanDateParser to parse.")] string date)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = "HumanDateParser Result",
+                Color = Program.botColor
+            };
+
+            try
+            {
+                embed.WithDescription($"<t:{((DateTimeOffset)HumanDateParser.HumanDateParser.Parse(date)).ToUnixTimeSeconds()}:F>");
+            }
+            catch (HumanDateParser.ParseException ex)
+            {
+                embed.WithDescription($"{ex.Message}");
+            }
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+        }
     }
 }
