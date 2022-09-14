@@ -44,22 +44,31 @@ public class DebugCommands : ApplicationCommandModule
             "[Authorized users only] Check the bot's uptime (from the time it connects to Discord).")]
         public async Task Uptime(InteractionContext ctx)
         {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = "Uptime",
+                Color = Program.botColor
+            };
+
             var connectUnixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
 
             var startTime = Convert.ToDateTime(Program.processStartTime);
             var startUnixTime = ((DateTimeOffset)startTime).ToUnixTimeSeconds();
 
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
-                $"Process started at <t:{startUnixTime}:F> (<t:{startUnixTime}:R>).\n\nLast connected to Discord at <t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)."));
+            embed.AddField("Process started at", $"<t:{startUnixTime}:F> (<t:{startUnixTime}:R>)");
+            embed.AddField("Last connected to Discord at", $"<t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)");
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
         }
 
         [SlashCommand("timecheck",
             "[Authorized users only] Return the current time on the machine the bot is running on.")]
         public async Task TimeCheck(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
-                $"Seems to me like it's currently `{DateTime.Now}`."
-                + $"\n(Short Time: `{DateTime.Now.ToShortTimeString()}`)"));
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder()
+                { Title = "Time Check", Color = Program.botColor, Description = $"Seems to me like it's currently `{DateTime.Now}`." }));
         }
 
         [SlashCommand("shutdown", "[Authorized users only] Shut down the bot.")]
@@ -105,6 +114,12 @@ public class DebugCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = "Owners",
+                Color = Program.botColor
+            };
+
             List<DiscordUser> botOwners = new();
             List<DiscordUser> authorizedUsers = new();
 
@@ -113,17 +128,17 @@ public class DebugCommands : ApplicationCommandModule
             foreach (var userId in Program.configjson.AuthorizedUsers)
                 authorizedUsers.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
 
-            var ownerOutput = "Bot owners are:";
+            string botOwnerList = "";
+            foreach (var owner in botOwners) botOwnerList += $"\n- {owner.Username}#{owner.Discriminator} (`{owner.Id}`)";
 
-            foreach (var owner in botOwners) ownerOutput += $"\n- {owner.Username}#{owner.Discriminator}";
+            string authUsersList = "";
+            foreach (var user in authorizedUsers) authUsersList += $"\n- {user.Username}#{user.Discriminator} (`{user.Id}`)";
 
-            ownerOutput = ownerOutput.Trim() + "\n\nUsers authorized to use owner-level commands are:";
+            embed.AddField("Bot Owners", botOwnerList);
+            embed.AddField("Authorized Users",
+                $"These users are authorized to use owner-level commands.\n{authUsersList}");
 
-            foreach (var user in authorizedUsers) ownerOutput += $"\n- {user.Username}#{user.Discriminator}";
-
-            ownerOutput = ownerOutput.Trim();
-
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(ownerOutput));
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
         }
 
         [SlashCommand("guilds", "[Authorized users only] Show the guilds that the bot is in.")]
@@ -133,7 +148,8 @@ public class DebugCommands : ApplicationCommandModule
 
             DiscordEmbedBuilder embed = new()
             {
-                Title = "Joined Guilds"
+                Title = "Joined Guilds",
+                Color = Program.botColor
             };
 
             foreach (var guild in Program.discord.Guilds)
