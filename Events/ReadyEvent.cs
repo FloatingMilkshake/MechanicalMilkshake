@@ -12,7 +12,7 @@ public class ReadyEvent
             DiscordEmbedBuilder embed = new()
             {
                 Title = "Connected!",
-                Color = new DiscordColor("#FAA61A")
+                Color = Program.botColor
             };
 
             var debugInfo = DebugInfoHelper.GetDebugInfo();

@@ -162,7 +162,7 @@ public class Reminders : ApplicationCommandModule
             DiscordEmbedBuilder embed = new()
             {
                 Title = "Reminders",
-                Color = new DiscordColor("#FAA61A")
+                Color = Program.botColor
             };
 
             if (output.Length > 4096)
@@ -456,7 +456,7 @@ public class Reminders : ApplicationCommandModule
             {
                 Title = $"Reminder `{id}`",
                 Description = reminder.ReminderText,
-                Color = new DiscordColor("#FAA61A")
+                Color = Program.botColor
             };
             embed.AddField("Server",
                 $"{(await Program.discord.GetGuildAsync(Convert.ToUInt64(reminder.GuildId))).Name}");

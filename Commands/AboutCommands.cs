@@ -18,7 +18,7 @@ public class AboutCommands : ApplicationCommandModule
             Title = $"About {ctx.Client.CurrentUser.Username}",
             Description =
                 $"A multipurpose bot with many miscellaneous commands. Type `/` and select {ctx.Client.CurrentUser.Username} to see available commands.",
-            Color = new DiscordColor("#FAA61A")
+            Color = Program.botColor
         };
         embed.AddField("Servers", ctx.Client.Guilds.Count.ToString(), true);
         embed.AddField("Total User Count (not unique)", ctx.Client.Guilds.Sum(g => g.Value.MemberCount).ToString(),

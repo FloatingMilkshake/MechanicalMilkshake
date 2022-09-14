@@ -9,6 +9,7 @@ internal class Program
     public static HttpClient httpClient = new();
     public static ConfigJson configjson;
     public static readonly string processStartTime = DateTime.Now.ToString();
+    public static readonly DiscordColor botColor = new("#FAA61A");
     public static DiscordChannel homeChannel;
     public static EventId BotEventId { get; } = new(1000, "MechanicalMilkshake");
 #if DEBUG

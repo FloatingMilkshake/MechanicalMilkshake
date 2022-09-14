@@ -20,7 +20,7 @@
             DiscordEmbedBuilder embed = new()
             {
                 Title = isJoin ? "I've been added to a server!" : "I've been removed from a server!",
-                Color = new DiscordColor("#FAA61A")
+                Color = Program.botColor
             };
 
             embed.WithThumbnail(guild.IconUrl);

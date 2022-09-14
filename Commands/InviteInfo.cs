@@ -33,7 +33,7 @@ public class InviteInfo : ApplicationCommandModule
             Title = invite.Guild.VanityUrlCode == null ? $"Invite Info for {invite.Guild.Name}" : $"Invite info for {invite.Guild.Name}\n(discord.gg/{invite.Guild.VanityUrlCode})",
             //Title = $"Invite Info for {invite.Guild.Name}",
             Description = invite.Guild.Description,
-            Color = new DiscordColor("#FAA61A")
+            Color = Program.botColor
         };
         
         if (invite.Guild.VanityUrlCode == null)

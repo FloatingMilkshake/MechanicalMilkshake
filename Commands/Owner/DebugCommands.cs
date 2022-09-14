@@ -14,7 +14,7 @@ public class DebugCommands : ApplicationCommandModule
             DiscordEmbedBuilder embed = new()
             {
                 Title = "Debug Info",
-                Color = new DiscordColor("#FAA61A")
+                Color = Program.botColor
             };
 
             var debugInfo = DebugInfoHelper.GetDebugInfo();
