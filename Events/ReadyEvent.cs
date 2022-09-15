@@ -9,33 +9,7 @@ public class ReadyEvent
         {
             Program.connectTime = DateTime.Now;
 
-            DiscordEmbedBuilder embed = new()
-            {
-                Title = "Connected!",
-                Color = Program.botColor
-            };
-
-            var debugInfo = DebugInfoHelper.GetDebugInfo();
-
-            embed.AddField("Framework", debugInfo.Framework, true);
-            embed.AddField("Platform", debugInfo.Platform, true);
-            embed.AddField("Library", debugInfo.Library, true);
-            embed.AddField("Server Count", Program.discord.Guilds.Count.ToString(), true);
-
-            int commandCount;
-#if DEBUG
-            commandCount = (await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.HomeServerId))
-                .Count;
-#else
-        commandCount = (await Program.discord.GetGlobalApplicationCommandsAsync()).Count;
-#endif
-            embed.AddField("Command Count", commandCount.ToString(), true);
-            embed.AddField("Load Time", debugInfo.LoadTime, true);
-            embed.AddField("Commit Hash", $"`{debugInfo.CommitHash}`", true);
-            embed.AddField(debugInfo.CommitTimeDescription, debugInfo.CommitTimestamp, true);
-            embed.AddField("Commit Message", debugInfo.CommitMessage);
-
-            await Program.homeChannel.SendMessageAsync(embed);
+            await Program.homeChannel.SendMessageAsync(await DebugInfoHelpers.GenerateDebugInfoEmbed(true));
 
             //await Program.homeChannel.SendMessageAsync($"Connected!\n{DebugInfoHelper.GetDebugInfo()}");
         });
