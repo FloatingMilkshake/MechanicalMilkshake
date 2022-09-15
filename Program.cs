@@ -209,7 +209,7 @@ internal class Program
         {
             while (true)
             {
-                await Checks.PackageUpdateChecks();
+                await Checks.PackageUpdateChecks.PackageUpdateCheck();
                 await Task.Delay(21600000); // 6 hours
             }
         });
@@ -226,7 +226,7 @@ internal class Program
         var returnValue = true;
         while (returnValue)
         {
-            returnValue = await Checks.ReminderCheck();
+            returnValue = await Checks.ReminderChecks.ReminderCheck();
             await Task.Delay(10000); // 10 seconds
         }
     }
