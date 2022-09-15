@@ -209,7 +209,7 @@ internal class Program
         {
             while (true)
             {
-                await Checks.PackageUpdateCheck();
+                await Checks.PackageUpdateChecks();
                 await Task.Delay(21600000); // 6 hours
             }
         });
