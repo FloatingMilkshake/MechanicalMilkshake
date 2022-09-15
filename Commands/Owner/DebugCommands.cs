@@ -148,7 +148,7 @@ public class DebugCommands : ApplicationCommandModule
 
             DiscordEmbedBuilder embed = new()
             {
-                Title = "Joined Guilds",
+                Title = $"Joined Guilds - {Program.discord.Guilds.Count}",
                 Color = Program.botColor
             };
 
