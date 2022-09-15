@@ -219,7 +219,7 @@ internal class Program
             while (true)
             {
                 await CustomStatusHelper.SetCustomStatus();
-                await Task.Delay(1800000); // 30 minutes
+                await Task.Delay(3600000); // 1 hour
             }
         });
 
