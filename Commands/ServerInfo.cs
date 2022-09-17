@@ -18,14 +18,14 @@ public class ServerInfo : ApplicationCommandModule
 
         var embed = new DiscordEmbedBuilder()
             .WithColor(new DiscordColor($"{botUserAsMember.Color}"))
-            .AddField("Server Owner", $"{ctx.Guild.Owner.Username}#{ctx.Guild.Owner.Discriminator}", true)
+            .AddField("Server Owner", $"{ctx.Guild.Owner.Username}#{ctx.Guild.Owner.Discriminator}")
+            .AddField("Description", $"{description}")
+            .AddField("Created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)")
             .AddField("Channels", $"{ctx.Guild.Channels.Count}", true)
             .AddField("Members", $"{ctx.Guild.MemberCount}", true)
             .AddField("Roles", $"{ctx.Guild.Roles.Count}", true)
             .WithThumbnail($"{ctx.Guild.IconUrl}")
-            .AddField("Description", $"{description}", true)
-            .WithFooter($"Server ID: {ctx.Guild.Id}")
-            .AddField("Created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)", true);
+            .WithFooter($"Server ID: {ctx.Guild.Id}");
 
         await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
             .WithContent($"Server Info for **{ctx.Guild.Name}**").AddEmbed(embed));
