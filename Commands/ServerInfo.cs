@@ -17,7 +17,7 @@ public class ServerInfo : ApplicationCommandModule
         var botUserAsMember = await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id);
 
         var embed = new DiscordEmbedBuilder()
-            .WithColor(new DiscordColor($"{botUserAsMember.Color}"))
+            .WithColor(Program.botColor)
             .AddField("Server Owner", $"{ctx.Guild.Owner.Username}#{ctx.Guild.Owner.Discriminator}")
             .AddField("Description", $"{description}")
             .AddField("Created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)")
