@@ -10,7 +10,7 @@
             EvalCommands evalCommands = new();
             var updatesAvailable = false;
             var restartRequired = false;
-            foreach (var host in Program.configjson.SshHosts)
+            foreach (var host in Program.configjson.Base.SshHosts)
             {
 #if DEBUG
                 Program.discord.Logger.LogInformation(Program.BotEventId,

@@ -1,9 +1,20 @@
 {
-  "botToken": "",
-  "homeChannel": "",
-  "homeServerId": "",
+  "base": {
+    "botToken": "",
+    "homeChannel": "",
+    "homeServerId": "",
+    "wolframAlphaAppId": "",
 
-  "wolframAlphaAppId": "",
+    "authorizedUsers": [
+      "",
+      ""
+    ],
+
+    "sshHosts": [
+      "",
+      ""
+    ]
+  },
 
   "workerLinks": {
     "baseUrl": "",
@@ -27,15 +38,5 @@
     "urlPrefix": "",
     "zoneId": "",
     "token": ""
-  },
-
-  "authorizedUsers": [
-    "",
-    ""
-  ],
-
-  "sshHosts": [
-    "",
-    ""
-  ]
+  }
 }

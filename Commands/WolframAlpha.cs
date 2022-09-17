@@ -23,7 +23,7 @@ public class WolframAlpha : ApplicationCommandModule
         queryEncoded = HttpUtility.UrlEncode(query);
 
         string appid;
-        if (Program.configjson.WolframAlphaAppId == null)
+        if (Program.configjson.Base.WolframAlphaAppId == null)
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                 "Looks like you don't have an App ID! Check the wolframAlphaAppId field in your config.json file. "
@@ -31,7 +31,7 @@ public class WolframAlpha : ApplicationCommandModule
             return;
         }
 
-        appid = Program.configjson.WolframAlphaAppId;
+        appid = Program.configjson.Base.WolframAlphaAppId;
 
         var queryEscaped = query.Replace("`", @"\`");
         queryEscaped = queryEscaped.Replace("*", @"\*");

@@ -7,7 +7,7 @@ public class ComponentInteractionEvent
     {
         if (e.Id == "slash-fail-restart-button")
         {
-            if (Program.configjson.AuthorizedUsers.Contains(e.User.Id.ToString()))
+            if (Program.configjson.Base.AuthorizedUsers.Contains(e.User.Id.ToString()))
             {
                 DiscordButtonComponent restartButton =
                     new(ButtonStyle.Danger, "slash-fail-restart-button", "Restart", true);
@@ -51,7 +51,7 @@ public class ComponentInteractionEvent
         }
         else if (e.Id == "shutdown-button")
         {
-            if (Program.configjson.AuthorizedUsers.Contains(e.User.Id.ToString()))
+            if (Program.configjson.Base.AuthorizedUsers.Contains(e.User.Id.ToString()))
             {
                 DiscordButtonComponent shutdownButton =
                     new(ButtonStyle.Danger, "shutdown-button", "Shut Down", true);
@@ -75,7 +75,7 @@ public class ComponentInteractionEvent
         }
         else if (e.Id == "shutdown-cancel-button")
         {
-            if (Program.configjson.AuthorizedUsers.Contains(e.User.Id.ToString()))
+            if (Program.configjson.Base.AuthorizedUsers.Contains(e.User.Id.ToString()))
             {
                 DiscordButtonComponent shutdownButton =
                     new(ButtonStyle.Danger, "shutdown-button", "Shut Down", true);

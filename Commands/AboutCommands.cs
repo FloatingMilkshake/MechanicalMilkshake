@@ -26,7 +26,7 @@ public class AboutCommands : ApplicationCommandModule
 
         int commandCount;
 #if DEBUG
-        commandCount = (await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.HomeServerId)).Count;
+        commandCount = (await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId)).Count;
 #else
         commandCount = (await Program.discord.GetGlobalApplicationCommandsAsync()).Count;
 #endif
@@ -69,7 +69,7 @@ public class AboutCommands : ApplicationCommandModule
 
         foreach (var owner in ctx.Client.CurrentApplication.Owners) botOwners.Add(owner);
 
-        foreach (var userId in Program.configjson.AuthorizedUsers)
+        foreach (var userId in Program.configjson.Base.AuthorizedUsers)
             authorizedUsers.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
 
         string ownerOutput;

@@ -24,7 +24,7 @@
 
 #if DEBUG
                     var slashCommands =
-                        await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.HomeServerId);
+                        await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
 #else
                 var slashCommands = await Program.discord.GetGlobalApplicationCommandsAsync();
 #endif

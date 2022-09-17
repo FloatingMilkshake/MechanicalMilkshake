@@ -11,7 +11,7 @@ public class EvalCommands : ApplicationCommandModule
         [Option("command", "The command to run, including any arguments.")]
         string command)
     {
-        if (!Program.configjson.AuthorizedUsers.Contains(ctx.User.Id.ToString()))
+        if (!Program.configjson.Base.AuthorizedUsers.Contains(ctx.User.Id.ToString()))
             throw new SlashExecutionChecksFailedException();
 
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,

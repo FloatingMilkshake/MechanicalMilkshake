@@ -170,7 +170,7 @@ public class Reminders : ApplicationCommandModule
                 embed.WithColor(DiscordColor.Red);
 
 #if DEBUG
-                var slashCmds = await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.HomeServerId);
+                var slashCmds = await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
 #else
                 var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
 #endif

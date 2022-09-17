@@ -99,7 +99,7 @@ public class DebugCommands : ApplicationCommandModule
 
             foreach (var owner in ctx.Client.CurrentApplication.Owners) botOwners.Add(owner);
 
-            foreach (var userId in Program.configjson.AuthorizedUsers)
+            foreach (var userId in Program.configjson.Base.AuthorizedUsers)
                 authorizedUsers.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
 
             string botOwnerList = "";

@@ -85,7 +85,7 @@ internal class Program
         configjson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
         // If the bot token is not set, we cannot continue. Display error and exit.
-        if (configjson.BotToken == null || configjson.BotToken == "")
+        if (configjson.Base.BotToken == null || configjson.Base.BotToken == "")
         {
             discord.Logger.LogError(BotEventId,
                 "ERROR: No token provided! Make sure the botToken field in your config.json file is set.");
@@ -95,7 +95,7 @@ internal class Program
         // Configure Discord client and interactivity
         discord = new DiscordClient(new DiscordConfiguration
         {
-            Token = configjson.BotToken,
+            Token = configjson.Base.BotToken,
             TokenType = TokenType.Bot,
             Intents = DiscordIntents.All,
 #if DEBUG
@@ -112,14 +112,14 @@ internal class Program
 
         // Get home channel ID; if the home channel is not set, we cannot continue.
         // Display error and exit.
-        if (configjson.HomeChannel == null)
+        if (configjson.Base.HomeChannel == null)
         {
             discord.Logger.LogError(BotEventId,
                 "No home channel provided! Make sure the homeChannel field in your config.json file is set.");
             Environment.Exit(1);
         }
 
-        var homeChannelId = Convert.ToUInt64(configjson.HomeChannel);
+        var homeChannelId = Convert.ToUInt64(configjson.Base.HomeChannel);
         homeChannel = await discord.GetChannelAsync(homeChannelId);
 
         // Set up slash commands and CommandsNext
@@ -146,7 +146,7 @@ internal class Program
             !t.IsNested);
 
         foreach (var type in slashCommandClasses)
-            slash.RegisterCommands(type, configjson.HomeServerId);
+            slash.RegisterCommands(type, configjson.Base.HomeServerId);
 
         discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging.");
 
@@ -165,7 +165,7 @@ internal class Program
             !t.IsNested);
 
         foreach (var type in ownerSlashCommandClasses)
-            slash.RegisterCommands(type, configjson.HomeServerId);
+            slash.RegisterCommands(type, configjson.Base.HomeServerId);
 
         discord.Logger.LogInformation(BotEventId, "Slash commands registered globally.");
             
@@ -173,7 +173,7 @@ internal class Program
 // & testing server for 'production' bot
         slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(631118217384951808);
         slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(984903591816990730);
-        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.HomeServerId);
+        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.Base.HomeServerId);
         slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
 #endif
 
@@ -240,7 +240,7 @@ public class SlashRequireAuthAttribute : SlashCheckBaseAttribute
 {
     public override Task<bool> ExecuteChecksAsync(InteractionContext ctx)
     {
-        return Task.FromResult(Program.configjson.AuthorizedUsers.Contains(ctx.User.Id.ToString()));
+        return Task.FromResult(Program.configjson.Base.AuthorizedUsers.Contains(ctx.User.Id.ToString()));
     }
 }
 
@@ -249,6 +249,6 @@ public class RequireAuthAttribute : CheckBaseAttribute
 {
     public override Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
     {
-        return Task.FromResult(Program.configjson.AuthorizedUsers.Contains(ctx.User.Id.ToString()));
+        return Task.FromResult(Program.configjson.Base.AuthorizedUsers.Contains(ctx.User.Id.ToString()));
     }
 }
