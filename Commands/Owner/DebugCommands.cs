@@ -157,7 +157,7 @@ public class DebugCommands : ApplicationCommandModule
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
         }
 
-        [SlashCommand("checks", "Run the bot's timed checks manually.")]
+        [SlashCommand("checks", "[Authorized users only] Run the bot's timed checks manually.")]
         public async Task DebugChecks(InteractionContext ctx,
             [Option("checks", "The checks that should be run.")]
                 [Choice("All", "all")]
