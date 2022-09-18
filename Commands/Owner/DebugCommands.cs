@@ -156,5 +156,32 @@ public class DebugCommands : ApplicationCommandModule
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
         }
+
+        [SlashCommand("checks", "Run the bot's timed checks manually.")]
+        public async Task DebugChecks(InteractionContext ctx,
+            [Option("checks", "The checks that should be run.")]
+                [Choice("All", "all")]
+                [Choice("Reminders", "reminders")]
+                [Choice("Package Updates", "packageupdates")]
+                string checksToRun)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            if (checksToRun == "all")
+            {
+                await Checks.ReminderChecks.ReminderCheck();
+                await Checks.PackageUpdateChecks.PackageUpdateCheck();
+            }
+            else if (checksToRun == "reminders")
+            {
+                await Checks.ReminderChecks.ReminderCheck();
+            }
+            else if (checksToRun == "packageupdates")
+            {
+                await Checks.PackageUpdateChecks.PackageUpdateCheck();
+            }
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Done!"));
+        }
     }
 }
