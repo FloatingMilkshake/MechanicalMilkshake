@@ -34,58 +34,80 @@ public class EmojiCommands : ApplicationCommandModule
 
         var response = $"Emoji for **{guild.Name}**\n\n";
 
-        var staticEmoji = "";
-        var animatedEmoji = "";
-
-        var copySuccess = false;
-        var copyFail = false;
-        var dm = false;
+        List<DiscordEmoji> stolenEmoji = new();
+        List<DiscordEmoji> copiedEmoji = new();
+        List<DiscordEmoji> failedEmoji = new();
 
         foreach (var emoji in guild.Emojis)
         {
-            if (emoji.Value.IsAnimated)
-                animatedEmoji += $" <a:{emoji.Value.Name}:{emoji.Key}>";
-            else
-                staticEmoji += $" <:{emoji.Value.Name}:{emoji.Key}>";
+            stolenEmoji.Add(emoji.Value);
 
             if (addToServer)
             {
                 if (ctx.Channel.IsPrivate)
                 {
-                    dm = true;
-                    continue;
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                        "I can't add emoji when you use this command in DMs! Please use it in the server you want to add the emoji to."));
+                    return;
                 }
 
                 if (!ctx.Member.Permissions.HasPermission(Permissions.ManageEmojis) ||
                     !ctx.Guild.CurrentMember.Permissions.HasPermission(Permissions.ManageEmojis))
-                    copyFail = true;
-
-                var stream = await Program.httpClient.GetStreamAsync(emoji.Value.Url);
-                using (MemoryStream ms = new())
                 {
-                    stream.CopyTo(ms);
-                    ms.Position = 0;
-                    await ctx.Guild.CreateEmojiAsync(emoji.Value.Name, ms, null,
-                        $"Emoji copied from {guild.Id} with /{ctx.CommandName} by {ctx.User.Id}.");
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                        "I couldn't copy these emoji to this server! Make sure you and I both have the \"Manage Emojis and Stickers\" permission."));
+                    return;
                 }
 
-                copySuccess = true;
+                var stream = await Program.httpClient.GetStreamAsync(emoji.Value.Url);
+                using MemoryStream ms = new();
+                stream.CopyTo(ms);
+                ms.Position = 0;
+                try
+                {
+                    await ctx.Guild.CreateEmojiAsync(emoji.Value.Name, ms, null,
+                        $"Emoji copied from guild {guild.Id} with /{ctx.CommandName} by user {ctx.User.Username}#{ctx.User.Discriminator} ({ctx.User.Id}).");
+                }
+                catch
+                {
+                    failedEmoji.Add(emoji.Value);
+                    continue;
+                }
+
+                copiedEmoji.Add(emoji.Value);
             }
         }
 
-        if (staticEmoji != "") response += $"Static Emoji:\n{staticEmoji}\n\n";
+        // Static emoji
+        response += "**Static Emoji**\n";
+        foreach (var emoji in stolenEmoji)
+        {
+            if (!emoji.IsAnimated)
+                response += $"<:{emoji.Name}:{emoji.Id}> ";
+        }
 
-        if (animatedEmoji != "") response += $"Animated Emoji:\n{animatedEmoji}\n\n";
+        // Animated emoji
+        response += "\n\n**Animated Emoji**\n";
+        foreach (var emoji in stolenEmoji)
+        {
+            if (emoji.IsAnimated)
+                response += $"<a:{emoji.Name}:{emoji.Id}> ";
+        }
 
-        if (copySuccess) response += "These emoji have been copied to this server.";
+        if (addToServer && failedEmoji.Count > 0)
+        {
+            // Emoji were copied, but some failed.
 
-        if (copyFail)
-            response +=
-                "I couldn't copy these emoji to this server! Make sure you and I both have the \"Manage Emojis and Stickers\" permission.";
-
-        if (dm)
-            response +=
-                "I can't add emoji when you use this command in DMs! Please use it in the server you want to add the emoji to.";
+            response += "\n\nThe following emoji were **not** copied to this server due to an unknown error:\n";
+            foreach (var emoji in failedEmoji)
+            {
+                response += emoji.IsAnimated ? $"<a:{emoji.Name}:{emoji.Id}> " : $"<:{emoji.Name}:{emoji.Id}> ";
+            }
+        }
+        else if (copiedEmoji.Count > 0)
+        {
+            response += "\n\nThese emoji were copied to this server.";
+        }
 
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
     }
