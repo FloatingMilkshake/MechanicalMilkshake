@@ -18,7 +18,7 @@ public class UserInfo : ApplicationCommandModule
             catch
             {
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
-                    "Hmm. It doesn't look like that user is in the server, so I can't pull up their user info."));
+                    "Hmm. It doesn't look like that user is in the server, so I can't fetch their user info."));
                 return;
             }
         else
@@ -53,12 +53,16 @@ public class UserInfo : ApplicationCommandModule
             .WithColor(new DiscordColor($"{member.Color}"))
             .WithFooter($"Requested by {ctx.Member.Username}#{ctx.Member.Discriminator}")
             .AddField("User Mention", member.Mention)
-            .AddField("User ID", $"{member.Id}")
-            .AddField("Account registered on", $"<t:{registeredAt}:F> (<t:{registeredAt}:R>)")
-            .AddField("Joined server on", $"<t:{joinedAtTimestamp}:F> (<t:{joinedAtTimestamp}:R>)")
-            .AddField("Roles", roles)
-            .WithThumbnail(member.AvatarUrl)
-            .WithTimestamp(DateTime.UtcNow);
+            .AddField("User ID", $"{member.Id}");
+
+        if (member.Nickname is not null)
+            embed.AddField("Nickname", member.Nickname);
+
+        embed.AddField("Account registered on", $"<t:{registeredAt}:F> (<t:{registeredAt}:R>)");
+        embed.AddField("Joined server on", $"<t:{joinedAtTimestamp}:F> (<t:{joinedAtTimestamp}:R>)");
+        embed.AddField("Roles", roles);
+        embed.WithThumbnail(member.AvatarUrl);
+        embed.WithTimestamp(DateTime.UtcNow);
 
         if (acknowledgements != null) embed.AddField("Acknowledgements", acknowledgements);
 
