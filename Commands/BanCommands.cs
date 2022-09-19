@@ -65,7 +65,8 @@ public class BanCommands : ApplicationCommandModule
             return;
         }
 
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-            $"Successfully unbanned **{userToUnban.Username}#{userToUnban.Discriminator}**!"));
+        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+            .WithContent("User unbanned successfully.").AsEphemeral());
+        await ctx.Channel.SendMessageAsync($"Successfully unbanned **{userToUnban.Username}#{userToUnban.Discriminator}**!");
     }
 }
