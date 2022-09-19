@@ -11,6 +11,11 @@ This bot depends on a few projects and services to provide the features that it 
 - [DSharpPlus](https://github.com/DSharpPlus/DSharpPlus/)
 - [WolframAlpha](https://products.wolframalpha.com/api/)
 - [Minio](https://github.com/minio/minio-dotnet/)
+- [HumanDateParser](https://github.com/jacksonrakena/human-date-parser/)
+- [Random Useless Facts API](https://uselessfacts.jsph.pl/)
+- [The Cat API](https://thecatapi.com/)
+- [Dog CEO's Dog API](https://dog.ceo/dog-api/)
+
 
 ### Special Thanks
 Without these people I wouldn't be where I am today, and this project wouldn't be here.
