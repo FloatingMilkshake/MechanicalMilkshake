@@ -461,7 +461,7 @@ public class Reminders : ApplicationCommandModule
             embed.AddField("Server",
                 $"{(await Program.discord.GetGuildAsync(Convert.ToUInt64(reminder.GuildId))).Name}");
             embed.AddField("Channel", $"<#{reminder.ChannelId}>");
-            embed.AddField("Jump Link", $"https://discord.com/channels/{reminder.ChannelId}/{reminder.MessageId}/");
+            embed.AddField("Jump Link", $"https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}/");
 
             var setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
             var reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
