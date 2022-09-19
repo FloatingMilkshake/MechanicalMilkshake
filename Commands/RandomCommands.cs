@@ -31,7 +31,7 @@ public class RandomCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            var fact = await Program.httpClient.GetStringAsync("https://uselessfacts.jsph.pl/random.md");
+            var fact = await Program.httpClient.GetStringAsync("https://uselessfacts.jsph.pl/random.md?language=en");
 
             if (fact.Contains("http"))
             {
