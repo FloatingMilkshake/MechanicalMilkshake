@@ -11,14 +11,14 @@ public class ErrorEvents
                 await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder()
                         .WithContent(
-                            "This command cannot be used in DMs. Please use it in a server. Contact the bot owner if you need help or think I messed up.")
+                            "This command cannot be used in DMs. Please use it in a server. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see `/about`!).")
                         .AsEphemeral());
                 return;
             }
 
             await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().WithContent(
-                        "Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up.")
+                        "Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see `/about`!).")
                     .AsEphemeral());
             return;
         }
@@ -68,7 +68,8 @@ public class ErrorEvents
 
             await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().WithContent(
-                        "It looks like slash commands are having issues! I'm trying to fix this issue automatically. Please run the command again in a moment! If it still fails and you see this message again, try again later. Sorry for the inconvenience! Bot owners have been alerted.")
+                        "It looks like slash commands are having issues! **I'm trying to fix this issue automatically. Please run the command again in a moment!**" +
+                        "\n\nIf it still fails and you see this message again, try again later. Sorry for the inconvenience! Bot owners have been alerted.")
                     .AsEphemeral());
 
             embed.Description =
@@ -140,7 +141,7 @@ public class ErrorEvents
             if (ex is ChecksFailedException)
             {
                 await e.Context.RespondAsync(
-                    "Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up.");
+                    "Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see `/about`!).");
                 return;
             }
 

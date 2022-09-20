@@ -22,7 +22,8 @@ public class EmojiCommands : ApplicationCommandModule
         catch (UnauthorizedException)
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                "I was able to find that server, but I don't have access to its emoji! The most likely reason for this is that I am not in that server; I cannot fetch emoji from a server I am not in. If you think I am in the server and you're still seeing this, contact the bot owner for help."));
+                "I was able to find that server, but I don't have access to its emoji! The most likely reason for this is that I am not in that server; I cannot fetch emoji from a server I am not in." +
+                "\n\nIf you think I am in the server and you're still seeing this, contact the bot owner for help (if you don't know who that is, see `/about`!)."));
             return;
         }
         catch

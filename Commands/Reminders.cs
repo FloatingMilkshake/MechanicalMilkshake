@@ -340,7 +340,8 @@ public class Reminders : ApplicationCommandModule
             {
                 await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder().WithContent(
-                        $"I couldn't parse \"{msgId}\" as a message ID! Please try again."));
+                        $"I couldn't parse \"{msgId}\" as a message ID! Please try again." +
+                        "\n\nIf you think I messed up or need help, contact the bot owner (if you don't know who that is, see `/about`!)."));
                 return;
             }
 
