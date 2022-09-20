@@ -344,6 +344,15 @@ public class Reminders : ApplicationCommandModule
                 return;
             }
 
+            if (message.Author.Id != Program.discord.CurrentUser.Id || !message.Content.Contains("I have a reminder for you") || message.Embeds.Count < 1)
+            {
+                await ctx.FollowUpAsync(
+                    new DiscordFollowupMessageBuilder().WithContent(
+                        "That message doesn't look like a reminder! Please try again." +
+                        "\n\nIf you think I messed up or need help, contact the bot owner (if you don't know who that is, see `/about`!)."));
+                return;
+            }
+
             DateTime reminderTime;
             try
             {
