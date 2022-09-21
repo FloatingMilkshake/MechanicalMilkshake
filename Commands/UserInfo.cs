@@ -45,8 +45,23 @@ public class UserInfo : ApplicationCommandModule
         var roles = "None";
         if (member.Roles.Any())
         {
-            roles = "";
-            foreach (var role in member.Roles.OrderBy(role => role.Position).Reverse()) roles += role.Mention + " ";
+            if (member.Roles.Count() > 30)
+            {
+                roles = "";
+                int count = 0;
+                foreach (var role in member.Roles.OrderBy(role => role.Position).Reverse())
+                    if (count < 30)
+                    {
+                        roles += role.Mention + " ";
+                        count++;
+                    }
+                roles += "\n*Only the highest 30 roles are displayed here... why so many?*";
+            }
+            else
+            {
+                roles = "";
+                foreach (var role in member.Roles.OrderBy(role => role.Position).Reverse()) roles += role.Mention + " ";
+            }
         }
 
         var embed = new DiscordEmbedBuilder()
@@ -60,7 +75,7 @@ public class UserInfo : ApplicationCommandModule
 
         embed.AddField("Account registered on", $"<t:{registeredAt}:F> (<t:{registeredAt}:R>)");
         embed.AddField("Joined server on", $"<t:{joinedAtTimestamp}:F> (<t:{joinedAtTimestamp}:R>)");
-        embed.AddField("Roles", roles);
+        embed.AddField($"Roles - {member.Roles.Count()}", roles);
         embed.WithThumbnail(member.AvatarUrl);
         embed.WithTimestamp(DateTime.UtcNow);
 
