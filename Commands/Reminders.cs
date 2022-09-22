@@ -389,6 +389,38 @@ public class Reminders : ApplicationCommandModule
                 return;
             }
 
+            /*
+              Compare reminder to be pushed back against list of user's current reminders so that if
+              the user is trying to push back a reminder that might have already been pushed back,
+              they are warned first in an attempt to prevent unwanted duplicates.
+            */
+
+            var reminders = await Program.db.HashGetAllAsync("reminders");
+
+            foreach (var rem in reminders)
+            {
+                var reminderData = JsonConvert.DeserializeObject<Reminder>(rem.Value);
+
+                if (reminderData.UserId == ctx.User.Id)
+                {
+                    if (reminderData.ReminderText == message.Embeds[0].Description)
+                    {
+                        // Reminder is a potential duplicate
+
+#if DEBUG
+                        var reminderCmd = (await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId)).FirstOrDefault(c => c.Name == "reminder");
+#else
+                        var reminderCmd = (await Program.discord.GetGlobalApplicationCommandsAsync()).FirstOrDefault(c => c.Name == "reminder");
+#endif
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                            "Warning: you might have already pushed back this reminder! Another reminder already exists with the same content."
+                                + $"\n\nTo see details, use </{reminderCmd.Name} show:{reminderCmd.Id}> and set `id` to `{reminderData.ReminderId}`."
+                                + $"\n\nIf you still want to create this reminder, use </{reminderCmd.Name} set:{reminderCmd.Id}>."));
+                        return;
+                    }
+                }
+            }
+
             string guildId;
             if (ctx.Channel.IsPrivate)
                 guildId = "@me";
@@ -398,11 +430,10 @@ public class Reminders : ApplicationCommandModule
             Random random = new();
             var reminderId = random.Next(1000, 9999);
 
-            var reminders = await Program.db.HashGetAllAsync("reminders");
+            // This is to avoid the potential for duplicate reminders
             foreach (var rem in reminders)
                 while (rem.Name == reminderId)
                     reminderId = random.Next(1000, 9999);
-            // This is to avoid the potential for duplicate reminders
             Reminder reminder = new()
             {
                 UserId = ctx.User.Id,
