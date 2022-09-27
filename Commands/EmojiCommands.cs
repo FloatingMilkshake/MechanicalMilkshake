@@ -116,18 +116,36 @@ public class EmojiCommands : ApplicationCommandModule
     [SlashCommand("bigemoji", "Enlarge an emoji! Only works for custom emoji.")]
     public async Task BigEmoji(InteractionContext ctx, [Option("emoji", "The emoji to enlarge.")] string emoji)
     {
+        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
         Regex emojiRegex = new(@"<(a)?:.*:([0-9]*)>");
+
+        if (!emojiRegex.IsMatch(emoji))
+        {
+            await ctx.FollowUpAsync(
+                new DiscordFollowupMessageBuilder().WithContent(
+                    "That doesn't look like an emoji! Please try again."));
+            return;
+        }
 
         var matches = emojiRegex.Matches(emoji);
         var groups = matches[0].Groups;
 
+        string emojiUrl;
         if (groups[1].Value == "a")
-            await ctx.CreateResponseAsync(
-                new DiscordInteractionResponseBuilder().WithContent(
-                    $"https://cdn.discordapp.com/emojis/{groups[2].Value}.gif"));
+            emojiUrl = $"https://cdn.discordapp.com/emojis/{groups[2].Value}.gif";
         else
-            await ctx.CreateResponseAsync(
-                new DiscordInteractionResponseBuilder().WithContent(
-                    $"https://cdn.discordapp.com/emojis/{groups[2].Value}"));
+            emojiUrl = $"https://cdn.discordapp.com/emojis/{groups[2].Value}";
+
+        string response;
+
+        HttpRequestMessage httpRequest = new(HttpMethod.Get, emojiUrl);
+        var httpResponse = await Program.httpClient.SendAsync(httpRequest);
+        if (httpResponse.IsSuccessStatusCode)
+            response = emojiUrl;
+        else
+            response = "That emoji doesn't exist! Please try again.";
+
+        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
     }
 }
