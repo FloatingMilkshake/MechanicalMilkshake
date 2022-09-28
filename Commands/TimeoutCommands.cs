@@ -34,8 +34,20 @@ public class TimeoutCommands : ApplicationCommandModule
                 return;
             }
 
-            var parsedDuration = HumanDateParser.HumanDateParser.Parse(duration)
-                .Subtract(ctx.Interaction.CreationTimestamp.DateTime);
+            TimeSpan parsedDuration;
+            try
+            {
+                parsedDuration = HumanDateParser.HumanDateParser.Parse(duration)
+                    .Subtract(ctx.Interaction.CreationTimestamp.DateTime);
+            }
+            catch
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent($"I couldn't parse \"{duration}\" as a length of time! Please try again.")
+                    .AsEphemeral());
+                return;
+            }
+
             var expireTime = ctx.Interaction.CreationTimestamp.DateTime + parsedDuration;
 
             try
