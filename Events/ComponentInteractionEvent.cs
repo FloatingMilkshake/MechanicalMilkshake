@@ -290,6 +290,58 @@ public class ComponentInteractionEvent
                     .AsEphemeral());
             });
         }
+        else if (e.Id == "track-details-dropdown")
+        {
+            await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().AsEphemeral());
+
+            var serializedKeyword = await Program.db.HashGetAsync("keywords", e.Values.FirstOrDefault());
+
+            KeywordConfig keyword = default;
+            try
+            {
+                keyword = JsonConvert.DeserializeObject<KeywordConfig>(serializedKeyword);
+            }
+            catch
+            {
+                await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "I ran into an error trying to get the details of that keyword! " +
+                    "Perhaps it was removed before you selected it from the dropdown?"));
+                return;
+            }
+
+            var ignoredUserMentions = "\n";
+            foreach (var userToIgnore in keyword.IgnoreList)
+            {
+                var user = await Program.discord.GetUserAsync(userToIgnore);
+                ignoredUserMentions += $"- {user.Mention}\n";
+            }
+
+            if (ignoredUserMentions == "\n") ignoredUserMentions = " None\n";
+
+            var matchWholeWord = keyword.MatchWholeWord.ToString().Trim();
+
+            string limitedGuild;
+            if (keyword.GuildId == default)
+                limitedGuild = "None";
+            else
+                limitedGuild = (await Program.discord.GetGuildAsync(keyword.GuildId)).Name;
+
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = "Keyword Details",
+                Color = Program.botColor,
+                Description = keyword.Keyword
+            };
+
+            embed.AddField("Ignore Bots", keyword.IgnoreBots.ToString(), true);
+            embed.AddField("Ignored Users", ignoredUserMentions, true);
+            embed.AddField("Match Whole Word", matchWholeWord, true);
+            embed.AddField("Limited to Server", limitedGuild, true);
+
+            await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed)
+                .AsEphemeral());
+        }
         else
         {
             e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
