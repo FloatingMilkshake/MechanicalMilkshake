@@ -64,7 +64,7 @@ public class EvalCommands : ApplicationCommandModule
                 $"Finished with exit code `{proc.ExitCode}`! It was too long to send in a message though; see the console for the full output.";
         }
 
-        return $"Finished with exit code `{proc.ExitCode}`! Output: ```\n{result}```";
+        return $"Finished with exit code `{proc.ExitCode}`! Output: ```\n{HideSensitiveInfo(result)}```";
     }
 
     // The idea for this command, and a lot of the code, is taken from DSharpPlus/DSharpPlus.Test. Reference linked below.
@@ -111,7 +111,7 @@ public class EvalCommands : ApplicationCommandModule
                     }
 
                     await ctx.FollowUpAsync(
-                        new DiscordFollowupMessageBuilder().WithContent(result.ReturnValue.ToString()));
+                        new DiscordFollowupMessageBuilder().WithContent(HideSensitiveInfo(result.ReturnValue.ToString())));
                 }
             }
         }
@@ -120,5 +120,17 @@ public class EvalCommands : ApplicationCommandModule
             await ctx.FollowUpAsync(
                 new DiscordFollowupMessageBuilder().WithContent(e.GetType() + ": " + e.Message));
         }
+    }
+
+    public string HideSensitiveInfo(string input)
+    {
+        string redacted = "[redacted]";
+        return input.Replace(Program.configjson.Base.BotToken, redacted)
+            .Replace(Program.configjson.Base.WolframAlphaAppId, redacted)
+            .Replace(Program.configjson.WorkerLinks.Secret, redacted)
+            .Replace(Program.configjson.WorkerLinks.ApiKey, redacted)
+            .Replace(Program.configjson.S3.AccessKey, redacted)
+            .Replace(Program.configjson.S3.SecretKey, redacted)
+            .Replace(Program.configjson.Cloudflare.Token, redacted);
     }
 }
