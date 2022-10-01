@@ -23,7 +23,7 @@ public class RandomCommands : ApplicationCommandModule
             Random random = new();
             await ctx.CreateResponseAsync(
                 new DiscordInteractionResponseBuilder().WithContent(
-                    $"Your random number is **{random.Next((int)min, (int)max)}**!"));
+                    $"Your random number is **{random.NextInt64(min, max)}**!"));
         }
 
         [SlashCommand("fact", "Get a random fact.")]
