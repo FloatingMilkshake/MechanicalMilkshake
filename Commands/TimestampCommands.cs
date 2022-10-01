@@ -70,8 +70,18 @@ public class TimestampCommands : ApplicationCommandModule
             [Option("include_code", "Whether to include the code for the timestamp.")]
             bool includeCode = false)
         {
-            var dateToConvert = Convert.ToDateTime(date);
-            var unixTime = ((DateTimeOffset)dateToConvert).ToUnixTimeSeconds();
+            long unixTime;
+            try
+            {
+                var dateToConvert = Convert.ToDateTime(date);
+                unixTime = ((DateTimeOffset)dateToConvert).ToUnixTimeSeconds();
+            }
+            catch
+            {
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Hmm, that doesn't look like a valid date. I wasn't able to convert it to a timestamp."));
+                return;
+            }
+            
             if (string.IsNullOrWhiteSpace(format))
             {
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"{unixTime}"));
