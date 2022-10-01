@@ -342,6 +342,178 @@ public class ComponentInteractionEvent
             await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed)
                 .AsEphemeral());
         }
+        else if (e.Id == "track-remove-dropdown")
+        {
+            await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().AsEphemeral());
+
+            var serializedKeyword = await Program.db.HashGetAsync("keywords", e.Values.FirstOrDefault());
+
+            KeywordConfig keyword = default;
+            try
+            {
+                keyword = JsonConvert.DeserializeObject<KeywordConfig>(serializedKeyword);
+            }
+            catch
+            {
+                await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "I ran into an error trying to find that keyword! " +
+                    "Perhaps it was removed before you selected it from the dropdown?"));
+                return;
+            }
+
+            var embed = new DiscordEmbedBuilder
+            {
+                Title = "Are you sure you want to remove this keyword?",
+                Color = DiscordColor.Red,
+                Description = keyword.Keyword
+            };
+
+            var ignoredUserMentions = "\n";
+            foreach (var userToIgnore in keyword.IgnoreList)
+            {
+                var user = await Program.discord.GetUserAsync(userToIgnore);
+                ignoredUserMentions += $"- {user.Mention}\n";
+            }
+
+            if (ignoredUserMentions == "\n") ignoredUserMentions = " None\n";
+
+            var matchWholeWord = keyword.MatchWholeWord.ToString().Trim();
+
+            string limitedGuild;
+            if (keyword.GuildId == default)
+                limitedGuild = "None";
+            else
+                limitedGuild = (await Program.discord.GetGuildAsync(keyword.GuildId)).Name;
+
+            embed.AddField("Ignore Bots", keyword.IgnoreBots.ToString(), true);
+            embed.AddField("Ignored Users", ignoredUserMentions, true);
+            embed.AddField("Match Whole Word", matchWholeWord, true);
+            embed.AddField("Limited to Server", limitedGuild, true);
+
+            DiscordButtonComponent confirmButton = new(ButtonStyle.Danger, "track-remove-confirm-button", "Remove");
+
+            await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed)
+                .AddComponents(confirmButton).AsEphemeral());
+        }
+        else if (e.Id == "track-remove-all-button")
+        {
+            await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().AsEphemeral());
+
+            var keywords = await Program.db.HashGetAllAsync("keywords");
+
+            List<KeywordConfig> userKeywords = new();
+            foreach (var field in keywords)
+            {
+                var keyword = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+
+                if (keyword.UserId == e.User.Id)
+                    userKeywords.Add(keyword);
+            }
+
+            if (userKeywords.Count == 0)
+            {
+#if DEBUG
+                var slashCmds = await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
+#else
+                var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
+#endif
+                var trackCmd = slashCmds.FirstOrDefault(c => c.Name == "track");
+
+                await e.Interaction.CreateFollowupMessageAsync(
+                    new DiscordFollowupMessageBuilder().WithContent(
+                        $"You don't have any tracked keywords! Add some with </{trackCmd.Name} add:{trackCmd.Id}>."));
+
+                return;
+            }
+            
+            DiscordButtonComponent confirmButton = new(ButtonStyle.Danger, "track-remove-all-confirm-button",
+                "Remove All Keywords");
+
+            await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("Are you sure you want to remove all tracked keywords? This action cannot be undone.")
+                .AsEphemeral().AddComponents(confirmButton));
+
+            
+        }
+        else if (e.Id == "track-remove-all-confirm-button")
+        {
+            await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().AsEphemeral());
+
+            var keywords = await Program.db.HashGetAllAsync("keywords");
+
+            List<KeywordConfig> userKeywords = new();
+            foreach (var field in keywords)
+            {
+                var keyword = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+
+                if (keyword.UserId == e.User.Id)
+                    userKeywords.Add(keyword);
+            }
+
+            foreach (var keyword in userKeywords)
+            {
+                await Program.db.HashDeleteAsync("keywords", keyword.Id);
+            }
+
+            await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("All keywords have been removed.").AsEphemeral());
+        }
+        else if (e.Id == "track-remove-confirm-button")
+        {
+            Task.Run(async () =>
+            {
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().AsEphemeral());
+
+                var keywordToDelete = e.Message.Embeds[0].Description;
+
+                var keywords = await Program.db.HashGetAllAsync("keywords");
+                bool keywordFound = false;
+                KeywordConfig keyword = default;
+                foreach (var item in keywords)
+                {
+                    keyword = JsonConvert.DeserializeObject<KeywordConfig>(item.Value);
+                    if (keyword.Keyword == keywordToDelete)
+                    {
+                        keywordFound = true;
+                        break;
+                    }
+                }
+
+                if (keywordFound)
+                {
+                    try
+                    {
+                        await Program.db.HashDeleteAsync("keywords", keyword.Id);
+                    }
+                    catch (Exception ex)
+                    {
+                        await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent(
+                            $"I ran into an error trying to delete that keyword!\n\"{ex.GetType()}: {ex.Message}\""));
+                        return;
+                    }
+
+                    await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
+                        .WithContent("Keyword removed.").AsEphemeral());
+
+                    DiscordMessageBuilder message = new()
+                    {
+                        Embed = e.Message.Embeds[0]
+                    };
+                    message.AddComponents(new DiscordButtonComponent(ButtonStyle.Danger, "track-remove-confirm-button",
+                        "Remove", true));
+                }
+                else
+                {
+                    await e.Interaction.CreateFollowupMessageAsync(
+                        new DiscordFollowupMessageBuilder().WithContent(
+                            "It doesn't look like you're tracking that keyword!"));
+                }
+            });
+        }
         else
         {
             e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,

@@ -188,30 +188,57 @@ public class KeywordTracking : ApplicationCommandModule
         }
 
         [SlashCommand("remove", "Untrack a keyword.")]
-        public async Task TrackRemove(InteractionContext ctx,
-            [Option("keyword", "The keyword or phrase to remove.")]
-            string keyword)
+        public async Task TrackRemove(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
-            var data = await Program.db.HashGetAllAsync("keywords");
-            var keywordReached = false;
-            foreach (var field in data)
+            var keywords = await Program.db.HashGetAllAsync("keywords");
+
+            List<KeywordConfig> userKeywords = new();
+            foreach (var field in keywords)
             {
-                var keywordConfig = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
-                if (keywordConfig.UserId == ctx.User.Id && keywordConfig.Keyword == keyword)
+                var keyword = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+
+                if (keyword.UserId == ctx.User.Id)
+                    userKeywords.Add(keyword);
+            }
+
+            if (userKeywords.Count == 0)
+            {
+#if DEBUG
+                var slashCmds = await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
+#else
+                var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
+#endif
+                var trackCmd = slashCmds.FirstOrDefault(c => c.Name == "track");
+
+                await ctx.FollowUpAsync(
+                    new DiscordFollowupMessageBuilder().WithContent(
+                        $"You don't have any tracked keywords! Add some with </{trackCmd.Name} add:{trackCmd.Id}>."));
+
+                return;
+            }
+
+            var options = new List<DiscordSelectComponentOption>();
+
+            foreach (var field in keywords)
+            {
+                var keyword = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+
+                if (keyword.UserId == ctx.User.Id)
                 {
-                    keywordReached = true;
-                    await Program.db.HashDeleteAsync("keywords", keywordConfig.Id);
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent($"Tracked keyword \"{keyword}\" deleted successfully."));
+                    options.Add(new DiscordSelectComponentOption(keyword.Keyword.Truncate(100), keyword.Id.ToString()));
                 }
             }
 
-            if (!keywordReached)
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent("You're not currently tracking that keyword!"));
+            var dropdown =
+                new DiscordSelectComponent("track-remove-dropdown", null, options);
+
+            var untrackAllButton = new DiscordButtonComponent(ButtonStyle.Danger, "track-remove-all-button", "Remove All");
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("Please choose a keyword to stop tracking.").AddComponents(dropdown).AddComponents(untrackAllButton));
         }
     }
 }
