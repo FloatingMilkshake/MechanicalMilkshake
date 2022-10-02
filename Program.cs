@@ -148,6 +148,8 @@ internal class Program
         foreach (var type in slashCommandClasses)
             slash.RegisterCommands(type, configjson.Base.HomeServerId);
 
+        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.Base.HomeServerId);
+
         discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging.");
 
         // Register slash commands globally for 'production' bot

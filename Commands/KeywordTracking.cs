@@ -89,7 +89,7 @@ public class KeywordTracking : ApplicationCommandModule
             await Program.db.HashSetAsync("keywords", ctx.InteractionId,
                 JsonConvert.SerializeObject(keywordConfig));
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"Tracking for \"{keyword}\" set up successfully.").AsEphemeral());
+                .WithContent($"Done!").AsEphemeral());
         }
 
         [SlashCommand("list", "List tracked keywords.")]

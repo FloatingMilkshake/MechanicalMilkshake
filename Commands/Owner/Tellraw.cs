@@ -5,7 +5,7 @@ public class Tellraw : ApplicationCommandModule
     [SlashCommand("tellraw", "[Authorized users only] Speak through the bot!")]
     [SlashRequireAuth]
     public async Task TellrawCommand(InteractionContext ctx,
-        [Option("message", "The message to have the bot send.")]
+        [Option("message", "The message to have the bot send."), MaximumLength(2000)]
         string message,
         [Option("channel", "The channel to send the message in.")]
         DiscordChannel channel = null)

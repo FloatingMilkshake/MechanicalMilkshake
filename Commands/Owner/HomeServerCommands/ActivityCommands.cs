@@ -14,7 +14,7 @@ public class ActivityCommands : ApplicationCommandModule
             [Choice("Competing in", "competing")]
             [Choice("Listening to", "listening")]
             string type,
-            [Option("message", "The message to show after the status type.")]
+            [Option("message", "The message to show after the status type."), MaximumLength(128)]
             string message)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
@@ -240,7 +240,7 @@ public class ActivityCommands : ApplicationCommandModule
             [Choice("Competing in", "competing")]
             [Choice("Listening to", "listening")]
             string type = null,
-            [Option("message", "The message to show after the status type.")]
+            [Option("message", "The message to show after the status type."), MaximumLength(128)]
             string message = null)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);

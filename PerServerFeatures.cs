@@ -12,7 +12,7 @@ public class PerServerFeatures
             [Choice("corporate", "Corporate")]
             [Option("department", "The department to send the complaint to.")]
             string department,
-            [Option("complaint", "Your complaint.")]
+            [Option("complaint", "Your complaint."), MaximumLength(4000)]
             string complaint)
         {
             if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 &&
@@ -31,17 +31,24 @@ public class PerServerFeatures
                 return;
             }
 
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-                .WithContent(
-                    $"Your complaint has been recorded. You can see it below. You will be contacted soon about your issue.\n> {complaint}")
-                .AsEphemeral());
-            var logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
-            DiscordMessageBuilder message = new()
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder()
             {
-                Content =
-                    $"{ctx.User.Mention} to {department} (in {ctx.Channel.Mention}/#{ctx.Channel.Name}, {ctx.Guild.Name}):\n> {complaint}"
+                Title = "Your complaint has been recorded", Color = Program.botColor,
+                Description =
+                    $"You will be contacted soon about your issue. You can see your complaint below.\n> {complaint}"
+            }).AsEphemeral());
+
+            var logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = $"New complaint received!",
+                Color = Program.botColor,
+                Description = complaint
             };
-            await logChannel.SendMessageAsync(message.WithAllowedMentions(Mentions.None));
+            embed.AddField("Sent by", $"{ctx.User.Username}#{ctx.User.Discriminator} (`{ctx.User.Id}`)");
+            embed.AddField("Sent from", $"\"{ctx.Guild.Name}\" (`{ctx.Guild.Id}`)");
+            embed.AddField("Department", department);
+            await logChannel.SendMessageAsync(embed);
         }
     }
 

@@ -60,7 +60,7 @@ public class KeywordTrackingHelpers
             // If keyword is set to only match whole word, use regex to check
             if (fieldValue.MatchWholeWord)
             {
-                if (Regex.IsMatch(message.Content.ToLower(), $"\\b{field.Name}\\b"))
+                if (Regex.IsMatch(message.Content.ToLower().Replace("\n", " "), $"\\b{field.Name.ToString().Replace("\n", " ")}\\b"))
                 {
                     await KeywordAlert(fieldValue.UserId, message, field.Name, isEdit);
                     return;
@@ -69,7 +69,7 @@ public class KeywordTrackingHelpers
             // Otherwise, use a simple .Contains()
             else
             {
-                if (message.Content.ToLower().Contains(fieldValue.Keyword))
+                if (message.Content.ToLower().Replace("\n", " ").Contains(fieldValue.Keyword.ToLower().Replace("\n", " ")))
                 {
                     await KeywordAlert(fieldValue.UserId, message, fieldValue.Keyword, isEdit);
                     return;
@@ -95,7 +95,7 @@ public class KeywordTrackingHelpers
         DiscordEmbedBuilder embed = new()
         {
             Color = new DiscordColor("#7287fd"),
-            Title = $"Tracked keyword \"{keyword}\" triggered!",
+            Title = keyword.Length > 225 ? "Tracked keyword triggered!" : $"Tracked keyword \"{keyword}\" triggered!",
             Description = message.Content
         };
 
