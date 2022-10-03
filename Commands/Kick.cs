@@ -6,7 +6,7 @@ public class Kick : ApplicationCommandModule
     [SlashCommand("kick", "Kick a user. They can rejoin the server with an invite.", false)]
     [SlashCommandPermissions(Permissions.KickMembers)]
     public async Task KickCommand(InteractionContext ctx, [Option("user", "The user to kick.")] DiscordUser userToKick,
-        [Option("reason", "The reason for the kick.")]
+        [Option("reason", "The reason for the kick."), MaximumLength(1500)]
         string reason = "No reason provided.")
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
