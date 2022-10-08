@@ -12,6 +12,14 @@ public class EmojiCommands : ApplicationCommandModule
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
+        foreach (var character in server) {
+            if (!char.IsNumber(character)) {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    $"That doesn't look like a server ID!\nA server ID is composed of only numbers and looks something like this: `{ctx.Guild.Id}`.\nPlease try again."));
+                return;
+            }
+        }
+
         ulong guildId;
         DiscordGuild guild;
         try
