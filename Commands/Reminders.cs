@@ -10,15 +10,18 @@ public class Reminders : ApplicationCommandModule
             [Option("time", "When do you want to be reminded?")]
             string time,
             [Option("text", "What should the reminder say?")]
-            string text)
+            string text,
+            [Option("private", "Whether to keep this reminder private. It will be sent in DMs.")]
+            bool isPrivate = false)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder());
+                new DiscordInteractionResponseBuilder().AsEphemeral(isPrivate));
 
             if (text.Length > 1000)
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "Reminders can't be over 1000 characters long! Try shortening your reminder."));
+                        "Reminders can't be over 1000 characters long! Try shortening your reminder.")
+                    .AsEphemeral(isPrivate));
                 return;
             }
 
@@ -33,7 +36,7 @@ public class Reminders : ApplicationCommandModule
 
                 await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder().WithContent(
-                        $"I couldn't parse \"{time}\" as a time! Please try again."));
+                        $"I couldn't parse \"{time}\" as a time! Please try again.").AsEphemeral(isPrivate));
                 return;
             }
 
@@ -47,8 +50,8 @@ public class Reminders : ApplicationCommandModule
                 else
                 {
                     await ctx.FollowUpAsync(
-                        new DiscordFollowupMessageBuilder().WithContent(
-                            "You can't set a reminder to go off in the past!"));
+                        new DiscordFollowupMessageBuilder()
+                            .WithContent("You can't set a reminder to go off in the past!").AsEphemeral(isPrivate));
                     return;
                 }
             }
@@ -75,13 +78,14 @@ public class Reminders : ApplicationCommandModule
                 ReminderId = reminderId,
                 ReminderText = text,
                 ReminderTime = reminderTime,
-                SetTime = DateTime.Now
+                SetTime = DateTime.Now,
+                IsPrivate = isPrivate
             };
 
             var unixTime = ((DateTimeOffset)reminderTime).ToUnixTimeSeconds();
             var message = await ctx.FollowUpAsync(
-                new DiscordFollowupMessageBuilder().WithContent(
-                    $"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!"));
+                new DiscordFollowupMessageBuilder()
+                    .WithContent($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!").AsEphemeral(isPrivate));
             reminder.MessageId = message.Id;
 
             await Program.db.HashSetAsync("reminders", reminderId, JsonConvert.SerializeObject(reminder));
@@ -327,9 +331,11 @@ public class Reminders : ApplicationCommandModule
             [Option("message", "The message for the reminder to push back. Accepts message IDs.")]
             string msgId,
             [Option("time", "When do you want to be reminded?")]
-            string time)
+            string time,
+            [Option("private", "Whether to keep this reminder private. It will be sent in DMs.")]
+            bool isPrivate = false)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(isPrivate));
 
             DiscordMessage message;
             try
@@ -442,14 +448,16 @@ public class Reminders : ApplicationCommandModule
                 ReminderId = reminderId,
                 ReminderText = message.Embeds[0].Description,
                 ReminderTime = reminderTime,
-                SetTime = DateTime.Now
+                SetTime = DateTime.Now,
+                IsPrivate = isPrivate
             };
 
             var unixTime = ((DateTimeOffset)reminderTime).ToUnixTimeSeconds();
 
             var response = await ctx.FollowUpAsync(
                 new DiscordFollowupMessageBuilder().WithContent(
-                    $"[Reminder](https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{msgId}) pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!"));
+                        $"[Reminder](https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{msgId}) pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!")
+                    .AsEphemeral(isPrivate));
             reminder.MessageId = response.Id;
 
             await Program.db.HashSetAsync("reminders", reminderId, JsonConvert.SerializeObject(reminder));

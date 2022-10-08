@@ -17,4 +17,6 @@ public class Reminder
     [JsonProperty("reminderTime")] public DateTime ReminderTime { get; set; }
 
     [JsonProperty("setTime")] public DateTime SetTime { get; set; }
+
+    [JsonProperty("isPrivate")] public bool IsPrivate { get; set; }
 }
