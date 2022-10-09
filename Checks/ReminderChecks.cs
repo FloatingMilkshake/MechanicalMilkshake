@@ -19,8 +19,16 @@
                         Title = $"Reminder from <t:{setTime}:R>",
                         Description = $"{reminderData.ReminderText}"
                     };
-                    embed.AddField("Context",
-                        $"[Jump Link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId})");
+
+                    string context;
+                    if (reminderData.IsPrivate)
+                        context =
+                            "This reminder was set privately, so I can't link back to the message where it was set!" +
+                            $" However, [this link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId}) should show you messages around the time that you set the reminder.";
+                    else
+                        context = $"[Jump Link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId})";
+
+                    embed.AddField("Context", context);
 
 #if DEBUG
                     var slashCommands =
