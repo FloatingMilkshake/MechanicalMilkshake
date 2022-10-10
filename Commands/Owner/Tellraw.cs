@@ -16,9 +16,10 @@ public class Tellraw : ApplicationCommandModule
         else
             targetChannel = ctx.Channel;
 
+        DiscordMessage sentMessage;
         try
         {
-            await targetChannel.SendMessageAsync(message);
+            sentMessage = await targetChannel.SendMessageAsync(message);
         }
         catch (UnauthorizedException)
         {
@@ -26,8 +27,32 @@ public class Tellraw : ApplicationCommandModule
                 .WithContent("I don't have permission to send messages in that channel!").AsEphemeral());
             return;
         }
+        catch (Exception ex)
+        {
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+                .WithContent($"I couldn't send that message!\n> {ex.GetType()}: {ex.Message}").AsEphemeral());
+            return;
+        }
 
         await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
             .WithContent($"I sent your message to {targetChannel.Mention}.").AsEphemeral());
+
+        foreach (var owner in Program.discord.CurrentApplication.Owners)
+        {
+            if (owner.Id == ctx.User.Id)
+                return;
+
+            try
+            {
+                var member = await (await Program.discord.GetGuildAsync(Program.configjson.Base.HomeServerId))
+                    .GetMemberAsync(owner.Id);
+                await member.SendMessageAsync(
+                    $"{ctx.User.Mention} used tellraw:\n> {message}\n\n{sentMessage.JumpLink}");
+            }
+            catch
+            {
+                // Do nothing
+            }
+        }
     }
 }
