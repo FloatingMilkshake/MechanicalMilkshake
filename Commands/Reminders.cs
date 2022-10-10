@@ -17,13 +17,6 @@ public class Reminders : ApplicationCommandModule
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral(isPrivate));
 
-            if (text.Length > 1000)
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                        "Reminders can't be over 1000 characters long! Try shortening your reminder.")
-                    .AsEphemeral(isPrivate));
-                return;
-            }
 
             DateTime reminderTime;
             try
