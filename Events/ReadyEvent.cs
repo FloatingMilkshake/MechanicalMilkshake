@@ -12,6 +12,8 @@ public class ReadyEvent
             await Program.homeChannel.SendMessageAsync(await DebugInfoHelpers.GenerateDebugInfoEmbed(true));
 
             //await Program.homeChannel.SendMessageAsync($"Connected!\n{DebugInfoHelper.GetDebugInfo()}");
+
+            await CustomStatusHelper.SetCustomStatus();
         });
     }
 }
