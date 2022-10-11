@@ -9,7 +9,7 @@ public class Reminders : ApplicationCommandModule
         public async Task SetReminder(InteractionContext ctx,
             [Option("time", "When do you want to be reminded?")]
             string time,
-            [Option("text", "What should the reminder say?")]
+            [Option("text", "What should the reminder say?"), MaximumLength(1000)]
             string text,
             [Option("private", "Whether to keep this reminder private. It will be sent in DMs.")]
             bool isPrivate = false)
@@ -17,13 +17,6 @@ public class Reminders : ApplicationCommandModule
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral(isPrivate));
 
-            if (text.Length > 1000)
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                        "Reminders can't be over 1000 characters long! Try shortening your reminder.")
-                    .AsEphemeral(isPrivate));
-                return;
-            }
 
             DateTime reminderTime;
             try
@@ -254,7 +247,7 @@ public class Reminders : ApplicationCommandModule
             long reminderToModify,
             [Option("time", "When do you want to be reminded? Leave this blank if you don't want to change it.")]
             string time = null,
-            [Option("text", "What should the reminder say? Leave this blank if you don't want to change it.")]
+            [Option("text", "What should the reminder say? Leave this blank if you don't want to change it."), MaximumLength(1000)]
             string text = null)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
