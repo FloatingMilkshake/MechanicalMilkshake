@@ -16,9 +16,6 @@ services:
       - type: bind
         source: ./id_rsa
         target: /app/id_rsa
-      - type: bind
-        source: ~/utils.sh
-        target: /app/utils.sh
   redis:
     image: 'redis:alpine3.16'
     restart: always
