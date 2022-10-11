@@ -205,7 +205,7 @@ public class Reminders : ApplicationCommandModule
             var reminders = await Program.db.HashGetAllAsync("reminders");
             var reminderExists = false;
             foreach (var reminder in reminders)
-                if (reminder.Name.ToString().Contains(reminderToDelete.ToString()))
+                if (reminder.Name.ToString().Equals(reminderToDelete.ToString()))
                 {
                     reminderExists = true;
                     break;
