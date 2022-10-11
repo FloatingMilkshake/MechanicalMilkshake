@@ -16,6 +16,13 @@ public class EvalCommands : ApplicationCommandModule
 
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
             new DiscordInteractionResponseBuilder());
+
+        if (command.Contains("poweroff") || command.Contains("shutdown") || command.Contains("reboot") || command.Contains("halt"))
+        {
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You can't do that."));
+            return;
+        }
+
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(await RunCommand(command)));
     }
 
@@ -74,6 +81,12 @@ public class EvalCommands : ApplicationCommandModule
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
             new DiscordInteractionResponseBuilder());
+
+        if (code.Contains("poweroff") || code.Contains("shutdown") || code.Contains("reboot") || code.Contains("halt"))
+        {
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You can't do that."));
+            return;
+        }
 
         try
         {
