@@ -9,7 +9,7 @@ public class Reminders : ApplicationCommandModule
         public async Task SetReminder(InteractionContext ctx,
             [Option("time", "When do you want to be reminded?")]
             string time,
-            [Option("text", "What should the reminder say?"), MaximumLength(1000)]
+            [Option("text", "What should the reminder say?")] [MaximumLength(1000)]
             string text,
             [Option("private", "Whether to keep this reminder private. It will be sent in DMs.")]
             bool isPrivate = false)
@@ -109,14 +109,17 @@ public class Reminders : ApplicationCommandModule
             if (userReminders.Count == 0)
             {
 #if DEBUG
-                var slashCmds = await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
+                var slashCmds =
+                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
 #else
                 var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
 #endif
                 var reminderCmd = slashCmds.FirstOrDefault(c => c.Name == "reminder");
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent($"You don't have any reminders! Set one with </{reminderCmd.Name} set:{reminderCmd.Id}>.").AsEphemeral());
+                    .WithContent(
+                        $"You don't have any reminders! Set one with </{reminderCmd.Name} set:{reminderCmd.Id}>.")
+                    .AsEphemeral());
                 return;
             }
 
@@ -174,7 +177,8 @@ public class Reminders : ApplicationCommandModule
                 embed.WithColor(DiscordColor.Red);
 
 #if DEBUG
-                var slashCmds = await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
+                var slashCmds =
+                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
 #else
                 var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
 #endif
@@ -211,7 +215,7 @@ public class Reminders : ApplicationCommandModule
 
             var reminders = await Program.db.HashGetAllAsync("reminders");
 
-            bool userHasReminders = false;
+            var userHasReminders = false;
             foreach (var reminder in reminders)
             {
                 var reminderDetails = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
@@ -237,7 +241,9 @@ public class Reminders : ApplicationCommandModule
                 var reminderCmd = slashCmds.FirstOrDefault(c => c.Name == "reminder");
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent($"You don't have any reminders! Set one with </{reminderCmd.Name} set:{reminderCmd.Id}>.").AsEphemeral());
+                    .WithContent(
+                        $"You don't have any reminders! Set one with </{reminderCmd.Name} set:{reminderCmd.Id}>.")
+                    .AsEphemeral());
                 return;
             }
 
@@ -253,7 +259,8 @@ public class Reminders : ApplicationCommandModule
             long reminderToModify,
             [Option("time", "When do you want to be reminded? Leave this blank if you don't want to change it.")]
             string time = null,
-            [Option("text", "What should the reminder say? Leave this blank if you don't want to change it."), MaximumLength(1000)]
+            [Option("text", "What should the reminder say? Leave this blank if you don't want to change it.")]
+            [MaximumLength(1000)]
             string text = null)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
@@ -314,14 +321,14 @@ public class Reminders : ApplicationCommandModule
             {
                 var reminderChannel = await Program.discord.GetChannelAsync(reminder.ChannelId);
                 var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
-                
+
                 var unixTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
-                
+
                 if (reminderMessage.Content.Contains("pushed back"))
                     await reminderMessage.ModifyAsync(
                         $"[Reminder](https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}) pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!");
                 else
-                  await reminderMessage.ModifyAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!");
+                    await reminderMessage.ModifyAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!");
             }
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
@@ -337,7 +344,8 @@ public class Reminders : ApplicationCommandModule
             [Option("private", "Whether to keep this reminder private. It will be sent in DMs.")]
             bool isPrivate = false)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder().AsEphemeral(isPrivate));
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().AsEphemeral(isPrivate));
 
             DiscordMessage message;
             try
@@ -353,7 +361,8 @@ public class Reminders : ApplicationCommandModule
                 return;
             }
 
-            if (message.Author.Id != Program.discord.CurrentUser.Id || !message.Content.Contains("I have a reminder for you") || message.Embeds.Count < 1)
+            if (message.Author.Id != Program.discord.CurrentUser.Id ||
+                !message.Content.Contains("I have a reminder for you") || message.Embeds.Count < 1)
             {
                 await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder().WithContent(
@@ -410,23 +419,23 @@ public class Reminders : ApplicationCommandModule
                 var reminderData = JsonConvert.DeserializeObject<Reminder>(rem.Value);
 
                 if (reminderData.UserId == ctx.User.Id)
-                {
                     if (reminderData.ReminderText == message.Embeds[0].Description)
                     {
                         // Reminder is a potential duplicate
-
 #if DEBUG
-                        var reminderCmd = (await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId)).FirstOrDefault(c => c.Name == "reminder");
+                        var reminderCmd =
+                            (await Program.discord.GetGuildApplicationCommandsAsync(
+                                Program.configjson.Base.HomeServerId)).FirstOrDefault(c => c.Name == "reminder");
 #else
-                        var reminderCmd = (await Program.discord.GetGlobalApplicationCommandsAsync()).FirstOrDefault(c => c.Name == "reminder");
+                        var reminderCmd =
+ (await Program.discord.GetGlobalApplicationCommandsAsync()).FirstOrDefault(c => c.Name == "reminder");
 #endif
                         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                             "Warning: you might have already pushed back this reminder! Another reminder already exists with the same content."
-                                + $"\n\nTo see details, use </{reminderCmd.Name} show:{reminderCmd.Id}> and set `id` to `{reminderData.ReminderId}`."
-                                + $"\n\nIf you still want to create this reminder, use </{reminderCmd.Name} set:{reminderCmd.Id}>."));
+                            + $"\n\nTo see details, use </{reminderCmd.Name} show:{reminderCmd.Id}> and set `id` to `{reminderData.ReminderId}`."
+                            + $"\n\nIf you still want to create this reminder, use </{reminderCmd.Name} set:{reminderCmd.Id}>."));
                         return;
                     }
-                }
             }
 
             string guildId;
@@ -475,7 +484,7 @@ public class Reminders : ApplicationCommandModule
 
             var reminders = await Program.db.HashGetAllAsync("reminders");
 
-            bool userHasReminders = false;
+            var userHasReminders = false;
             foreach (var reminder in reminders)
             {
                 var reminderDetails = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
@@ -501,7 +510,9 @@ public class Reminders : ApplicationCommandModule
                 var reminderCmd = slashCmds.FirstOrDefault(c => c.Name == "reminder");
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent($"You don't have any reminders! Set one with </{reminderCmd.Name} set:{reminderCmd.Id}>.").AsEphemeral());
+                    .WithContent(
+                        $"You don't have any reminders! Set one with </{reminderCmd.Name} set:{reminderCmd.Id}>.")
+                    .AsEphemeral());
                 return;
             }
 

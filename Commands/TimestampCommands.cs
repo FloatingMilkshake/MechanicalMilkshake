@@ -78,10 +78,11 @@ public class TimestampCommands : ApplicationCommandModule
             }
             catch
             {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Hmm, that doesn't look like a valid date. I wasn't able to convert it to a timestamp."));
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
+                    "Hmm, that doesn't look like a valid date. I wasn't able to convert it to a timestamp."));
                 return;
             }
-            
+
             if (string.IsNullOrWhiteSpace(format))
             {
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent($"{unixTime}"));

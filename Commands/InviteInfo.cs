@@ -1,6 +1,4 @@
-﻿using Emzi0767.Utilities;
-
-namespace MechanicalMilkshake.Commands;
+﻿namespace MechanicalMilkshake.Commands;
 
 public class InviteInfo : ApplicationCommandModule
 {
@@ -30,12 +28,14 @@ public class InviteInfo : ApplicationCommandModule
 
         var embed = new DiscordEmbedBuilder
         {
-            Title = invite.Guild.VanityUrlCode == null ? $"Invite Info for {invite.Guild.Name}" : $"Invite info for {invite.Guild.Name}\n(discord.gg/{invite.Guild.VanityUrlCode})",
+            Title = invite.Guild.VanityUrlCode == null
+                ? $"Invite Info for {invite.Guild.Name}"
+                : $"Invite info for {invite.Guild.Name}\n(discord.gg/{invite.Guild.VanityUrlCode})",
             //Title = $"Invite Info for {invite.Guild.Name}",
             Description = invite.Guild.Description,
             Color = Program.botColor
         };
-        
+
         if (invite.Guild.VanityUrlCode == null)
         {
             embed.AddField("Inviter",
@@ -44,19 +44,19 @@ public class InviteInfo : ApplicationCommandModule
                     : $"{invite.Inviter.Username}#{invite.Inviter.Discriminator} (`{invite.Inviter.Id}`)");
 
             embed.AddField("Expires At",
-                    invite.ExpiresAt == null
-                        ? "Invite does not expire."
-                        : $"<t:{((DateTimeOffset)invite.ExpiresAt).ToUnixTimeSeconds()}:F> (<t:{((DateTimeOffset)invite.ExpiresAt).ToUnixTimeSeconds()}:R>)");
+                invite.ExpiresAt == null
+                    ? "Invite does not expire."
+                    : $"<t:{((DateTimeOffset)invite.ExpiresAt).ToUnixTimeSeconds()}:F> (<t:{((DateTimeOffset)invite.ExpiresAt).ToUnixTimeSeconds()}:R>)");
         }
 
-        string verifLevelDesc = invite.Guild.VerificationLevel switch
+        var verifLevelDesc = invite.Guild.VerificationLevel switch
         {
             VerificationLevel.None => "None - unrestricted access to the server",
             VerificationLevel.Low => "Low - members must have a verified email address on their Discord account",
             VerificationLevel.Medium => "Medium - members must be registered on Discord for longer than 5 minutes",
             VerificationLevel.High => "High - members must be a member of the server for longer than 10 minutes",
             VerificationLevel.Highest => "Highest - members must have a verified phone number on their Discord account",
-            _ => "unknown",
+            _ => "unknown"
         };
         embed.AddField("Verification Level", verifLevelDesc);
 

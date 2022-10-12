@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake;
+﻿using MechanicalMilkshake.Checks;
+
+namespace MechanicalMilkshake;
 
 internal class Program
 {
@@ -211,7 +213,7 @@ internal class Program
         {
             while (true)
             {
-                await Checks.PackageUpdateChecks.PackageUpdateCheck();
+                await PackageUpdateChecks.PackageUpdateCheck();
                 await Task.Delay(21600000); // 6 hours
             }
         });
@@ -228,7 +230,7 @@ internal class Program
         var returnValue = true;
         while (returnValue)
         {
-            returnValue = await Checks.ReminderChecks.ReminderCheck();
+            returnValue = await ReminderChecks.ReminderCheck();
             await Task.Delay(10000); // 10 seconds
         }
     }

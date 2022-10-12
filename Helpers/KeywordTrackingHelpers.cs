@@ -60,7 +60,8 @@ public class KeywordTrackingHelpers
             // If keyword is set to only match whole word, use regex to check
             if (fieldValue.MatchWholeWord)
             {
-                if (Regex.IsMatch(message.Content.ToLower().Replace("\n", " "), $"\\b{field.Name.ToString().Replace("\n", " ")}\\b"))
+                if (Regex.IsMatch(message.Content.ToLower().Replace("\n", " "),
+                        $"\\b{field.Name.ToString().Replace("\n", " ")}\\b"))
                 {
                     await KeywordAlert(fieldValue.UserId, message, field.Name, isEdit);
                     return;
@@ -69,7 +70,8 @@ public class KeywordTrackingHelpers
             // Otherwise, use a simple .Contains()
             else
             {
-                if (message.Content.ToLower().Replace("\n", " ").Contains(fieldValue.Keyword.ToLower().Replace("\n", " ")))
+                if (message.Content.ToLower().Replace("\n", " ")
+                    .Contains(fieldValue.Keyword.ToLower().Replace("\n", " ")))
                 {
                     await KeywordAlert(fieldValue.UserId, message, fieldValue.Keyword, isEdit);
                     return;

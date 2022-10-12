@@ -48,13 +48,14 @@ public class UserInfo : ApplicationCommandModule
             if (member.Roles.Count() > 30)
             {
                 roles = "";
-                int count = 0;
+                var count = 0;
                 foreach (var role in member.Roles.OrderBy(role => role.Position).Reverse())
                     if (count < 30)
                     {
                         roles += role.Mention + " ";
                         count++;
                     }
+
                 roles += "\n*Only the highest 30 roles are displayed here... why so many?*";
             }
             else

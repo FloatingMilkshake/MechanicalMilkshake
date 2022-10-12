@@ -12,13 +12,13 @@ public class EmojiCommands : ApplicationCommandModule
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-        foreach (var character in server) {
-            if (!char.IsNumber(character)) {
+        foreach (var character in server)
+            if (!char.IsNumber(character))
+            {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                     $"That doesn't look like a server ID!\nA server ID is composed of only numbers and looks something like this: `{ctx.Guild.Id}`.\nPlease try again."));
                 return;
             }
-        }
 
         ulong guildId;
         DiscordGuild guild;
@@ -90,18 +90,14 @@ public class EmojiCommands : ApplicationCommandModule
         // Static emoji
         response += "**Static Emoji**\n";
         foreach (var emoji in stolenEmoji)
-        {
             if (!emoji.IsAnimated)
                 response += $"<:{emoji.Name}:{emoji.Id}> ";
-        }
 
         // Animated emoji
         response += "\n\n**Animated Emoji**\n";
         foreach (var emoji in stolenEmoji)
-        {
             if (emoji.IsAnimated)
                 response += $"<a:{emoji.Name}:{emoji.Id}> ";
-        }
 
         if (addToServer && failedEmoji.Count > 0)
         {
@@ -109,9 +105,7 @@ public class EmojiCommands : ApplicationCommandModule
 
             response += "\n\nThe following emoji were **not** copied to this server due to an unknown error:\n";
             foreach (var emoji in failedEmoji)
-            {
                 response += emoji.IsAnimated ? $"<a:{emoji.Name}:{emoji.Id}> " : $"<:{emoji.Name}:{emoji.Id}> ";
-            }
         }
         else if (copiedEmoji.Count > 0)
         {

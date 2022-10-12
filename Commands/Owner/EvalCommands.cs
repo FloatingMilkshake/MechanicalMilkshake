@@ -17,7 +17,8 @@ public class EvalCommands : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
             new DiscordInteractionResponseBuilder());
 
-        if (command.Contains("poweroff") || command.Contains("shutdown") || command.Contains("reboot") || command.Contains("halt"))
+        if (command.Contains("poweroff") || command.Contains("shutdown") || command.Contains("reboot") ||
+            command.Contains("halt"))
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You can't do that."));
             return;
@@ -124,7 +125,8 @@ public class EvalCommands : ApplicationCommandModule
                     }
 
                     await ctx.FollowUpAsync(
-                        new DiscordFollowupMessageBuilder().WithContent(HideSensitiveInfo(result.ReturnValue.ToString())));
+                        new DiscordFollowupMessageBuilder().WithContent(
+                            HideSensitiveInfo(result.ReturnValue.ToString())));
                 }
             }
         }
@@ -137,7 +139,7 @@ public class EvalCommands : ApplicationCommandModule
 
     public string HideSensitiveInfo(string input)
     {
-        string redacted = "[redacted]";
+        var redacted = "[redacted]";
         return input.Replace(Program.configjson.Base.BotToken, redacted)
             .Replace(Program.configjson.Base.WolframAlphaAppId, redacted)
             .Replace(Program.configjson.WorkerLinks.Secret, redacted)

@@ -1,96 +1,59 @@
-﻿namespace MechanicalMilkshake.Checks
+﻿namespace MechanicalMilkshake.Checks;
+
+public class ReminderChecks
 {
-    public class ReminderChecks
+    public static async Task<bool> ReminderCheck()
     {
-        public static async Task<bool> ReminderCheck()
+        var reminders = await Program.db.HashGetAllAsync("reminders");
+
+        foreach (var reminder in reminders)
         {
-            var reminders = await Program.db.HashGetAllAsync("reminders");
+            var reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
 
-            foreach (var reminder in reminders)
+            if (reminderData.ReminderTime <= DateTime.Now)
             {
-                var reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
-
-                if (reminderData.ReminderTime <= DateTime.Now)
+                var setTime = ((DateTimeOffset)reminderData.SetTime).ToUnixTimeSeconds();
+                DiscordEmbedBuilder embed = new()
                 {
-                    var setTime = ((DateTimeOffset)reminderData.SetTime).ToUnixTimeSeconds();
-                    DiscordEmbedBuilder embed = new()
-                    {
-                        Color = new DiscordColor("#7287fd"),
-                        Title = $"Reminder from <t:{setTime}:R>",
-                        Description = $"{reminderData.ReminderText}"
-                    };
+                    Color = new DiscordColor("#7287fd"),
+                    Title = $"Reminder from <t:{setTime}:R>",
+                    Description = $"{reminderData.ReminderText}"
+                };
 
-                    string context;
-                    if (reminderData.IsPrivate)
-                        context =
-                            "This reminder was set privately, so I can't link back to the message where it was set!" +
-                            $" However, [this link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId}) should show you messages around the time that you set the reminder.";
-                    else
-                        context = $"[Jump Link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId})";
+                string context;
+                if (reminderData.IsPrivate)
+                    context =
+                        "This reminder was set privately, so I can't link back to the message where it was set!" +
+                        $" However, [this link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId}) should show you messages around the time that you set the reminder.";
+                else
+                    context =
+                        $"[Jump Link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId})";
 
-                    embed.AddField("Context", context);
+                embed.AddField("Context", context);
 
 #if DEBUG
-                    var slashCommands =
-                        await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
+                var slashCommands =
+                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
 #else
                 var slashCommands = await Program.discord.GetGlobalApplicationCommandsAsync();
 #endif
-                    var reminderCommand = slashCommands.Where(sc => sc.Name == "reminder").FirstOrDefault();
-                    var reminderPushbackCommand =
-                        reminderCommand.Options.Where(opt => opt.Name == "pushback").FirstOrDefault();
+                var reminderCommand = slashCommands.Where(sc => sc.Name == "reminder").FirstOrDefault();
+                var reminderPushbackCommand =
+                    reminderCommand.Options.Where(opt => opt.Name == "pushback").FirstOrDefault();
 
-                    embed.AddField("Need to delay this reminder?",
-                        $"Use </{reminderCommand.Name} {reminderPushbackCommand.Name}:{reminderCommand.Id}> and set `message` to [loading...].");
+                embed.AddField("Need to delay this reminder?",
+                    $"Use </{reminderCommand.Name} {reminderPushbackCommand.Name}:{reminderCommand.Id}> and set `message` to [loading...].");
 
-                    if (reminderData.IsPrivate)
-                    {
-                        try
-                        {
-                            // Couldn't send the reminder in the channel it was created in.
-                            // Try to DM user instead.
-
-                            var guildId = Convert.ToUInt64(reminderData.GuildId);
-                            var guild = await Program.discord.GetGuildAsync(guildId);
-                            var targetMember = await guild.GetMemberAsync(reminderData.UserId);
-
-                            var msg = await targetMember.SendMessageAsync(
-                                $"<@{reminderData.UserId}>, I have a reminder for you:",
-                                embed);
-
-                            embed.RemoveFieldAt(1);
-                            embed.AddField("Need to delay this reminder?",
-                                $"Use </{reminderCommand.Name} {reminderPushbackCommand.Name}:{reminderCommand.Id}> and set `message` to `{msg.Id}`.");
-
-                            await msg.ModifyAsync(msg.Content, embed.Build());
-
-                            await Program.db.HashDeleteAsync("reminders", reminderData.ReminderId);
-
-                            return true;
-                        }
-                        catch (Exception ex)
-                        {
-                            DiscordEmbedBuilder errorEmbed = new()
-                            {
-                                Color = DiscordColor.Red,
-                                Title = "An exception occurred when checking reminders",
-                                Description =
-                                    $"`{ex.GetType()}` occurred when checking for overdue reminders."
-                            };
-
-                            errorEmbed.AddField("Message", $"{ex.Message}");
-                            errorEmbed.AddField("Stack Trace", $"```\n{ex.StackTrace}\n```");
-
-                            await Program.homeChannel.SendMessageAsync(errorEmbed);
-
-                            return false;
-                        }
-                    }
-                        
+                if (reminderData.IsPrivate)
                     try
                     {
-                        var targetChannel = await Program.discord.GetChannelAsync(reminderData.ChannelId);
-                        var msg = await targetChannel.SendMessageAsync(
+                        // Couldn't send the reminder in the channel it was created in.
+                        // Try to DM user instead.
+                        var guildId = Convert.ToUInt64(reminderData.GuildId);
+                        var guild = await Program.discord.GetGuildAsync(guildId);
+                        var targetMember = await guild.GetMemberAsync(reminderData.UserId);
+
+                        var msg = await targetMember.SendMessageAsync(
                             $"<@{reminderData.UserId}>, I have a reminder for you:",
                             embed);
 
@@ -104,53 +67,87 @@
 
                         return true;
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        try
+                        DiscordEmbedBuilder errorEmbed = new()
                         {
-                            // Couldn't send the reminder in the channel it was created in.
-                            // Try to DM user instead.
+                            Color = DiscordColor.Red,
+                            Title = "An exception occurred when checking reminders",
+                            Description =
+                                $"`{ex.GetType()}` occurred when checking for overdue reminders."
+                        };
 
-                            var guildId = Convert.ToUInt64(reminderData.GuildId);
-                            var guild = await Program.discord.GetGuildAsync(guildId);
-                            var targetMember = await guild.GetMemberAsync(reminderData.UserId);
+                        errorEmbed.AddField("Message", $"{ex.Message}");
+                        errorEmbed.AddField("Stack Trace", $"```\n{ex.StackTrace}\n```");
 
-                            var msg = await targetMember.SendMessageAsync(
-                                $"<@{reminderData.UserId}>, I have a reminder for you:",
-                                embed);
+                        await Program.homeChannel.SendMessageAsync(errorEmbed);
 
-                            embed.RemoveFieldAt(1);
-                            embed.AddField("Need to delay this reminder?",
-                                $"Use </{reminderCommand.Name} {reminderPushbackCommand.Name}:{reminderCommand.Id}> and set `message` to `{msg.Id}`.");
+                        return false;
+                    }
 
-                            await msg.ModifyAsync(msg.Content, embed.Build());
+                try
+                {
+                    var targetChannel = await Program.discord.GetChannelAsync(reminderData.ChannelId);
+                    var msg = await targetChannel.SendMessageAsync(
+                        $"<@{reminderData.UserId}>, I have a reminder for you:",
+                        embed);
 
-                            await Program.db.HashDeleteAsync("reminders", reminderData.ReminderId);
+                    embed.RemoveFieldAt(1);
+                    embed.AddField("Need to delay this reminder?",
+                        $"Use </{reminderCommand.Name} {reminderPushbackCommand.Name}:{reminderCommand.Id}> and set `message` to `{msg.Id}`.");
 
-                            return true;
-                        }
-                        catch (Exception ex)
+                    await msg.ModifyAsync(msg.Content, embed.Build());
+
+                    await Program.db.HashDeleteAsync("reminders", reminderData.ReminderId);
+
+                    return true;
+                }
+                catch
+                {
+                    try
+                    {
+                        // Couldn't send the reminder in the channel it was created in.
+                        // Try to DM user instead.
+
+                        var guildId = Convert.ToUInt64(reminderData.GuildId);
+                        var guild = await Program.discord.GetGuildAsync(guildId);
+                        var targetMember = await guild.GetMemberAsync(reminderData.UserId);
+
+                        var msg = await targetMember.SendMessageAsync(
+                            $"<@{reminderData.UserId}>, I have a reminder for you:",
+                            embed);
+
+                        embed.RemoveFieldAt(1);
+                        embed.AddField("Need to delay this reminder?",
+                            $"Use </{reminderCommand.Name} {reminderPushbackCommand.Name}:{reminderCommand.Id}> and set `message` to `{msg.Id}`.");
+
+                        await msg.ModifyAsync(msg.Content, embed.Build());
+
+                        await Program.db.HashDeleteAsync("reminders", reminderData.ReminderId);
+
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        DiscordEmbedBuilder errorEmbed = new()
                         {
-                            DiscordEmbedBuilder errorEmbed = new()
-                            {
-                                Color = DiscordColor.Red,
-                                Title = "An exception occurred when checking reminders",
-                                Description =
-                                    $"`{ex.GetType()}` occurred when checking for overdue reminders."
-                            };
+                            Color = DiscordColor.Red,
+                            Title = "An exception occurred when checking reminders",
+                            Description =
+                                $"`{ex.GetType()}` occurred when checking for overdue reminders."
+                        };
 
-                            errorEmbed.AddField("Message", $"{ex.Message}");
-                            errorEmbed.AddField("Stack Trace", $"```\n{ex.StackTrace}\n```");
+                        errorEmbed.AddField("Message", $"{ex.Message}");
+                        errorEmbed.AddField("Stack Trace", $"```\n{ex.StackTrace}\n```");
 
-                            await Program.homeChannel.SendMessageAsync(errorEmbed);
+                        await Program.homeChannel.SendMessageAsync(errorEmbed);
 
-                            return false;
-                        }
+                        return false;
                     }
                 }
             }
-
-            return true;
         }
+
+        return true;
     }
 }

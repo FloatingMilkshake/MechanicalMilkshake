@@ -12,7 +12,7 @@ public class PerServerFeatures
             [Choice("corporate", "Corporate")]
             [Option("department", "The department to send the complaint to.")]
             string department,
-            [Option("complaint", "Your complaint."), MaximumLength(4000)]
+            [Option("complaint", "Your complaint.")] [MaximumLength(4000)]
             string complaint)
         {
             if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 &&
@@ -31,7 +31,7 @@ public class PerServerFeatures
                 return;
             }
 
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder()
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {
                 Title = "Your complaint has been recorded", Color = Program.botColor,
                 Description =
@@ -41,7 +41,7 @@ public class PerServerFeatures
             var logChannel = await ctx.Client.GetChannelAsync(968515974271741962);
             DiscordEmbedBuilder embed = new()
             {
-                Title = $"New complaint received!",
+                Title = "New complaint received!",
                 Color = Program.botColor,
                 Description = complaint
             };

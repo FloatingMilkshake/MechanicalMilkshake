@@ -89,7 +89,7 @@ public class KeywordTracking : ApplicationCommandModule
             await Program.db.HashSetAsync("keywords", ctx.InteractionId,
                 JsonConvert.SerializeObject(keywordConfig));
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"Done!").AsEphemeral());
+                .WithContent("Done!").AsEphemeral());
         }
 
         [SlashCommand("list", "List tracked keywords.")]
@@ -112,7 +112,8 @@ public class KeywordTracking : ApplicationCommandModule
             }
 
 #if DEBUG
-            var slashCmds = await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
+            var slashCmds =
+                await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
 #else
             var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
 #endif
@@ -129,8 +130,9 @@ public class KeywordTracking : ApplicationCommandModule
                 embed.WithDescription(
                     $"You don't have any tracked keywords! Add some with </{trackCmd.Name} add:{trackCmd.Id}>.");
             else
-                embed.WithDescription($"**To see extended information, use </{trackCmd.Name} details:{trackCmd.Id}>.**\n" +
-                                      "Keywords are truncated to 45 characters.\n\n" + response);
+                embed.WithDescription(
+                    $"**To see extended information, use </{trackCmd.Name} details:{trackCmd.Id}>.**\n" +
+                    "Keywords are truncated to 45 characters.\n\n" + response);
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral());
         }
@@ -155,7 +157,8 @@ public class KeywordTracking : ApplicationCommandModule
             if (userKeywords.Count == 0)
             {
 #if DEBUG
-                var slashCmds = await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
+                var slashCmds =
+                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
 #else
                 var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
 #endif
@@ -175,9 +178,7 @@ public class KeywordTracking : ApplicationCommandModule
                 var keyword = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
 
                 if (keyword.UserId == ctx.User.Id)
-                {
                     options.Add(new DiscordSelectComponentOption(keyword.Keyword.Truncate(100), keyword.Id.ToString()));
-                }
             }
 
             var dropdown =
@@ -207,7 +208,8 @@ public class KeywordTracking : ApplicationCommandModule
             if (userKeywords.Count == 0)
             {
 #if DEBUG
-                var slashCmds = await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
+                var slashCmds =
+                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
 #else
                 var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
 #endif
@@ -227,18 +229,18 @@ public class KeywordTracking : ApplicationCommandModule
                 var keyword = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
 
                 if (keyword.UserId == ctx.User.Id)
-                {
                     options.Add(new DiscordSelectComponentOption(keyword.Keyword.Truncate(100), keyword.Id.ToString()));
-                }
             }
 
             var dropdown =
                 new DiscordSelectComponent("track-remove-dropdown", null, options);
 
-            var untrackAllButton = new DiscordButtonComponent(ButtonStyle.Danger, "track-remove-all-button", "Remove All");
+            var untrackAllButton =
+                new DiscordButtonComponent(ButtonStyle.Danger, "track-remove-all-button", "Remove All");
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent("Please choose a keyword to stop tracking.").AddComponents(dropdown).AddComponents(untrackAllButton));
+                .WithContent("Please choose a keyword to stop tracking.").AddComponents(dropdown)
+                .AddComponents(untrackAllButton));
         }
     }
 }

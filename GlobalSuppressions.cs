@@ -24,15 +24,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly:
     SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
         Target =
-            "~M:MechanicalMilkshake.Commands.KeywordTracking.Track.TrackRemove(DSharpPlus.SlashCommands.InteractionContext,System.String)~System.Threading.Tasks.Task")]
-[assembly:
-    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
-        Target =
             "~M:MechanicalMilkshake.Commands.Reminders.ReminderCmds.ListReminders(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
-[assembly:
-    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
-        Target =
-            "~M:MechanicalMilkshake.Commands.Reminders.ReminderCmds.DeleteReminder(DSharpPlus.SlashCommands.InteractionContext,System.Int64)~System.Threading.Tasks.Task")]
 [assembly:
     SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "<Pending>", Scope = "member",
         Target =
@@ -279,10 +271,6 @@ using System.Diagnostics.CodeAnalysis;
 [assembly:
     SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
         Target =
-            "~M:MechanicalMilkshake.Commands.Reminders.ReminderCmds.ReminderShow(DSharpPlus.SlashCommands.InteractionContext,System.Int64)~System.Threading.Tasks.Task")]
-[assembly:
-    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
-        Target =
             "~M:MechanicalMilkshake.Commands.Reminders.ReminderCmds.ModifyReminder(DSharpPlus.SlashCommands.InteractionContext,System.Int64,System.String,System.String)~System.Threading.Tasks.Task")]
 [assembly:
     SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
@@ -308,3 +296,11 @@ using System.Diagnostics.CodeAnalysis;
     SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
         Target =
             "~M:MechanicalMilkshake.Commands.Reminders.ReminderCmds.PushBackReminder(DSharpPlus.SlashCommands.InteractionContext,System.String,System.String,System.Boolean)~System.Threading.Tasks.Task")]
+[assembly:
+    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
+        Target =
+            "~M:MechanicalMilkshake.Commands.Reminders.ReminderCmds.DeleteReminder(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]
+[assembly:
+    SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
+        Target =
+            "~M:MechanicalMilkshake.Commands.Reminders.ReminderCmds.ReminderShow(DSharpPlus.SlashCommands.InteractionContext)~System.Threading.Tasks.Task")]

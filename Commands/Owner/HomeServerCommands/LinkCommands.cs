@@ -121,7 +121,8 @@ public class LinkCommands : ApplicationCommandModule
         [SlashCommand("list", "List all short links configured with Cloudflare worker-links.")]
         public async Task ListWorkerLinks(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync($"You can view the list of short links at Cloudflare [here](https://dash.cloudflare.com/{Program.configjson.WorkerLinks.AccountId}/workers/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId})!");
+            await ctx.CreateResponseAsync(
+                $"You can view the list of short links at Cloudflare [here](https://dash.cloudflare.com/{Program.configjson.WorkerLinks.AccountId}/workers/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId})!");
         }
 
         [SlashCommand("get", "Get the long URL for a short link.")]

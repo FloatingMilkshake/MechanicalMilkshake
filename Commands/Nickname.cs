@@ -6,7 +6,7 @@ public class Nickname : ApplicationCommandModule
     [SlashCommand("nickname", "Changes my nickname.", false)]
     [SlashCommandPermissions(Permissions.ManageNicknames)]
     public async Task NicknameCommand(InteractionContext ctx,
-        [Option("nickname", "What to change my nickname to. Leave this blank to clear it."), MaximumLength(32)]
+        [Option("nickname", "What to change my nickname to. Leave this blank to clear it.")] [MaximumLength(32)]
         string nickname = null)
     {
         var bot = await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id);

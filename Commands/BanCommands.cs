@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace MechanicalMilkshake.Commands;
+﻿namespace MechanicalMilkshake.Commands;
 
 [SlashRequireGuild]
 public class BanCommands : ApplicationCommandModule
@@ -8,7 +6,7 @@ public class BanCommands : ApplicationCommandModule
     [SlashCommand("ban", "Ban a user. They will not be able to rejoin unless unbanned.", false)]
     [SlashCommandPermissions(Permissions.BanMembers)]
     public async Task BanCommand(InteractionContext ctx, [Option("user", "The user to ban.")] DiscordUser userToBan,
-        [Option("reason", "The reason for the ban."), MaximumLength(1500)]
+        [Option("reason", "The reason for the ban.")] [MaximumLength(1500)]
         string reason = "No reason provided.")
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
@@ -69,6 +67,7 @@ public class BanCommands : ApplicationCommandModule
 
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
             .WithContent("User unbanned successfully.").AsEphemeral());
-        await ctx.Channel.SendMessageAsync($"Successfully unbanned **{userToUnban.Username}#{userToUnban.Discriminator}**!");
+        await ctx.Channel.SendMessageAsync(
+            $"Successfully unbanned **{userToUnban.Username}#{userToUnban.Discriminator}**!");
     }
 }

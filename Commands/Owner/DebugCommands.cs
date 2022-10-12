@@ -1,4 +1,7 @@
-﻿namespace MechanicalMilkshake.Commands.Owner;
+﻿using HumanDateParser;
+using MechanicalMilkshake.Checks;
+
+namespace MechanicalMilkshake.Commands.Owner;
 
 [SlashRequireAuth]
 public class DebugCommands : ApplicationCommandModule
@@ -11,7 +14,8 @@ public class DebugCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(await DebugInfoHelpers.GenerateDebugInfoEmbed(false)));
+            await ctx.FollowUpAsync(
+                new DiscordFollowupMessageBuilder().AddEmbed(await DebugInfoHelpers.GenerateDebugInfoEmbed(false)));
         }
 
         [SlashCommand("uptime",
@@ -41,8 +45,11 @@ public class DebugCommands : ApplicationCommandModule
             "[Authorized users only] Return the current time on the machine the bot is running on.")]
         public async Task TimeCheck(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder()
-                { Title = "Time Check", Color = Program.botColor, Description = $"Seems to me like it's currently `{DateTime.Now}`." }));
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
+            {
+                Title = "Time Check", Color = Program.botColor,
+                Description = $"Seems to me like it's currently `{DateTime.Now}`."
+            }));
         }
 
         [SlashCommand("shutdown", "[Authorized users only] Shut down the bot.")]
@@ -102,11 +109,13 @@ public class DebugCommands : ApplicationCommandModule
             foreach (var userId in Program.configjson.Base.AuthorizedUsers)
                 authorizedUsers.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
 
-            string botOwnerList = "";
-            foreach (var owner in botOwners) botOwnerList += $"\n- {owner.Username}#{owner.Discriminator} (`{owner.Id}`)";
+            var botOwnerList = "";
+            foreach (var owner in botOwners)
+                botOwnerList += $"\n- {owner.Username}#{owner.Discriminator} (`{owner.Id}`)";
 
-            string authUsersList = "";
-            foreach (var user in authorizedUsers) authUsersList += $"\n- {user.Username}#{user.Discriminator} (`{user.Id}`)";
+            var authUsersList = "";
+            foreach (var user in authorizedUsers)
+                authUsersList += $"\n- {user.Username}#{user.Discriminator} (`{user.Id}`)";
 
             embed.AddField("Bot Owners", botOwnerList);
             embed.AddField("Authorized Users",
@@ -135,7 +144,8 @@ public class DebugCommands : ApplicationCommandModule
         [SlashCommand("humandateparser",
             "[Authorized users only] See what happens when HumanDateParser tries to parse a date.")]
         public async Task HumanDateParserCmd(InteractionContext ctx,
-            [Option("date", "The date (or time) for HumanDateParser to parse.")] string date)
+            [Option("date", "The date (or time) for HumanDateParser to parse.")]
+            string date)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
@@ -147,9 +157,10 @@ public class DebugCommands : ApplicationCommandModule
 
             try
             {
-                embed.WithDescription($"<t:{((DateTimeOffset)HumanDateParser.HumanDateParser.Parse(date)).ToUnixTimeSeconds()}:F>");
+                embed.WithDescription(
+                    $"<t:{((DateTimeOffset)HumanDateParser.HumanDateParser.Parse(date)).ToUnixTimeSeconds()}:F>");
             }
-            catch (HumanDateParser.ParseException ex)
+            catch (ParseException ex)
             {
                 embed.WithDescription($"{ex.Message}");
             }
@@ -160,25 +171,25 @@ public class DebugCommands : ApplicationCommandModule
         [SlashCommand("checks", "[Authorized users only] Run the bot's timed checks manually.")]
         public async Task DebugChecks(InteractionContext ctx,
             [Option("checks", "The checks that should be run.")]
-                [Choice("All", "all")]
-                [Choice("Reminders", "reminders")]
-                [Choice("Package Updates", "packageupdates")]
-                string checksToRun)
+            [Choice("All", "all")]
+            [Choice("Reminders", "reminders")]
+            [Choice("Package Updates", "packageupdates")]
+            string checksToRun)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
             if (checksToRun == "all")
             {
-                await Checks.ReminderChecks.ReminderCheck();
-                await Checks.PackageUpdateChecks.PackageUpdateCheck();
+                await ReminderChecks.ReminderCheck();
+                await PackageUpdateChecks.PackageUpdateCheck();
             }
             else if (checksToRun == "reminders")
             {
-                await Checks.ReminderChecks.ReminderCheck();
+                await ReminderChecks.ReminderCheck();
             }
             else if (checksToRun == "packageupdates")
             {
-                await Checks.PackageUpdateChecks.PackageUpdateCheck();
+                await PackageUpdateChecks.PackageUpdateCheck();
             }
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Done!"));

@@ -26,7 +26,8 @@ public class AboutCommands : ApplicationCommandModule
 
         int commandCount;
 #if DEBUG
-        commandCount = (await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId)).Count;
+        commandCount = (await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId))
+            .Count;
 #else
         commandCount = (await Program.discord.GetGlobalApplicationCommandsAsync()).Count;
 #endif

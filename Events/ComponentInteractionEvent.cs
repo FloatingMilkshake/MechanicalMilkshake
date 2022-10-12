@@ -1,6 +1,4 @@
-﻿using static System.Net.WebRequestMethods;
-
-namespace MechanicalMilkshake.Events;
+﻿namespace MechanicalMilkshake.Events;
 
 public class ComponentInteractionEvent
 {
@@ -16,7 +14,7 @@ public class ComponentInteractionEvent
 
                 try
                 {
-                    var dockerCheckFile = System.IO.File.ReadAllText("/proc/self/cgroup");
+                    var dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
                     if (string.IsNullOrWhiteSpace(dockerCheckFile))
                     {
                         await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
@@ -417,7 +415,8 @@ public class ComponentInteractionEvent
             if (userKeywords.Count == 0)
             {
 #if DEBUG
-                var slashCmds = await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
+                var slashCmds =
+                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
 #else
                 var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
 #endif
@@ -429,15 +428,13 @@ public class ComponentInteractionEvent
 
                 return;
             }
-            
+
             DiscordButtonComponent confirmButton = new(ButtonStyle.Danger, "track-remove-all-confirm-button",
                 "Remove All Keywords");
 
             await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
                 .WithContent("Are you sure you want to remove all tracked keywords? This action cannot be undone.")
                 .AsEphemeral().AddComponents(confirmButton));
-
-            
         }
         else if (e.Id == "track-remove-all-confirm-button")
         {
@@ -455,10 +452,7 @@ public class ComponentInteractionEvent
                     userKeywords.Add(keyword);
             }
 
-            foreach (var keyword in userKeywords)
-            {
-                await Program.db.HashDeleteAsync("keywords", keyword.Id);
-            }
+            foreach (var keyword in userKeywords) await Program.db.HashDeleteAsync("keywords", keyword.Id);
 
             await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
                 .WithContent("All keywords have been removed.").AsEphemeral());
@@ -468,12 +462,12 @@ public class ComponentInteractionEvent
             Task.Run(async () =>
             {
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder().AsEphemeral());
+                    new DiscordInteractionResponseBuilder().AsEphemeral());
 
                 var keywordToDelete = e.Message.Embeds[0].Description;
 
                 var keywords = await Program.db.HashGetAllAsync("keywords");
-                bool keywordFound = false;
+                var keywordFound = false;
                 KeywordConfig keyword = default;
                 foreach (var item in keywords)
                 {

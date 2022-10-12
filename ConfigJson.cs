@@ -3,13 +3,12 @@ namespace MechanicalMilkshake;
 public class ConfigJson
 {
     [JsonProperty("base")] public BaseConfig Base { get; private set; }
-    
-    [JsonProperty("workerLinks")] public WorkerLinksConfig WorkerLinks { get; private set; }
-    
-    [JsonProperty("s3")] public S3Config S3 { get; private set; }
-    
-    [JsonProperty("cloudflare")] public CloudflareConfig Cloudflare { get; private set; }
 
+    [JsonProperty("workerLinks")] public WorkerLinksConfig WorkerLinks { get; private set; }
+
+    [JsonProperty("s3")] public S3Config S3 { get; private set; }
+
+    [JsonProperty("cloudflare")] public CloudflareConfig Cloudflare { get; private set; }
 }
 
 public class BaseConfig
