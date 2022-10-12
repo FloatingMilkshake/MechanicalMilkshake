@@ -108,8 +108,15 @@ public class Reminders : ApplicationCommandModule
 
             if (userReminders.Count == 0)
             {
+#if DEBUG
+                var slashCmds = await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
+#else
+                var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
+#endif
+                var reminderCmd = slashCmds.FirstOrDefault(c => c.Name == "reminder");
+
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent("You don't have any reminders! Set one with `/reminder set`.").AsEphemeral());
+                    .WithContent($"You don't have any reminders! Set one with </{reminderCmd.Name} set:{reminderCmd.Id}>.").AsEphemeral());
                 return;
             }
 
