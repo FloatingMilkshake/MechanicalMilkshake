@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake.Events;
+﻿using static System.Net.WebRequestMethods;
+
+namespace MechanicalMilkshake.Events;
 
 public class ComponentInteractionEvent
 {
@@ -14,7 +16,7 @@ public class ComponentInteractionEvent
 
                 try
                 {
-                    var dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
+                    var dockerCheckFile = System.IO.File.ReadAllText("/proc/self/cgroup");
                     if (string.IsNullOrWhiteSpace(dockerCheckFile))
                     {
                         await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
@@ -513,6 +515,91 @@ public class ComponentInteractionEvent
                             "It doesn't look like you're tracking that keyword!"));
                 }
             });
+        }
+        else if (e.Id == "reminder-delete-dropdown")
+        {
+            Reminder reminder;
+            try
+            {
+                reminder =
+                    JsonConvert.DeserializeObject<Reminder>(
+                        await Program.db.HashGetAsync("reminders", e.Values[0]));
+            }
+            catch
+            {
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder()
+                        .WithContent(
+                            "That reminder was already deleted!")
+                        .AsEphemeral());
+                return;
+            }
+
+            if (!reminder.IsPrivate)
+            {
+                var reminderChannel = await Program.discord.GetChannelAsync(reminder.ChannelId);
+                var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
+
+                await reminderMessage.ModifyAsync("This reminder was deleted.");
+            }
+
+            await Program.db.HashDeleteAsync("reminders", e.Values[0]);
+
+            await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder()
+                    .WithContent("Reminder deleted successfully.").AsEphemeral());
+        }
+        else if (e.Id == "reminder-show-dropdown")
+        {
+            Reminder reminder;
+            try
+            {
+                reminder =
+                    JsonConvert.DeserializeObject<Reminder>(
+                        await Program.db.HashGetAsync("reminders", e.Values[0]));
+            }
+            catch
+            {
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder()
+                        .WithContent(
+                            "That reminder doesn't exist! Perhaps it was deleted before you chose it from the list?")
+                        .AsEphemeral());
+                return;
+            }
+
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = $"Reminder `{e.Values[0]}`",
+                Description = reminder.ReminderText,
+                Color = Program.botColor
+            };
+
+            if (reminder.GuildId != "@me")
+            {
+                embed.AddField("Server",
+                    $"{(await Program.discord.GetGuildAsync(Convert.ToUInt64(reminder.GuildId))).Name}");
+                embed.AddField("Channel", $"<#{reminder.ChannelId}>");
+            }
+
+            string jumpLink;
+            if (reminder.IsPrivate)
+                jumpLink =
+                    $"This reminder was set privately, so the message where it was set is unavailable. Here is a link to the surrounding context: https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}/";
+            else
+                jumpLink =
+                    $"https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}/";
+
+            embed.AddField("Jump Link", jumpLink);
+
+            var setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
+            var reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
+
+            embed.AddField("Set At", $"<t:{setTime}:F> (<t:{setTime}:R>)");
+            embed.AddField("Set For", $"<t:{reminderTime}:F> (<t:{reminderTime}:R>)");
+
+            await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder().AddEmbed(embed).AsEphemeral());
         }
         else
         {
