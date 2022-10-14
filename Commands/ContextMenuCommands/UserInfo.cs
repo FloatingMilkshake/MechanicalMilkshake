@@ -12,12 +12,22 @@ public class UserInfo : ApplicationCommandModule
         {
             member = await ctx.Guild.GetMemberAsync(ctx.TargetUser.Id);
         }
-        catch
+        catch (NotFoundException)
         {
+            var createdAt = (((ctx.TargetUser.Id >> 22) + 1420070400000) / 1000).ToString();
+
+            var basicUserInfoEmbed = new DiscordEmbedBuilder()
+                .WithThumbnail($"{ctx.TargetUser.AvatarUrl}")
+                .WithColor(Program.botColor)
+                .AddField("ID", $"{ctx.TargetUser.Id}")
+                .AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
+
+            var userBadges = UserBadgeHelper.GetBadges(ctx.TargetUser);
+            if (userBadges != "") basicUserInfoEmbed.AddField("Badges", userBadges);
+
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-                .WithContent(
-                    "Hmm. It doesn't look like that user is in the server, so I can't pull up their user info.")
-                .AsEphemeral());
+                .WithContent($"User Info for **{ctx.TargetUser.Username}#{ctx.TargetUser.Discriminator}**")
+                .AddEmbed(basicUserInfoEmbed).AsEphemeral());
             return;
         }
 

@@ -5,7 +5,7 @@ public class UserInfo : ApplicationCommandModule
     [SlashCommand("userinfo", "Returns information about the provided server member.")]
     [SlashRequireGuild]
     public async Task UserInfoCommand(InteractionContext ctx,
-        [Option("member", "The member to look up information for. Defaults to yourself if no member is provided.")]
+        [Option("user", "The user to look up information for. Defaults to yourself.")]
         DiscordUser user = null)
     {
         DiscordMember member = null;
@@ -15,10 +15,21 @@ public class UserInfo : ApplicationCommandModule
             {
                 member = await ctx.Guild.GetMemberAsync(user.Id);
             }
-            catch
+            catch (NotFoundException)
             {
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
-                    "Hmm. It doesn't look like that user is in the server, so I can't fetch their user info."));
+                var createdAt = (((user.Id >> 22) + 1420070400000) / 1000).ToString();
+
+                var basicUserInfoEmbed = new DiscordEmbedBuilder()
+                    .WithThumbnail($"{user.AvatarUrl}")
+                    .WithColor(Program.botColor)
+                    .AddField("ID", $"{user.Id}")
+                    .AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
+
+                var userBadges = UserBadgeHelper.GetBadges(user);
+                if (userBadges != "") basicUserInfoEmbed.AddField("Badges", userBadges);
+
+                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+                    .WithContent($"User Info for **{user.Username}#{user.Discriminator}**").AddEmbed(basicUserInfoEmbed));
                 return;
             }
         else
