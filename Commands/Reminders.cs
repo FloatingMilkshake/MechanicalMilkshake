@@ -150,13 +150,6 @@ public class Reminders : ApplicationCommandModule
                 else
                     reminderText = reminder.ReminderText;
 
-                Regex urlRegex = new(@"http(?:s)?://.*\..*");
-
-                if (urlRegex.IsMatch(reminderText))
-                    // Output has URLs. Surround with <> to suppress embeds.
-                    foreach (var match in urlRegex.Matches(reminderText).Cast<Match>())
-                        reminderText = reminderText.Replace(match.ToString(), $"<{match}>");
-
                 output += $"`{reminder.ReminderId}`:\n"
                           + $"> {reminderText}\n"
                           + $"[Set <t:{setTime}:R>]({reminderLink}) to go off <t:{reminderTime}:R> in {guildName}";
