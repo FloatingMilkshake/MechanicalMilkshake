@@ -25,16 +25,8 @@ public class Markdown : ApplicationCommandModule
             }
 
             DiscordChannel channel;
-            try
-            {
-                channel = await ctx.Client.GetChannelAsync(targetChannelId);
-            }
-            catch
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "I wasn't able to find that message! Make sure I have permission to see the channel it's in."));
-                return;
-            }
+            channel = await ctx.Client.GetChannelAsync(ctx.Channel.Id);
+            
             try
             
             {
