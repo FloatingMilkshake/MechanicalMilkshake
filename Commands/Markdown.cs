@@ -24,7 +24,15 @@ public class Markdown : ApplicationCommandModule
                 return;
             }
 
-            message = await ctx.Channel.GetMessageAsync(messageId);
+            try
+            {
+                message = await channel.GetMessageAsync(messageId);
+            }
+            catch
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "I wasn't able to read that message! Make sure I have permission to access it."));
+            }
         }
         else
         {
