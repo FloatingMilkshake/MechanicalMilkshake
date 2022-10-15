@@ -42,7 +42,7 @@ This is the other way to get the bot into one of your servers, and is best for d
 - Clone the repo
 - Copy `config.example.json` to `config.json`
 - In `config.json`, provide values for at least `botToken`, `homeChannel` and `homeServerId`. Other values are optional, but some functionality may not work without them (the bot should tell you what's missing though if you try to use a feature that requires a value you didn't set). If you're not sure about a value, see [the wiki page on config.json](https://github.com/FloatingMilkshake/MechanicalMilkshake/wiki/Configuration#configjson) or feel free to contact me!
-- Run `docker-compose up -d` 
+- Run `docker-compose up -d`
 
 ## Contributing
 I'm not the best at this, so feel free to open an issue or PR if you notice anything that seems wrong or if you have a suggestion! I'm all ears. However, please note that I have some [Contribution Guidelines](CONTRIBUTING.md).
