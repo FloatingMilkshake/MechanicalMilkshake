@@ -8,7 +8,7 @@ public class TimeoutCommands : ApplicationCommandModule
     public class TimeoutCmds
     {
         [SlashCommand("set", "Time out a member.")]
-        public async Task SetTimeout(InteractionContext ctx,
+        public static async Task SetTimeout(InteractionContext ctx,
             [Option("member", "The member to time out.")]
             DiscordUser user,
             [Option("duration",
@@ -89,7 +89,7 @@ public class TimeoutCommands : ApplicationCommandModule
         }
 
         [SlashCommand("clear", "Clear a timeout before it's set to expire.")]
-        public async Task ClearTimeout(InteractionContext ctx,
+        public static async Task ClearTimeout(InteractionContext ctx,
             [Option("member", "The member whose timeout to clear.")]
             DiscordUser user)
         {

@@ -3,7 +3,7 @@
 public class InviteInfo : ApplicationCommandModule
 {
     [SlashCommand("inviteinfo", "Return information about a Discord invite.")]
-    public async Task InviteInfoCommand(InteractionContext ctx,
+    public static async Task InviteInfoCommand(InteractionContext ctx,
         [Option("invite", "The invite to return information about. Accepts an invite link or code.")]
         string targetInvite)
     {

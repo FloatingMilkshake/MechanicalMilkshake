@@ -3,7 +3,7 @@
 public class Feedback : ApplicationCommandModule
 {
     [SlashCommand("feedback", "Have feedback about the bot? Submit it here!")]
-    public async Task FeedbackCommand(InteractionContext ctx,
+    public static async Task FeedbackCommand(InteractionContext ctx,
         [Option("message", "Your feedback message.")] [MaximumLength(4000)]
         string feedbackMsg)
     {

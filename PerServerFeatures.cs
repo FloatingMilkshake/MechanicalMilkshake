@@ -5,7 +5,7 @@ public class PerServerFeatures
     public class ComplaintSlashCommands : ApplicationCommandModule
     {
         [SlashCommand("complaint", "File a complaint to a specific department.")]
-        public async Task Complaint(InteractionContext ctx,
+        public static async Task Complaint(InteractionContext ctx,
             [Choice("hr", "HR")]
             [Choice("ia", "IA")]
             [Choice("it", "IT")]
@@ -55,7 +55,7 @@ public class PerServerFeatures
     public class RoleCommands : ApplicationCommandModule
     {
         [SlashCommand("rolename", "Change the name of your role.")]
-        public async Task RoleName(InteractionContext ctx, [Option("name", "The name to change to.")] string name)
+        public static async Task RoleName(InteractionContext ctx, [Option("name", "The name to change to.")] string name)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
@@ -139,12 +139,11 @@ public class PerServerFeatures
                         $"<@455432936339144705> `{ipAddr}` attempted to connect {attemptCount} times before being banned. Waiting for approval to ban permanently...");
 
 
-                    EvalCommands evalCommands = new();
-                    await evalCommands.RunCommand(
+                    await EvalCommands.RunCommand(
                         $"ssh ubuntu@lxd \"sudo ufw deny from {ipAddr} to any && sudo ufw reload\"");
-                    await evalCommands.RunCommand(
+                    await EvalCommands.RunCommand(
                         $"ssh ubuntu@lxd \"lxc exec cdnupload -- ufw deny from {ipAddr} to any\"");
-                    await evalCommands.RunCommand("ssh ubuntu@lxd \"lxc exec cdnupload -- ufw reload\"");
+                    await EvalCommands.RunCommand("ssh ubuntu@lxd \"lxc exec cdnupload -- ufw reload\"");
 
                     await msg.ModifyAsync(
                         $"<@455432936339144705> `{ipAddr}` attempted to connect {attemptCount} times before being banned. It has been permanently banned automatically.");

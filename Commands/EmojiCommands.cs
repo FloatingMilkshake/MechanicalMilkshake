@@ -4,7 +4,7 @@ public class EmojiCommands : ApplicationCommandModule
 {
     [SlashCommand("stealemoji",
         "Fetch all of a server's emoji! Note that the bot must be in the server for this to work.")]
-    public async Task StealEmoji(InteractionContext ctx,
+    public static async Task StealEmoji(InteractionContext ctx,
         [Option("server", "The ID of the server to fetch emoji from.")]
         string server,
         [Option("add_to_server", "Whether to add all of the emoji to the server you're running the command in.")]
@@ -116,7 +116,7 @@ public class EmojiCommands : ApplicationCommandModule
     }
 
     [SlashCommand("bigemoji", "Enlarge an emoji! Only works for custom emoji.")]
-    public async Task BigEmoji(InteractionContext ctx, [Option("emoji", "The emoji to enlarge.")] string emoji)
+    public static async Task BigEmoji(InteractionContext ctx, [Option("emoji", "The emoji to enlarge.")] string emoji)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 

@@ -4,7 +4,7 @@ public class Avatar : ApplicationCommandModule
 {
     [SlashCommand("avatar",
         "Returns the avatar of the provided user. Defaults to yourself if no user is provided.")]
-    public async Task AvatarCommand(InteractionContext ctx,
+    public static async Task AvatarCommand(InteractionContext ctx,
         [Option("user", "The user whose avatar to get.")]
         DiscordUser user = null)
     {

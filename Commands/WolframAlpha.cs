@@ -3,7 +3,7 @@
 public class WolframAlpha : ApplicationCommandModule
 {
     [SlashCommand("wolframalpha", "Search WolframAlpha without leaving Discord!")]
-    public async Task WolframAlphaCommand(InteractionContext ctx, [Option("query", "What to search for.")] string query,
+    public static async Task WolframAlphaCommand(InteractionContext ctx, [Option("query", "What to search for.")] string query,
         [Option("response_type",
             "Whether the response should be simple text only or a more-detailed image. Defaults to Text.")]
         [Choice("Text", "text")]

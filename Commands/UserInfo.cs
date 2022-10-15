@@ -4,7 +4,7 @@ public class UserInfo : ApplicationCommandModule
 {
     [SlashCommand("userinfo", "Returns information about the provided server member.")]
     [SlashRequireGuild]
-    public async Task UserInfoCommand(InteractionContext ctx,
+    public static async Task UserInfoCommand(InteractionContext ctx,
         [Option("user", "The user to look up information for. Defaults to yourself.")]
         DiscordUser user = null)
     {

@@ -3,7 +3,7 @@
 public class Markdown : ApplicationCommandModule
 {
     [SlashCommand("markdown", "Expose the Markdown formatting behind a message!")]
-    public async Task MarkdownCommand(InteractionContext ctx,
+    public static async Task MarkdownCommand(InteractionContext ctx,
         [Option("message", "The message you want to expose the formatting of. Accepts message IDs and links.")]
         string messageToExpose)
     {

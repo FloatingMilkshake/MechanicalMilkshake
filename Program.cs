@@ -200,8 +200,7 @@ internal class Program
         /* Create an instance of the Owner.Private class and run a command to fix SSH key permissions
         at bot startup. I wanted to be able to do this somewhere else, but for now it seems
         like this is the best way of doing it that I'm aware of, and it works. */
-        EvalCommands evalCommands = new();
-        await evalCommands.RunCommand("cat /app/id_rsa > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa");
+        await EvalCommands.RunCommand("cat /app/id_rsa > ~/.ssh/id_rsa && chmod 700 ~/.ssh/id_rsa");
 
         // Run checks
 

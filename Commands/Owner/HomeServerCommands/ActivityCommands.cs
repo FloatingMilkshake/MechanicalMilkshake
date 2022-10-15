@@ -7,7 +7,7 @@ public class ActivityCommands : ApplicationCommandModule
     {
         [SlashCommand("add",
             "Add a custom status message to the list that the bot cycles through, or modify an existing entry.")]
-        public async Task AddActivity(InteractionContext ctx,
+        public static async Task AddActivity(InteractionContext ctx,
             [Option("type", "The type of status (playing, watching, etc).")]
             [Choice("Playing", "playing")]
             [Choice("Watching", "watching")]
@@ -26,7 +26,7 @@ public class ActivityCommands : ApplicationCommandModule
         }
 
         [SlashCommand("list", "List the custom status messages that the bot cycles through.")]
-        public async Task ListActivity(InteractionContext ctx)
+        public static async Task ListActivity(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
@@ -51,7 +51,7 @@ public class ActivityCommands : ApplicationCommandModule
         }
 
         [SlashCommand("choose", "Choose a custom status message from the list to set now.")]
-        public async Task ChooseActvity(InteractionContext ctx,
+        public static async Task ChooseActvity(InteractionContext ctx,
             [Option("id", "The ID number of the status to set. You can get this with /activity list.")]
             long id)
         {
@@ -151,7 +151,7 @@ public class ActivityCommands : ApplicationCommandModule
         }
 
         [SlashCommand("remove", "Remove a custom status message from the list that the bot cycles through.")]
-        public async Task RemoveActivity(InteractionContext ctx,
+        public static async Task RemoveActivity(InteractionContext ctx,
             [Option("id",
                 "The ID number of the status to remove. You can get this with /activity list.")]
             long id)
@@ -189,7 +189,7 @@ public class ActivityCommands : ApplicationCommandModule
         }
 
         [SlashCommand("randomize", "Choose a random custom status message from the list.")]
-        public async Task RandomizeActivity(InteractionContext ctx)
+        public static async Task RandomizeActivity(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
@@ -227,7 +227,7 @@ public class ActivityCommands : ApplicationCommandModule
 
         [SlashCommand("set",
             "Set the bot's activity. This overrides the list of status messages to cycle through.")]
-        public async Task SetActivity(InteractionContext ctx,
+        public static async Task SetActivity(InteractionContext ctx,
             [Option("status", "The bot's online status.")]
             [Choice("Online", "online")]
             [Choice("Idle", "idle")]
@@ -325,13 +325,13 @@ public class ActivityCommands : ApplicationCommandModule
 
         [SlashCommand("reset",
             "Reset the bot's activity; it will cycle through the list of custom status messages.")]
-        public async Task ResetActivity(InteractionContext ctx)
+        public static async Task ResetActivity(InteractionContext ctx)
         {
             await SetActivity(ctx, "online");
         }
 
         [SlashCommand("disable", "Clear the bot's status and stop it from cycling through the list.")]
-        public async Task DisableActivity(InteractionContext ctx)
+        public static async Task DisableActivity(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
@@ -345,7 +345,7 @@ public class ActivityCommands : ApplicationCommandModule
 
         [SlashCommand("enable",
             "Allow the bot to cycle through its list of custom status messages or use one set with /activity set.")]
-        public async Task EnableActivity(InteractionContext ctx)
+        public static async Task EnableActivity(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 

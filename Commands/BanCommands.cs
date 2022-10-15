@@ -5,7 +5,7 @@ public class BanCommands : ApplicationCommandModule
 {
     [SlashCommand("ban", "Ban a user. They will not be able to rejoin unless unbanned.", false)]
     [SlashCommandPermissions(Permissions.BanMembers)]
-    public async Task BanCommand(InteractionContext ctx, [Option("user", "The user to ban.")] DiscordUser userToBan,
+    public static async Task BanCommand(InteractionContext ctx, [Option("user", "The user to ban.")] DiscordUser userToBan,
         [Option("reason", "The reason for the ban.")] [MaximumLength(1500)]
         string reason = "No reason provided.")
     {
@@ -39,7 +39,7 @@ public class BanCommands : ApplicationCommandModule
 
     [SlashCommand("unban", "Unban a user.", false)]
     [SlashCommandPermissions(Permissions.BanMembers)]
-    public async Task UnbanCommand(InteractionContext ctx,
+    public static async Task UnbanCommand(InteractionContext ctx,
         [Option("user", "The user to unban.")] DiscordUser userToUnban)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,

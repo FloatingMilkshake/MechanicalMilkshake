@@ -3,7 +3,7 @@
 public class Ping : ApplicationCommandModule
 {
     [SlashCommand("ping", "Checks my ping.")]
-    public async Task PingCommand(InteractionContext ctx)
+    public static async Task PingCommand(InteractionContext ctx)
     {
         DiscordMessage message;
         try

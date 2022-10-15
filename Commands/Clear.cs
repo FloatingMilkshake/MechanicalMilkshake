@@ -7,7 +7,7 @@ public class Clear : ApplicationCommandModule
 
     [SlashCommand("clear", "Delete many messages from the current channel.", false)]
     [SlashCommandPermissions(Permissions.ManageMessages)]
-    public async Task ClearCommand(InteractionContext ctx,
+    public static async Task ClearCommand(InteractionContext ctx,
         [Option("count",
             "The number of messages to consider for deletion. Required if you don't use the 'up_to' argument.")]
         long count = 0,

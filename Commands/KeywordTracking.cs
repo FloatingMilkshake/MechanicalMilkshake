@@ -93,7 +93,7 @@ public class KeywordTracking : ApplicationCommandModule
         }
 
         [SlashCommand("list", "List tracked keywords.")]
-        public async Task TrackList(InteractionContext ctx)
+        public static async Task TrackList(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
@@ -138,7 +138,7 @@ public class KeywordTracking : ApplicationCommandModule
         }
 
         [SlashCommand("details", "Show details about a tracked keyword.")]
-        public async Task TrackDetails(InteractionContext ctx)
+        public static async Task TrackDetails(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
@@ -189,7 +189,7 @@ public class KeywordTracking : ApplicationCommandModule
         }
 
         [SlashCommand("remove", "Untrack a keyword.")]
-        public async Task TrackRemove(InteractionContext ctx)
+        public static async Task TrackRemove(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());

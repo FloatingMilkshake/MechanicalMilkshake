@@ -3,7 +3,7 @@
 public class AboutCommands : ApplicationCommandModule
 {
     [SlashCommand("about", "View information about the bot!")]
-    public async Task About(InteractionContext ctx)
+    public static async Task About(InteractionContext ctx)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
@@ -101,7 +101,7 @@ public class AboutCommands : ApplicationCommandModule
     }
 
     [SlashCommand("version", "Show version information.")]
-    public async Task CommitInfo(InteractionContext ctx)
+    public static async Task CommitInfo(InteractionContext ctx)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 

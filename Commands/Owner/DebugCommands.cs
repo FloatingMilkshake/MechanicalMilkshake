@@ -10,7 +10,7 @@ public class DebugCommands : ApplicationCommandModule
     public class DebugCmds : ApplicationCommandModule
     {
         [SlashCommand("info", "[Authorized users only] Show debug information about the bot.")]
-        public async Task DebugInfo(InteractionContext ctx)
+        public static async Task DebugInfo(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
@@ -20,7 +20,7 @@ public class DebugCommands : ApplicationCommandModule
 
         [SlashCommand("uptime",
             "[Authorized users only] Check the bot's uptime (from the time it connects to Discord).")]
-        public async Task Uptime(InteractionContext ctx)
+        public static async Task Uptime(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
@@ -43,7 +43,7 @@ public class DebugCommands : ApplicationCommandModule
 
         [SlashCommand("timecheck",
             "[Authorized users only] Return the current time on the machine the bot is running on.")]
-        public async Task TimeCheck(InteractionContext ctx)
+        public static async Task TimeCheck(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {
@@ -53,7 +53,7 @@ public class DebugCommands : ApplicationCommandModule
         }
 
         [SlashCommand("shutdown", "[Authorized users only] Shut down the bot.")]
-        public async Task Shutdown(InteractionContext ctx)
+        public static async Task Shutdown(InteractionContext ctx)
         {
             DiscordButtonComponent shutdownButton = new(ButtonStyle.Danger, "shutdown-button", "Shut Down");
             DiscordButtonComponent cancelButton = new(ButtonStyle.Primary, "shutdown-cancel-button", "Cancel");
@@ -64,7 +64,7 @@ public class DebugCommands : ApplicationCommandModule
         }
 
         [SlashCommand("restart", "[Authorized users only] Restart the bot.")]
-        public async Task Restart(InteractionContext ctx)
+        public static async Task Restart(InteractionContext ctx)
         {
             try
             {
@@ -91,7 +91,7 @@ public class DebugCommands : ApplicationCommandModule
         }
 
         [SlashCommand("owners", "[Authorized users only] Show the bot's owners.")]
-        public async Task Owners(InteractionContext ctx)
+        public static async Task Owners(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
@@ -125,7 +125,7 @@ public class DebugCommands : ApplicationCommandModule
         }
 
         [SlashCommand("guilds", "[Authorized users only] Show the guilds that the bot is in.")]
-        public async Task Guilds(InteractionContext ctx)
+        public static async Task Guilds(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
@@ -143,7 +143,7 @@ public class DebugCommands : ApplicationCommandModule
 
         [SlashCommand("humandateparser",
             "[Authorized users only] See what happens when HumanDateParser tries to parse a date.")]
-        public async Task HumanDateParserCmd(InteractionContext ctx,
+        public static async Task HumanDateParserCmd(InteractionContext ctx,
             [Option("date", "The date (or time) for HumanDateParser to parse.")]
             string date)
         {
@@ -169,7 +169,7 @@ public class DebugCommands : ApplicationCommandModule
         }
 
         [SlashCommand("checks", "[Authorized users only] Run the bot's timed checks manually.")]
-        public async Task DebugChecks(InteractionContext ctx,
+        public static async Task DebugChecks(InteractionContext ctx,
             [Option("checks", "The checks that should be run.")]
             [Choice("All", "all")]
             [Choice("Reminders", "reminders")]

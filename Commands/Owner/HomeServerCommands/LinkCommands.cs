@@ -6,7 +6,7 @@ public class LinkCommands : ApplicationCommandModule
     public class Link
     {
         [SlashCommand("set", "Set or update a short link with Cloudflare worker-links.")]
-        public async Task SetLink(InteractionContext ctx,
+        public static async Task SetLink(InteractionContext ctx,
             [Option("key", "Set a custom key for the short link.")]
             string key,
             [Option("url", "The URL the short link should point to.")]
@@ -68,7 +68,7 @@ public class LinkCommands : ApplicationCommandModule
         }
 
         [SlashCommand("delete", "Delete a short link with Cloudflare worker-links.")]
-        public async Task DeleteWorkerLink(InteractionContext ctx,
+        public static async Task DeleteWorkerLink(InteractionContext ctx,
             [Option("link", "The key or URL of the short link to delete.")]
             string url)
         {
@@ -119,14 +119,14 @@ public class LinkCommands : ApplicationCommandModule
         }
 
         [SlashCommand("list", "List all short links configured with Cloudflare worker-links.")]
-        public async Task ListWorkerLinks(InteractionContext ctx)
+        public static async Task ListWorkerLinks(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(
                 $"You can view the list of short links at Cloudflare [here](https://dash.cloudflare.com/{Program.configjson.WorkerLinks.AccountId}/workers/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId})!");
         }
 
         [SlashCommand("get", "Get the long URL for a short link.")]
-        public async Task LinkShow(InteractionContext ctx,
+        public static async Task LinkShow(InteractionContext ctx,
             [Option("link", "The key or URL of the short link to get.")]
             string url)
         {

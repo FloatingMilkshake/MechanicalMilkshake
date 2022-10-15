@@ -3,7 +3,7 @@
 public class Avatar : ApplicationCommandModule
 {
     [ContextMenu(ApplicationCommandType.UserContextMenu, "Avatar")]
-    public async Task ContextAvatar(ContextMenuContext ctx)
+    public static async Task ContextAvatar(ContextMenuContext ctx)
     {
         DiscordButtonComponent serverAvatarButton =
             new(ButtonStyle.Primary, "server-avatar-ctx-cmd-button", "Server Avatar");

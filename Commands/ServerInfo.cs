@@ -4,7 +4,7 @@ public class ServerInfo : ApplicationCommandModule
 {
     [SlashCommand("serverinfo", "Returns information about the server.")]
     [SlashRequireGuild]
-    public async Task ServerInfoCommand(InteractionContext ctx)
+    public static async Task ServerInfoCommand(InteractionContext ctx)
     {
         var description = "None";
 

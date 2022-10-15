@@ -3,7 +3,7 @@
 public class UserInfo : ApplicationCommandModule
 {
     [ContextMenu(ApplicationCommandType.UserContextMenu, "User Info")]
-    public async Task ContextUserInfo(ContextMenuContext ctx)
+    public static async Task ContextUserInfo(ContextMenuContext ctx)
     {
         DiscordMember member;
         DiscordEmbed userInfoEmbed;

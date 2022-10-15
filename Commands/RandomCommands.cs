@@ -6,7 +6,7 @@ public class RandomCommands : ApplicationCommandModule
     private class RandomCmds : ApplicationCommandModule
     {
         [SlashCommand("number", "Generates a random number between two that you specify.")]
-        public async Task RandomNumber(InteractionContext ctx,
+        public static async Task RandomNumber(InteractionContext ctx,
             [Option("min", "The minimum number to choose between. Defaults to 1.")]
             long min = 1,
             [Option("max", "The maximum number to choose between. Defaults to 10.")]
@@ -27,7 +27,7 @@ public class RandomCommands : ApplicationCommandModule
         }
 
         [SlashCommand("fact", "Get a random fact.")]
-        public async Task RandomFact(InteractionContext ctx)
+        public static async Task RandomFact(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
@@ -43,7 +43,7 @@ public class RandomCommands : ApplicationCommandModule
         }
 
         [SlashCommand("cat", "Get a random cat picture from the internet.")]
-        public async Task RandomCat(InteractionContext ctx)
+        public static async Task RandomCat(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
             var data = await Program.httpClient.GetStringAsync("https://api.thecatapi.com/v1/images/search");
@@ -57,7 +57,7 @@ public class RandomCommands : ApplicationCommandModule
         }
 
         [SlashCommand("dog", "Get a random dog picture from the internet.")]
-        public async Task RandomDog(InteractionContext ctx)
+        public static async Task RandomDog(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
             var data = await Program.httpClient.GetStringAsync("https://dog.ceo/api/breeds/image/random");

@@ -7,7 +7,6 @@ public class PackageUpdateChecks
         var updatesAvailableResponse = "";
         var restartRequiredResponse = "";
 
-        EvalCommands evalCommands = new();
         var updatesAvailable = false;
         var restartRequired = false;
         foreach (var host in Program.configjson.Base.SshHosts)
@@ -17,7 +16,7 @@ public class PackageUpdateChecks
                 "[PackageUpdateCheck] Checking for updates on host '{host}'.\"", host);
 #endif
             var cmdResult =
-                await evalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
+                await EvalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
             if (cmdResult.Contains(" can be upgraded"))
             {
                 updatesAvailableResponse += $"`{host}`\n";

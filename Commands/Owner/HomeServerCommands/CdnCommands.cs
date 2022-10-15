@@ -6,7 +6,7 @@ public class CdnCommands : ApplicationCommandModule
     public class Cdn
     {
         [SlashCommand("upload", "Upload a file to Amazon S3-compatible cloud storage.")]
-        public async Task Upload(InteractionContext ctx,
+        public static async Task Upload(InteractionContext ctx,
             [Option("name", "The name for the uploaded file.")]
             string name,
             [Option("link", "A link to a file to upload.")]
@@ -119,7 +119,7 @@ public class CdnCommands : ApplicationCommandModule
         }
 
         [SlashCommand("delete", "Delete a file from Amazon S3-compatible cloud storage.")]
-        public async Task DeleteUpload(InteractionContext ctx,
+        public static async Task DeleteUpload(InteractionContext ctx,
             [Option("file", "The file to delete.")]
             string fileToDelete)
         {
@@ -244,7 +244,7 @@ public class CdnCommands : ApplicationCommandModule
         }
 
         [SlashCommand("preview", "Preview an image stored on Amazon S3-compatible cloud storage.")]
-        public async Task CdnPreview(InteractionContext ctx,
+        public static async Task CdnPreview(InteractionContext ctx,
             [Option("name", "The name (or link) of the file to preview.")]
             string name)
         {

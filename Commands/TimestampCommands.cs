@@ -6,7 +6,7 @@ public class TimestampCommands : ApplicationCommandModule
     private class TimestampCmds : ApplicationCommandModule
     {
         [SlashCommand("id", "Returns the Unix timestamp of a given Discord ID/snowflake.")]
-        public async Task TimestampSnowflakeCmd(InteractionContext ctx,
+        public static async Task TimestampSnowflakeCmd(InteractionContext ctx,
             [Option("snowflake", "The ID/snowflake to fetch the Unix timestamp for.")]
             string id,
             [Choice("Short Time", "t")]
@@ -54,7 +54,7 @@ public class TimestampCommands : ApplicationCommandModule
         }
 
         [SlashCommand("date", "Returns the Unix timestamp of a given date.")]
-        public async Task TimestampDateCmd(InteractionContext ctx,
+        public static async Task TimestampDateCmd(InteractionContext ctx,
             [Option("date", "The date to fetch the Unix timestamp for.")]
             string date,
             [Choice("Short Time", "t")]

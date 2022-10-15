@@ -8,7 +8,7 @@ public class LockdownCommands : ApplicationCommandModule
     public class Lockdown
     {
         [SlashCommand("lock", "Lock a channel to prevent members from sending messages.")]
-        public async Task Lock(InteractionContext ctx)
+        public static async Task Lock(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
@@ -43,7 +43,7 @@ public class LockdownCommands : ApplicationCommandModule
         }
 
         [SlashCommand("unlock", "Unlock a locked channel to allow members to send messages again.")]
-        public async Task Unlock(InteractionContext ctx)
+        public static async Task Unlock(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());

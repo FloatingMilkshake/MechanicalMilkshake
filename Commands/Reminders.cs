@@ -6,7 +6,7 @@ public class Reminders : ApplicationCommandModule
     public class ReminderCmds
     {
         [SlashCommand("set", "Set a reminder.")]
-        public async Task SetReminder(InteractionContext ctx,
+        public static async Task SetReminder(InteractionContext ctx,
             [Option("time", "When do you want to be reminded?")]
             string time,
             [Option("text", "What should the reminder say?")] [MaximumLength(1000)]
@@ -85,7 +85,7 @@ public class Reminders : ApplicationCommandModule
         }
 
         [SlashCommand("list", "List your reminders.")]
-        public async Task ListReminders(InteractionContext ctx)
+        public static async Task ListReminders(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
@@ -199,7 +199,7 @@ public class Reminders : ApplicationCommandModule
         }
 
         [SlashCommand("delete", "Delete a reminder using its unique ID.")]
-        public async Task DeleteReminder(InteractionContext ctx)
+        public static async Task DeleteReminder(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
@@ -247,7 +247,7 @@ public class Reminders : ApplicationCommandModule
         }
 
         [SlashCommand("modify", "Modify an existing reminder using its unique ID.")]
-        public async Task ModifyReminder(InteractionContext ctx,
+        public static async Task ModifyReminder(InteractionContext ctx,
             [Option("reminder", "The ID of the reminder to modify. You can get this with `/reminder list`.")]
             long reminderToModify,
             [Option("time", "When do you want to be reminded? Leave this blank if you don't want to change it.")]
@@ -329,7 +329,7 @@ public class Reminders : ApplicationCommandModule
         }
 
         [SlashCommand("pushback", "Push back a reminder that just went off.")]
-        public async Task PushBackReminder(InteractionContext ctx,
+        public static async Task PushBackReminder(InteractionContext ctx,
             [Option("message", "The message for the reminder to push back. Accepts message IDs.")]
             string msgId,
             [Option("time", "When do you want to be reminded?")]
@@ -476,7 +476,7 @@ public class Reminders : ApplicationCommandModule
         }
 
         [SlashCommand("show", "Show the details for a reminder.")]
-        public async Task ReminderShow(InteractionContext ctx)
+        public static async Task ReminderShow(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
