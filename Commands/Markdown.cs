@@ -12,6 +12,13 @@ public class Markdown : ApplicationCommandModule
         DiscordMessage message = null;
         if (!messageToExpose.Contains("discord.com"))
         {
+            if (messageToExpose.Length < 17)
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "Hmm, that doesn't look like a valid message ID or link."));
+                return;
+            }
+            
             ulong messageId;
             try
             {
