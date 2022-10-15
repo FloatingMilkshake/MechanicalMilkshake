@@ -23,14 +23,11 @@ public class Markdown : ApplicationCommandModule
                     "Hmm, that doesn't look like a valid message ID or link. I wasn't able to get the Markdown data from it."));
                 return;
             }
-
-            DiscordChannel channel;
-            channel = await ctx.Client.GetChannelAsync(ctx.Channel.Id);
             
             try
-            
+            // Do not delete
             {
-                message = await channel.GetMessageAsync(messageId);
+                message = await ctx.Channel.GetMessageAsync(messageId);
             }
             catch
             {
