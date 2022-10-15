@@ -8,104 +8,22 @@ public class UserInfo : ApplicationCommandModule
         [Option("user", "The user to look up information for. Defaults to yourself.")]
         DiscordUser user = null)
     {
-        DiscordMember member = null;
+        DiscordMember member;
+        DiscordEmbed userInfoEmbed;
 
-        if (user != null)
-            try
-            {
-                member = await ctx.Guild.GetMemberAsync(user.Id);
-            }
-            catch (NotFoundException)
-            {
-                var createdAt = (((user.Id >> 22) + 1420070400000) / 1000).ToString();
+        user ??= ctx.User;
 
-                var basicUserInfoEmbed = new DiscordEmbedBuilder()
-                    .WithThumbnail($"{user.AvatarUrl}")
-                    .WithColor(Program.botColor)
-                    .AddField("ID", $"{user.Id}")
-                    .AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
-
-                var userBadges = UserBadgeHelper.GetBadges(user);
-                if (userBadges != "") basicUserInfoEmbed.AddField("Badges", userBadges);
-
-                await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-                    .WithContent($"User Info for **{user.Username}#{user.Discriminator}**").AddEmbed(basicUserInfoEmbed));
-                return;
-            }
-        else
-            user = ctx.User;
-
-        if (member == null) member = ctx.Member;
-
-        var msSinceEpoch = member.Id >> 22;
-        var msUnix = msSinceEpoch + 1420070400000;
-        var registeredAt = $"{msUnix / 1000}";
-
-        var t = member.JoinedAt - new DateTime(1970, 1, 1);
-        var joinedAtTimestamp = (int)t.TotalSeconds;
-
-        string acknowledgements = null;
-        if (member.Permissions.HasPermission(Permissions.KickMembers) &&
-            member.Permissions.HasPermission(Permissions.BanMembers))
-            acknowledgements = "Server Moderator (can kick and ban members)";
-
-        if (member.Permissions.HasPermission(Permissions.Administrator)) acknowledgements = "Server Administrator";
-
-        if (member.IsOwner) acknowledgements = "Server Owner";
-
-        var roles = "None";
-        if (member.Roles.Any())
+        try
         {
-            if (member.Roles.Count() > 30)
-            {
-                roles = "";
-                var count = 0;
-                foreach (var role in member.Roles.OrderBy(role => role.Position).Reverse())
-                    if (count < 30)
-                    {
-                        roles += role.Mention + " ";
-                        count++;
-                    }
-
-                roles += "\n*Only the highest 30 roles are displayed here... why so many?*";
-            }
-            else
-            {
-                roles = "";
-                foreach (var role in member.Roles.OrderBy(role => role.Position).Reverse()) roles += role.Mention + " ";
-            }
+            member = await ctx.Guild.GetMemberAsync(user.Id);
+            userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(member);
         }
-
-        var embed = new DiscordEmbedBuilder()
-            .WithColor(new DiscordColor($"{member.Color}"))
-            .WithFooter($"Requested by {ctx.Member.Username}#{ctx.Member.Discriminator}")
-            .AddField("User Mention", member.Mention)
-            .AddField("User ID", $"{member.Id}");
-
-        if (member.Nickname is not null)
-            embed.AddField("Nickname", member.Nickname);
-
-        embed.AddField("Account registered on", $"<t:{registeredAt}:F> (<t:{registeredAt}:R>)");
-        embed.AddField("Joined server on", $"<t:{joinedAtTimestamp}:F> (<t:{joinedAtTimestamp}:R>)");
-        embed.AddField($"Roles - {member.Roles.Count()}", roles);
-        embed.WithThumbnail(member.AvatarUrl);
-        embed.WithTimestamp(DateTime.UtcNow);
-
-        if (acknowledgements != null) embed.AddField("Acknowledgements", acknowledgements);
-
-        if (member.PremiumSince != null)
+        catch (NotFoundException)
         {
-            var PremiumSinceUtc = member.PremiumSince.Value.UtcDateTime;
-            var unixTime = ((DateTimeOffset)PremiumSinceUtc).ToUnixTimeSeconds();
-            var boostingSince = $"Boosting since <t:{unixTime}:R> (<t:{unixTime}:F>";
-
-            embed.AddField("Server Booster", boostingSince);
+            userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(user);
         }
-
-        var badges = UserBadgeHelper.GetBadges(user);
-        if (badges != "") embed.AddField("Badges", badges);
-
+        
         await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-            .WithContent($"User Info for **{member.Username}#{member.Discriminator}**").AddEmbed(embed));
+            .WithContent($"User Info for **{user.Username}#{user.Discriminator}**").AddEmbed(userInfoEmbed));
     }
 }
