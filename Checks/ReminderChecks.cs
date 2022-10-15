@@ -31,13 +31,7 @@ public class ReminderChecks
 
                 embed.AddField("Context", context);
 
-#if DEBUG
-                var slashCommands =
-                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
-#else
-                var slashCommands = await Program.discord.GetGlobalApplicationCommandsAsync();
-#endif
-                var reminderCommand = slashCommands.Where(sc => sc.Name == "reminder").FirstOrDefault();
+                var reminderCommand = Program.applicationCommands.Where(sc => sc.Name == "reminder").FirstOrDefault();
                 var reminderPushbackCommand =
                     reminderCommand.Options.Where(opt => opt.Name == "pushback").FirstOrDefault();
 

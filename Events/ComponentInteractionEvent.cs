@@ -414,13 +414,7 @@ public class ComponentInteractionEvent
 
             if (userKeywords.Count == 0)
             {
-#if DEBUG
-                var slashCmds =
-                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
-#else
-                var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
-#endif
-                var trackCmd = slashCmds.FirstOrDefault(c => c.Name == "track");
+                var trackCmd = Program.applicationCommands.FirstOrDefault(c => c.Name == "track");
 
                 await e.Interaction.CreateFollowupMessageAsync(
                     new DiscordFollowupMessageBuilder().WithContent(

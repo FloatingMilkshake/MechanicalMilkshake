@@ -108,13 +108,7 @@ public class Reminders : ApplicationCommandModule
 
             if (userReminders.Count == 0)
             {
-#if DEBUG
-                var slashCmds =
-                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
-#else
-                var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
-#endif
-                var reminderCmd = slashCmds.FirstOrDefault(c => c.Name == "reminder");
+                var reminderCmd = Program.applicationCommands.FirstOrDefault(c => c.Name == "reminder");
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
@@ -169,13 +163,7 @@ public class Reminders : ApplicationCommandModule
             {
                 embed.WithColor(DiscordColor.Red);
 
-#if DEBUG
-                var slashCmds =
-                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
-#else
-                var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
-#endif
-                var reminderCmd = slashCmds.FirstOrDefault(c => c.Name == "reminder");
+                var reminderCmd = Program.applicationCommands.FirstOrDefault(c => c.Name == "reminder");
                 var reminderShowCmd = reminderCmd.Options.FirstOrDefault(c => c.Name == "show");
 
                 var desc =
@@ -224,14 +212,7 @@ public class Reminders : ApplicationCommandModule
 
             if (!userHasReminders)
             {
-#if DEBUG
-                var slashCmds =
-                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
-#else
-                var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
-#endif
-
-                var reminderCmd = slashCmds.FirstOrDefault(c => c.Name == "reminder");
+                var reminderCmd = Program.applicationCommands.FirstOrDefault(c => c.Name == "reminder");
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
@@ -423,14 +404,9 @@ public class Reminders : ApplicationCommandModule
                     if (reminderData.ReminderText == message.Embeds[0].Description)
                     {
                         // Reminder is a potential duplicate
-#if DEBUG
-                        var reminderCmd =
-                            (await Program.discord.GetGuildApplicationCommandsAsync(
-                                Program.configjson.Base.HomeServerId)).FirstOrDefault(c => c.Name == "reminder");
-#else
-                        var reminderCmd =
- (await Program.discord.GetGlobalApplicationCommandsAsync()).FirstOrDefault(c => c.Name == "reminder");
-#endif
+                        
+                        var reminderCmd = Program.applicationCommands.FirstOrDefault(c => c.Name == "reminder");
+
                         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                             "Warning: you might have already pushed back this reminder! Another reminder already exists with the same content."
                             + $"\n\nTo see details, use </{reminderCmd.Name} show:{reminderCmd.Id}> and set `id` to `{reminderData.ReminderId}`."
@@ -501,14 +477,7 @@ public class Reminders : ApplicationCommandModule
 
             if (!userHasReminders)
             {
-#if DEBUG
-                var slashCmds =
-                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
-#else
-                var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
-#endif
-
-                var reminderCmd = slashCmds.FirstOrDefault(c => c.Name == "reminder");
+                var reminderCmd = Program.applicationCommands.FirstOrDefault(c => c.Name == "reminder");
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(

@@ -13,6 +13,7 @@ internal class Program
     public static readonly string processStartTime = DateTime.Now.ToString();
     public static readonly DiscordColor botColor = new("#FAA61A");
     public static DiscordChannel homeChannel;
+    public static List<DiscordApplicationCommand> applicationCommands;
     public static EventId BotEventId { get; } = new(1000, "MechanicalMilkshake");
 #if DEBUG
     public static ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:6379");
@@ -180,12 +181,18 @@ internal class Program
         slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.Base.HomeServerId);
         slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
 #endif
-
-
+        
         // Register CommandsNext commands
         commands.RegisterCommands<PerServerFeatures.MessageCommands>();
 
         await discord.ConnectAsync();
+
+        // Store registered application commands for later reference
+#if DEBUG
+        applicationCommands = (List<DiscordApplicationCommand>)await discord.GetGuildApplicationCommandsAsync(configjson.Base.HomeServerId);
+#else
+        applicationCommands = (List<DiscordApplicationCommand>)await discord.GetGlobalApplicationCommandsAsync();
+#endif
 
         // Events
         discord.Ready += ReadyEvent.OnReady;

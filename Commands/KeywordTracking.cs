@@ -111,13 +111,7 @@ public class KeywordTracking : ApplicationCommandModule
                 response += $"- {fieldValue.Keyword.Truncate(45)}\n";
             }
 
-#if DEBUG
-            var slashCmds =
-                await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
-#else
-            var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
-#endif
-            var trackCmd = slashCmds.FirstOrDefault(c => c.Name == "track");
+            var trackCmd = Program.applicationCommands.FirstOrDefault(c => c.Name == "track");
 
 
             DiscordEmbedBuilder embed = new()
@@ -156,13 +150,7 @@ public class KeywordTracking : ApplicationCommandModule
 
             if (userKeywords.Count == 0)
             {
-#if DEBUG
-                var slashCmds =
-                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
-#else
-                var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
-#endif
-                var trackCmd = slashCmds.FirstOrDefault(c => c.Name == "track");
+                var trackCmd = Program.applicationCommands.FirstOrDefault(c => c.Name == "track");
 
                 await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder().WithContent(
@@ -207,13 +195,7 @@ public class KeywordTracking : ApplicationCommandModule
 
             if (userKeywords.Count == 0)
             {
-#if DEBUG
-                var slashCmds =
-                    await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId);
-#else
-                var slashCmds = await Program.discord.GetGlobalApplicationCommandsAsync();
-#endif
-                var trackCmd = slashCmds.FirstOrDefault(c => c.Name == "track");
+                var trackCmd = Program.applicationCommands.FirstOrDefault(c => c.Name == "track");
 
                 await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder().WithContent(

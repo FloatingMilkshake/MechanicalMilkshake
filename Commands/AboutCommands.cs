@@ -23,15 +23,7 @@ public class AboutCommands : ApplicationCommandModule
         embed.AddField("Servers", ctx.Client.Guilds.Count.ToString(), true);
         embed.AddField("Total User Count (not unique)", ctx.Client.Guilds.Sum(g => g.Value.MemberCount).ToString(),
             true);
-
-        int commandCount;
-#if DEBUG
-        commandCount = (await Program.discord.GetGuildApplicationCommandsAsync(Program.configjson.Base.HomeServerId))
-            .Count;
-#else
-        commandCount = (await Program.discord.GetGlobalApplicationCommandsAsync()).Count;
-#endif
-        embed.AddField("Commands", commandCount.ToString(), true);
+        embed.AddField("Commands", Program.applicationCommands.Count.ToString(), true);
 
         if (!string.IsNullOrWhiteSpace(privacyPolicyUrl))
             embed.Description += $"\n\nThis bot's Privacy Policy can be found [here]({privacyPolicyUrl}).";
