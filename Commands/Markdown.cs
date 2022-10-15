@@ -25,7 +25,6 @@ public class Markdown : ApplicationCommandModule
             }
             
             try
-            // Do not delete
             {
                 message = await ctx.Channel.GetMessageAsync(messageId);
             }
