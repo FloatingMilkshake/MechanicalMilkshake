@@ -3,7 +3,9 @@
 public class WolframAlpha : ApplicationCommandModule
 {
     [SlashCommand("wolframalpha", "Search WolframAlpha without leaving Discord!")]
-    public static async Task WolframAlphaCommand(InteractionContext ctx, [Option("query", "What to search for.")] string query,
+    public static async Task WolframAlphaCommand(InteractionContext ctx,
+        [Option("query", "What to search for.")]
+        string query,
         [Option("response_type",
             "Whether the response should be simple text only or a more-detailed image. Defaults to Text.")]
         [Choice("Text", "text")]
@@ -12,7 +14,6 @@ public class WolframAlpha : ApplicationCommandModule
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-        string queryEncoded;
         if (query == null)
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
@@ -20,10 +21,9 @@ public class WolframAlpha : ApplicationCommandModule
             return;
         }
 
-        queryEncoded = HttpUtility.UrlEncode(query);
+        var queryEncoded = HttpUtility.UrlEncode(query);
 
-        string appid;
-        if (Program.configjson.Base.WolframAlphaAppId == null)
+        if (Program.ConfigJson.Base.WolframAlphaAppId == null)
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                 "Looks like you don't have an App ID! Check the wolframAlphaAppId field in your config.json file. "
@@ -31,7 +31,7 @@ public class WolframAlpha : ApplicationCommandModule
             return;
         }
 
-        appid = Program.configjson.Base.WolframAlphaAppId;
+        var appid = Program.ConfigJson.Base.WolframAlphaAppId;
 
         var queryEscaped = query.Replace("`", @"\`");
         queryEscaped = queryEscaped.Replace("*", @"\*");
@@ -43,7 +43,7 @@ public class WolframAlpha : ApplicationCommandModule
             try
             {
                 var data =
-                    await Program.httpClient.GetStringAsync(
+                    await Program.HttpClient.GetStringAsync(
                         $"https://api.wolframalpha.com/v1/result?appid={appid}&i={queryEncoded}");
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"> {queryEscaped}\n" +
                     data + $"\n\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
@@ -57,7 +57,7 @@ public class WolframAlpha : ApplicationCommandModule
             try
             {
                 var data =
-                    await Program.httpClient.GetByteArrayAsync(
+                    await Program.HttpClient.GetByteArrayAsync(
                         $"https://api.wolframalpha.com/v1/simple?appid={appid}&i={queryEncoded}");
                 await File.WriteAllBytesAsync("result.gif", data);
 

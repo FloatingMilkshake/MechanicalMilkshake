@@ -40,7 +40,7 @@ public class MessageEvents
                     Regex idPattern = new("[0-9]{5,}");
                     DiscordChannel targetChannel = default;
                     DiscordUser targetUser = default;
-                    DiscordMember targetMember = default;
+                    DiscordMember targetMember;
 
                     if (usernamePattern.IsMatch(e.Message.Content))
                     {
@@ -123,16 +123,14 @@ public class MessageEvents
                         {
                             var server = await client.GetGuildAsync(guildId.Key);
 
-                            if (server.Members.ContainsKey(targetUser.Id))
-                            {
-                                mutualServer = await client.GetGuildAsync(server.Id);
-                                break;
-                            }
+                            if (!server.Members.ContainsKey(targetUser!.Id)) continue;
+                            mutualServer = await client.GetGuildAsync(server.Id);
+                            break;
                         }
 
                         try
                         {
-                            targetMember = await mutualServer.GetMemberAsync(targetUser.Id);
+                            targetMember = await mutualServer!.GetMemberAsync(targetUser!.Id);
                         }
                         catch (Exception ex)
                         {
@@ -151,8 +149,8 @@ public class MessageEvents
                     var content = e.Message.Content.Replace(getContentMatch.ToString(), "");
 
                     if (e.Message.Attachments.Any())
-                        foreach (var attachment in e.Message.Attachments)
-                            content += $"\n{attachment.Url}";
+                        content = e.Message.Attachments.Aggregate(content,
+                            (current, attachment) => current + $"\n{attachment.Url}");
 
                     DiscordMessage message;
                     try
@@ -181,12 +179,11 @@ public class MessageEvents
                 {
                     // If these conditions are true, a bot owner has replied to a forwarded message. Now we need to forward that reply.
 
-                    var userIdField = e.Message.ReferencedMessage.Embeds[0].Fields
-                        .Where(f => f.Name == "User ID").First();
+                    var userIdField = e.Message.ReferencedMessage.Embeds[0].Fields.First(f => f.Name == "User ID");
                     var userId = Convert.ToUInt64(userIdField.Value.Replace("`", ""));
 
                     var mutualServersField = e.Message.ReferencedMessage.Embeds[0].Fields
-                        .Where(f => f.Name == "Mutual Servers").First();
+                        .First(f => f.Name == "Mutual Servers");
 
                     Regex mutualIdPattern = new(@"[0-9]*;");
                     var firstMutualId = Convert.ToUInt64(mutualIdPattern.Match(mutualServersField.Value)
@@ -195,15 +192,16 @@ public class MessageEvents
                     var mutualServer = await client.GetGuildAsync(firstMutualId);
                     var member = await mutualServer.GetMemberAsync(userId);
 
-                    var messageIdField = e.Message.ReferencedMessage.Embeds[0].Fields
-                        .Where(f => f.Name == "Message ID").First();
+                    var messageIdField =
+                        e.Message.ReferencedMessage.Embeds[0].Fields.First(f => f.Name == "Message ID");
                     var messageId = Convert.ToUInt64(messageIdField.Value.Replace("`", ""));
 
                     var attachmentUrls = "";
-                    var messageToSend = "";
+                    string messageToSend;
                     if (e.Message.Attachments.Count != 0)
                     {
-                        foreach (var attachment in e.Message.Attachments) attachmentUrls += $"{attachment.Url}\n";
+                        attachmentUrls = e.Message.Attachments.Aggregate(attachmentUrls,
+                            (current, attachment) => current + $"{attachment.Url}\n");
 
                         messageToSend = $"{e.Message.Content}\n{attachmentUrls}";
                     }
@@ -230,81 +228,79 @@ public class MessageEvents
                         {
                             var guild = await client.GetGuildAsync(guildPair.Key);
 
-                            if (guild.Members.ContainsKey(owner.Id))
+                            if (!guild.Members.ContainsKey(owner.Id)) continue;
+                            var ownerMember = await guild.GetMemberAsync(owner.Id);
+
+                            DiscordEmbedBuilder embed = new()
                             {
-                                var ownerMember = await guild.GetMemberAsync(owner.Id);
+                                Color = DiscordColor.Yellow,
+                                Title = $"DM received from {e.Author.Username}#{e.Author.Discriminator}!",
+                                Description = $"{e.Message.Content}",
+                                Timestamp = DateTime.UtcNow
+                            };
 
-                                DiscordEmbedBuilder embed = new()
-                                {
-                                    Color = DiscordColor.Yellow,
-                                    Title = $"DM received from {e.Author.Username}#{e.Author.Discriminator}!",
-                                    Description = $"{e.Message.Content}",
-                                    Timestamp = DateTime.UtcNow
-                                };
+                            embed.AddField("User ID", $"`{e.Author.Id}`", true);
+                            embed.AddField("User Mention", $"{e.Author.Mention}", true);
+                            embed.AddField("User Avatar URL", $"[Link]({e.Author.AvatarUrl})", true);
+                            embed.AddField("Channel ID", $"`{e.Channel.Id}`", true);
+                            embed.AddField("Message ID", $"`{e.Message.Id}`", true);
 
-                                embed.AddField("User ID", $"`{e.Author.Id}`", true);
-                                embed.AddField("User Mention", $"{e.Author.Mention}", true);
-                                embed.AddField("User Avatar URL", $"[Link]({e.Author.AvatarUrl})", true);
-                                embed.AddField("Channel ID", $"`{e.Channel.Id}`", true);
-                                embed.AddField("Message ID", $"`{e.Message.Id}`", true);
+                            var attachmentUrls = "";
+                            if (e.Message.Attachments.Count != 0)
+                            {
+                                attachmentUrls = e.Message.Attachments.Aggregate(attachmentUrls,
+                                    (current, attachment) => current + $"{attachment.Url}\n");
 
-                                var attachmentUrls = "";
-                                if (e.Message.Attachments.Count != 0)
-                                {
-                                    foreach (var attachment in e.Message.Attachments)
-                                        attachmentUrls += $"{attachment.Url}\n";
-
-                                    embed.AddField("Attachments", attachmentUrls, true);
-                                }
-
-                                var mutualServers = "";
-
-                                foreach (var guildId in client.Guilds)
-                                {
-                                    var server = await client.GetGuildAsync(guildId.Key);
-
-                                    if (server.Members.ContainsKey(e.Author.Id)) mutualServers += $"- `{server}`\n";
-                                }
-
-                                DiscordMessageBuilder messageBuilder = new();
-
-                                var isReply = "No";
-                                if (e.Message.ReferencedMessage != null)
-                                {
-                                    isReply = "Yes";
-                                    DiscordButtonComponent button = new(ButtonStyle.Primary,
-                                        "view-dm-reply-info", "View Reply Info");
-                                    messageBuilder = messageBuilder.AddComponents(button);
-                                }
-
-                                embed.AddField("Is Reply", isReply);
-
-                                var messages =
-                                    await e.Channel.GetMessagesBeforeAsync(e.Message.Id);
-                                var contextExists = false;
-                                foreach (var msg in messages)
-                                    if (msg.Content != null)
-                                        contextExists = true;
-
-                                if (contextExists)
-                                {
-                                    DiscordButtonComponent button = new(ButtonStyle.Primary, "view-dm-context",
-                                        "View Context");
-                                    messageBuilder.AddComponents(button);
-                                }
-
-                                embed.AddField("Mutual Servers", mutualServers);
-
-                                messageBuilder = messageBuilder.AddEmbed(embed.Build());
-
-                                await ownerMember.SendMessageAsync(messageBuilder);
-                                return;
+                                embed.AddField("Attachments", attachmentUrls, true);
                             }
+
+                            var mutualServers = "";
+
+                            foreach (var guildId in client.Guilds)
+                            {
+                                var server = await client.GetGuildAsync(guildId.Key);
+
+                                if (server.Members.ContainsKey(e.Author.Id)) mutualServers += $"- `{server}`\n";
+                            }
+
+                            DiscordMessageBuilder messageBuilder = new();
+
+                            var isReply = "No";
+                            if (e.Message.ReferencedMessage != null)
+                            {
+                                isReply = "Yes";
+                                DiscordButtonComponent button = new(ButtonStyle.Primary,
+                                    "view-dm-reply-info", "View Reply Info");
+                                messageBuilder = messageBuilder.AddComponents(button);
+                            }
+
+                            embed.AddField("Is Reply", isReply);
+
+                            var messages =
+                                await e.Channel.GetMessagesBeforeAsync(e.Message.Id);
+                            var contextExists = false;
+                            foreach (var msg in messages)
+                                if (msg.Content != null)
+                                    contextExists = true;
+
+                            if (contextExists)
+                            {
+                                DiscordButtonComponent button = new(ButtonStyle.Primary, "view-dm-context",
+                                    "View Context");
+                                messageBuilder.AddComponents(button);
+                            }
+
+                            embed.AddField("Mutual Servers", mutualServers);
+
+                            messageBuilder = messageBuilder.AddEmbed(embed.Build());
+
+                            await ownerMember.SendMessageAsync(messageBuilder);
+                            return;
                         }
                     }
                     catch (Exception ex)
                     {
-                        Program.discord.Logger.LogError(Program.BotEventId,
+                        Program.Discord.Logger.LogError(Program.BotEventId,
                             "A DM was received, but could not be forwarded!\nException Details: {ex.GetType()}: {ex.Message}\nMessage Content: {e.Message.Content}",
                             ex.GetType(), ex.Message, e.Message.Content);
                     }
@@ -323,16 +319,14 @@ public class MessageEvents
         {
             Color = DiscordColor.Red,
             Description =
-                $"`{ex.GetType()}` occurred when processing [this message]({message.JumpLink}) (message `{message.Id}` in channel `{message.Channel.Id}`)."
+                $"`{ex.GetType()}` occurred when processing [this message]({message.JumpLink}) (message `{message.Id}` in channel `{message.Channel.Id}`).",
+            Title = isEdit
+                ? "An exception occurred when processing a message update event"
+                : "An exception occurred when processing a message create event"
         };
-
-        if (isEdit)
-            embed.Title = "An exception occurred when processing a message update event";
-        else
-            embed.Title = "An exception occurred when processing a message create event";
 
         embed.AddField("Message", $"{ex.Message}");
 
-        await Program.homeChannel.SendMessageAsync(embed);
+        await Program.HomeChannel.SendMessageAsync(embed);
     }
 }

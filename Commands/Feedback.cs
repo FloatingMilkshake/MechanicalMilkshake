@@ -9,14 +9,14 @@ public class Feedback : ApplicationCommandModule
     {
         await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
         {
-            Title = "Thank you!", Color = Program.botColor,
+            Title = "Thank you!", Color = Program.BotColor,
             Description = $"Your feedback has been recorded. You can view it below.\n> {feedbackMsg}"
         }).AsEphemeral());
         var feedbackChannel = await ctx.Client.GetChannelAsync(1016805107993677926);
         DiscordEmbedBuilder embed = new()
         {
             Title = "New feedback received!",
-            Color = Program.botColor,
+            Color = Program.BotColor,
             Description = feedbackMsg
         };
         embed.AddField("Sent by", $"{ctx.User.Username}#{ctx.User.Discriminator} (`{ctx.User.Id}`)");

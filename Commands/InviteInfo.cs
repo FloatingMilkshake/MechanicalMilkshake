@@ -18,7 +18,7 @@ public class InviteInfo : ApplicationCommandModule
         DiscordInvite invite;
         try
         {
-            invite = await Program.discord.GetInviteByCodeAsync(targetInvite, true, true);
+            invite = await Program.Discord.GetInviteByCodeAsync(targetInvite, true, true);
         }
         catch
         {
@@ -33,7 +33,7 @@ public class InviteInfo : ApplicationCommandModule
                 : $"Invite info for {invite.Guild.Name}\n(discord.gg/{invite.Guild.VanityUrlCode})",
             //Title = $"Invite Info for {invite.Guild.Name}",
             Description = invite.Guild.Description,
-            Color = Program.botColor
+            Color = Program.BotColor
         };
 
         if (invite.Guild.VanityUrlCode == null)

@@ -27,12 +27,12 @@ public class DebugCommands : ApplicationCommandModule
             DiscordEmbedBuilder embed = new()
             {
                 Title = "Uptime",
-                Color = Program.botColor
+                Color = Program.BotColor
             };
 
-            var connectUnixTime = ((DateTimeOffset)Program.connectTime).ToUnixTimeSeconds();
+            var connectUnixTime = ((DateTimeOffset)Program.ConnectTime).ToUnixTimeSeconds();
 
-            var startTime = Convert.ToDateTime(Program.processStartTime);
+            var startTime = Convert.ToDateTime(Program.ProcessStartTime);
             var startUnixTime = ((DateTimeOffset)startTime).ToUnixTimeSeconds();
 
             embed.AddField("Process started at", $"<t:{startUnixTime}:F> (<t:{startUnixTime}:R>)");
@@ -47,7 +47,7 @@ public class DebugCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {
-                Title = "Time Check", Color = Program.botColor,
+                Title = "Time Check", Color = Program.BotColor,
                 Description = $"Seems to me like it's currently `{DateTime.Now}`."
             }));
         }
@@ -68,7 +68,7 @@ public class DebugCommands : ApplicationCommandModule
         {
             try
             {
-                var dockerCheckFile = File.ReadAllText("/proc/self/cgroup");
+                var dockerCheckFile = await File.ReadAllTextAsync("/proc/self/cgroup");
                 if (string.IsNullOrWhiteSpace(dockerCheckFile))
                 {
                     await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
@@ -98,24 +98,21 @@ public class DebugCommands : ApplicationCommandModule
             DiscordEmbedBuilder embed = new()
             {
                 Title = "Owners",
-                Color = Program.botColor
+                Color = Program.BotColor
             };
 
-            List<DiscordUser> botOwners = new();
             List<DiscordUser> authorizedUsers = new();
 
-            foreach (var owner in ctx.Client.CurrentApplication.Owners) botOwners.Add(owner);
+            var botOwners = ctx.Client.CurrentApplication.Owners.ToList();
 
-            foreach (var userId in Program.configjson.Base.AuthorizedUsers)
+            foreach (var userId in Program.ConfigJson.Base.AuthorizedUsers)
                 authorizedUsers.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
 
-            var botOwnerList = "";
-            foreach (var owner in botOwners)
-                botOwnerList += $"\n- {owner.Username}#{owner.Discriminator} (`{owner.Id}`)";
+            var botOwnerList = botOwners.Aggregate("",
+                (current, owner) => current + $"\n- {owner.Username}#{owner.Discriminator} (`{owner.Id}`)");
 
-            var authUsersList = "";
-            foreach (var user in authorizedUsers)
-                authUsersList += $"\n- {user.Username}#{user.Discriminator} (`{user.Id}`)";
+            var authUsersList = authorizedUsers.Aggregate("",
+                (current, user) => current + $"\n- {user.Username}#{user.Discriminator} (`{user.Id}`)");
 
             embed.AddField("Bot Owners", botOwnerList);
             embed.AddField("Authorized Users",
@@ -131,11 +128,11 @@ public class DebugCommands : ApplicationCommandModule
 
             DiscordEmbedBuilder embed = new()
             {
-                Title = $"Joined Guilds - {Program.discord.Guilds.Count}",
-                Color = Program.botColor
+                Title = $"Joined Guilds - {Program.Discord.Guilds.Count}",
+                Color = Program.BotColor
             };
 
-            foreach (var guild in Program.discord.Guilds)
+            foreach (var guild in Program.Discord.Guilds)
                 embed.Description += $"- `{guild.Value.Id}`: {guild.Value.Name}\n";
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
@@ -152,7 +149,7 @@ public class DebugCommands : ApplicationCommandModule
             DiscordEmbedBuilder embed = new()
             {
                 Title = "HumanDateParser Result",
-                Color = Program.botColor
+                Color = Program.BotColor
             };
 
             try
@@ -178,18 +175,18 @@ public class DebugCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            if (checksToRun == "all")
+            switch (checksToRun)
             {
-                await ReminderChecks.ReminderCheck();
-                await PackageUpdateChecks.PackageUpdateCheck();
-            }
-            else if (checksToRun == "reminders")
-            {
-                await ReminderChecks.ReminderCheck();
-            }
-            else if (checksToRun == "packageupdates")
-            {
-                await PackageUpdateChecks.PackageUpdateCheck();
+                case "all":
+                    await ReminderChecks.ReminderCheck();
+                    await PackageUpdateChecks.PackageUpdateCheck();
+                    break;
+                case "reminders":
+                    await ReminderChecks.ReminderCheck();
+                    break;
+                case "packageupdates":
+                    await PackageUpdateChecks.PackageUpdateCheck();
+                    break;
             }
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Done!"));

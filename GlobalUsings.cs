@@ -28,7 +28,6 @@ global using Minio.Exceptions;
 global using Newtonsoft.Json;
 global using StackExchange.Redis;
 global using System;
-global using System.Collections;
 global using System.Collections.Generic;
 global using System.Diagnostics;
 global using System.IO;

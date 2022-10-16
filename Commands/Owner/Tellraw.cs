@@ -10,11 +10,7 @@ public class Tellraw : ApplicationCommandModule
         [Option("channel", "The channel to send the message in.")]
         DiscordChannel channel = null)
     {
-        DiscordChannel targetChannel;
-        if (channel != null)
-            targetChannel = channel;
-        else
-            targetChannel = ctx.Channel;
+        var targetChannel = channel != null ? channel : ctx.Channel;
 
         DiscordMessage sentMessage;
         try
@@ -37,14 +33,14 @@ public class Tellraw : ApplicationCommandModule
         await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
             .WithContent($"I sent your message to {targetChannel.Mention}.").AsEphemeral());
 
-        foreach (var owner in Program.discord.CurrentApplication.Owners)
+        foreach (var owner in Program.Discord.CurrentApplication.Owners)
         {
             if (owner.Id == ctx.User.Id)
                 return;
 
             try
             {
-                var member = await (await Program.discord.GetGuildAsync(Program.configjson.Base.HomeServerId))
+                var member = await (await Program.Discord.GetGuildAsync(Program.ConfigJson.Base.HomeServerId))
                     .GetMemberAsync(owner.Id);
                 await member.SendMessageAsync(
                     $"{ctx.User.Mention} used tellraw:\n> {message}\n\n{sentMessage.JumpLink}");

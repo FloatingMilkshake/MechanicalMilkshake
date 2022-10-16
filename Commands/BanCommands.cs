@@ -5,7 +5,8 @@ public class BanCommands : ApplicationCommandModule
 {
     [SlashCommand("ban", "Ban a user. They will not be able to rejoin unless unbanned.", false)]
     [SlashCommandPermissions(Permissions.BanMembers)]
-    public static async Task BanCommand(InteractionContext ctx, [Option("user", "The user to ban.")] DiscordUser userToBan,
+    public static async Task BanCommand(InteractionContext ctx,
+        [Option("user", "The user to ban.")] DiscordUser userToBan,
         [Option("reason", "The reason for the ban.")] [MaximumLength(1500)]
         string reason = "No reason provided.")
     {

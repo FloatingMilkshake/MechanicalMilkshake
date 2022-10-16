@@ -5,12 +5,11 @@ public class UserInfo : ApplicationCommandModule
     [ContextMenu(ApplicationCommandType.UserContextMenu, "User Info")]
     public static async Task ContextUserInfo(ContextMenuContext ctx)
     {
-        DiscordMember member;
         DiscordEmbed userInfoEmbed;
 
         try
         {
-            member = await ctx.Guild.GetMemberAsync(ctx.TargetUser.Id);
+            var member = await ctx.Guild.GetMemberAsync(ctx.TargetUser.Id);
             userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(member);
         }
         catch (NotFoundException)

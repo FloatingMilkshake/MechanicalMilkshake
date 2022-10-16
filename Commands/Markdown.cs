@@ -9,7 +9,7 @@ public class Markdown : ApplicationCommandModule
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-        DiscordMessage message = null;
+        DiscordMessage message;
         if (!messageToExpose.Contains("discord.com"))
         {
             if (messageToExpose.Length < 17)
@@ -18,7 +18,7 @@ public class Markdown : ApplicationCommandModule
                     "Hmm, that doesn't look like a valid message ID or link."));
                 return;
             }
-            
+
             ulong messageId;
             try
             {
@@ -30,7 +30,7 @@ public class Markdown : ApplicationCommandModule
                     "Hmm, that doesn't look like a valid message ID or link. I wasn't able to get the Markdown data from it."));
                 return;
             }
-            
+
             try
             {
                 message = await ctx.Channel.GetMessageAsync(messageId);
@@ -39,6 +39,7 @@ public class Markdown : ApplicationCommandModule
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                     "I wasn't able to read that message! Make sure I have permission to access it."));
+                return;
             }
         }
         else
@@ -84,6 +85,7 @@ public class Markdown : ApplicationCommandModule
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                     "I wasn't able to read that message! Make sure I have permission to access it."));
+                return;
             }
         }
 
@@ -107,7 +109,7 @@ public class Markdown : ApplicationCommandModule
         DiscordEmbedBuilder embed = new()
         {
             Title = "Markdown",
-            Color = Program.botColor,
+            Color = Program.BotColor,
             Description = msgContentEscaped
         };
 

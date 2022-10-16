@@ -11,7 +11,7 @@ public class EvalCommands : ApplicationCommandModule
         [Option("command", "The command to run, including any arguments.")]
         string command)
     {
-        if (!Program.configjson.Base.AuthorizedUsers.Contains(ctx.User.Id.ToString()))
+        if (!Program.ConfigJson.Base.AuthorizedUsers.Contains(ctx.User.Id.ToString()))
             throw new SlashExecutionChecksFailedException();
 
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
@@ -62,8 +62,8 @@ public class EvalCommands : ApplicationCommandModule
         };
 
         proc.Start();
-        var result = proc.StandardOutput.ReadToEnd();
-        proc.WaitForExit();
+        var result = await proc.StandardOutput.ReadToEndAsync();
+        await proc.WaitForExitAsync();
 
         if (result.Length > 1947)
         {
@@ -137,15 +137,15 @@ public class EvalCommands : ApplicationCommandModule
         }
     }
 
-    public static string HideSensitiveInfo(string input)
+    private static string HideSensitiveInfo(string input)
     {
-        var redacted = "[redacted]";
-        return input.Replace(Program.configjson.Base.BotToken, redacted)
-            .Replace(Program.configjson.Base.WolframAlphaAppId, redacted)
-            .Replace(Program.configjson.WorkerLinks.Secret, redacted)
-            .Replace(Program.configjson.WorkerLinks.ApiKey, redacted)
-            .Replace(Program.configjson.S3.AccessKey, redacted)
-            .Replace(Program.configjson.S3.SecretKey, redacted)
-            .Replace(Program.configjson.Cloudflare.Token, redacted);
+        const string redacted = "[redacted]";
+        return input.Replace(Program.ConfigJson.Base.BotToken, redacted)
+            .Replace(Program.ConfigJson.Base.WolframAlphaAppId, redacted)
+            .Replace(Program.ConfigJson.WorkerLinks.Secret, redacted)
+            .Replace(Program.ConfigJson.WorkerLinks.ApiKey, redacted)
+            .Replace(Program.ConfigJson.S3.AccessKey, redacted)
+            .Replace(Program.ConfigJson.S3.SecretKey, redacted)
+            .Replace(Program.ConfigJson.Cloudflare.Token, redacted);
     }
 }

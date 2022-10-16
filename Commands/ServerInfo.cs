@@ -14,10 +14,8 @@ public class ServerInfo : ApplicationCommandModule
         var msUnix = msSinceEpoch + 1420070400000;
         var createdAt = $"{msUnix / 1000}";
 
-        var botUserAsMember = await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id);
-
         var embed = new DiscordEmbedBuilder()
-            .WithColor(Program.botColor)
+            .WithColor(Program.BotColor)
             .AddField("Server Owner", $"{ctx.Guild.Owner.Username}#{ctx.Guild.Owner.Discriminator}")
             .AddField("Description", $"{description}")
             .AddField("Created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)")

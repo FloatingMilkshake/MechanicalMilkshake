@@ -31,7 +31,7 @@ public class RandomCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            var fact = await Program.httpClient.GetStringAsync("https://uselessfacts.jsph.pl/random.md?language=en");
+            var fact = await Program.HttpClient.GetStringAsync("https://uselessfacts.jsph.pl/random.md?language=en");
 
             if (fact.Contains("http"))
             {
@@ -46,34 +46,24 @@ public class RandomCommands : ApplicationCommandModule
         public static async Task RandomCat(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-            var data = await Program.httpClient.GetStringAsync("https://api.thecatapi.com/v1/images/search");
+            var data = await Program.HttpClient.GetStringAsync("https://api.thecatapi.com/v1/images/search");
             Regex pattern = new(@"https:\/\/cdn2.thecatapi.com\/images\/.*(.png|.jpg)");
             var cat = pattern.Match(data);
-            if (cat is not null)
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"{cat}"));
-            else
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "I found a cat, but something happened and I wasn't able to send it here. Try again."));
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"{cat}"));
         }
 
         [SlashCommand("dog", "Get a random dog picture from the internet.")]
         public static async Task RandomDog(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-            var data = await Program.httpClient.GetStringAsync("https://dog.ceo/api/breeds/image/random");
+            var data = await Program.HttpClient.GetStringAsync("https://dog.ceo/api/breeds/image/random");
             Regex pattern = new(@"https:\\\/\\\/images.dog.ceo\\\/breeds\\\/.*(.png|.jpg)");
             var dogMatch = pattern.Match(data);
-            if (dogMatch is not null)
-            {
-                var dog = dogMatch.ToString();
-                dog = dog.Replace("\\", "");
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"{dog}"));
-            }
-            else
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "I found a dog, but something happened and I wasn't able to send it here. Try again."));
-            }
+
+            var dog = dogMatch.ToString();
+            dog = dog.Replace("\\", "");
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"{dog}"));
         }
     }
 }

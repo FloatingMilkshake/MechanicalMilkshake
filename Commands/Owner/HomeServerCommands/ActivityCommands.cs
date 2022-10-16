@@ -19,7 +19,7 @@ public class ActivityCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            await Program.db.HashSetAsync("customStatusList", message, type);
+            await Program.Db.HashSetAsync("customStatusList", message, type);
 
             await ctx.FollowUpAsync(
                 new DiscordFollowupMessageBuilder().WithContent("Activity added successfully!"));
@@ -30,7 +30,7 @@ public class ActivityCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            var dbList = await Program.db.HashGetAllAsync("customStatusList");
+            var dbList = await Program.Db.HashGetAllAsync("customStatusList");
             if (dbList.Length == 0)
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
@@ -57,7 +57,7 @@ public class ActivityCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            var dbList = await Program.db.HashGetAllAsync("customStatusList");
+            var dbList = await Program.Db.HashGetAllAsync("customStatusList");
             var index = 1;
             foreach (var item in dbList)
             {
@@ -119,17 +119,17 @@ public class ActivityCommands : ApplicationCommandModule
 
                     if (activity.Name.Contains("{uptime}"))
                     {
-                        var uptime = DateTime.Now.Subtract(Convert.ToDateTime(Program.processStartTime));
+                        var uptime = DateTime.Now.Subtract(Convert.ToDateTime(Program.ProcessStartTime));
                         activity.Name = activity.Name.Replace("{uptime}", uptime.Humanize());
                     }
 
                     if (activity.Name.Contains("{userCount}"))
                     {
                         List<DiscordUser> uniqueUsers = new();
-                        foreach (var guild in Program.discord.Guilds)
+                        foreach (var guild in Program.Discord.Guilds)
                         foreach (var member in guild.Value.Members)
                         {
-                            var user = await Program.discord.GetUserAsync(member.Value.Id);
+                            var user = await Program.Discord.GetUserAsync(member.Value.Id);
                             if (!uniqueUsers.Contains(user)) uniqueUsers.Add(user);
                         }
 
@@ -138,9 +138,9 @@ public class ActivityCommands : ApplicationCommandModule
 
                     if (activity.Name.Contains("{serverCount}"))
                         activity.Name = activity.Name.Replace("{serverCount}",
-                            Program.discord.Guilds.Count.ToString());
+                            Program.Discord.Guilds.Count.ToString());
 
-                    await Program.discord.UpdateStatusAsync(activity, UserStatus.Online);
+                    await Program.Discord.UpdateStatusAsync(activity, UserStatus.Online);
                     await ctx.FollowUpAsync(
                         new DiscordFollowupMessageBuilder().WithContent("Activity updated successfully!"));
                     break;
@@ -158,7 +158,7 @@ public class ActivityCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            var dbList = await Program.db.HashGetAllAsync("customStatusList");
+            var dbList = await Program.Db.HashGetAllAsync("customStatusList");
 
             if (dbList.Length == 0)
             {
@@ -168,13 +168,11 @@ public class ActivityCommands : ApplicationCommandModule
             }
 
             var index = 1;
-            var itemReached = false;
             foreach (var item in dbList)
             {
-                itemReached = false;
                 if (id == index)
                 {
-                    await Program.db.HashDeleteAsync("customStatusList", item.Name);
+                    await Program.Db.HashDeleteAsync("customStatusList", item.Name);
                     await ctx.FollowUpAsync(
                         new DiscordFollowupMessageBuilder().WithContent("Activity removed successfully."));
                     return;
@@ -183,9 +181,9 @@ public class ActivityCommands : ApplicationCommandModule
                 index++;
             }
 
-            if (!itemReached)
-                await ctx.FollowUpAsync(
-                    new DiscordFollowupMessageBuilder().WithContent("There's no activity with that ID!"));
+            // If we're here, the ID wasn't found in the list
+            await ctx.FollowUpAsync(
+                new DiscordFollowupMessageBuilder().WithContent("There's no activity with that ID!"));
         }
 
         [SlashCommand("randomize", "Choose a random custom status message from the list.")]
@@ -193,15 +191,19 @@ public class ActivityCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
+            if (string.IsNullOrWhiteSpace(await Program.Db.HashGetAsync("customStatus", "activity")))
+                await Program.Db.HashSetAsync("customStatus", "activity",
+                    JsonConvert.SerializeObject(new DiscordActivity()));
+
             var storedActivity =
                 JsonConvert.DeserializeObject<DiscordActivity>(
-                    await Program.db.HashGetAsync("customStatus", "activity"));
+                    await Program.Db.HashGetAsync("customStatus", "activity"));
 
             if (storedActivity is not null && !string.IsNullOrWhiteSpace(storedActivity.Name))
             {
-                await Program.discord.UpdateStatusAsync(storedActivity,
+                await Program.Discord.UpdateStatusAsync(storedActivity,
                     JsonConvert.DeserializeObject<UserStatus>(
-                        await Program.db.HashGetAsync("customStatus", "userStatus")));
+                        await Program.Db.HashGetAsync("customStatus", "userStatus")));
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                     "The bot's activity was previously set with `/activity set` and has thus not been changed." +
@@ -212,8 +214,8 @@ public class ActivityCommands : ApplicationCommandModule
 
             await CustomStatusHelper.SetCustomStatus();
 
-            var list = await Program.db.HashGetAllAsync("customStatusList");
-            if (list.Length == 0 && Program.discord.CurrentUser.Presence.Activity.Name == null)
+            var list = await Program.Db.HashGetAllAsync("customStatusList");
+            if (list.Length == 0 && Program.Discord.CurrentUser.Presence.Activity.Name == null)
             {
                 // Activity was cleared; list is empty
                 await ctx.FollowUpAsync(
@@ -227,7 +229,7 @@ public class ActivityCommands : ApplicationCommandModule
 
         [SlashCommand("set",
             "Set the bot's activity. This overrides the list of status messages to cycle through.")]
-        public static async Task SetActivity(InteractionContext ctx,
+        private static async Task SetActivity(InteractionContext ctx,
             [Option("status", "The bot's online status.")]
             [Choice("Online", "online")]
             [Choice("Idle", "idle")]
@@ -245,7 +247,7 @@ public class ActivityCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            var customStatusDisabled = await Program.db.StringGetAsync("customStatusDisabled");
+            var customStatusDisabled = await Program.Db.StringGetAsync("customStatusDisabled");
             if (customStatusDisabled == "true")
             {
                 // Custom status messages are disabled; warn user and don't bother going through with the rest of this command
@@ -287,25 +289,25 @@ public class ActivityCommands : ApplicationCommandModule
                 _ => UserStatus.Online
             };
 
-            await Program.db.HashSetAsync("customStatus", "activity", JsonConvert.SerializeObject(activity));
-            await Program.db.HashSetAsync("customStatus", "userStatus",
+            await Program.Db.HashSetAsync("customStatus", "activity", JsonConvert.SerializeObject(activity));
+            await Program.Db.HashSetAsync("customStatus", "userStatus",
                 JsonConvert.SerializeObject(userStatus));
 
             if (activity.Name is not null)
             {
                 if (activity.Name.Contains("{uptime}"))
                 {
-                    var uptime = DateTime.Now.Subtract(Convert.ToDateTime(Program.processStartTime));
+                    var uptime = DateTime.Now.Subtract(Convert.ToDateTime(Program.ProcessStartTime));
                     activity.Name = activity.Name.Replace("{uptime}", uptime.Humanize());
                 }
 
                 if (activity.Name.Contains("{userCount}"))
                 {
                     List<DiscordUser> uniqueUsers = new();
-                    foreach (var guild in Program.discord.Guilds)
+                    foreach (var guild in Program.Discord.Guilds)
                     foreach (var member in guild.Value.Members)
                     {
-                        var user = await Program.discord.GetUserAsync(member.Value.Id);
+                        var user = await Program.Discord.GetUserAsync(member.Value.Id);
                         if (!uniqueUsers.Contains(user)) uniqueUsers.Add(user);
                     }
 
@@ -314,7 +316,7 @@ public class ActivityCommands : ApplicationCommandModule
 
                 if (activity.Name.Contains("{serverCount}"))
                     activity.Name = activity.Name.Replace("{serverCount}",
-                        Program.discord.Guilds.Count.ToString());
+                        Program.Discord.Guilds.Count.ToString());
             }
 
             await ctx.Client.UpdateStatusAsync(activity, userStatus);
@@ -335,9 +337,9 @@ public class ActivityCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            await Program.discord.UpdateStatusAsync(new DiscordActivity(), UserStatus.Online);
+            await Program.Discord.UpdateStatusAsync(new DiscordActivity(), UserStatus.Online);
 
-            await Program.db.StringSetAsync("customStatusDisabled", "true");
+            await Program.Db.StringSetAsync("customStatusDisabled", "true");
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                 "Custom status messages disabled. Note that the bot's status may not be cleared right away due to caching."));
@@ -349,7 +351,7 @@ public class ActivityCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            await Program.db.StringSetAsync("customStatusDisabled", "false");
+            await Program.Db.StringSetAsync("customStatusDisabled", "false");
 
             await CustomStatusHelper.SetCustomStatus();
 

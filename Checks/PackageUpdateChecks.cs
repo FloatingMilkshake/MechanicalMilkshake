@@ -9,10 +9,10 @@ public class PackageUpdateChecks
 
         var updatesAvailable = false;
         var restartRequired = false;
-        foreach (var host in Program.configjson.Base.SshHosts)
+        foreach (var host in Program.ConfigJson.Base.SshHosts)
         {
 #if DEBUG
-            Program.discord.Logger.LogInformation(Program.BotEventId,
+            Program.Discord.Logger.LogInformation(Program.BotEventId,
                 "[PackageUpdateCheck] Checking for updates on host '{host}'.\"", host);
 #endif
             var cmdResult =
@@ -26,7 +26,7 @@ public class PackageUpdateChecks
             if (cmdResult.Contains("System restart required")) restartRequired = true;
         }
 #if DEBUG
-        Program.discord.Logger.LogInformation(Program.BotEventId,
+        Program.Discord.Logger.LogInformation(Program.BotEventId,
             "[PackageUpdateCheck] Finished checking for updates on all hosts.");
 #endif
 
@@ -38,11 +38,12 @@ public class PackageUpdateChecks
                 updatesAvailableResponse = "Package updates are available on the following hosts:\n" +
                                            updatesAvailableResponse;
 
-            var ownerMention = "";
-            foreach (var user in Program.discord.CurrentApplication.Owners) ownerMention += user.Mention + " ";
+            var ownerMention =
+                Program.Discord.CurrentApplication.Owners.Aggregate("",
+                    (current, user) => current + user.Mention + " ");
 
             var response = updatesAvailableResponse + restartRequiredResponse;
-            await Program.homeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{response}");
+            await Program.HomeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{response}");
         }
     }
 }

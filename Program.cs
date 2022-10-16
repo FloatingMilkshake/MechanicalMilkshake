@@ -1,28 +1,29 @@
-﻿using MechanicalMilkshake.Checks;
+﻿using System.Globalization;
+using MechanicalMilkshake.Checks;
 
 namespace MechanicalMilkshake;
 
 internal class Program
 {
-    public static DiscordClient discord;
-    public static MinioClient minio;
-    public static Random random = new();
-    public static DateTime connectTime;
-    public static HttpClient httpClient = new();
-    public static ConfigJson configjson;
-    public static readonly string processStartTime = DateTime.Now.ToString();
-    public static readonly DiscordColor botColor = new("#FAA61A");
-    public static DiscordChannel homeChannel;
-    public static List<DiscordApplicationCommand> applicationCommands;
+    public static DiscordClient Discord;
+    public static MinioClient Minio;
+    public static readonly Random Random = new();
+    public static DateTime ConnectTime;
+    public static readonly HttpClient HttpClient = new();
+    public static ConfigJson ConfigJson;
+    public static readonly string ProcessStartTime = DateTime.Now.ToString(CultureInfo.CurrentCulture);
+    public static readonly DiscordColor BotColor = new("#FAA61A");
+    public static DiscordChannel HomeChannel;
+    public static List<DiscordApplicationCommand> ApplicationCommands;
     public static EventId BotEventId { get; } = new(1000, "MechanicalMilkshake");
 #if DEBUG
-    public static ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:6379");
+    private static readonly ConnectionMultiplexer Redis = ConnectionMultiplexer.Connect("localhost:6379");
 #else
-        public static ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("redis");
+    private static readonly ConnectionMultiplexer Redis = ConnectionMultiplexer.Connect("redis");
 #endif
-    public static IDatabase db = redis.GetDatabase();
+    public static readonly IDatabase Db = Redis.GetDatabase();
 
-    public static Dictionary<string, ulong> userFlagEmoji = new()
+    public static readonly Dictionary<string, ulong> UserFlagEmoji = new()
     {
         { "earlyVerifiedBotDeveloper", 1000168738970144779 },
         { "discordStaff", 1000168738022228088 },
@@ -41,9 +42,9 @@ internal class Program
 
     // Use a custom help message to show that there are no CommandsNext commands since they
     // have all been migrated to slash commands
-    public class CustomHelpFormatter : BaseHelpFormatter
+    private class CustomHelpFormatter : BaseHelpFormatter
     {
-        protected DiscordEmbedBuilder _embed;
+        private readonly DiscordEmbedBuilder _embed;
 
         public CustomHelpFormatter(CommandContext ctx) : base(ctx)
         {
@@ -59,7 +60,7 @@ internal class Program
         {
             _embed.Title = "Help";
             _embed.Description =
-                $"No commands are available with this prefix.\n\nAll commands have been moved to slash (`/`) commands. Type `/` and select {discord.CurrentUser.Username} to see available commands.";
+                $"No commands are available with this prefix.\n\nAll commands have been moved to slash (`/`) commands. Type `/` and select {Discord.CurrentUser.Username} to see available commands.";
             _embed.Color = DiscordColor.Red;
 
             return this;
@@ -71,43 +72,51 @@ internal class Program
         }
     }
 
-    internal static async Task Main(string[] args)
+    internal static async Task Main()
     {
         // Read config.json, or config.dev.json if running in development mode
-        var json = "";
-        var configFile = "config.json";
+        string json;
 #if DEBUG
-        configFile = "config.dev.json";
+        const string configFile = "config.dev.json";
+#else
+        const string configFile = "config.json";
 #endif
-        using (var fs = File.OpenRead(configFile))
+        await using (var fs = File.OpenRead(configFile))
         using (StreamReader sr = new(fs, new UTF8Encoding(false)))
         {
             json = await sr.ReadToEndAsync();
         }
 
-        configjson = JsonConvert.DeserializeObject<ConfigJson>(json);
+        ConfigJson = JsonConvert.DeserializeObject<ConfigJson>(json);
+
+        if (ConfigJson?.Base is null)
+        {
+            Discord.Logger.LogCritical(BotEventId,
+                "Your config.json file is malformed. Please be sure it has all of the required values.");
+            Environment.Exit(1);
+        }
 
         // If the bot token is not set, we cannot continue. Display error and exit.
-        if (configjson.Base.BotToken == null || configjson.Base.BotToken == "")
+        if (string.IsNullOrWhiteSpace(ConfigJson.Base.BotToken))
         {
-            discord.Logger.LogError(BotEventId,
+            Discord.Logger.LogError(BotEventId,
                 "ERROR: No token provided! Make sure the botToken field in your config.json file is set.");
             Environment.Exit(1);
         }
 
         // Configure Discord client and interactivity
-        discord = new DiscordClient(new DiscordConfiguration
+        Discord = new DiscordClient(new DiscordConfiguration
         {
-            Token = configjson.Base.BotToken,
+            Token = ConfigJson.Base.BotToken,
             TokenType = TokenType.Bot,
             Intents = DiscordIntents.All,
 #if DEBUG
             MinimumLogLevel = LogLevel.Debug
 #else
-                MinimumLogLevel = LogLevel.Information
+            MinimumLogLevel = LogLevel.Information
 #endif
         });
-        discord.UseInteractivity(new InteractivityConfiguration
+        Discord.UseInteractivity(new InteractivityConfiguration
         {
             PollBehaviour = PollBehaviour.KeepEmojis,
             Timeout = TimeSpan.FromSeconds(30)
@@ -115,29 +124,29 @@ internal class Program
 
         // Get home channel ID; if the home channel is not set, we cannot continue.
         // Display error and exit.
-        if (configjson.Base.HomeChannel == null)
+        if (ConfigJson.Base.HomeChannel == null)
         {
-            discord.Logger.LogError(BotEventId,
+            Discord.Logger.LogError(BotEventId,
                 "No home channel provided! Make sure the homeChannel field in your config.json file is set.");
             Environment.Exit(1);
         }
 
-        var homeChannelId = Convert.ToUInt64(configjson.Base.HomeChannel);
-        homeChannel = await discord.GetChannelAsync(homeChannelId);
+        var homeChannelId = Convert.ToUInt64(ConfigJson.Base.HomeChannel);
+        HomeChannel = await Discord.GetChannelAsync(homeChannelId);
 
         // Set up slash commands and CommandsNext
-        var slash = discord.UseSlashCommands();
+        var slash = Discord.UseSlashCommands();
 
-        var commands = discord.UseCommandsNext(new CommandsNextConfiguration());
+        var commands = Discord.UseCommandsNext(new CommandsNextConfiguration());
 
         // Use the custom help message set with CustomHelpFormatter
         commands.SetHelpFormatter<CustomHelpFormatter>();
 
         // Set up Minio (used for some Owner commands)
-        minio = new MinioClient()
-            .WithEndpoint(configjson.S3.Endpoint)
-            .WithCredentials(configjson.S3.AccessKey, configjson.S3.SecretKey)
-            .WithRegion(configjson.S3.Region)
+        Minio = new MinioClient()
+            .WithEndpoint(ConfigJson.S3.Endpoint)
+            .WithCredentials(ConfigJson.S3.AccessKey, ConfigJson.S3.SecretKey)
+            .WithRegion(ConfigJson.S3.Region)
             .WithSSL();
 
 
@@ -149,11 +158,11 @@ internal class Program
             !t.IsNested);
 
         foreach (var type in slashCommandClasses)
-            slash.RegisterCommands(type, configjson.Base.HomeServerId);
+            slash.RegisterCommands(type, ConfigJson.Base.HomeServerId);
 
-        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.Base.HomeServerId);
+        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(ConfigJson.Base.HomeServerId);
 
-        discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging.");
+        Discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging.");
 
         // Register slash commands globally for 'production' bot
 #else
@@ -166,41 +175,44 @@ internal class Program
 
 
         var ownerSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-            t.IsClass && t.Namespace != null && t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") &&
+            t.IsClass && t.Namespace != null &&
+            t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") &&
             !t.IsNested);
 
         foreach (var type in ownerSlashCommandClasses)
-            slash.RegisterCommands(type, configjson.Base.HomeServerId);
+            slash.RegisterCommands(type, ConfigJson.Base.HomeServerId);
 
-        discord.Logger.LogInformation(BotEventId, "Slash commands registered globally.");
-            
+        Discord.Logger.LogInformation(BotEventId, "Slash commands registered globally.");
+
 // Register slash commands for per-server features in respective servers
 // & testing server for 'production' bot
         slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(631118217384951808);
         slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(984903591816990730);
-        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(configjson.Base.HomeServerId);
+        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(ConfigJson.Base.HomeServerId);
         slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
 #endif
-        
+
         // Register CommandsNext commands
         commands.RegisterCommands<PerServerFeatures.MessageCommands>();
 
-        await discord.ConnectAsync();
+        await Discord.ConnectAsync();
 
         // Store registered application commands for later reference
 #if DEBUG
-        applicationCommands = (List<DiscordApplicationCommand>)await discord.GetGuildApplicationCommandsAsync(configjson.Base.HomeServerId);
+        ApplicationCommands =
+            (List<DiscordApplicationCommand>)await Discord.GetGuildApplicationCommandsAsync(
+                ConfigJson.Base.HomeServerId);
 #else
-        applicationCommands = (List<DiscordApplicationCommand>)await discord.GetGlobalApplicationCommandsAsync();
+        ApplicationCommands = (List<DiscordApplicationCommand>)await Discord.GetGlobalApplicationCommandsAsync();
 #endif
 
         // Events
-        discord.Ready += ReadyEvent.OnReady;
-        discord.MessageCreated += MessageEvents.MessageCreated;
-        discord.MessageUpdated += MessageEvents.MessageUpdated;
-        discord.ComponentInteractionCreated += ComponentInteractionEvent.ComponentInteractionCreated;
-        discord.GuildCreated += GuildEvents.GuildCreated;
-        discord.GuildDeleted += GuildEvents.GuildDeleted;
+        Discord.Ready += ReadyEvent.OnReady;
+        Discord.MessageCreated += MessageEvents.MessageCreated;
+        Discord.MessageUpdated += MessageEvents.MessageUpdated;
+        Discord.ComponentInteractionCreated += ComponentInteractionEvent.ComponentInteractionCreated;
+        Discord.GuildCreated += GuildEvents.GuildCreated;
+        Discord.GuildDeleted += GuildEvents.GuildDeleted;
         commands.CommandErrored += ErrorEvents.CommandsNextService_CommandErrored;
         slash.SlashCommandErrored += ErrorEvents.SlashCommandErrored;
 
@@ -222,6 +234,7 @@ internal class Program
                 await PackageUpdateChecks.PackageUpdateCheck();
                 await Task.Delay(21600000); // 6 hours
             }
+            // ReSharper disable once FunctionNeverReturns
         });
 
         Task.Run(async () =>
@@ -231,6 +244,7 @@ internal class Program
                 await Task.Delay(3600000); // 1 hour
                 await CustomStatusHelper.SetCustomStatus();
             }
+            // ReSharper disable once FunctionNeverReturns
         });
 
         var returnValue = true;
@@ -250,7 +264,7 @@ public class SlashRequireAuthAttribute : SlashCheckBaseAttribute
 {
     public override Task<bool> ExecuteChecksAsync(InteractionContext ctx)
     {
-        return Task.FromResult(Program.configjson.Base.AuthorizedUsers.Contains(ctx.User.Id.ToString()));
+        return Task.FromResult(Program.ConfigJson.Base.AuthorizedUsers.Contains(ctx.User.Id.ToString()));
     }
 }
 
@@ -259,6 +273,6 @@ public class RequireAuthAttribute : CheckBaseAttribute
 {
     public override Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
     {
-        return Task.FromResult(Program.configjson.Base.AuthorizedUsers.Contains(ctx.User.Id.ToString()));
+        return Task.FromResult(Program.ConfigJson.Base.AuthorizedUsers.Contains(ctx.User.Id.ToString()));
     }
 }

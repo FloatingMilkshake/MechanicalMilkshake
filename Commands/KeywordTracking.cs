@@ -23,18 +23,16 @@ public class KeywordTracking : ApplicationCommandModule
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
-            var fields = await Program.db.HashGetAllAsync("keywords");
+            var fields = await Program.Db.HashGetAllAsync("keywords");
             foreach (var field in fields)
             {
                 var fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
 
                 // If the keyword is already being tracked, delete the current entry
                 // This way we don't end up with duplicate entries for keywords
-                if (fieldValue.Keyword == keyword)
-                {
-                    await Program.db.HashDeleteAsync("keywords", fieldValue.Id);
-                    break;
-                }
+                if (fieldValue!.Keyword != keyword) continue;
+                await Program.Db.HashDeleteAsync("keywords", fieldValue.Id);
+                break;
             }
 
             List<ulong> usersToIgnore = new();
@@ -43,21 +41,14 @@ public class KeywordTracking : ApplicationCommandModule
                 var users = ignoreList.Split(' ');
                 foreach (var user in users)
                 {
-                    string id;
-                    // Mention
                     Regex idRegex = new("[0-9]+");
-                    if (user.Contains('@'))
-                        id = idRegex.Match(user).ToString();
-                    // ID
-                    else
-                        id = user;
+                    var id = user.Contains('@') ? idRegex.Match(user).ToString() : user;
 
-                    ulong userId;
                     DiscordUser userToAdd;
                     try
                     {
-                        userId = Convert.ToUInt64(id);
-                        userToAdd = await Program.discord.GetUserAsync(userId);
+                        var userId = Convert.ToUInt64(id);
+                        userToAdd = await Program.Discord.GetUserAsync(userId);
                     }
                     catch
                     {
@@ -86,7 +77,7 @@ public class KeywordTracking : ApplicationCommandModule
                 GuildId = guildId
             };
 
-            await Program.db.HashSetAsync("keywords", ctx.InteractionId,
+            await Program.Db.HashSetAsync("keywords", ctx.InteractionId,
                 JsonConvert.SerializeObject(keywordConfig));
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                 .WithContent("Done!").AsEphemeral());
@@ -98,35 +89,32 @@ public class KeywordTracking : ApplicationCommandModule
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
-            var data = await Program.db.HashGetAllAsync("keywords");
+            var data = await Program.Db.HashGetAllAsync("keywords");
 
-            var response = "";
-            foreach (var field in data)
-            {
-                var fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+            var response = data.Select(field => JsonConvert.DeserializeObject<KeywordConfig>(field.Value))
+                .Where(fieldValue => fieldValue!.UserId == ctx.User.Id).Aggregate("",
+                    (current, fieldValue) => current + $"- {fieldValue.Keyword.Truncate(45)}\n");
 
-                if (fieldValue.UserId != ctx.User.Id)
-                    continue;
-
-                response += $"- {fieldValue.Keyword.Truncate(45)}\n";
-            }
-
-            var trackCmd = Program.applicationCommands.FirstOrDefault(c => c.Name == "track");
-
+            var trackCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "track");
 
             DiscordEmbedBuilder embed = new()
             {
                 Title = "Tracked Keywords",
-                Color = Program.botColor
+                Color = Program.BotColor
             };
 
             if (string.IsNullOrWhiteSpace(response))
                 embed.WithDescription(
-                    $"You don't have any tracked keywords! Add some with </{trackCmd.Name} add:{trackCmd.Id}>.");
+                    trackCmd is null
+                        ? "You don't have any tracked keywords!"
+                        : $"You don't have any tracked keywords! Add some with </{trackCmd.Name} add:{trackCmd.Id}>.");
             else
                 embed.WithDescription(
-                    $"**To see extended information, use </{trackCmd.Name} details:{trackCmd.Id}>.**\n" +
-                    "Keywords are truncated to 45 characters.\n\n" + response);
+                    (trackCmd is null
+                        ? ""
+                        : $"**To see extended information, use </{trackCmd.Name} details:{trackCmd.Id}>.**\n" +
+                          "Keywords are truncated to 45 characters in this list.\n\n")
+                    + response);
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral());
         }
@@ -137,37 +125,29 @@ public class KeywordTracking : ApplicationCommandModule
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
-            var keywords = await Program.db.HashGetAllAsync("keywords");
+            var keywords = await Program.Db.HashGetAllAsync("keywords");
 
-            List<KeywordConfig> userKeywords = new();
-            foreach (var field in keywords)
-            {
-                var keyword = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
-
-                if (keyword.UserId == ctx.User.Id)
-                    userKeywords.Add(keyword);
-            }
+            var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<KeywordConfig>(field.Value))
+                .Where(keyword => keyword!.UserId == ctx.User.Id).ToList();
 
             if (userKeywords.Count == 0)
             {
-                var trackCmd = Program.applicationCommands.FirstOrDefault(c => c.Name == "track");
+                var trackCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "track");
 
                 await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder().WithContent(
-                        $"You don't have any tracked keywords! Add some with </{trackCmd.Name} add:{trackCmd.Id}>."));
+                        trackCmd is null
+                            ? "You don't have any tracked keywords!"
+                            : $"You don't have any tracked keywords! Add some with </{trackCmd.Name} add:{trackCmd.Id}>."));
 
                 return;
             }
 
-            var options = new List<DiscordSelectComponentOption>();
-
-            foreach (var field in keywords)
-            {
-                var keyword = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
-
-                if (keyword.UserId == ctx.User.Id)
-                    options.Add(new DiscordSelectComponentOption(keyword.Keyword.Truncate(100), keyword.Id.ToString()));
-            }
+            var options = (from field in keywords
+                select JsonConvert.DeserializeObject<KeywordConfig>(field.Value)
+                into keyword
+                where keyword!.UserId == ctx.User.Id
+                select new DiscordSelectComponentOption(keyword.Keyword.Truncate(100), keyword.Id.ToString())).ToList();
 
             var dropdown =
                 new DiscordSelectComponent("track-details-dropdown", null, options);
@@ -182,37 +162,28 @@ public class KeywordTracking : ApplicationCommandModule
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
-            var keywords = await Program.db.HashGetAllAsync("keywords");
+            var keywords = await Program.Db.HashGetAllAsync("keywords");
 
-            List<KeywordConfig> userKeywords = new();
-            foreach (var field in keywords)
-            {
-                var keyword = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
-
-                if (keyword.UserId == ctx.User.Id)
-                    userKeywords.Add(keyword);
-            }
+            var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<KeywordConfig>(field.Value))
+                .Where(keyword => keyword!.UserId == ctx.User.Id).ToList();
 
             if (userKeywords.Count == 0)
             {
-                var trackCmd = Program.applicationCommands.FirstOrDefault(c => c.Name == "track");
+                var trackCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "track");
 
                 await ctx.FollowUpAsync(
-                    new DiscordFollowupMessageBuilder().WithContent(
-                        $"You don't have any tracked keywords! Add some with </{trackCmd.Name} add:{trackCmd.Id}>."));
+                    new DiscordFollowupMessageBuilder().WithContent(trackCmd is null
+                        ? "You don't have any tracked keywords!"
+                        : $"You don't have any tracked keywords! Add some with </{trackCmd.Name} add:{trackCmd.Id}>."));
 
                 return;
             }
 
-            var options = new List<DiscordSelectComponentOption>();
-
-            foreach (var field in keywords)
-            {
-                var keyword = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
-
-                if (keyword.UserId == ctx.User.Id)
-                    options.Add(new DiscordSelectComponentOption(keyword.Keyword.Truncate(100), keyword.Id.ToString()));
-            }
+            var options = (from field in keywords
+                select JsonConvert.DeserializeObject<KeywordConfig>(field.Value)
+                into keyword
+                where keyword!.UserId == ctx.User.Id
+                select new DiscordSelectComponentOption(keyword.Keyword.Truncate(100), keyword.Id.ToString())).ToList();
 
             var dropdown =
                 new DiscordSelectComponent("track-remove-dropdown", null, options);

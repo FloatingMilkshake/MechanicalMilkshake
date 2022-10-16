@@ -16,7 +16,7 @@ public class PerServerFeatures
             string complaint)
         {
             if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 &&
-                ctx.Guild.Id != Program.configjson.Base.HomeServerId)
+                ctx.Guild.Id != Program.ConfigJson.Base.HomeServerId)
             {
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
                     .WithContent("This command is not available in this server.").AsEphemeral());
@@ -33,7 +33,7 @@ public class PerServerFeatures
 
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {
-                Title = "Your complaint has been recorded", Color = Program.botColor,
+                Title = "Your complaint has been recorded", Color = Program.BotColor,
                 Description =
                     $"You will be contacted soon about your issue. You can see your complaint below.\n> {complaint}"
             }).AsEphemeral());
@@ -42,7 +42,7 @@ public class PerServerFeatures
             DiscordEmbedBuilder embed = new()
             {
                 Title = "New complaint received!",
-                Color = Program.botColor,
+                Color = Program.BotColor,
                 Description = complaint
             };
             embed.AddField("Sent by", $"{ctx.User.Username}#{ctx.User.Discriminator} (`{ctx.User.Id}`)");
@@ -55,7 +55,9 @@ public class PerServerFeatures
     public class RoleCommands : ApplicationCommandModule
     {
         [SlashCommand("rolename", "Change the name of your role.")]
-        public static async Task RoleName(InteractionContext ctx, [Option("name", "The name to change to.")] string name)
+        public static async Task RoleName(InteractionContext ctx,
+            [Option("name", "The name to change to.")]
+            string name)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
@@ -70,7 +72,7 @@ public class PerServerFeatures
             List<DiscordRole> roles = new();
             if (ctx.Member.Roles.Any())
             {
-                foreach (var role in ctx.Member.Roles.OrderBy(role => role.Position).Reverse()) roles.Add(role);
+                roles.AddRange(ctx.Member.Roles.OrderBy(role => role.Position).Reverse());
             }
             else
             {
@@ -79,9 +81,7 @@ public class PerServerFeatures
                 return;
             }
 
-            if (roles.Count == 1 && (roles.First().Id == 984903591833796659 ||
-                                     roles.First().Id == 984903591816990739 ||
-                                     roles.First().Id == 984936907874136094))
+            if (roles.Count == 1 && roles.First().Id is 984903591833796659 or 984903591816990739 or 984936907874136094)
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("You don't have a role that can be renamed!").AsEphemeral());
@@ -90,8 +90,7 @@ public class PerServerFeatures
 
             DiscordRole roleToModify = default;
             foreach (var role in roles)
-                if (role.Id == 984903591833796659 || role.Id == 984903591816990739 ||
-                    role.Id == 984936907874136094)
+                if (role.Id is 984903591833796659 or 984903591816990739 or 984936907874136094)
                 {
                 }
                 else
@@ -173,7 +172,7 @@ public class PerServerFeatures
             TargetGuild = targetGuild;
         }
 
-        public ulong TargetGuild { get; }
+        private ulong TargetGuild { get; }
 
         public override async Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
         {

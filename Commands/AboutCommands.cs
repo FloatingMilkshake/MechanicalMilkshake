@@ -8,22 +8,22 @@ public class AboutCommands : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
         // Set this to an empty string to disable the Privacy Policy notice in `/about`, or change it to your own Privacy Policy URL if you have one.
-        var privacyPolicyUrl = "https://floatingmilkshake.com/privacy#MechanicalMilkshake";
+        const string privacyPolicyUrl = "https://floatingmilkshake.com/privacy#MechanicalMilkshake";
 
         // Set this to an empty string to disable the Support Server notice in /about, or change it your own Support Server invite if you have one.
-        var supportServerInvite = "https://link.floatingmilkshake.com/botsupport";
+        const string supportServerInvite = "https://link.floatingmilkshake.com/botsupport";
 
         DiscordEmbedBuilder embed = new()
         {
             Title = $"About {ctx.Client.CurrentUser.Username}",
             Description =
                 $"A multipurpose bot with many miscellaneous commands. Type `/` and select {ctx.Client.CurrentUser.Username} to see available commands.",
-            Color = Program.botColor
+            Color = Program.BotColor
         };
         embed.AddField("Servers", ctx.Client.Guilds.Count.ToString(), true);
         embed.AddField("Total User Count (not unique)", ctx.Client.Guilds.Sum(g => g.Value.MemberCount).ToString(),
             true);
-        embed.AddField("Commands", Program.applicationCommands.Count.ToString(), true);
+        embed.AddField("Commands", Program.ApplicationCommands.Count.ToString(), true);
 
         if (!string.IsNullOrWhiteSpace(privacyPolicyUrl))
             embed.Description += $"\n\nThis bot's Privacy Policy can be found [here]({privacyPolicyUrl}).";
@@ -36,45 +36,29 @@ public class AboutCommands : ApplicationCommandModule
         if (File.Exists("CommitHash.txt"))
         {
             StreamReader readHash = new("CommitHash.txt");
-            commitHash = readHash.ReadToEnd().Trim();
+            commitHash = (await readHash.ReadToEndAsync()).Trim();
         }
 
         if (commitHash == "") commitHash = "dev";
 
         var remoteUrl = "";
-        var commitUrl = "";
         if (File.Exists("RemoteUrl.txt"))
         {
             StreamReader readUrl = new("RemoteUrl.txt");
-            remoteUrl = $"{readUrl.ReadToEnd().Trim()}";
-            commitUrl = $"{remoteUrl}/commit/{commitHash}";
+            remoteUrl = $"{(await readUrl.ReadToEndAsync()).Trim()}";
         }
 
         if (remoteUrl == "") remoteUrl = "N/A";
 
-        if (commitUrl == "") commitUrl = "N/A";
-
         //embed.AddField("Version", $"[{commitHash}]({commitUrl})", true);
-        embed.AddField("Source Code Repository", "https://github.com/FloatingMilkshake/MechanicalMilkshake");
+        embed.AddField("Source Code Repository", remoteUrl);
 
-        List<DiscordUser> botOwners = new();
-        List<DiscordUser> authorizedUsers = new();
+        var botOwners = ctx.Client.CurrentApplication.Owners.ToList();
 
-        foreach (var owner in ctx.Client.CurrentApplication.Owners) botOwners.Add(owner);
-
-        foreach (var userId in Program.configjson.Base.AuthorizedUsers)
-            authorizedUsers.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
-
-        string ownerOutput;
-        if (botOwners.Count == 1)
-        {
-            ownerOutput = $"Bot owner is {botOwners.First().Username}#{botOwners.First().Discriminator}.";
-        }
-        else
-        {
-            ownerOutput = "Bot owners are:";
-            foreach (var owner in botOwners) ownerOutput += $"\n- {owner.Username}#{owner.Discriminator}";
-        }
+        var ownerOutput = botOwners.Count == 1
+            ? $"Bot owner is {botOwners.First().Username}#{botOwners.First().Discriminator}."
+            : botOwners.Aggregate("Bot owners are:",
+                (current, owner) => current + $"\n- {owner.Username}#{owner.Discriminator}");
 
         ownerOutput = ownerOutput.Trim() + "\n\nFor any issues with the bot, DM it or a bot owner.";
 
@@ -82,12 +66,12 @@ public class AboutCommands : ApplicationCommandModule
 
         embed.AddField("Owners", ownerOutput);
 
-        var startTime = Convert.ToDateTime(Program.processStartTime);
+        var startTime = Convert.ToDateTime(Program.ProcessStartTime);
         var startUnixTime = ((DateTimeOffset)startTime).ToUnixTimeSeconds();
         embed.AddField("Uptime", $"Up since <t:{startUnixTime}:F> (<t:{startUnixTime}:R>!)");
 
         embed.WithFooter(
-            $"Using DSharpPlus {Program.discord.VersionString} and {RuntimeInformation.FrameworkDescription}\nRunning commit {commitHash}");
+            $"Using DSharpPlus {Program.Discord.VersionString} and {RuntimeInformation.FrameworkDescription}\nRunning commit {commitHash}");
 
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
     }
@@ -101,7 +85,7 @@ public class AboutCommands : ApplicationCommandModule
         if (File.Exists("CommitHash.txt"))
         {
             StreamReader readHash = new("CommitHash.txt");
-            commitHash = readHash.ReadToEnd().Trim();
+            commitHash = (await readHash.ReadToEndAsync()).Trim();
         }
 
         if (commitHash == "") commitHash = "dev";
@@ -110,17 +94,16 @@ public class AboutCommands : ApplicationCommandModule
         if (File.Exists("CommitMessage.txt"))
         {
             StreamReader readMessage = new("CommitMessage.txt");
-            commitMessage = readMessage.ReadToEnd().Trim();
+            commitMessage = (await readMessage.ReadToEndAsync()).Trim();
         }
 
         if (commitMessage == "") commitMessage = "dev";
 
-        string remoteUrl;
         var commitUrl = "";
         if (File.Exists("RemoteUrl.txt"))
         {
             StreamReader readUrl = new("RemoteUrl.txt");
-            remoteUrl = $"{readUrl.ReadToEnd().Trim()}";
+            var remoteUrl = $"{(await readUrl.ReadToEndAsync()).Trim()}";
             commitUrl = $"{remoteUrl}/commit/{commitHash}";
         }
 

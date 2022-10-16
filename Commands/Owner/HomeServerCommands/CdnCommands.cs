@@ -14,8 +14,14 @@ public class CdnCommands : ApplicationCommandModule
             [Option("file", "A direct file to upload. This will override a link if both are provided!")]
             DiscordAttachment file = null)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder());
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            if (file is null && link is null)
+            {
+                await ctx.FollowUpAsync(
+                    new DiscordFollowupMessageBuilder().WithContent("You must provide a link or file to upload!"));
+                return;
+            }
 
             if (file != null) link = file.Url;
 
@@ -33,7 +39,7 @@ public class CdnCommands : ApplicationCommandModule
 
             string fileName;
 
-            MemoryStream memStream = new(await Program.httpClient.GetByteArrayAsync(link));
+            MemoryStream memStream = new(await Program.HttpClient.GetByteArrayAsync(link));
 
             try
             {
@@ -41,15 +47,14 @@ public class CdnCommands : ApplicationCommandModule
 
                 //meta["x-amz-acl"] = "public-read";
 
-                string bucket = null;
-                if (Program.configjson.S3.Bucket == null)
+                if (Program.ConfigJson.S3.Bucket == null)
                 {
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                         "Error: S3 bucket info missing! Make sure the bucket field under s3 in your config.json file is set."));
                     return;
                 }
 
-                bucket = Program.configjson.S3.Bucket;
+                var bucket = Program.ConfigJson.S3.Bucket;
 
                 Regex urlRemovalPattern = new(@".*\/\/.*\/");
                 var urlRemovalMatch = urlRemovalPattern.Match(link);
@@ -59,8 +64,8 @@ public class CdnCommands : ApplicationCommandModule
 
                 Regex parameterRemovalPattern = new(@".*\?");
                 var parameterRemovalMatch = parameterRemovalPattern.Match(link);
-                if (parameterRemovalMatch != null && parameterRemovalMatch.ToString() != "")
-                    link = parameterRemovalMatch.ToString();
+
+                link = parameterRemovalMatch.ToString();
 
                 var fileNameAndExtension = link.Replace("?", "");
 
@@ -70,13 +75,17 @@ public class CdnCommands : ApplicationCommandModule
 
                 const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-                if (name == "random" || name == "generate")
-                    fileName = new string(Enumerable.Repeat(chars, 10)
-                        .Select(s => s[Program.random.Next(s.Length)]).ToArray()) + extension;
-                else if (name == "preserve")
-                    fileName = fileNameAndExtension;
-                else
-                    fileName = name + extension;
+                fileName = name switch
+                {
+                    "random" => new string(Enumerable.Repeat(chars, 10)
+                        .Select(s => s[Program.Random.Next(s.Length)])
+                        .ToArray()) + extension,
+                    "generate" => new string(Enumerable.Repeat(chars, 10)
+                        .Select(s => s[Program.Random.Next(s.Length)])
+                        .ToArray()) + extension,
+                    "preserve" => fileNameAndExtension,
+                    _ => name + extension
+                };
 
                 var args = new PutObjectArgs()
                     .WithBucket(bucket)
@@ -86,7 +95,7 @@ public class CdnCommands : ApplicationCommandModule
                     .WithContentType(MimeTypeMap.GetMimeType(extension))
                     .WithHeaders(meta);
 
-                await Program.minio.PutObjectAsync(args);
+                await Program.Minio.PutObjectAsync(args);
             }
             catch (MinioException e)
             {
@@ -103,15 +112,14 @@ public class CdnCommands : ApplicationCommandModule
                 return;
             }
 
-            string cdnUrl;
-            if (Program.configjson.S3.CdnBaseUrl == null)
+            if (Program.ConfigJson.S3.CdnBaseUrl == null)
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                     $"Upload successful!\nThere's no CDN URL set in your config.json, so I can't give you a link. But your file was uploaded as {fileName}."));
             }
             else
             {
-                cdnUrl = Program.configjson.S3.CdnBaseUrl;
+                var cdnUrl = Program.ConfigJson.S3.CdnBaseUrl;
                 await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder().WithContent(
                         $"Upload successful!\n<{cdnUrl}/{fileName}>"));
@@ -130,21 +138,18 @@ public class CdnCommands : ApplicationCommandModule
 
             if (fileToDelete.Contains('>')) fileToDelete = fileToDelete.Replace(">", "");
 
-            string bucket;
-            if (Program.configjson.S3.Bucket == null)
+            if (Program.ConfigJson.S3.Bucket == null)
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                     "Error: S3 bucket info missing! Make sure the bucket field under s3 in your config.json file is set."));
                 return;
             }
 
-            bucket = Program.configjson.S3.Bucket;
+            var bucket = Program.ConfigJson.S3.Bucket;
 
-            string fileName;
-            if (!fileToDelete.Contains($"{Program.configjson.S3.CdnBaseUrl}/"))
-                fileName = fileToDelete;
-            else
-                fileName = fileToDelete.Replace($"{Program.configjson.S3.CdnBaseUrl}/", "");
+            var fileName = !fileToDelete.Contains($"{Program.ConfigJson.S3.CdnBaseUrl}/")
+                ? fileToDelete
+                : fileToDelete.Replace($"{Program.ConfigJson.S3.CdnBaseUrl}/", "");
 
             try
             {
@@ -152,7 +157,7 @@ public class CdnCommands : ApplicationCommandModule
                     .WithBucket(bucket)
                     .WithObject(fileName);
 
-                await Program.minio.RemoveObjectAsync(args);
+                await Program.Minio.RemoveObjectAsync(args);
             }
             catch (MinioException e)
             {
@@ -172,9 +177,9 @@ public class CdnCommands : ApplicationCommandModule
                     "File deleted successfully!\nAttempting to purge Cloudflare cache..."));
 
             string cloudflareUrlPrefix;
-            if (Program.configjson.Cloudflare.UrlPrefix != null)
+            if (Program.ConfigJson.Cloudflare.UrlPrefix != null)
             {
-                cloudflareUrlPrefix = Program.configjson.Cloudflare.UrlPrefix;
+                cloudflareUrlPrefix = Program.ConfigJson.Cloudflare.UrlPrefix;
             }
             else
             {
@@ -196,9 +201,9 @@ public class CdnCommands : ApplicationCommandModule
                 };
 
                 string zoneId;
-                if (Program.configjson.Cloudflare.ZoneId != null)
+                if (Program.ConfigJson.Cloudflare.ZoneId != null)
                 {
-                    zoneId = Program.configjson.Cloudflare.ZoneId;
+                    zoneId = Program.ConfigJson.Cloudflare.ZoneId;
                 }
                 else
                 {
@@ -208,9 +213,9 @@ public class CdnCommands : ApplicationCommandModule
                 }
 
                 string cloudflareToken;
-                if (Program.configjson.Cloudflare.Token != null)
+                if (Program.ConfigJson.Cloudflare.Token != null)
                 {
-                    cloudflareToken = Program.configjson.Cloudflare.Token;
+                    cloudflareToken = Program.ConfigJson.Cloudflare.Token;
                 }
                 else
                 {
@@ -256,8 +261,8 @@ public class CdnCommands : ApplicationCommandModule
                 return;
             }
 
-            HttpRequestMessage request = new(HttpMethod.Get, $"{Program.configjson.S3.CdnBaseUrl}/{name}");
-            var response = await Program.httpClient.SendAsync(request);
+            HttpRequestMessage request = new(HttpMethod.Get, $"{Program.ConfigJson.S3.CdnBaseUrl}/{name}");
+            var response = await Program.HttpClient.SendAsync(request);
             if (!response.IsSuccessStatusCode)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
@@ -268,7 +273,7 @@ public class CdnCommands : ApplicationCommandModule
 
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().WithContent(
-                    $"{Program.configjson.S3.CdnBaseUrl}/{name}"));
+                    $"{Program.ConfigJson.S3.CdnBaseUrl}/{name}"));
         }
     }
 
@@ -281,6 +286,8 @@ public class CdnCommands : ApplicationCommandModule
             Files = urls;
         }
 
+        // ReSharper disable once UnusedAutoPropertyAccessor.Local
+        // ReSharper disable once MemberCanBePrivate.Local
         public List<string> Files { get; }
     }
 }

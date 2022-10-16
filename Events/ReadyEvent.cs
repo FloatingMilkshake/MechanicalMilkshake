@@ -7,9 +7,9 @@ public class ReadyEvent
     {
         Task.Run(async () =>
         {
-            Program.connectTime = DateTime.Now;
+            Program.ConnectTime = DateTime.Now;
 
-            await Program.homeChannel.SendMessageAsync(await DebugInfoHelpers.GenerateDebugInfoEmbed(true));
+            await Program.HomeChannel.SendMessageAsync(await DebugInfoHelpers.GenerateDebugInfoEmbed(true));
 
             //await Program.homeChannel.SendMessageAsync($"Connected!\n{DebugInfoHelper.GetDebugInfo()}");
 

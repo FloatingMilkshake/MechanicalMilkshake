@@ -15,12 +15,12 @@ public class GuildEvents
         await SendGuildEventLogEmbed(chan, e.Guild, false);
     }
 
-    public static async Task SendGuildEventLogEmbed(DiscordChannel chan, DiscordGuild guild, bool isJoin)
+    private static async Task SendGuildEventLogEmbed(DiscordChannel chan, DiscordGuild guild, bool isJoin)
     {
         DiscordEmbedBuilder embed = new()
         {
             Title = isJoin ? "I've been added to a server!" : "I've been removed from a server!",
-            Color = Program.botColor
+            Color = Program.BotColor
         };
 
         embed.WithThumbnail(guild.IconUrl);

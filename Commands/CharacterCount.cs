@@ -7,9 +7,6 @@ public class CharacterCount : ApplicationCommandModule
         [Option("message", "The message to count the characters of.")]
         string chars)
     {
-        var count = 0;
-        foreach (var chr in chars) count++;
-
-        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(count.ToString()));
+        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(chars.Length.ToString()));
     }
 }

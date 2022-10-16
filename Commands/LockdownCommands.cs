@@ -51,18 +51,16 @@ public class LockdownCommands : ApplicationCommandModule
             foreach (var permission in ctx.Channel.PermissionOverwrites.ToArray())
                 if (permission.Type == OverwriteType.Role)
                 {
-                    if (await permission.GetRoleAsync() == ctx.Guild.EveryoneRole &&
-                        permission.Denied.HasPermission(Permissions.SendMessages))
+                    if (await permission.GetRoleAsync() != ctx.Guild.EveryoneRole ||
+                        !permission.Denied.HasPermission(Permissions.SendMessages)) continue;
+                    DiscordOverwriteBuilder newOverwrite = new(ctx.Guild.EveryoneRole)
                     {
-                        DiscordOverwriteBuilder newOverwrite = new(ctx.Guild.EveryoneRole)
-                        {
-                            Allowed = permission.Allowed,
-                            Denied = (Permissions)(permission.Denied - Permissions.SendMessages)
-                        };
+                        Allowed = permission.Allowed,
+                        Denied = (Permissions)(permission.Denied - Permissions.SendMessages)
+                    };
 
-                        await ctx.Channel.AddOverwriteAsync(ctx.Guild.EveryoneRole, newOverwrite.Allowed,
-                            newOverwrite.Denied);
-                    }
+                    await ctx.Channel.AddOverwriteAsync(ctx.Guild.EveryoneRole, newOverwrite.Allowed,
+                        newOverwrite.Denied);
                 }
                 else
                 {

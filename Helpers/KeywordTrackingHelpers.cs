@@ -7,13 +7,13 @@ public class KeywordTrackingHelpers
         if (message.Author is null || message.Content is null)
             return;
 
-        if (message.Author.Id == Program.discord.CurrentUser.Id)
+        if (message.Author.Id == Program.Discord.CurrentUser.Id)
             return;
 
         if (message.Channel.IsPrivate)
             return;
 
-        var fields = await Program.db.HashGetAllAsync("keywords");
+        var fields = await Program.Db.HashGetAllAsync("keywords");
 
         foreach (var field in fields)
         {
@@ -22,11 +22,11 @@ public class KeywordTrackingHelpers
             var fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
 
             // If message was sent by (this) bot, ignore
-            if (message.Author.Id == Program.discord.CurrentUser.Id)
+            if (message.Author.Id == Program.Discord.CurrentUser.Id)
                 break;
 
             // Ignore messages sent by self
-            if (message.Author.Id == fieldValue.UserId)
+            if (message.Author.Id == fieldValue!.UserId)
                 continue;
 
             // If message was sent by a user in the list of users to ignore for this keyword, ignore
@@ -60,27 +60,21 @@ public class KeywordTrackingHelpers
             // If keyword is set to only match whole word, use regex to check
             if (fieldValue.MatchWholeWord)
             {
-                if (Regex.IsMatch(message.Content.ToLower().Replace("\n", " "),
-                        $"\\b{field.Name.ToString().Replace("\n", " ")}\\b"))
-                {
-                    await KeywordAlert(fieldValue.UserId, message, field.Name, isEdit);
-                    return;
-                }
+                if (!Regex.IsMatch(message.Content.ToLower().Replace("\n", " "),
+                        $"\\b{field.Name.ToString().Replace("\n", " ")}\\b")) continue;
+                await KeywordAlert(fieldValue.UserId, message, field.Name, isEdit);
             }
             // Otherwise, use a simple .Contains()
             else
             {
-                if (message.Content.ToLower().Replace("\n", " ")
-                    .Contains(fieldValue.Keyword.ToLower().Replace("\n", " ")))
-                {
-                    await KeywordAlert(fieldValue.UserId, message, fieldValue.Keyword, isEdit);
-                    return;
-                }
+                if (!message.Content.ToLower().Replace("\n", " ")
+                        .Contains(fieldValue.Keyword.ToLower().Replace("\n", " "))) continue;
+                await KeywordAlert(fieldValue.UserId, message, fieldValue.Keyword, isEdit);
             }
         }
     }
 
-    public static async Task KeywordAlert(ulong targetUserId, DiscordMessage message, string keyword,
+    private static async Task KeywordAlert(ulong targetUserId, DiscordMessage message, string keyword,
         bool isEdit = false)
     {
         DiscordMember member;

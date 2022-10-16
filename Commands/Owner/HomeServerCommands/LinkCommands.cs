@@ -16,8 +16,7 @@ public class LinkCommands : ApplicationCommandModule
 
             if (url.Contains('>')) url = url.Replace(">", "");
 
-            string baseUrl;
-            if (Program.configjson.WorkerLinks.BaseUrl == null)
+            if (Program.ConfigJson.WorkerLinks.BaseUrl == null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
@@ -25,22 +24,18 @@ public class LinkCommands : ApplicationCommandModule
                 return;
             }
 
-            baseUrl = Program.configjson.WorkerLinks.BaseUrl;
+            var baseUrl = Program.ConfigJson.WorkerLinks.BaseUrl;
 
             using HttpClient httpClient = new()
             {
                 BaseAddress = new Uri(baseUrl)
             };
 
-            HttpRequestMessage request = null;
+            var request = key is "null" or "random" or "rand"
+                ? new HttpRequestMessage(HttpMethod.Post, "")
+                : new HttpRequestMessage(HttpMethod.Put, key);
 
-            if (key == "null" || key == "random" || key == "rand")
-                request = new HttpRequestMessage(HttpMethod.Post, "");
-            else
-                request = new HttpRequestMessage(HttpMethod.Put, key);
-
-            string secret;
-            if (Program.configjson.WorkerLinks.Secret == null)
+            if (Program.ConfigJson.WorkerLinks.Secret == null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
@@ -48,7 +43,7 @@ public class LinkCommands : ApplicationCommandModule
                 return;
             }
 
-            secret = Program.configjson.WorkerLinks.Secret;
+            var secret = Program.ConfigJson.WorkerLinks.Secret;
 
             request.Headers.Add("Authorization", secret);
             request.Headers.Add("URL", url);
@@ -72,8 +67,7 @@ public class LinkCommands : ApplicationCommandModule
             [Option("link", "The key or URL of the short link to delete.")]
             string url)
         {
-            string baseUrl;
-            if (Program.configjson.WorkerLinks.BaseUrl == null)
+            if (Program.ConfigJson.WorkerLinks.BaseUrl == null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
@@ -81,7 +75,7 @@ public class LinkCommands : ApplicationCommandModule
                 return;
             }
 
-            baseUrl = Program.configjson.WorkerLinks.BaseUrl;
+            var baseUrl = Program.ConfigJson.WorkerLinks.BaseUrl;
 
             using HttpClient httpClient = new()
             {
@@ -90,8 +84,7 @@ public class LinkCommands : ApplicationCommandModule
 
             if (!url.Contains(baseUrl)) url = $"{baseUrl}/{url}";
 
-            string secret;
-            if (Program.configjson.WorkerLinks.Secret == null)
+            if (Program.ConfigJson.WorkerLinks.Secret == null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
@@ -99,7 +92,7 @@ public class LinkCommands : ApplicationCommandModule
                 return;
             }
 
-            secret = Program.configjson.WorkerLinks.Secret;
+            var secret = Program.ConfigJson.WorkerLinks.Secret;
 
             HttpRequestMessage request = new(HttpMethod.Delete, url);
             request.Headers.Add("Authorization", secret);
@@ -122,7 +115,7 @@ public class LinkCommands : ApplicationCommandModule
         public static async Task ListWorkerLinks(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(
-                $"You can view the list of short links at Cloudflare [here](https://dash.cloudflare.com/{Program.configjson.WorkerLinks.AccountId}/workers/kv/namespaces/{Program.configjson.WorkerLinks.NamespaceId})!");
+                $"You can view the list of short links at Cloudflare [here](https://dash.cloudflare.com/{Program.ConfigJson.WorkerLinks.AccountId}/workers/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId})!");
         }
 
         [SlashCommand("get", "Get the long URL for a short link.")]
@@ -130,8 +123,7 @@ public class LinkCommands : ApplicationCommandModule
             [Option("link", "The key or URL of the short link to get.")]
             string url)
         {
-            string baseUrl;
-            if (Program.configjson.WorkerLinks.BaseUrl == null)
+            if (Program.ConfigJson.WorkerLinks.BaseUrl == null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
@@ -139,8 +131,7 @@ public class LinkCommands : ApplicationCommandModule
                 return;
             }
 
-            string secret;
-            if (Program.configjson.WorkerLinks.Secret == null)
+            if (Program.ConfigJson.WorkerLinks.Secret == null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
@@ -148,9 +139,9 @@ public class LinkCommands : ApplicationCommandModule
                 return;
             }
 
-            secret = Program.configjson.WorkerLinks.Secret;
+            var secret = Program.ConfigJson.WorkerLinks.Secret;
 
-            baseUrl = Program.configjson.WorkerLinks.BaseUrl;
+            var baseUrl = Program.ConfigJson.WorkerLinks.BaseUrl;
 
             var handler = new HttpClientHandler
             {
@@ -168,8 +159,6 @@ public class LinkCommands : ApplicationCommandModule
             request.Headers.Add("Authorization", secret);
 
             var response = await httpClient.SendAsync(request);
-            var httpStatusCode = (int)response.StatusCode;
-            var httpStatus = response.StatusCode.ToString();
 
             if (response.Headers.Location is null)
             {
@@ -186,10 +175,10 @@ public class LinkCommands : ApplicationCommandModule
 
         public class CloudflareResponse
         {
-            [JsonProperty("result")] public List<KVEntry> Result { get; set; }
+            [JsonProperty("result")] public List<KvEntry> Result { get; set; }
         }
 
-        public class KVEntry
+        public class KvEntry
         {
             [JsonProperty("name")] public string Name { get; set; }
         }

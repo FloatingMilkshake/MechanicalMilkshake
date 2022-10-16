@@ -3,6 +3,7 @@
 [SlashRequireGuild]
 public class Clear : ApplicationCommandModule
 {
+    // ReSharper disable once FieldCanBeMadeReadOnly.Global
     public static Dictionary<ulong, List<DiscordMessage>> MessagesToClear = new();
 
     [SlashCommand("clear", "Delete many messages from the current channel.", false)]
@@ -32,48 +33,39 @@ public class Clear : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
             new DiscordInteractionResponseBuilder().AsEphemeral());
 
-        Regex discord_link_rx = new(@".*discord(?:app)?.com\/channels\/((?:@)?[a-z0-9]*)\/([0-9]*)(?:\/)?([0-9]*)");
+        Regex discordLinkRx = new(@".*discord(?:app)?.com\/channels\/((?:@)?[a-z0-9]*)\/([0-9]*)(?:\/)?([0-9]*)");
 
         // Credit to @Erisa for this line of regex. https://github.com/Erisa/Cliptok/blob/a80e700/Constants/RegexConstants.cs#L8
-        Regex url_rx = new("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]");
+        Regex urlRx = new("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]");
 
-        // If all args are unset
-        if (count == 0 && upTo == "" && user == default && ignoreMe == false && match == "" && botsOnly == false &&
-            humansOnly == false && attachmentsOnly == false && linksOnly == false)
+        switch (count)
         {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent("You must provide at least one argument! I need to know which messages to delete.")
-                .AsEphemeral());
-            return;
-        }
-
-        if (count == 0 && upTo == "")
-        {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent(
-                    "I need to know how many messages to delete! Please provide a value for `count` or `up_to`.")
-                .AsEphemeral());
-            return;
-        }
-
-        // If count is too low or too high, refuse the request
-
-        if (count < 0)
-        {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent(
-                    "I can't delete a negative number of messages! Try setting `count` to a positive number.")
-                .AsEphemeral());
-            return;
-        }
-
-        if (count >= 1000)
-        {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent(
-                    "Deleting that many messages poses a risk of something disastrous happening, so I'm refusing your request, sorry.")
-                .AsEphemeral());
-            return;
+            // If all args are unset
+            case 0 when upTo == "" && user == default && ignoreMe == false && match == "" && botsOnly == false &&
+                        humansOnly == false && attachmentsOnly == false && linksOnly == false:
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("You must provide at least one argument! I need to know which messages to delete.")
+                    .AsEphemeral());
+                return;
+            case 0 when upTo == "":
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent(
+                        "I need to know how many messages to delete! Please provide a value for `count` or `up_to`.")
+                    .AsEphemeral());
+                return;
+            // If count is too low or too high, refuse the request
+            case < 0:
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent(
+                        "I can't delete a negative number of messages! Try setting `count` to a positive number.")
+                    .AsEphemeral());
+                return;
+            case >= 1000:
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent(
+                        "Deleting that many messages poses a risk of something disastrous happening, so I'm refusing your request, sorry.")
+                    .AsEphemeral());
+                return;
         }
 
         // Get messages to delete, whether that's messages up to a certain one or the last 'x' number of messages.
@@ -95,7 +87,6 @@ public class Clear : ApplicationCommandModule
         }
         else
         {
-            DiscordMessage message;
             ulong messageId;
             if (!upTo.Contains("discord.com"))
             {
@@ -109,8 +100,8 @@ public class Clear : ApplicationCommandModule
             else
             {
                 if (
-                    discord_link_rx.Match(upTo).Groups[2].Value != ctx.Channel.Id.ToString()
-                    || !ulong.TryParse(discord_link_rx.Match(upTo).Groups[3].Value, out messageId)
+                    discordLinkRx.Match(upTo).Groups[2].Value != ctx.Channel.Id.ToString()
+                    || !ulong.TryParse(discordLinkRx.Match(upTo).Groups[3].Value, out messageId)
                 )
                 {
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
@@ -121,7 +112,7 @@ public class Clear : ApplicationCommandModule
             }
 
             // This is the message we will delete up to. This message will not be deleted.
-            message = await ctx.Channel.GetMessageAsync(messageId);
+            var message = await ctx.Channel.GetMessageAsync(messageId);
 
             // List of messages to delete, up to (not including) the one we just got.
             var firstMsg = (await ctx.Channel.GetMessagesAfterAsync(message.Id, 1))[0];
@@ -142,21 +133,19 @@ public class Clear : ApplicationCommandModule
 
         // Match user
         if (user != default)
-            foreach (var message in messagesToClear.ToList())
-                if (message.Author.Id != user.Id)
-                    messagesToClear.Remove(message);
+            foreach (var message in messagesToClear.ToList().Where(message => message.Author.Id != user.Id))
+                messagesToClear.Remove(message);
 
         // Ignore me
         if (ignoreMe)
-            foreach (var message in messagesToClear.ToList())
-                if (message.Author == ctx.User)
-                    messagesToClear.Remove(message);
+            foreach (var message in messagesToClear.ToList().Where(message => message.Author == ctx.User))
+                messagesToClear.Remove(message);
 
         // Match text
         if (match != "")
-            foreach (var message in messagesToClear.ToList())
-                if (!message.Content.ToLower().Contains(match.ToLower()))
-                    messagesToClear.Remove(message);
+            foreach (var message in messagesToClear.ToList()
+                         .Where(message => !message.Content.ToLower().Contains(match.ToLower())))
+                messagesToClear.Remove(message);
 
         // Bots only
         if (botsOnly)
@@ -170,16 +159,14 @@ public class Clear : ApplicationCommandModule
                 return;
             }
 
-            foreach (var message in messagesToClear.ToList())
-                if (!message.Author.IsBot)
-                    messagesToClear.Remove(message);
+            foreach (var message in messagesToClear.ToList().Where(message => !message.Author.IsBot))
+                messagesToClear.Remove(message);
         }
 
         // Humans only
         if (humansOnly)
-            foreach (var message in messagesToClear.ToList())
-                if (message.Author.IsBot)
-                    messagesToClear.Remove(message);
+            foreach (var message in messagesToClear.ToList().Where(message => message.Author.IsBot))
+                messagesToClear.Remove(message);
 
         // Attachments only
         if (attachmentsOnly)
@@ -193,51 +180,47 @@ public class Clear : ApplicationCommandModule
                 return;
             }
 
-            foreach (var message in messagesToClear.ToList())
-                if (message.Attachments.Count == 0)
-                    messagesToClear.Remove(message);
+            foreach (var message in messagesToClear.ToList().Where(message => message.Attachments.Count == 0))
+                messagesToClear.Remove(message);
         }
 
         // Links only
         if (linksOnly)
-            foreach (var message in messagesToClear.ToList())
-                if (!url_rx.IsMatch(message.Content.ToLower()))
-                    messagesToClear.Remove(message);
+            foreach (var message in messagesToClear.ToList()
+                         .Where(message => !urlRx.IsMatch(message.Content.ToLower())))
+                messagesToClear.Remove(message);
 
         // Skip messages older than 2 weeks, since Discord won't let us delete them anyway
 
         var skipped = false;
-        foreach (var message in messagesToClear.ToList())
-            if (message.CreationTimestamp.ToUniversalTime() < DateTime.UtcNow.AddDays(-14))
+        foreach (var message in messagesToClear.ToList().Where(message =>
+                     message.CreationTimestamp.ToUniversalTime() < DateTime.UtcNow.AddDays(-14)))
+        {
+            messagesToClear.Remove(message);
+            skipped = true;
+        }
+
+        switch (messagesToClear.Count)
+        {
+            case 0 when skipped:
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("All of the messages to delete are older than 2 weeks, so I can't delete them!")
+                    .AsEphemeral());
+                return;
+            // All filters checked. 'messages' is now our final list of messages to delete.
+            // Warn the mod if we're going to be deleting 50 or more messages.
+            case >= 50:
             {
-                messagesToClear.Remove(message);
-                skipped = true;
+                DiscordButtonComponent confirmButton =
+                    new(ButtonStyle.Danger, "clear-confirm-callback", "Delete Messages");
+                var confirmationMessage = await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent($"You're about to delete {messagesToClear.Count} messages. Are you sure?")
+                    .AddComponents(confirmButton).AsEphemeral());
+
+                MessagesToClear.Add(confirmationMessage.Id, messagesToClear);
+                break;
             }
-
-        if (messagesToClear.Count == 0 && skipped)
-        {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent("All of the messages to delete are older than 2 weeks, so I can't delete them!")
-                .AsEphemeral());
-            return;
-        }
-
-        // All filters checked. 'messages' is now our final list of messages to delete.
-
-        // Warn the mod if we're going to be deleting 50 or more messages.
-        if (messagesToClear.Count >= 50)
-        {
-            DiscordButtonComponent confirmButton =
-                new(ButtonStyle.Danger, "clear-confirm-callback", "Delete Messages");
-            var confirmationMessage = await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"You're about to delete {messagesToClear.Count} messages. Are you sure?")
-                .AddComponents(confirmButton).AsEphemeral());
-
-            MessagesToClear.Add(confirmationMessage.Id, messagesToClear);
-        }
-        else
-        {
-            if (messagesToClear.Count >= 1)
+            case >= 1:
             {
                 await ctx.Channel.DeleteMessagesAsync(messagesToClear,
                     $"[Clear by {ctx.User.Username}#{ctx.User.Discriminator}]");
@@ -250,12 +233,12 @@ public class Clear : ApplicationCommandModule
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                         .WithContent($"Cleared **{messagesToClear.Count}** messages from {ctx.Channel.Mention}!")
                         .AsEphemeral());
+                break;
             }
-            else
-            {
+            default:
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                     "There were no messages that matched all of the arguments you provided! Nothing to do."));
-            }
+                break;
         }
     }
 }
