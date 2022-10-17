@@ -239,20 +239,20 @@ internal class Program
 
         Task.Run(async () =>
         {
-            while (true)
+            var returnValue = true;
+            while (returnValue)
             {
-                await Task.Delay(3600000); // 1 hour
-                await CustomStatusHelper.SetCustomStatus();
+                returnValue = await ReminderChecks.ReminderCheck();
+                await Task.Delay(10000); // 10 seconds
             }
-            // ReSharper disable once FunctionNeverReturns
         });
 
-        var returnValue = true;
-        while (returnValue)
+        while (true)
         {
-            returnValue = await ReminderChecks.ReminderCheck();
-            await Task.Delay(10000); // 10 seconds
+            await Task.Delay(3600000); // 1 hour
+            await CustomStatusHelper.SetCustomStatus();
         }
+        // ReSharper disable once FunctionNeverReturns
     }
 }
 
