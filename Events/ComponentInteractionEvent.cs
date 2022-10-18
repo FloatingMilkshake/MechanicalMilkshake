@@ -582,7 +582,7 @@ public class ComponentInteractionEvent
                     embed.AddField("Set For", $"<t:{reminderTime}:F> (<t:{reminderTime}:R>)");
                 else
                     embed.WithFooter(
-                        "This reminder will not be sent automatically. This is probably because the bot could not send it at the time it was previously set for.");
+                        "This reminder will not be sent automatically.");
 
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().AddEmbed(embed).AsEphemeral());

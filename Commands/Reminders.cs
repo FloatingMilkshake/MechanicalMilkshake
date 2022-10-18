@@ -176,7 +176,7 @@ public class Reminders : ApplicationCommandModule
                 output += $"`{reminder.ReminderId}`:\n"
                           + $"> {reminderText}\n"
                           + (reminder.ReminderTime is null
-                              ? "This reminder will not be sent automatically. This is probably because the bot could not send it at the time it was previously set for."
+                              ? $"[Set <t:{setTime}:R>]({reminderLink}). This reminder will not be sent automatically."
                               : $"[Set <t:{setTime}:R>]({reminderLink}) to go off <t:{reminderTime}:R>");
 
                 if (reminder.ReminderTime is not null) output += reminderLocation;
@@ -209,7 +209,7 @@ public class Reminders : ApplicationCommandModule
                         reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
 
                     desc += reminder.ReminderTime is null
-                        ? "This reminder will not be sent automatically. This is probably because the bot could not send it at the time it was previously set for."
+                        ? $"`{reminder.ReminderId}` - set <t:{setTime}:R>. This reminder will not be sent automatically."
                         : $"`{reminder.ReminderId}` - set <t:{setTime}:R> to go off <t:{reminderTime}:R>\n";
                 }
 
