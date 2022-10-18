@@ -34,8 +34,11 @@ public class MessageEvents
                 if (e.Author.IsCurrent)
                     return;
 
-                if (client.CurrentApplication.Owners.Contains(e.Author) && e.Message.Content.StartsWith("sendto"))
+                if (client.CurrentApplication.Owners.Contains(e.Author))
                 {
+                    if (!e.Message.Content.StartsWith("sendto"))
+                        return;
+
                     Regex usernamePattern = new(".*#[0-9]{4}");
                     Regex idPattern = new("[0-9]{5,}");
                     DiscordChannel targetChannel = default;
