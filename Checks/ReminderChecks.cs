@@ -10,6 +10,8 @@ public class ReminderChecks
         {
             var reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
 
+            if (reminderData!.ReminderTime is null) continue;
+
             if (reminderData!.ReminderTime > DateTime.Now) continue;
             var setTime = ((DateTimeOffset)reminderData.SetTime).ToUnixTimeSeconds();
             DiscordEmbedBuilder embed = new()
@@ -36,14 +38,14 @@ public class ReminderChecks
                 embed.AddField("Need to delay this reminder?",
                     $"Use </{reminderCommand.Name} pushback:{reminderCommand.Id}> and set `message` to [loading...].");
 
+            var guildId = Convert.ToUInt64(reminderData.GuildId);
+            var guild = await Program.Discord.GetGuildAsync(guildId);
+            var targetMember = await guild.GetMemberAsync(reminderData.UserId);
+
             if (reminderData.IsPrivate)
                 try
                 {
-                    // Couldn't send the reminder in the channel it was created in.
-                    // Try to DM user instead.
-                    var guildId = Convert.ToUInt64(reminderData.GuildId);
-                    var guild = await Program.Discord.GetGuildAsync(guildId);
-                    var targetMember = await guild.GetMemberAsync(reminderData.UserId);
+                    // Try to DM user for private reminder
 
                     var msg = await targetMember.SendMessageAsync(
                         $"<@{reminderData.UserId}>, I have a reminder for you:",
@@ -61,22 +63,38 @@ public class ReminderChecks
 
                     return true;
                 }
-                catch (Exception ex)
+                catch
                 {
-                    DiscordEmbedBuilder errorEmbed = new()
+                    // Couldn't DM user for private reminder - DMs are disabled or bot is blocked. Try to ping in public channel.
+                    try
                     {
-                        Color = DiscordColor.Red,
-                        Title = "An exception occurred when checking reminders",
-                        Description =
-                            $"`{ex.GetType()}` occurred when checking for overdue reminders."
-                    };
+                        var reminderCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "reminder");
 
-                    errorEmbed.AddField("Message", $"{ex.Message}");
-                    errorEmbed.AddField("Stack Trace", $"```\n{ex.StackTrace}\n```");
+                        var reminderChannel = await Program.Discord.GetChannelAsync(reminderData.ChannelId);
+                        var msgContent =
+                            $"Hi {targetMember.Mention}! I have a reminder for you. I tried to DM it to you, but either your DMs are off or I am blocked." +
+                            " Please make sure that I can DM you.\n\n**Your reminder will not be sent automatically following this alert.**";
 
-                    await Program.HomeChannel.SendMessageAsync(errorEmbed);
+                        if (reminderCmd is not null)
+                            msgContent +=
+                                $" You can use </{reminderCmd.Name} modify:{reminderCmd.Id}> to modify your reminder, or </{reminderCmd.Name} delete:{reminderCmd.Id}> to delete it.";
 
-                    return false;
+                        await reminderChannel.SendMessageAsync(msgContent);
+
+                        reminderData.ReminderTime = null;
+                        await Program.Db.HashSetAsync("reminders", reminderData.ReminderId,
+                            JsonConvert.SerializeObject(reminderData));
+
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Couldn't DM user or send an alert in the channel the reminder was set in... log error
+
+                        await LogReminderError(Program.HomeChannel, ex);
+
+                        return false;
+                    }
                 }
 
             try
@@ -105,10 +123,6 @@ public class ReminderChecks
                     // Couldn't send the reminder in the channel it was created in.
                     // Try to DM user instead.
 
-                    var guildId = Convert.ToUInt64(reminderData.GuildId);
-                    var guild = await Program.Discord.GetGuildAsync(guildId);
-                    var targetMember = await guild.GetMemberAsync(reminderData.UserId);
-
                     var msg = await targetMember.SendMessageAsync(
                         $"<@{reminderData.UserId}>, I have a reminder for you:",
                         embed);
@@ -127,18 +141,9 @@ public class ReminderChecks
                 }
                 catch (Exception ex)
                 {
-                    DiscordEmbedBuilder errorEmbed = new()
-                    {
-                        Color = DiscordColor.Red,
-                        Title = "An exception occurred when checking reminders",
-                        Description =
-                            $"`{ex.GetType()}` occurred when checking for overdue reminders."
-                    };
+                    // Couldn't DM user. Log error.
 
-                    errorEmbed.AddField("Message", $"{ex.Message}");
-                    errorEmbed.AddField("Stack Trace", $"```\n{ex.StackTrace}\n```");
-
-                    await Program.HomeChannel.SendMessageAsync(errorEmbed);
+                    await LogReminderError(Program.HomeChannel, ex);
 
                     return false;
                 }
@@ -146,5 +151,21 @@ public class ReminderChecks
         }
 
         return true;
+    }
+
+    private static async Task LogReminderError(DiscordChannel logChannel, Exception ex)
+    {
+        DiscordEmbedBuilder errorEmbed = new()
+        {
+            Color = DiscordColor.Red,
+            Title = "An exception occurred when checking reminders",
+            Description =
+                $"`{ex.GetType()}` occurred when checking for overdue reminders."
+        };
+
+        errorEmbed.AddField("Message", $"{ex.Message}");
+        errorEmbed.AddField("Stack Trace", $"```\n{ex.StackTrace}\n```");
+
+        await logChannel.SendMessageAsync(errorEmbed);
     }
 }

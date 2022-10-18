@@ -17,36 +17,43 @@ public class Reminders : ApplicationCommandModule
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral(isPrivate));
 
-
-            DateTime reminderTime;
-            try
+            DateTime? reminderTime;
+            if (time != "null")
             {
-                reminderTime = HumanDateParser.HumanDateParser.Parse(time);
-            }
-            catch
-            {
-                // Parse error, either because the user did it wrong or because HumanDateParser is weird
-
-                await ctx.FollowUpAsync(
-                    new DiscordFollowupMessageBuilder().WithContent(
-                        $"I couldn't parse \"{time}\" as a time! Please try again.").AsEphemeral(isPrivate));
-                return;
-            }
-
-            if (reminderTime <= DateTime.Now)
-            {
-                // If user says something like "4pm" and its past 4pm, assume they mean "4pm tomorrow"
-                if (reminderTime.Date == DateTime.Now.Date && reminderTime.TimeOfDay < DateTime.Now.TimeOfDay)
+                try
                 {
-                    reminderTime = reminderTime.AddDays(1);
+                    reminderTime = HumanDateParser.HumanDateParser.Parse(time);
                 }
-                else
+                catch
                 {
+                    // Parse error, either because the user did it wrong or because HumanDateParser is weird
+
                     await ctx.FollowUpAsync(
-                        new DiscordFollowupMessageBuilder()
-                            .WithContent("You can't set a reminder to go off in the past!").AsEphemeral(isPrivate));
+                        new DiscordFollowupMessageBuilder().WithContent(
+                            $"I couldn't parse \"{time}\" as a time! Please try again.").AsEphemeral(isPrivate));
                     return;
                 }
+
+                if (reminderTime <= DateTime.Now)
+                {
+                    // If user says something like "4pm" and its past 4pm, assume they mean "4pm tomorrow"
+                    if (reminderTime.Value.Date == DateTime.Now.Date &&
+                        reminderTime.Value.TimeOfDay < DateTime.Now.TimeOfDay)
+                    {
+                        reminderTime = reminderTime.Value.AddDays(1);
+                    }
+                    else
+                    {
+                        await ctx.FollowUpAsync(
+                            new DiscordFollowupMessageBuilder()
+                                .WithContent("You can't set a reminder to go off in the past!").AsEphemeral(isPrivate));
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                reminderTime = null;
             }
 
             var guildId = ctx.Channel.IsPrivate ? "@me" : ctx.Guild.Id.ToString();
@@ -71,11 +78,39 @@ public class Reminders : ApplicationCommandModule
                 IsPrivate = isPrivate
             };
 
-            var unixTime = ((DateTimeOffset)reminderTime).ToUnixTimeSeconds();
-            var message = await ctx.FollowUpAsync(
-                new DiscordFollowupMessageBuilder()
-                    .WithContent($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!").AsEphemeral(isPrivate));
-            reminder.MessageId = message.Id;
+            if (reminderTime is not null)
+            {
+                var unixTime = ((DateTimeOffset)reminderTime).ToUnixTimeSeconds();
+
+                if (isPrivate)
+                    // Try to DM user. If DMs are closed, private reminders will not work; we should let them know now instead of having
+                    // the bot throw an error (not shown to the them), leaving them wondering where their reminder is.
+                    try
+                    {
+                        await ctx.Member.SendMessageAsync(
+                            $"Hi! This is a confirmation for your reminder, \"{text}\", due for <t:{unixTime}:F> (<t:{unixTime}:R>)!");
+                    }
+                    catch
+                    {
+                        // User has DMs disabled or has blocked the bot. Alert them of this to prevent issues sending the reminder later.
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                                "You have DMs disabled or have me blocked, so I won't be able to send you this reminder privately!" +
+                                "\n\nReminder creation cancelled. Please enable your DMs and/or unblock me and try again.")
+                            .AsEphemeral());
+                        return;
+                    }
+
+                var message = await ctx.FollowUpAsync(
+                    new DiscordFollowupMessageBuilder()
+                        .WithContent($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!").AsEphemeral(isPrivate));
+                reminder.MessageId = message.Id;
+            }
+            else
+            {
+                var message = await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Reminder set!")
+                    .AsEphemeral(isPrivate));
+                reminder.MessageId = message.Id;
+            }
 
             await Program.Db.HashSetAsync("reminders", reminderId, JsonConvert.SerializeObject(reminder));
         }
@@ -110,7 +145,10 @@ public class Reminders : ApplicationCommandModule
             foreach (var reminder in userReminders.OrderBy(r => r.ReminderTime))
             {
                 var setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
-                var reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
+
+                long reminderTime = default;
+                if (reminder.ReminderTime is not null)
+                    reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
 
                 Regex idRegex = new("[0-9]+");
                 string guildName;
@@ -132,11 +170,16 @@ public class Reminders : ApplicationCommandModule
                     ? $"{reminder.ReminderText.Truncate(350)} *(truncated)*"
                     : reminder.ReminderText;
 
+                var reminderLocation = $" in {guildName}";
+                if (guildName != "DMs") reminderLocation += $" <#{reminder.ChannelId}>";
+
                 output += $"`{reminder.ReminderId}`:\n"
                           + $"> {reminderText}\n"
-                          + $"[Set <t:{setTime}:R>]({reminderLink}) to go off <t:{reminderTime}:R> in {guildName}";
+                          + (reminder.ReminderTime is null
+                              ? "This reminder will not be sent automatically. This is probably because the bot could not send it at the time it was previously set for."
+                              : $"[Set <t:{setTime}:R>]({reminderLink}) to go off <t:{reminderTime}:R>");
 
-                if (guildName != "DMs") output += $" <#{reminder.ChannelId}>";
+                if (reminder.ReminderTime is not null) output += reminderLocation;
 
                 output += "\n\n";
             }
@@ -160,9 +203,14 @@ public class Reminders : ApplicationCommandModule
                 foreach (var reminder in userReminders.OrderBy(r => r.ReminderTime))
                 {
                     var setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
-                    var reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
 
-                    desc += $"`{reminder.ReminderId}` - set <t:{setTime}:R> to go off <t:{reminderTime}:R>\n";
+                    long reminderTime = default;
+                    if (reminder.ReminderTime is not null)
+                        reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
+
+                    desc += reminder.ReminderTime is null
+                        ? "This reminder will not be sent automatically. This is probably because the bot could not send it at the time it was previously set for."
+                        : $"`{reminder.ReminderId}` - set <t:{setTime}:R> to go off <t:{reminderTime}:R>\n";
                 }
 
                 embed.WithDescription(desc.Trim());
@@ -276,7 +324,7 @@ public class Reminders : ApplicationCommandModule
 
             await Program.Db.HashSetAsync("reminders", reminder.ReminderId, JsonConvert.SerializeObject(reminder));
 
-            if (!reminder.IsPrivate)
+            if (!reminder.IsPrivate && reminder.ReminderTime is not null)
             {
                 var reminderChannel = await Program.Discord.GetChannelAsync(reminder.ChannelId);
                 var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);

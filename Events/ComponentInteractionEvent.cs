@@ -557,7 +557,7 @@ public class ComponentInteractionEvent
                     Color = Program.BotColor
                 };
 
-                if (reminder.GuildId != "@me")
+                if (reminder.GuildId != "@me" && reminder.ReminderTime is not null)
                 {
                     embed.AddField("Server",
                         $"{(await Program.Discord.GetGuildAsync(Convert.ToUInt64(reminder.GuildId))).Name}");
@@ -571,10 +571,18 @@ public class ComponentInteractionEvent
                 embed.AddField("Jump Link", jumpLink);
 
                 var setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
-                var reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
+
+                long reminderTime = default;
+                if (reminder.ReminderTime is not null)
+                    reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
 
                 embed.AddField("Set At", $"<t:{setTime}:F> (<t:{setTime}:R>)");
-                embed.AddField("Set For", $"<t:{reminderTime}:F> (<t:{reminderTime}:R>)");
+
+                if (reminder.ReminderTime is not null)
+                    embed.AddField("Set For", $"<t:{reminderTime}:F> (<t:{reminderTime}:R>)");
+                else
+                    embed.WithFooter(
+                        "This reminder will not be sent automatically. This is probably because the bot could not send it at the time it was previously set for.");
 
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().AddEmbed(embed).AsEphemeral());

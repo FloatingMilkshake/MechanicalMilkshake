@@ -14,7 +14,7 @@ public class Reminder
 
     [JsonProperty("reminderText")] public string ReminderText { get; set; }
 
-    [JsonProperty("reminderTime")] public DateTime ReminderTime { get; set; }
+    [JsonProperty("reminderTime")] public DateTime? ReminderTime { get; set; }
 
     [JsonProperty("setTime")] public DateTime SetTime { get; set; }
 
