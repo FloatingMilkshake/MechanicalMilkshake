@@ -83,6 +83,10 @@ public class CustomStatusHelper
                 if (activityName.Contains("{serverCount}"))
                     activityName = activityName.Replace("{serverCount}", Program.Discord.Guilds.Count.ToString());
 
+                if (activityName.Contains("{keywordCount}"))
+                    activityName = activityName.Replace("{keywordCount}",
+                        Program.Db.HashGetAllAsync("keywords").Result.Length.ToString());
+
                 DiscordActivity activity = new()
                 {
                     Name = activityName

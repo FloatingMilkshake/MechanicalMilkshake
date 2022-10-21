@@ -140,6 +140,10 @@ public class ActivityCommands : ApplicationCommandModule
                         activity.Name = activity.Name.Replace("{serverCount}",
                             Program.Discord.Guilds.Count.ToString());
 
+                    if (activity.Name.Contains("{keywordCount}"))
+                        activity.Name = activity.Name.Replace("{keywordCount}",
+                            Program.Db.HashGetAllAsync("keywords").Result.Length.ToString());
+
                     await Program.Discord.UpdateStatusAsync(activity, UserStatus.Online);
                     await ctx.FollowUpAsync(
                         new DiscordFollowupMessageBuilder().WithContent("Activity updated successfully!"));
@@ -317,6 +321,10 @@ public class ActivityCommands : ApplicationCommandModule
                 if (activity.Name.Contains("{serverCount}"))
                     activity.Name = activity.Name.Replace("{serverCount}",
                         Program.Discord.Guilds.Count.ToString());
+
+                if (activity.Name.Contains("{keywordCount}"))
+                    activity.Name = activity.Name.Replace("{keywordCount}",
+                        Program.Db.HashGetAllAsync("keywords").Result.Length.ToString());
             }
 
             await ctx.Client.UpdateStatusAsync(activity, userStatus);
