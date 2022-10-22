@@ -5,9 +5,7 @@ public class UserInfoHelpers
     // Generate embed with extended info when provided with a DiscordMember
     public static async Task<DiscordEmbed> GenerateUserInfoEmbed(DiscordMember member)
     {
-        var msSinceEpoch = member.Id >> 22;
-        var msUnix = msSinceEpoch + 1420070400000;
-        var registeredAt = $"{msUnix / 1000}";
+        var registeredAt = $"{IdHelpers.GetCreationTimestamp(member.Id, true)}";
 
         var t = member.JoinedAt - new DateTime(1970, 1, 1);
         var joinedAtTimestamp = (int)t.TotalSeconds;
@@ -77,7 +75,7 @@ public class UserInfoHelpers
     // Generate embed with limited info when provided with a DiscordUser
     public static async Task<DiscordEmbed> GenerateUserInfoEmbed(DiscordUser user)
     {
-        var createdAt = IdHelpers.GetCreationTimestamp(user.Id);
+        var createdAt = IdHelpers.GetCreationTimestamp(user.Id, true);
 
         var basicUserInfoEmbed = new DiscordEmbedBuilder()
             .WithThumbnail($"{user.AvatarUrl}")

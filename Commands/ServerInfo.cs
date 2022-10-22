@@ -10,9 +10,7 @@ public class ServerInfo : ApplicationCommandModule
 
         if (ctx.Guild.Description is not null) description = ctx.Guild.Description;
 
-        var msSinceEpoch = ctx.Guild.Id >> 22;
-        var msUnix = msSinceEpoch + 1420070400000;
-        var createdAt = $"{msUnix / 1000}";
+        var createdAt = $"{IdHelpers.GetCreationTimestamp(ctx.Guild.Id, true)}";
 
         var embed = new DiscordEmbedBuilder()
             .WithColor(Program.BotColor)

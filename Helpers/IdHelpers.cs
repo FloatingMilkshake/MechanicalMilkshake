@@ -8,8 +8,8 @@ public class IdHelpers
      * https://discord.com/developers/docs/reference#snowflakes-snowflake-id-format-structure-left-to-right
      * https://discord.com/developers/docs/reference#message-formatting-formats
      */
-    public static ulong GetCreationTimestamp(ulong userId)
+    public static ulong GetCreationTimestamp(ulong userId, bool useMilliseconds)
     {
-        return ((userId >> 22) + 1420070400000) / 1000;
+        return useMilliseconds ? ((userId >> 22) + 1420070400000) / 1000 : (userId >> 22) + 1420070400000;
     }
 }

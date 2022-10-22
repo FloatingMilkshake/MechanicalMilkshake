@@ -34,22 +34,21 @@ public class TimestampCommands : ApplicationCommandModule
                 return;
             }
 
-            var msSinceEpoch = snowflake >> 22;
-            var msUnix = msSinceEpoch + 1420070400000;
+            var timestamp = IdHelpers.GetCreationTimestamp(snowflake, true);
             if (string.IsNullOrWhiteSpace(format))
             {
                 await ctx.CreateResponseAsync(
-                    new DiscordInteractionResponseBuilder().WithContent($"{msUnix / 1000}"));
+                    new DiscordInteractionResponseBuilder().WithContent($"{timestamp}"));
             }
             else
             {
                 if (includeCode)
                     await ctx.CreateResponseAsync(
                         new DiscordInteractionResponseBuilder().WithContent(
-                            $"<t:{msUnix / 1000}:{format}> (`<t:{msUnix / 1000}:{format}>`)"));
+                            $"<t:{timestamp}:{format}> (`<t:{timestamp}:{format}>`)"));
                 else
                     await ctx.CreateResponseAsync(
-                        new DiscordInteractionResponseBuilder().WithContent($"<t:{msUnix / 1000}:{format}>"));
+                        new DiscordInteractionResponseBuilder().WithContent($"<t:{timestamp}:{format}>"));
             }
         }
 
