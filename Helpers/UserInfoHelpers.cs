@@ -14,10 +14,32 @@ public class UserInfoHelpers
         if (member.Permissions.HasPermission(Permissions.KickMembers) &&
             member.Permissions.HasPermission(Permissions.BanMembers))
             acknowledgements = "Server Moderator (can kick and ban members)";
-
         if (member.Permissions.HasPermission(Permissions.Administrator)) acknowledgements = "Server Administrator";
-
         if (member.IsOwner) acknowledgements = "Server Owner";
+
+        List<string> notablePerms = new();
+        if (member.Permissions.HasPermission(Permissions.Administrator))
+            notablePerms.Add("Administrator");
+        if (member.Permissions.HasPermission(Permissions.ManageChannels))
+            notablePerms.Add("Manage Channels");
+        if (member.Permissions.HasPermission(Permissions.ManageEmojis))
+            notablePerms.Add("Manage Emojis and Stickers");
+        if (member.Permissions.HasPermission(Permissions.ManageEvents))
+            notablePerms.Add("Manage Events");
+        if (member.Permissions.HasPermission(Permissions.ManageGuild))
+            notablePerms.Add("Manage Server");
+        if (member.Permissions.HasPermission(Permissions.ManageMessages))
+            notablePerms.Add("Manage Messages");
+        if (member.Permissions.HasPermission(Permissions.ManageNicknames))
+            notablePerms.Add("Manage Nicknames");
+        if (member.Permissions.HasPermission(Permissions.ManageRoles))
+            notablePerms.Add("Manage Roles");
+        if (member.Permissions.HasPermission(Permissions.ManageThreads))
+            notablePerms.Add(member.Guild.Features.Contains("COMMUNITY")
+                ? "Manage Threads and Posts"
+                : "Manage Threads");
+        if (member.Permissions.HasPermission(Permissions.ManageWebhooks))
+            notablePerms.Add("Manage Webhooks");
 
         var roles = "None";
         if (member.Roles.Any())
@@ -42,6 +64,9 @@ public class UserInfoHelpers
             }
         }
 
+        var rolesFieldName = "Roles";
+        if (member.Roles.Any()) rolesFieldName += $" - {member.Roles.Count()}";
+
         var extendedUserInfoEmbed = new DiscordEmbedBuilder()
             .WithColor(new DiscordColor($"{member.Color}"))
             .AddField("User Mention", member.Mention)
@@ -52,10 +77,14 @@ public class UserInfoHelpers
 
         extendedUserInfoEmbed.AddField("Account registered on", $"<t:{registeredAt}:F> (<t:{registeredAt}:R>)");
         extendedUserInfoEmbed.AddField("Joined server on", $"<t:{joinedAtTimestamp}:F> (<t:{joinedAtTimestamp}:R>)");
-        extendedUserInfoEmbed.AddField($"Roles - {member.Roles.Count()}", roles);
+        extendedUserInfoEmbed.AddField(rolesFieldName, roles);
         extendedUserInfoEmbed.WithThumbnail(member.AvatarUrl);
 
         if (acknowledgements != null) extendedUserInfoEmbed.AddField("Acknowledgements", acknowledgements);
+
+        if (notablePerms.Count > 0)
+            extendedUserInfoEmbed.AddField("Notable Permissions",
+                notablePerms.Aggregate("", (current, perm) => current + $"{perm}\n"));
 
         if (member.PremiumSince != null)
         {
