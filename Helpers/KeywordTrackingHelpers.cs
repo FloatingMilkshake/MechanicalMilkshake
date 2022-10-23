@@ -30,7 +30,15 @@ public class KeywordTrackingHelpers
                 continue;
 
             // If message was sent by a user in the list of users to ignore for this keyword, ignore
-            if (fieldValue.IgnoreList.Contains(message.Author.Id))
+            if (fieldValue.UserIgnoreList.Contains(message.Author.Id))
+                continue;
+
+            // If message was sent in a channel in the list of channels to ignore for this keyword, ignore
+            if (fieldValue.ChannelIgnoreList.Contains(message.Channel.Id))
+                continue;
+
+            // If message was sent in a guild in the list of guilds to ignore for this keyword, ignore
+            if (fieldValue.GuildIgnoreList.Contains(message.Channel.Guild.Id))
                 continue;
 
             // If message was sent by a bot and bots should be ignored for this keyword, ignore

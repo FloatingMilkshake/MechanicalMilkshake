@@ -8,20 +8,27 @@ public class KeywordTrackingCommands : ApplicationCommandModule
         [SlashCommand("add", "Track a new keyword.")]
         public static async Task TrackAdd(InteractionContext ctx,
             [Option("keyword", "The keyword or phrase to track.")]
-            string keyword,
+                string keyword,
             [Option("match_whole_word",
                 "Whether you want to match the keyword only when it is a whole word. Defaults to False.")]
-            bool matchWholeWord = false,
+                bool matchWholeWord = false,
             [Option("ignore_bots", "Whether to ignore messages from bots. Defaults to True.")]
-            bool ignoreBots = true,
-            [Option("ignore_list", "Users to ignore. Use IDs and/or mentions. Separate with spaces.")]
-            string ignoreList = null,
+                bool ignoreBots = true,
+            [Option("user_ignore_list", "Users to ignore. Use IDs and/or mentions. Separate with spaces.")]
+                string userIgnoreList = null,
+            [Option("channel_ignore_list", "Channels to ignore. Use IDs only. Separate with spaces.")]
+                string channelIgnoreList = null,
+            [Option("server_ignore_list", "Servers to ignore. Use IDs only. Separate with spaces.")]
+                string guildIgnoreList = null,
             [Option("this_server_only",
                 "Whether to only notify you if the keyword is mentioned in this server. Defaults to True.")]
-            bool currentGuildOnly = true)
+                bool currentGuildOnly = true)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
+
+            if (currentGuildOnly && guildIgnoreList is not null &&
+                guildIgnoreList.Split(' ').Any(g => g == ctx.Guild.Id.ToString())) currentGuildOnly = false;
 
             var fields = await Program.Db.HashGetAllAsync("keywords");
             foreach (var field in fields)
@@ -36,9 +43,9 @@ public class KeywordTrackingCommands : ApplicationCommandModule
             }
 
             List<ulong> usersToIgnore = new();
-            if (ignoreList is not null)
+            if (userIgnoreList is not null)
             {
-                var users = ignoreList.Split(' ');
+                var users = userIgnoreList.Split(' ');
                 foreach (var user in users)
                 {
                     Regex idRegex = new("[0-9]+");
@@ -47,19 +54,72 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                     DiscordUser userToAdd;
                     try
                     {
-                        var userId = Convert.ToUInt64(id);
-                        userToAdd = await Program.Discord.GetUserAsync(userId);
+                        userToAdd = await Program.Discord.GetUserAsync(Convert.ToUInt64(id));
                     }
                     catch
                     {
                         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                             .WithContent(
-                                $"I wasn't able to parse {user} as a user ID. Make sure it's formatted correctly! If you want to ignore multiple users, please separate their names, mentions or IDs with a `/`.")
+                                $"I wasn't able to parse {user} as a user ID. Make sure it's formatted correctly! If you want to ignore multiple users, separate their mentions or IDs with a space.")
                             .AsEphemeral());
                         return;
                     }
 
                     usersToIgnore.Add(userToAdd.Id);
+                }
+            }
+
+            List<ulong> channelsToIgnore = new();
+            if (channelIgnoreList is not null)
+            {
+                var channels = channelIgnoreList.Split(' ');
+                foreach (var channel in channels)
+                {
+                    Regex idRegex = new("[0-9]+");
+                    var id = idRegex.Match(channel).ToString();
+
+                    DiscordChannel channelToAdd;
+                    try
+                    {
+                        channelToAdd = await Program.Discord.GetChannelAsync(Convert.ToUInt64(id));
+                    }
+                    catch
+                    {
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                            .WithContent(
+                                $"I wasn't able to parse {channel} as a channel ID. Make sure it's formatted correctly! If you want to ignore multiple channels, please separate their IDs with a space.")
+                            .AsEphemeral());
+                        return;
+                    }
+
+                    channelsToIgnore.Add(channelToAdd.Id);
+                }
+            }
+
+            List<ulong> guildsToIgnore = new();
+            if (guildIgnoreList is not null)
+            {
+                var guilds = guildIgnoreList.Split(' ');
+                foreach (var guild in guilds)
+                {
+                    Regex idRegex = new("[0-9]+");
+                    var id = idRegex.Match(guild).ToString();
+
+                    DiscordGuild guildToAdd;
+                    try
+                    {
+                        guildToAdd = await Program.Discord.GetGuildAsync(Convert.ToUInt64(id));
+                    }
+                    catch
+                    {
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                            .WithContent(
+                                $"I wasn't able to parse {guild} as a server ID. Make sure it's formatted correctly! If you want to ignore multiple servers, please separate their IDs with a space.")
+                            .AsEphemeral());
+                        return;
+                    }
+
+                    guildsToIgnore.Add(guildToAdd.Id);
                 }
             }
 
@@ -72,7 +132,9 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                 UserId = ctx.User.Id,
                 MatchWholeWord = matchWholeWord,
                 IgnoreBots = ignoreBots,
-                IgnoreList = usersToIgnore,
+                UserIgnoreList = usersToIgnore,
+                ChannelIgnoreList = channelsToIgnore,
+                GuildIgnoreList = guildsToIgnore,
                 Id = ctx.InteractionId,
                 GuildId = guildId
             };
