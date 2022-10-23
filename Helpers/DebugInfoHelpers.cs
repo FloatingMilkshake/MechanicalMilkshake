@@ -72,7 +72,7 @@ public class DebugInfoHelpers
         embed.AddField("Library", debugInfo.Library, true);
         embed.AddField("Server Count", Program.Discord.Guilds.Count.ToString(), true);
         embed.AddField("Command Count", Program.ApplicationCommands.Count.ToString(), true);
-        embed.AddField("Load Time", debugInfo.LoadTime, true);
+        if (isOnReadyEvent) embed.AddField("Load Time", debugInfo.LoadTime, true);
         embed.AddField("Commit Hash", $"`{debugInfo.CommitHash}`", true);
         embed.AddField(debugInfo.CommitTimeDescription, debugInfo.CommitTimestamp, true);
         embed.AddField("Commit Message", debugInfo.CommitMessage);
