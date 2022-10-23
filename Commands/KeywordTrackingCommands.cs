@@ -42,12 +42,18 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                 break;
             }
 
+            List<string> checkedUsers = new();
+
             List<ulong> usersToIgnore = new();
             if (userIgnoreList is not null)
             {
                 var users = userIgnoreList.Split(' ');
                 foreach (var user in users)
                 {
+                    if (string.IsNullOrWhiteSpace(user)) continue;
+                    if (checkedUsers.Any(u => u.ToString() == user)) continue;
+                    checkedUsers.Add(user);
+
                     Regex idRegex = new("[0-9]+");
                     var id = user.Contains('@') ? idRegex.Match(user).ToString() : user;
 
@@ -69,12 +75,18 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                 }
             }
 
+            List<string> checkedChannels = new();
+
             List<ulong> channelsToIgnore = new();
             if (channelIgnoreList is not null)
             {
                 var channels = channelIgnoreList.Split(' ');
                 foreach (var channel in channels)
                 {
+                    if (string.IsNullOrWhiteSpace(channel)) continue;
+                    if (checkedChannels.Any(c => c.ToString() == channel)) continue;
+                    checkedChannels.Add(channel);
+
                     Regex idRegex = new("[0-9]+");
                     var id = idRegex.Match(channel).ToString();
 
@@ -82,6 +94,24 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                     try
                     {
                         channelToAdd = await Program.Discord.GetChannelAsync(Convert.ToUInt64(id));
+                    }
+                    catch (UnauthorizedException)
+                    {
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                                $"I wasn't able to fetch the channel {channel}! Discord says I'm not allowed to see it." +
+                                " (I won't be able to track keywords there, so your decision to ignore that channel will still be respected." +
+                                " However, the channel will not appear in this keyword's details.)")
+                            .AsEphemeral());
+                        continue;
+                    }
+                    catch (NotFoundException)
+                    {
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                                $"I wasn't able to fetch the channel {channel}! Discord says that channel doesn't exist." +
+                                " (I won't be able to track keywords there, so your decision to ignore that channel will still be respected." +
+                                " However, the channel will not appear in this keyword's details.)")
+                            .AsEphemeral());
+                        continue;
                     }
                     catch
                     {
@@ -96,12 +126,18 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                 }
             }
 
+            List<string> checkedGuilds = new();
+
             List<ulong> guildsToIgnore = new();
             if (guildIgnoreList is not null)
             {
                 var guilds = guildIgnoreList.Split(' ');
                 foreach (var guild in guilds)
                 {
+                    if (string.IsNullOrWhiteSpace(guild)) continue;
+                    if (checkedGuilds.Any(g => g.ToString() == guild)) continue;
+                    checkedGuilds.Add(guild);
+
                     Regex idRegex = new("[0-9]+");
                     var id = idRegex.Match(guild).ToString();
 
@@ -109,6 +145,24 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                     try
                     {
                         guildToAdd = await Program.Discord.GetGuildAsync(Convert.ToUInt64(id));
+                    }
+                    catch (UnauthorizedException)
+                    {
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                                $"I wasn't able to fetch the server {guild}! Discord says I'm not allowed to see it." +
+                                " (I won't be able to track keywords there, so your decision to ignore that server will still be respected." +
+                                " However, the server will not appear in this keyword's details.)")
+                            .AsEphemeral());
+                        continue;
+                    }
+                    catch (NotFoundException)
+                    {
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                                $"I wasn't able to fetch the server {guild}! Discord says that server doesn't exist." +
+                                " (I won't be able to track keywords there, so your decision to ignore that server will still be respected." +
+                                " However, the server will not appear in this keyword's details.)")
+                            .AsEphemeral());
+                        continue;
                     }
                     catch
                     {
