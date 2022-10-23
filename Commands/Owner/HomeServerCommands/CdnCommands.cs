@@ -16,6 +16,12 @@ public class CdnCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
+            if (Program.DisabledCommands.Contains("cdn"))
+            {
+                FailOnMissingInfo(ctx, true);
+                return;
+            }
+
             if (file is null && link is null)
             {
                 await ctx.FollowUpAsync(
@@ -133,6 +139,12 @@ public class CdnCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder());
+
+            if (Program.DisabledCommands.Contains("cdn"))
+            {
+                FailOnMissingInfo(ctx, true);
+                return;
+            }
 
             if (fileToDelete.Contains('<')) fileToDelete = fileToDelete.Replace("<", "");
 
@@ -253,6 +265,12 @@ public class CdnCommands : ApplicationCommandModule
             [Option("name", "The name (or link) of the file to preview.")]
             string name)
         {
+            if (Program.DisabledCommands.Contains("cdn"))
+            {
+                FailOnMissingInfo(ctx, false);
+                return;
+            }
+
             if (!name.Contains('.'))
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
@@ -275,6 +293,17 @@ public class CdnCommands : ApplicationCommandModule
                 new DiscordInteractionResponseBuilder().WithContent(
                     $"{Program.ConfigJson.S3.CdnBaseUrl}/{name}"));
         }
+    }
+
+    private static async void FailOnMissingInfo(InteractionContext ctx, bool followUp)
+    {
+        const string failureMsg =
+            "CDN commands are disabled! Please make sure you have provided values for all of the keys under `s3` and `cloudflare` in the config file.";
+
+        if (followUp)
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(failureMsg));
+        else
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(failureMsg));
     }
 
     // This code is taken from https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197.

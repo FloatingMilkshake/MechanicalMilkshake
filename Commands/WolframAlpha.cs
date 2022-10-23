@@ -23,10 +23,10 @@ public class WolframAlpha : ApplicationCommandModule
 
         var queryEncoded = HttpUtility.UrlEncode(query);
 
-        if (Program.ConfigJson.Base.WolframAlphaAppId == null)
+        if (Program.ConfigJson.Base.WolframAlphaAppId == "")
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                "Looks like you don't have an App ID! Check the wolframAlphaAppId field in your config.json file. "
+                "Looks like you don't have an App ID! Check the `wolframAlphaAppId` field in your config file. "
                 + "If you don't know how to get an App ID, see Getting Started here: <https://products.wolframalpha.com/short-answers-api/documentation/>"));
             return;
         }

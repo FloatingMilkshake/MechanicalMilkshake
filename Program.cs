@@ -7,6 +7,7 @@ internal class Program
 {
     public static DiscordClient Discord;
     public static MinioClient Minio;
+    public static List<string> DisabledCommands = new();
     public static readonly Random Random = new();
     public static DateTime ConnectTime;
     public static readonly HttpClient HttpClient = new();
@@ -143,12 +144,33 @@ internal class Program
         commands.SetHelpFormatter<CustomHelpFormatter>();
 
         // Set up Minio (used for some Owner commands)
-        Minio = new MinioClient()
-            .WithEndpoint(ConfigJson.S3.Endpoint)
-            .WithCredentials(ConfigJson.S3.AccessKey, ConfigJson.S3.SecretKey)
-            .WithRegion(ConfigJson.S3.Region)
-            .WithSSL();
+        if (ConfigJson.S3.Bucket == "" || ConfigJson.S3.CdnBaseUrl == "" || ConfigJson.S3.Endpoint == "" ||
+            ConfigJson.S3.AccessKey == "" || ConfigJson.S3.SecretKey == "" || ConfigJson.S3.Region == "" ||
+            ConfigJson.Cloudflare.UrlPrefix == "" || ConfigJson.Cloudflare.ZoneId == "" || ConfigJson.Cloudflare.Token == "")
+        {
+            Discord.Logger.LogWarning(BotEventId,
+                "CDN commands disabled due to missing S3 or Cloudflare information.");
 
+            DisabledCommands.Add("cdn");
+        }
+        else
+        {
+            Minio = new MinioClient()
+                .WithEndpoint(ConfigJson.S3.Endpoint)
+                .WithCredentials(ConfigJson.S3.AccessKey, ConfigJson.S3.SecretKey)
+                .WithRegion(ConfigJson.S3.Region)
+                .WithSSL();
+        }
+
+        if (ConfigJson.WorkerLinks.BaseUrl == "" || ConfigJson.WorkerLinks.Secret == "" ||
+            ConfigJson.WorkerLinks.NamespaceId == "" || ConfigJson.WorkerLinks.ApiKey == "" ||
+            ConfigJson.WorkerLinks.AccountId == "" || ConfigJson.WorkerLinks.Email == "")
+        {
+            Discord.Logger.LogWarning(BotEventId,
+                "Short-link commands disabled due to missing WorkerLinks information.");
+
+            DisabledCommands.Add("wl");
+        }
 
         // Register slash commands as guild commands in home server when
         // running in development mode

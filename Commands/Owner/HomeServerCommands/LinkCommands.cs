@@ -12,6 +12,12 @@ public class LinkCommands : ApplicationCommandModule
             [Option("url", "The URL the short link should point to.")]
             string url)
         {
+            if (Program.DisabledCommands.Contains("wl"))
+            {
+                FailOnMissingInfo(ctx, false);
+                return;
+            }
+
             if (url.Contains('<')) url = url.Replace("<", "");
 
             if (url.Contains('>')) url = url.Replace(">", "");
@@ -67,11 +73,9 @@ public class LinkCommands : ApplicationCommandModule
             [Option("link", "The key or URL of the short link to delete.")]
             string url)
         {
-            if (Program.ConfigJson.WorkerLinks.BaseUrl == null)
+            if (Program.DisabledCommands.Contains("wl"))
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent(
-                        "Error: No base URL provided! Make sure the baseUrl field under workerLinks in your config.json file is set."));
+                FailOnMissingInfo(ctx, false);
                 return;
             }
 
@@ -114,6 +118,12 @@ public class LinkCommands : ApplicationCommandModule
         [SlashCommand("list", "List all short links configured with Cloudflare worker-links.")]
         public static async Task ListWorkerLinks(InteractionContext ctx)
         {
+            if (Program.DisabledCommands.Contains("wl"))
+            {
+                FailOnMissingInfo(ctx, false);
+                return;
+            }
+
             await ctx.CreateResponseAsync(
                 $"You can view the list of short links at Cloudflare [here](https://dash.cloudflare.com/{Program.ConfigJson.WorkerLinks.AccountId}/workers/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId})!");
         }
@@ -123,11 +133,9 @@ public class LinkCommands : ApplicationCommandModule
             [Option("link", "The key or URL of the short link to get.")]
             string url)
         {
-            if (Program.ConfigJson.WorkerLinks.BaseUrl == null)
+            if (Program.DisabledCommands.Contains("wl"))
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent(
-                        "Error: No base URL provided! Make sure the baseUrl field under workerLinks in your config.json file is set."));
+                FailOnMissingInfo(ctx, false);
                 return;
             }
 
@@ -182,5 +190,16 @@ public class LinkCommands : ApplicationCommandModule
         {
             [JsonProperty("name")] public string Name { get; set; }
         }
+    }
+
+    private static async void FailOnMissingInfo(InteractionContext ctx, bool followUp)
+    {
+        const string failureMsg =
+            "Link commands are disabled! Please make sure you have provided values for all of the keys under `workerLinks` in the config file.";
+
+        if (followUp)
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(failureMsg));
+        else
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(failureMsg));
     }
 }
