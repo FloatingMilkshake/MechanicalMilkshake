@@ -72,8 +72,8 @@ public class DebugCommands : ApplicationCommandModule
                 if (string.IsNullOrWhiteSpace(dockerCheckFile))
                 {
                     await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
-                        "The bot may not be running under Docker; this means that `/debug restart` will behave like `/debug shutdown`."
-                        + "\n\nOperation aborted. Use `/debug shutdown` if you wish to shut down the bot."));
+                        $"The bot may not be running under Docker; this means that {SlashCmdMentionHelpers.GetSlashCmdMention("debug", "restart")} will behave like {SlashCmdMentionHelpers.GetSlashCmdMention("debug", "shutdown")}."
+                        + $"\n\nOperation aborted. Use {SlashCmdMentionHelpers.GetSlashCmdMention("debug", "shutdown")} if you wish to shut down the bot."));
                     return;
                 }
             }
@@ -81,8 +81,8 @@ public class DebugCommands : ApplicationCommandModule
             {
                 // /proc/self/cgroup could not be found, which means the bot is not running in Docker.
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
-                    "The bot may not be running under Docker; this means that `/debug restart` will behave like `/debug shutdown`.)"
-                    + "\n\nOperation aborted. Use `/debug shutdown` if you wish to shut down the bot."));
+                    $"The bot may not be running under Docker; this means that {SlashCmdMentionHelpers.GetSlashCmdMention("debug", "restart")} will behave like {SlashCmdMentionHelpers.GetSlashCmdMention("debug", "shutdown")}."
+                    + $"\n\nOperation aborted. Use {SlashCmdMentionHelpers.GetSlashCmdMention("debug", "shutdown")} if you wish to shut down the bot."));
                 return;
             }
 

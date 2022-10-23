@@ -34,7 +34,7 @@ public class ActivityCommands : ApplicationCommandModule
             if (dbList.Length == 0)
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "There are no custom status messages in the list! Add some with `/activity add`."));
+                    $"There are no custom status messages in the list! Add some with {SlashCmdMentionHelpers.GetSlashCmdMention("activity", "add")}."));
                 return;
             }
 
@@ -167,7 +167,7 @@ public class ActivityCommands : ApplicationCommandModule
             if (dbList.Length == 0)
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "There are no custom status messages in the list! Add some with `/activity add`."));
+                    $"There are no custom status messages in the list! Add some with {SlashCmdMentionHelpers.GetSlashCmdMention("activity", "add")}."));
                 return;
             }
 
@@ -210,8 +210,8 @@ public class ActivityCommands : ApplicationCommandModule
                         await Program.Db.HashGetAsync("customStatus", "userStatus")));
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "The bot's activity was previously set with `/activity set` and has thus not been changed." +
-                    "\nIf you wish to proceed with this command, please first clear the current status with `/activity reset`."));
+                    $"The bot's activity was previously set with {SlashCmdMentionHelpers.GetSlashCmdMention("activity", "set")} and has thus not been changed." +
+                    $"\nIf you wish to proceed with this command, please first clear the current status with {SlashCmdMentionHelpers.GetSlashCmdMention("activity", "reset")}."));
 
                 return;
             }
@@ -256,7 +256,7 @@ public class ActivityCommands : ApplicationCommandModule
             {
                 // Custom status messages are disabled; warn user and don't bother going through with the rest of this command
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "Custom status messages are disabled! Use `/activity enable` to enable them first."));
+                    $"Custom status messages are disabled! Use {SlashCmdMentionHelpers.GetSlashCmdMention("activity", "enable")} to enable them first."));
                 return;
             }
 

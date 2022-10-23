@@ -270,7 +270,7 @@ public class Reminders : ApplicationCommandModule
 
         [SlashCommand("modify", "Modify an existing reminder using its unique ID.")]
         public static async Task ModifyReminder(InteractionContext ctx,
-            [Option("reminder", "The ID of the reminder to modify. You can get this with `/reminder list`.")]
+            [Option("reminder", "The ID of the reminder to modify. You can get this with /reminder list.")]
             long reminderToModify,
             [Option("time", "When do you want to be reminded? Leave this blank if you don't want to change it.")]
             string time = null,
@@ -286,7 +286,7 @@ public class Reminders : ApplicationCommandModule
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
-                        "The reminder ID you provided isn't correct! You can get a reminder ID with `/reminder list`. It should look something like this: `1234`")
+                        $"The reminder ID you provided isn't correct! You can get a reminder ID with {SlashCmdMentionHelpers.GetSlashCmdMention("reminder", "list")}. It should look something like this: `1234`")
                     .AsEphemeral());
                 return;
             }
@@ -297,7 +297,7 @@ public class Reminders : ApplicationCommandModule
             if (!keys.Contains(reminderToModify.ToString()))
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                        "A reminder with that ID doesn't exist! Make sure you've got the right ID. You can get it with `/reminder list`. It should look something like this: `1234`")
+                        $"A reminder with that ID doesn't exist! Make sure you've got the right ID. You can get it with {SlashCmdMentionHelpers.GetSlashCmdMention("reminder", "list")}. It should look something like this: `1234`")
                     .AsEphemeral());
                 return;
             }
@@ -367,7 +367,7 @@ public class Reminders : ApplicationCommandModule
                 await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder().WithContent(
                         $"I couldn't parse \"{msgId}\" as a message ID! Please try again." +
-                        "\n\nIf you think I messed up or need help, contact the bot owner (if you don't know who that is, see `/about`!)."));
+                        $"\n\nIf you think I messed up or need help, contact the bot owner (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!)."));
                 return;
             }
 
@@ -377,7 +377,7 @@ public class Reminders : ApplicationCommandModule
                 await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder().WithContent(
                         "That message doesn't look like a reminder! Please try again." +
-                        "\n\nIf you think I messed up or need help, contact the bot owner (if you don't know who that is, see `/about`!)."));
+                        $"\n\nIf you think I messed up or need help, contact the bot owner (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!)."));
                 return;
             }
 

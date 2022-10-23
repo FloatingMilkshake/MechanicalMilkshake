@@ -11,13 +11,13 @@ public class ErrorEvents
                 await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder()
                         .WithContent(
-                            "This command cannot be used in DMs. Please use it in a server. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see `/about`!).")
+                            $"This command cannot be used in DMs. Please use it in a server. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).")
                         .AsEphemeral());
                 return;
             case SlashExecutionChecksFailedException:
                 await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
-                            "Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see `/about`!).")
+                            $"Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).")
                         .AsEphemeral());
                 return;
             case InvalidOperationException when
@@ -141,7 +141,7 @@ public class ErrorEvents
                     return;
                 case ChecksFailedException:
                     await e.Context.RespondAsync(
-                        "Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see `/about`!).");
+                        $"Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).");
                     return;
             }
 
