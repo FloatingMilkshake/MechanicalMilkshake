@@ -140,12 +140,20 @@ public class EvalCommands : ApplicationCommandModule
     private static string HideSensitiveInfo(string input)
     {
         const string redacted = "[redacted]";
-        return input.Replace(Program.ConfigJson.Base.BotToken, redacted)
-            .Replace(Program.ConfigJson.Base.WolframAlphaAppId, redacted)
-            .Replace(Program.ConfigJson.WorkerLinks.Secret, redacted)
-            .Replace(Program.ConfigJson.WorkerLinks.ApiKey, redacted)
-            .Replace(Program.ConfigJson.S3.AccessKey, redacted)
-            .Replace(Program.ConfigJson.S3.SecretKey, redacted)
-            .Replace(Program.ConfigJson.Cloudflare.Token, redacted);
+        string output = input.Replace(Program.ConfigJson.Base.BotToken, redacted);
+        if (Program.ConfigJson.Base.WolframAlphaAppId != "")
+            output = output.Replace(Program.ConfigJson.Base.WolframAlphaAppId, redacted);
+        if (Program.ConfigJson.WorkerLinks.Secret != "")
+            output = output.Replace(Program.ConfigJson.WorkerLinks.Secret, redacted);
+        if (Program.ConfigJson.WorkerLinks.ApiKey != "")
+            output = output.Replace(Program.ConfigJson.WorkerLinks.ApiKey, redacted);
+        if (Program.ConfigJson.S3.AccessKey != "")
+            output = output.Replace(Program.ConfigJson.S3.AccessKey, redacted);
+        if (Program.ConfigJson.S3.SecretKey != "")
+            output = output.Replace(Program.ConfigJson.S3.SecretKey, redacted);
+        if (Program.ConfigJson.Cloudflare.Token != "")
+            output = output.Replace(Program.ConfigJson.Cloudflare.Token, redacted);
+
+        return output;
     }
 }
