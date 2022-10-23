@@ -7,7 +7,7 @@ internal class Program
 {
     public static DiscordClient Discord;
     public static MinioClient Minio;
-    public static List<string> DisabledCommands = new();
+    public static readonly List<string> DisabledCommands = new();
     public static readonly Random Random = new();
     public static DateTime ConnectTime;
     public static readonly HttpClient HttpClient = new();
@@ -146,7 +146,8 @@ internal class Program
         // Set up Minio (used for some Owner commands)
         if (ConfigJson.S3.Bucket == "" || ConfigJson.S3.CdnBaseUrl == "" || ConfigJson.S3.Endpoint == "" ||
             ConfigJson.S3.AccessKey == "" || ConfigJson.S3.SecretKey == "" || ConfigJson.S3.Region == "" ||
-            ConfigJson.Cloudflare.UrlPrefix == "" || ConfigJson.Cloudflare.ZoneId == "" || ConfigJson.Cloudflare.Token == "")
+            ConfigJson.Cloudflare.UrlPrefix == "" || ConfigJson.Cloudflare.ZoneId == "" ||
+            ConfigJson.Cloudflare.Token == "")
         {
             Discord.Logger.LogWarning(BotEventId,
                 "CDN commands disabled due to missing S3 or Cloudflare information.");

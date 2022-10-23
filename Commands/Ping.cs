@@ -20,7 +20,8 @@ public class Ping : ApplicationCommandModule
             return;
         }
 
-        var messageTimestampDateTime = DateTimeOffset.FromUnixTimeMilliseconds((long)IdHelpers.GetCreationTimestamp(message.Id, false)).UtcDateTime;
+        var messageTimestampDateTime = DateTimeOffset
+            .FromUnixTimeMilliseconds((long)IdHelpers.GetCreationTimestamp(message.Id, false)).UtcDateTime;
 
         var responseTime = (messageTimestampDateTime - ctx.Interaction.CreationTimestamp.UtcDateTime).ToString()
             .Replace("0", "")

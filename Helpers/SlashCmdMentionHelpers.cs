@@ -30,9 +30,9 @@ public class SlashCmdMentionHelpers
         if (cmd is null) return $"`/{cmdName}`";
 
         if (subCommand != default)
-        {
-            return subSubCommand != default ? $"</{cmd.Name} {subCommand} {subSubCommand}:{cmd.Id}>" : $"</{cmd.Name} {subCommand}:{cmd.Id}>";
-        }
+            return subSubCommand != default
+                ? $"</{cmd.Name} {subCommand} {subSubCommand}:{cmd.Id}>"
+                : $"</{cmd.Name} {subCommand}:{cmd.Id}>";
         return $"</{cmd.Name}:{cmd.Id}>";
     }
 }

@@ -140,7 +140,7 @@ public class EvalCommands : ApplicationCommandModule
     private static string HideSensitiveInfo(string input)
     {
         const string redacted = "[redacted]";
-        string output = input.Replace(Program.ConfigJson.Base.BotToken, redacted);
+        var output = input.Replace(Program.ConfigJson.Base.BotToken, redacted);
         if (Program.ConfigJson.Base.WolframAlphaAppId != "")
             output = output.Replace(Program.ConfigJson.Base.WolframAlphaAppId, redacted);
         if (Program.ConfigJson.WorkerLinks.Secret != "")

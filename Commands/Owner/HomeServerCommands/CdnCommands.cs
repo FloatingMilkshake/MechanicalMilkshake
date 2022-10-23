@@ -2,6 +2,17 @@
 
 public class CdnCommands : ApplicationCommandModule
 {
+    private static async void FailOnMissingInfo(InteractionContext ctx, bool followUp)
+    {
+        const string failureMsg =
+            "CDN commands are disabled! Please make sure you have provided values for all of the keys under `s3` and `cloudflare` in the config file.";
+
+        if (followUp)
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(failureMsg));
+        else
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(failureMsg));
+    }
+
     [SlashCommandGroup("cdn", "Manage files uploaded to Amazon S3-compatible cloud storage.")]
     public class Cdn
     {
@@ -293,17 +304,6 @@ public class CdnCommands : ApplicationCommandModule
                 new DiscordInteractionResponseBuilder().WithContent(
                     $"{Program.ConfigJson.S3.CdnBaseUrl}/{name}"));
         }
-    }
-
-    private static async void FailOnMissingInfo(InteractionContext ctx, bool followUp)
-    {
-        const string failureMsg =
-            "CDN commands are disabled! Please make sure you have provided values for all of the keys under `s3` and `cloudflare` in the config file.";
-
-        if (followUp)
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(failureMsg));
-        else
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(failureMsg));
     }
 
     // This code is taken from https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197.

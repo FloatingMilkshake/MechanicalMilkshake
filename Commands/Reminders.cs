@@ -176,10 +176,10 @@ public class Reminders : ApplicationCommandModule
                 output += $"`{reminder.ReminderId}`:\n"
                           + $"> {reminderText}\n"
                           + (reminder.ReminderTime is null
-                              ? (reminder.IsPrivate
-                                    ? $"[Set <t:{setTime}:R>]({reminderLink}). This reminder will not be sent automatically."
-                                        + " This reminder was set privately, so this is only a link to the messages around the time it was set."
-                                    : $"[Set <t:{setTime}:R>]({reminderLink}). This reminder will not be sent automatically.")
+                              ? reminder.IsPrivate
+                                  ? $"[Set <t:{setTime}:R>]({reminderLink}). This reminder will not be sent automatically."
+                                    + " This reminder was set privately, so this is only a link to the messages around the time it was set."
+                                  : $"[Set <t:{setTime}:R>]({reminderLink}). This reminder will not be sent automatically."
                               : $"[Set <t:{setTime}:R>]({reminderLink}) to go off <t:{reminderTime}:R>");
 
                 if (reminder.ReminderTime is not null) output += reminderLocation;
