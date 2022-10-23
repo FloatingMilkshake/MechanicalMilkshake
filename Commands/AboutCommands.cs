@@ -21,8 +21,6 @@ public class AboutCommands : ApplicationCommandModule
             Color = Program.BotColor
         };
         embed.AddField("Servers", ctx.Client.Guilds.Count.ToString(), true);
-        embed.AddField("Total User Count (not unique)", ctx.Client.Guilds.Sum(g => g.Value.MemberCount).ToString(),
-            true);
         embed.AddField("Commands", Program.ApplicationCommands.Count.ToString(), true);
 
         if (!string.IsNullOrWhiteSpace(privacyPolicyUrl))
