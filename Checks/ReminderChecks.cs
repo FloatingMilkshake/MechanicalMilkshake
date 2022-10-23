@@ -162,9 +162,11 @@ public class ReminderChecks
             Description =
                 $"`{ex.GetType()}` occurred when checking for overdue reminders."
         };
-
         errorEmbed.AddField("Message", $"{ex.Message}");
         errorEmbed.AddField("Stack Trace", $"```\n{ex.StackTrace}\n```");
+
+        Console.WriteLine(
+            $"{ex.GetType()} occurred when checking reminders: {ex.Message}\n{ex.StackTrace}");
 
         await logChannel.SendMessageAsync(errorEmbed);
     }

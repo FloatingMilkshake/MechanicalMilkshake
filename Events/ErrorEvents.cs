@@ -96,6 +96,9 @@ public class ErrorEvents
             };
             embed.AddField("Message", ex.Message);
 
+            Console.WriteLine(
+                $"{ex.GetType()} occurred when {e.Context.User.Username}#{e.Context.User.Discriminator} used /{e.Context.CommandName}: {ex.Message}\n{ex.StackTrace}");
+
             // I don't know how to tell whether the command response was deferred or not, so we're going to try both an interaction response and follow-up so that the interaction doesn't time-out.
             try
             {
@@ -149,15 +152,18 @@ public class ErrorEvents
             {
                 Color = new DiscordColor("#FF0000"),
                 Title = "An exception occurred when executing a command",
-                Description = $"`{ex.GetType()}` occurred when executing `{e.Command?.QualifiedName}`.",
+                Description = $"`{ex.GetType()}` occurred when executing `{e.Command!.QualifiedName}`.",
                 Timestamp = DateTime.UtcNow
             };
             embed.AddField("Message", ex.Message);
 
+            Console.WriteLine(
+                $"{ex.GetType()} occurred when {e.Context.User.Username}#{e.Context.User.Discriminator} used {e.Command!.QualifiedName}: {ex.Message}\n{ex.StackTrace}");
+
             // System.ArgumentException
             if (ex.GetType().ToString() == "System.ArgumentException")
                 embed.AddField("What's that mean?", "This usually means that you used the command incorrectly.\n" +
-                                                    $"Please run `help {e.Command?.QualifiedName}` for information about what you need to provide for the `{e.Command?.QualifiedName}` command.");
+                                                    $"Please run `help {e.Command!.QualifiedName}` for information about what you need to provide for the `{e.Command!.QualifiedName}` command.");
 
             // Check if bot has perms to send error response and send if so
             if (e.Context.Channel

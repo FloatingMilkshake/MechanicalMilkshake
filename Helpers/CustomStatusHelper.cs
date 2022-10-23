@@ -170,6 +170,9 @@ public class CustomStatusHelper
             };
             embed.AddField("Message", ex.Message);
 
+            Console.WriteLine(
+                $"{ex.GetType()} occurred while processing a custom status message: {ex.Message}\n{ex.StackTrace}");
+
             await Program.HomeChannel.SendMessageAsync(embed);
         }
     }

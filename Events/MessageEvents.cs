@@ -327,8 +327,10 @@ public class MessageEvents
                 ? "An exception occurred when processing a message update event"
                 : "An exception occurred when processing a message create event"
         };
-
         embed.AddField("Message", $"{ex.Message}");
+        
+        Console.WriteLine(
+            $"{ex.GetType()} occurred when processing a message {(isEdit ? "edit" : "create")} event: {ex.Message}\n{ex.StackTrace}");
 
         await Program.HomeChannel.SendMessageAsync(embed);
     }
