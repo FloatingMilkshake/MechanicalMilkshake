@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class Reminders : ApplicationCommandModule
+public class ReminderCommands : ApplicationCommandModule
 {
     [SlashCommandGroup("reminder", "Set, modify and delete reminders.")]
     public class ReminderCmds

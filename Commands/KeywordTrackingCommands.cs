@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class KeywordTracking : ApplicationCommandModule
+public class KeywordTrackingCommands : ApplicationCommandModule
 {
     [SlashCommandGroup("track", "Track or untrack keywords.")]
     public class Track
