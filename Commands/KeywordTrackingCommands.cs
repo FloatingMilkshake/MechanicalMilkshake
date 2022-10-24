@@ -8,21 +8,21 @@ public class KeywordTrackingCommands : ApplicationCommandModule
         [SlashCommand("add", "Track a new keyword.")]
         public static async Task TrackAdd(InteractionContext ctx,
             [Option("keyword", "The keyword or phrase to track.")]
-                string keyword,
+            string keyword,
             [Option("match_whole_word",
                 "Whether you want to match the keyword only when it is a whole word. Defaults to False.")]
-                bool matchWholeWord = false,
+            bool matchWholeWord = false,
             [Option("ignore_bots", "Whether to ignore messages from bots. Defaults to True.")]
-                bool ignoreBots = true,
+            bool ignoreBots = true,
             [Option("user_ignore_list", "Users to ignore. Use IDs and/or mentions. Separate with spaces.")]
-                string userIgnoreList = null,
+            string userIgnoreList = null,
             [Option("channel_ignore_list", "Channels to ignore. Use IDs only. Separate with spaces.")]
-                string channelIgnoreList = null,
+            string channelIgnoreList = null,
             [Option("server_ignore_list", "Servers to ignore. Use IDs only. Separate with spaces.")]
-                string guildIgnoreList = null,
+            string guildIgnoreList = null,
             [Option("this_server_only",
                 "Whether to only notify you if the keyword is mentioned in this server. Defaults to True.")]
-                bool currentGuildOnly = true)
+            bool currentGuildOnly = true)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());

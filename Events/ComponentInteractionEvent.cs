@@ -320,6 +320,7 @@ public class ComponentInteractionEvent
                     var user = await Program.Discord.GetUserAsync(userToIgnore);
                     ignoredUserMentions += $"- {user.Mention}\n";
                 }
+
                 if (ignoredUserMentions == "\n") ignoredUserMentions = " None\n";
 
                 var ignoredChannelMentions = "\n";
@@ -328,6 +329,7 @@ public class ComponentInteractionEvent
                     var channel = await Program.Discord.GetChannelAsync(channelToIgnore);
                     ignoredChannelMentions += $"- {channel.Mention}\n";
                 }
+
                 if (ignoredChannelMentions == "\n") ignoredChannelMentions = " None\n";
 
                 var ignoredGuildNames = "\n";
@@ -336,6 +338,7 @@ public class ComponentInteractionEvent
                     var guild = await Program.Discord.GetGuildAsync(guildToIgnore);
                     ignoredGuildNames += $"- {guild.Name}\n";
                 }
+
                 if (ignoredGuildNames == "\n") ignoredGuildNames = " None\n";
 
                 var matchWholeWord = keyword.MatchWholeWord.ToString().Trim();
@@ -395,6 +398,7 @@ public class ComponentInteractionEvent
                     var user = await Program.Discord.GetUserAsync(userToIgnore);
                     ignoredUserMentions += $"- {user.Mention}\n";
                 }
+
                 if (ignoredUserMentions == "\n") ignoredUserMentions = " None\n";
 
                 var ignoredChannelMentions = "\n";
@@ -403,6 +407,7 @@ public class ComponentInteractionEvent
                     var channel = await Program.Discord.GetChannelAsync(channelToIgnore);
                     ignoredChannelMentions += $"- {channel.Mention}\n";
                 }
+
                 if (ignoredChannelMentions == "\n") ignoredChannelMentions = " None\n";
 
                 var ignoredGuildNames = "\n";
@@ -411,9 +416,10 @@ public class ComponentInteractionEvent
                     var guild = await Program.Discord.GetGuildAsync(guildToIgnore);
                     ignoredGuildNames += $"- {guild.Name}\n";
                 }
+
                 if (ignoredGuildNames == "\n") ignoredGuildNames = " None\n";
 
-var matchWholeWord = keyword.MatchWholeWord.ToString().Trim();
+                var matchWholeWord = keyword.MatchWholeWord.ToString().Trim();
 
                 var limitedGuild = keyword.GuildId == default
                     ? "None"
