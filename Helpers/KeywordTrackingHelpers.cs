@@ -49,6 +49,17 @@ public class KeywordTrackingHelpers
             if (fieldValue.GuildId != default && fieldValue.GuildId != message.Channel.Guild.Id)
                 continue;
 
+            for (var i = 0; i < 10; i++)
+            {
+                if (TypingEvent.TypingUsers.Any(kv =>
+                        kv.Key.Id == fieldValue.UserId && kv.Value.Id == message.Channel.Id)) return;
+
+                await Task.Delay(1000);
+            }
+
+            var messages = await message.Channel.GetMessagesAfterAsync(message.Id);
+            if (messages.Any(m => m.Author.Id == fieldValue.UserId)) return;
+
             DiscordMember member;
             try
             {
