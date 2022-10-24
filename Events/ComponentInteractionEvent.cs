@@ -413,7 +413,7 @@ public class ComponentInteractionEvent
                 }
                 if (ignoredGuildNames == "\n") ignoredGuildNames = " None\n";
 
-var matchWholeWord = keyword.MatchWholeWord.ToString().Trim();
+                var matchWholeWord = keyword.MatchWholeWord.ToString().Trim();
 
                 var limitedGuild = keyword.GuildId == default
                     ? "None"
@@ -622,11 +622,115 @@ var matchWholeWord = keyword.MatchWholeWord.ToString().Trim();
                     new DiscordInteractionResponseBuilder().AddEmbed(embed).AsEphemeral());
                 break;
             }
+            case "clear-mod-roles-dropdown":
+            {
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+    
+                if (!await ModRoleHelpers.UserHasModRole(await e.Guild.GetMemberAsync(e.User.Id), e.Guild))
+                {
+                    await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
+                        .WithContent(
+                            $"{e.User.Mention}, you are not authorized to use this command! Please contact a server admin if you think this is a mistake.")
+                        .AsEphemeral());
+                    return;
+                }
+    
+                Task.Run(async () =>
+                {
+                    var modRolesSerialized = await Program.Db.HashGetAsync("modroles", e.Guild.Id);
+    
+                    var options = new List<DiscordSelectComponentOption>
+                    {
+                        new("Admin Role", "admin", "Clear the Admin role."),
+                        new("Mod Role", "mod", "Clear the Mod role."),
+                        new("Trial Mod Role", "trialmod", "Clear the Trial Mod role.")
+                    };
+                    DiscordSelectComponent disabledDropdown = new("clear-mod-roles-dropdown", null, options, true);
+                    DiscordButtonComponent disabledButton = new(ButtonStyle.Danger, "cancel-clear-mod-roles-button", "Cancel", true);
+    
+                    if (string.IsNullOrWhiteSpace(modRolesSerialized))
+                    {
+                        await e.Interaction.CreateFollowupMessageAsync(
+                            new DiscordFollowupMessageBuilder().WithContent(
+                                "This server doesn't have any mod roles set up, so there are none to clear!"));
+    
+                        await e.Message.ModifyAsync(new DiscordMessageBuilder()
+                            .WithContent(
+                                "Choose the roles you would like to clear.\n**This menu has been disabled. Please use the command again if you wish to make a selection.**")
+                            .AddComponents(disabledDropdown).AddComponents(disabledButton));
+    
+                        return;
+                    }
+    
+                    var modRoles = JsonConvert.DeserializeObject<ModRoleConfig>(modRolesSerialized);
+    
+                    ModRoleConfig newModRoles = new()
+                    {
+                        AdminRoleId = modRoles!.AdminRoleId,
+                        ModRoleId = modRoles!.ModRoleId,
+                        TrialModRoleId = modRoles!.TrialModRoleId
+                    };
+    
+                    if (e.Values.Contains("admin"))
+                        newModRoles.AdminRoleId = default;
+                    if (e.Values.Contains("mod"))
+                        newModRoles.ModRoleId = default;
+                    if (e.Values.Contains("trialmod"))
+                        newModRoles.TrialModRoleId = default;
+    
+                    await Program.Db.HashSetAsync("modroles", e.Guild.Id, JsonConvert.SerializeObject(newModRoles));
+    
+                    await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent(
+                            "Okay, I've updated your mod roles as follows:"
+                            + $"\n- Admin Role: {(newModRoles.AdminRoleId == default ? "unset" : $"<@&{newModRoles.AdminRoleId}>")}"
+                            + $"\n- Mod Role: {(newModRoles.ModRoleId == default ? "unset" : $"<@&{newModRoles.ModRoleId}>")}"
+                            + $"\n- Trial Mod Role: {(newModRoles.TrialModRoleId == default ? "unset" : $"<@&{newModRoles.TrialModRoleId}>")}")
+                        .AddMentions(Mentions.None));
+    
+                    await e.Message.ModifyAsync(new DiscordMessageBuilder()
+                        .WithContent(
+                            "Choose the roles you would like to clear.\n**This menu has been disabled. Please use the command again if you wish to make a selection.**")
+                        .AddComponents(disabledDropdown).AddComponents(disabledButton));
+                });
+
+                break;
+            }
+            case "cancel-clear-mod-roles-button":
+            {
+                if (!await ModRoleHelpers.UserHasModRole(await e.Guild.GetMemberAsync(e.User.Id), e.Guild))
+                {
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                        new DiscordInteractionResponseBuilder()
+                            .WithContent(
+                                $"{e.User.Mention}, you are not authorized to use this command! Please contact a server admin if you think this is a mistake."));
+                    return;
+                }
+                
+                var options = new List<DiscordSelectComponentOption>
+                {
+                    new("Admin Role", "admin", "Clear the Admin role."),
+                    new("Mod Role", "mod", "Clear the Mod role."),
+                    new("Trial Mod Role", "trialmod", "Clear the Trial Mod role.")
+                };
+                DiscordSelectComponent disabledDropdown = new("clear-mod-roles-dropdown", null, options, true);
+                DiscordButtonComponent disabledButton =
+                    new(ButtonStyle.Danger, "cancel-clear-mod-roles-button", "Cancel", true);
+    
+                await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
+                    new DiscordInteractionResponseBuilder()
+                        .WithContent(
+                            "Choose the roles you would like to clear.\n**This menu has been disabled. Please use the command again if you wish to make a selection.**")
+                        .AddComponents(disabledDropdown).AddComponents(disabledButton));
+
+                break;
+            }
             default:
+            {
                 e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
                         "Unknown interaction ID! Contact the bot developer for assistance.").AsEphemeral());
                 break;
+            }
         }
     }
 }
