@@ -20,10 +20,10 @@ public class MessageEvents
 
     public static async Task MessageCreated(DiscordClient client, MessageCreateEventArgs e)
     {
-        await PerServerFeatures.Checks.MessageCreateChecks(e);
-
         Task.Run(async () =>
         {
+            await PerServerFeatures.Checks.MessageCreateChecks(e);
+
             try
             {
                 await KeywordTrackingHelpers.KeywordCheck(e.Message);
