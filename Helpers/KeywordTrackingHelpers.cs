@@ -21,6 +21,19 @@ public class KeywordTrackingHelpers
 
             var fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
 
+            // If keyword is set to only match whole word, use regex to check
+            if (fieldValue!.MatchWholeWord)
+            {
+                if (!Regex.IsMatch(message.Content.ToLower().Replace("\n", " "),
+                        $"\\b{field.Name.ToString().Replace("\n", " ")}\\b")) return;
+            }
+            // Otherwise, use a simple .Contains()
+            else
+            {
+                if (!message.Content.ToLower().Replace("\n", " ")
+                        .Contains(fieldValue.Keyword.ToLower().Replace("\n", " "))) return;
+            }
+
             // If message was sent by (this) bot, ignore
             if (message.Author.Id == Program.Discord.CurrentUser.Id)
                 break;
@@ -76,18 +89,12 @@ public class KeywordTrackingHelpers
             if (!message.Channel.PermissionsFor(member).HasPermission(Permissions.AccessChannels))
                 break;
 
-            // If keyword is set to only match whole word, use regex to check
             if (fieldValue.MatchWholeWord)
             {
-                if (!Regex.IsMatch(message.Content.ToLower().Replace("\n", " "),
-                        $"\\b{field.Name.ToString().Replace("\n", " ")}\\b")) continue;
                 await KeywordAlert(fieldValue.UserId, message, field.Name, isEdit);
             }
-            // Otherwise, use a simple .Contains()
             else
             {
-                if (!message.Content.ToLower().Replace("\n", " ")
-                        .Contains(fieldValue.Keyword.ToLower().Replace("\n", " "))) continue;
                 await KeywordAlert(fieldValue.UserId, message, fieldValue.Keyword, isEdit);
             }
         }
