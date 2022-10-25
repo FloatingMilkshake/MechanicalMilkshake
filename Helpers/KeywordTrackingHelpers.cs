@@ -25,13 +25,13 @@ public class KeywordTrackingHelpers
             if (fieldValue!.MatchWholeWord)
             {
                 if (!Regex.IsMatch(message.Content.ToLower().Replace("\n", " "),
-                        $"\\b{field.Name.ToString().Replace("\n", " ")}\\b")) return;
+                        $"\\b{field.Name.ToString().Replace("\n", " ")}\\b")) continue;
             }
             // Otherwise, use a simple .Contains()
             else
             {
                 if (!message.Content.ToLower().Replace("\n", " ")
-                        .Contains(fieldValue.Keyword.ToLower().Replace("\n", " "))) return;
+                        .Contains(fieldValue.Keyword.ToLower().Replace("\n", " "))) continue;
             }
 
             // If message was sent by (this) bot, ignore
@@ -65,13 +65,13 @@ public class KeywordTrackingHelpers
             for (var i = 0; i < 10; i++)
             {
                 if (TypingEvent.TypingUsers.Any(kv =>
-                        kv.Key.Id == fieldValue.UserId && kv.Value.Id == message.Channel.Id)) return;
+                        kv.Key.Id == fieldValue.UserId && kv.Value.Id == message.Channel.Id)) continue;
 
                 await Task.Delay(1000);
             }
 
             var messages = await message.Channel.GetMessagesAfterAsync(message.Id);
-            if (messages.Any(m => m.Author.Id == fieldValue.UserId)) return;
+            if (messages.Any(m => m.Author.Id == fieldValue.UserId)) continue;
 
             DiscordMember member;
             try
