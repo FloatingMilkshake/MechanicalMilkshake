@@ -13,6 +13,7 @@ This bot depends on a few projects and services to provide the features that it 
 - [WolframAlpha](https://products.wolframalpha.com/api/)
 - [Minio](https://github.com/minio/minio-dotnet/)
 - [HumanDateParser](https://github.com/jacksonrakena/human-date-parser/)
+- [HTTP Cats API](https://http.cat/)
 - [Random Useless Facts API](https://uselessfacts.jsph.pl/)
 - [The Cat API](https://thecatapi.com/)
 - [Dog CEO's Dog API](https://dog.ceo/dog-api/)
