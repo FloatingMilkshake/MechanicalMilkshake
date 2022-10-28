@@ -21,7 +21,7 @@ public class WolframAlpha : ApplicationCommandModule
             return;
         }
 
-        var queryEncoded = HttpUtility.UrlEncode(query);
+        var queryEncoded = (HttpUtility.UrlEncode(query)).Replace("(", "%28").Replace(")", "%29");
 
         if (Program.ConfigJson.Base.WolframAlphaAppId == "")
         {
@@ -51,7 +51,7 @@ public class WolframAlpha : ApplicationCommandModule
             catch
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "Something went wrong while searching WolframAlpha and I couldn't get a simple answer for your query! You might have better luck if you set `responsetype` to `Image`.\n\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
+                    $"Something went wrong while searching WolframAlpha and I couldn't get a simple answer for your query! You might have better luck if you set `responsetype` to `Image`.\n\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
             }
         else
             try
@@ -69,7 +69,7 @@ public class WolframAlpha : ApplicationCommandModule
             catch
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "Something went wrong while searching WolframAlpha and I couldn't get an image response for your query! You might have better luck if you set `responsetype` to `Text`.\n\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
+                    $"Something went wrong while searching WolframAlpha and I couldn't get an image response for your query! You might have better luck if you set `responsetype` to `Text`.\n\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
             }
     }
 }
