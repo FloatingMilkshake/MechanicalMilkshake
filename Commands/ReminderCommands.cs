@@ -323,7 +323,20 @@ public class ReminderCommands : ApplicationCommandModule
 
             if (text != null) reminder.ReminderText = text;
 
-            if (time != null) reminder.ReminderTime = HumanDateParser.HumanDateParser.Parse(time);
+            if (time != null)
+                try
+                {
+                    reminder.ReminderTime = HumanDateParser.HumanDateParser.Parse(time);
+                }
+                catch
+                {
+                    // Parse error, either because the user did it wrong or because HumanDateParser is weird
+
+                    await ctx.FollowUpAsync(
+                        new DiscordFollowupMessageBuilder().WithContent(
+                            $"I couldn't parse \"{time}\" as a time! Please try again.").AsEphemeral());
+                    return;
+                }
 
             await Program.Db.HashSetAsync("reminders", reminder.ReminderId, JsonConvert.SerializeObject(reminder));
 
