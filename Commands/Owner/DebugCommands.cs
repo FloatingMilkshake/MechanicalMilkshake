@@ -175,21 +175,28 @@ public class DebugCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
+            var response = "Done!";
+            bool reminderCheckStatus;
+            bool pkgUpdateCheckStatus;
+
             switch (checksToRun)
             {
                 case "all":
-                    await ReminderChecks.ReminderCheck();
-                    await PackageUpdateChecks.PackageUpdateCheck();
+                    reminderCheckStatus = await ReminderChecks.ReminderCheck();
+                    pkgUpdateCheckStatus = await PackageUpdateChecks.PackageUpdateCheck();
+                    response = $"Done!\nReminders: `{reminderCheckStatus}`\nPackage Updates: `{pkgUpdateCheckStatus}`";
                     break;
                 case "reminders":
-                    await ReminderChecks.ReminderCheck();
+                    reminderCheckStatus = await ReminderChecks.ReminderCheck();
+                    response = $"Done!\nReminders: `{reminderCheckStatus}`";
                     break;
                 case "packageupdates":
-                    await PackageUpdateChecks.PackageUpdateCheck();
+                    pkgUpdateCheckStatus = await PackageUpdateChecks.PackageUpdateCheck();
+                    response = $"Done!\nPackage Updates: `{pkgUpdateCheckStatus}`";
                     break;
             }
 
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Done!"));
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
         }
     }
 }
