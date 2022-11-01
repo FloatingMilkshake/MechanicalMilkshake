@@ -198,5 +198,22 @@ public class DebugCommands : ApplicationCommandModule
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
         }
+
+        [SlashCommand("counts", "[Authorized users only] Show which commands are used the most.")]
+        public static async Task Counts(InteractionContext ctx)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            var cmdCounts = (from cmd in await Program.Db.HashGetAllAsync("commandCounts")
+                select new KeyValuePair<string, int>(cmd.Name, int.Parse(cmd.Value))).ToList();
+            cmdCounts.Sort((x, y) => y.Value.CompareTo(x.Value));
+
+            var output = cmdCounts.Aggregate("", (current, cmd) => current + $"{SlashCmdMentionHelpers.GetSlashCmdMention(cmd.Key)}: {cmd.Value}\n");
+
+            if (string.IsNullOrWhiteSpace(output))
+                output = "I don't have any command counts saved!";
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(output.Trim()));
+        }
     }
 }

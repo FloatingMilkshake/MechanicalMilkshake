@@ -38,5 +38,15 @@
     "urlPrefix": "",
     "zoneId": "",
     "token": ""
+  },
+
+  "logs": {
+    "slashCommands": {
+      "logChannel": "",
+      "cmdLogExcludedGuilds": [
+        "",
+        ""
+      ]
+    }
   }
 }

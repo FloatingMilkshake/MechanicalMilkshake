@@ -9,6 +9,8 @@ public class ConfigJson
     [JsonProperty("s3")] public S3Config S3 { get; private set; }
 
     [JsonProperty("cloudflare")] public CloudflareConfig Cloudflare { get; private set; }
+
+    [JsonProperty("logs")] public LogConfig Logs { get; private set; }
 }
 
 public class BaseConfig
@@ -63,4 +65,15 @@ public class CloudflareConfig
     [JsonProperty("zoneId")] public string ZoneId { get; set; }
 
     [JsonProperty("token")] public string Token { get; set; }
+}
+
+public class LogConfig
+{
+    [JsonProperty("slashCommands")] public SlashCommandLogConfig SlashCommands { get; private set; }
+    
+    public class SlashCommandLogConfig
+    {
+        [JsonProperty("logChannel")] public string LogChannel { get; set; }
+        [JsonProperty("cmdLogExcludedGuilds")] public string[] CmdLogExcludedGuilds { get; set; }
+    }
 }

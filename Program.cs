@@ -239,6 +239,8 @@ internal class Program
         Discord.GuildDeleted += GuildEvents.GuildDeleted;
         commands.CommandErrored += ErrorEvents.CommandsNextService_CommandErrored;
         slash.SlashCommandErrored += ErrorEvents.SlashCommandErrored;
+        slash.SlashCommandExecuted += InteractionEvents.SlashCommandExecuted;
+        slash.ContextMenuExecuted += InteractionEvents.ContextMenuExecuted;
 
         /* Fix SSH key permissions at bot startup.
         I wanted to be able to do this somewhere else, but for now it seems
