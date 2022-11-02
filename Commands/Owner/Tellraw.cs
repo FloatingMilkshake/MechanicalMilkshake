@@ -40,7 +40,7 @@ public class Tellraw : ApplicationCommandModule
 
             try
             {
-                var member = await (await Program.Discord.GetGuildAsync(Program.ConfigJson.Base.HomeServerId))
+                var member = await (await Program.Discord.GetGuildAsync(Program.HomeServer.Id))
                     .GetMemberAsync(owner.Id);
                 await member.SendMessageAsync(
                     $"{ctx.User.Mention} used tellraw:\n> {message}\n\n{sentMessage.JumpLink}");

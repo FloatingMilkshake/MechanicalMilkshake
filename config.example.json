@@ -2,7 +2,7 @@
   "base": {
     "botToken": "",
     "homeChannel": "",
-    "homeServerId": "",
+    "homeServer": "",
     "wolframAlphaAppId": "",
 
     "authorizedUsers": [

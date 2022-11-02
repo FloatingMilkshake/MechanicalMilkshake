@@ -15,7 +15,7 @@ public class InteractionEvents
     private static async Task LogCmdUsage(BaseContext context)
     {
         // Ignore home server, excluded servers, and authorized users
-        if (context.Guild.Id == Program.ConfigJson.Base.HomeServerId ||
+        if (context.Guild.Id == Program.HomeServer.Id ||
             Program.ConfigJson.Logs.SlashCommands.CmdLogExcludedGuilds.Contains(context.Guild.Id.ToString()) ||
             Program.ConfigJson.Base.AuthorizedUsers.Contains(context.User.Id.ToString()))
             return;

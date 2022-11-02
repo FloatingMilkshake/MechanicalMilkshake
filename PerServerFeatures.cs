@@ -16,7 +16,7 @@ public class PerServerFeatures
             string complaint)
         {
             if (ctx.Guild.Id != 631118217384951808 && ctx.Guild.Id != 984903591816990730 &&
-                ctx.Guild.Id != Program.ConfigJson.Base.HomeServerId)
+                ctx.Guild.Id != Program.HomeServer.Id)
             {
                 await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
                     .WithContent("This command is not available in this server.").AsEphemeral());

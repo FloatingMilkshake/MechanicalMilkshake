@@ -15,6 +15,7 @@ internal class Program
     public static readonly string ProcessStartTime = DateTime.Now.ToString(CultureInfo.CurrentCulture);
     public static readonly DiscordColor BotColor = new("#FAA61A");
     public static DiscordChannel HomeChannel;
+    public static DiscordGuild HomeServer;
     public static List<DiscordApplicationCommand> ApplicationCommands;
     public static EventId BotEventId { get; } = new(1000, "MechanicalMilkshake");
 #if DEBUG
@@ -97,11 +98,10 @@ internal class Program
             Environment.Exit(1);
         }
 
-        // If the bot token is not set, we cannot continue. Display error and exit.
-        if (string.IsNullOrWhiteSpace(ConfigJson.Base.BotToken))
+        if (string.IsNullOrWhiteSpace(ConfigJson.Base.HomeChannel) || string.IsNullOrWhiteSpace(ConfigJson.Base.HomeServer) || string.IsNullOrWhiteSpace(ConfigJson.Base.BotToken))
         {
             Discord.Logger.LogError(BotEventId,
-                "ERROR: No token provided! Make sure the botToken field in your config.json file is set.");
+                "You are missing required values in your config.json file. Please make sure you have values for all of the keys under \"base\".");
             Environment.Exit(1);
         }
 
@@ -123,17 +123,23 @@ internal class Program
             Timeout = TimeSpan.FromSeconds(30)
         });
 
-        // Get home channel ID; if the home channel is not set, we cannot continue.
-        // Display error and exit.
-        if (ConfigJson.Base.HomeChannel == null)
+        // Set home channel & guild for later reference
+        ulong homeChanId = default;
+        ulong homeServerId = default;
+        try
+        {
+            homeChanId = Convert.ToUInt64(ConfigJson.Base.HomeChannel);
+            homeServerId = Convert.ToUInt64(ConfigJson.Base.HomeServer);
+        }
+        catch
         {
             Discord.Logger.LogError(BotEventId,
-                "No home channel provided! Make sure the homeChannel field in your config.json file is set.");
+                "\"homeChannel\" or \"homeServer\" in config.json are misconfigured. Please make sure you have a valid ID for both of these values.");
             Environment.Exit(1);
         }
 
-        var homeChannelId = Convert.ToUInt64(ConfigJson.Base.HomeChannel);
-        HomeChannel = await Discord.GetChannelAsync(homeChannelId);
+        HomeChannel = await Discord.GetChannelAsync(homeChanId);
+        HomeServer = await Discord.GetGuildAsync(homeServerId);
 
         // Set up slash commands and CommandsNext
         var slash = Discord.UseSlashCommands();
@@ -181,9 +187,9 @@ internal class Program
             !t.IsNested);
 
         foreach (var type in slashCommandClasses)
-            slash.RegisterCommands(type, ConfigJson.Base.HomeServerId);
+            slash.RegisterCommands(type, HomeServer.Id);
 
-        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(ConfigJson.Base.HomeServerId);
+        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(HomeServer.Id);
 
         Discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging.");
 
@@ -203,7 +209,7 @@ internal class Program
             !t.IsNested);
 
         foreach (var type in ownerSlashCommandClasses)
-            slash.RegisterCommands(type, ConfigJson.Base.HomeServerId);
+            slash.RegisterCommands(type, HomeServer.Id);
 
         Discord.Logger.LogInformation(BotEventId, "Slash commands registered globally.");
 
@@ -211,7 +217,7 @@ internal class Program
 // & testing server for 'production' bot
         slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(631118217384951808);
         slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(984903591816990730);
-        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(ConfigJson.Base.HomeServerId);
+        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(HomeServer.Id);
         slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
 #endif
 
@@ -224,7 +230,7 @@ internal class Program
 #if DEBUG
         ApplicationCommands =
             (List<DiscordApplicationCommand>)await Discord.GetGuildApplicationCommandsAsync(
-                ConfigJson.Base.HomeServerId);
+                HomeServer.Id);
 #else
         ApplicationCommands = (List<DiscordApplicationCommand>)await Discord.GetGlobalApplicationCommandsAsync();
 #endif
