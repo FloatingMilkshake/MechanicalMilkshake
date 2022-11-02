@@ -32,10 +32,21 @@ public class SlashCmdMentionHelpers
         subCommand = subCommand?.Trim();
         subSubCommand = subSubCommand?.Trim();
 
-        if (Program.ApplicationCommands is null) return $"`/{cmdName}`";
+        if (Program.ApplicationCommands is null)
+            return subCommand != default
+                ? subSubCommand != default
+                    ? $"`/{cmdName} {subCommand} {subSubCommand}`"
+                    : $"{cmdName} {subCommand}"
+                : $"{cmdName}";
 
         var cmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == cmdName);
-        if (cmd is null) return $"`/{cmdName}`";
+
+        if (cmd is null)
+            return subCommand != default
+                ? subSubCommand != default
+                    ? $"`/{cmdName} {subCommand} {subSubCommand}`"
+                    : $"`/{cmdName} {subCommand}`"
+                : $"`/{cmdName}`";
 
         if (subCommand != default)
             return subSubCommand != default
