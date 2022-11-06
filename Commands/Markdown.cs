@@ -144,6 +144,14 @@ public class Markdown : ApplicationCommandModule
         msgContentEscaped = msgContentEscaped.Replace("}", @"\}");
         msgContentEscaped = msgContentEscaped.Replace(".", @"\.");
         msgContentEscaped = msgContentEscaped.Replace("!", @"\!");
+        
+        // If the escaped message is greater than 2000 characters, return an error to the user.
+        if (msgContentEscaped.Length > 4000)
+        {
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                "Hmm, that message got a bit too long for me to handle. Try again with a shorter message."));
+            return;
+        }
 
         DiscordEmbedBuilder embed = new()
         {
