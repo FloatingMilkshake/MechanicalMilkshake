@@ -96,7 +96,8 @@ public class Markdown : ApplicationCommandModule
             return;
         }
 
-        var msgContentEscaped = message.Content.Replace("`", @"\`");
+        var msgContentEscaped = message.Content.Replace("\\", "\\\\");
+        msgContentEscaped = msgContentEscaped.Replace("`", @"\`");
         msgContentEscaped = msgContentEscaped.Replace("*", @"\*");
         msgContentEscaped = msgContentEscaped.Replace("_", @"\_");
         msgContentEscaped = msgContentEscaped.Replace("~", @"\~");
@@ -105,6 +106,15 @@ public class Markdown : ApplicationCommandModule
         msgContentEscaped = msgContentEscaped.Replace("]", @"\]");
         msgContentEscaped = msgContentEscaped.Replace("(", @"\(");
         msgContentEscaped = msgContentEscaped.Replace(")", @"\)");
+        msgContentEscaped = msgContentEscaped.Replace("#", @"\#");
+        msgContentEscaped = msgContentEscaped.Replace("+", @"\+");
+        msgContentEscaped = msgContentEscaped.Replace("-", @"\-");
+        msgContentEscaped = msgContentEscaped.Replace("=", @"\=");
+        msgContentEscaped = msgContentEscaped.Replace("|", @"\|");
+        msgContentEscaped = msgContentEscaped.Replace("{", @"\{");
+        msgContentEscaped = msgContentEscaped.Replace("}", @"\}");
+        msgContentEscaped = msgContentEscaped.Replace(".", @"\.");
+        msgContentEscaped = msgContentEscaped.Replace("!", @"\!");
 
         DiscordEmbedBuilder embed = new()
         {
