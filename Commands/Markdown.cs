@@ -10,7 +10,7 @@ public class Markdown : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
         DiscordMessage message;
-        if (!messageToExpose.Contains("discord.com"))
+        if (!Regex.IsMatch(messageToExpose, @".*.discord.com\/channels\/([\d+]*\/)+[\d+]*"))
         {
             if (messageToExpose.Length < 17)
             {
@@ -47,12 +47,21 @@ public class Markdown : ApplicationCommandModule
             // Assume the user provided a message link. Extract channel and message IDs to get message content.
 
             // Extract all IDs from URL. This will leave you with something like "guild_id/channel_id/message_id".
-            Regex extractId = new(@".*.discord.com\/channels\/");
+            // Remove the guild ID, leaving you with "channel_id/message_id".
+            Regex extractId = new(@".*.discord.com\/channels\/(\d+/)");
             var selectionToRemove = extractId.Match(messageToExpose);
             messageToExpose = messageToExpose.Replace(selectionToRemove.ToString(), "");
+            
+            // If IDs have letters in them, the user provided an invalid link.
+            if (Regex.IsMatch(messageToExpose, @"[A-z]"))
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "Hmm, that doesn't look like a valid message ID or link. I wasn't able to get the Markdown data from it."));
+                return;
+            }
 
             // Extract channel ID. This will leave you with "/channel_id".
-            Regex getChannelId = new(@"\/[a-zA-Z0-9]*");
+            Regex getChannelId = new(@"[0-9]+\/");
             var channelId = getChannelId.Match(messageToExpose);
             // Remove '/' to get "channel_id"
             var targetChannelId = Convert.ToUInt64(channelId.ToString().Replace("/", ""));
@@ -71,11 +80,12 @@ public class Markdown : ApplicationCommandModule
 
             // Now we have the channel ID and need to get the message inside that channel. To do this we'll need the message ID from what we had before...
 
-            Regex getMessageId = new(@"[a-zA-Z0-9]*\/[a-zA-Z0-9]*\/");
+            Regex getMessageId = new(@"[0-9]+\/");
             var idsToRemove = getMessageId.Match(messageToExpose);
             var targetMsgId = messageToExpose.Replace(idsToRemove.ToString(), "");
-
-            var targetMessage = Convert.ToUInt64(targetMsgId);
+            
+            // Remove '/' to get "message_id"
+            var targetMessage = Convert.ToUInt64(targetMsgId.ToString().Replace("/", ""));
 
             try
             {
