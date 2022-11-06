@@ -51,6 +51,14 @@ public class Markdown : ApplicationCommandModule
             Regex extractId = new(@".*.discord.com\/channels\/(\d+/)");
             var selectionToRemove = extractId.Match(messageToExpose);
             messageToExpose = messageToExpose.Replace(selectionToRemove.ToString(), "");
+            
+            // If IDs have letters in them, the user provided an invalid link.
+            if (Regex.IsMatch(messageToExpose, @"[A-z]"))
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "Hmm, that doesn't look like a valid message ID or link. I wasn't able to get the Markdown data from it."));
+                return;
+            }
 
             // Extract channel ID. This will leave you with "/channel_id".
             Regex getChannelId = new(@"[0-9]+\/");
