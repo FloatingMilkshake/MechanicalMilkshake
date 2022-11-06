@@ -10,7 +10,7 @@ public class Markdown : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
         DiscordMessage message;
-        if (!messageToExpose.Contains("discord.com"))
+        if (!Regex.IsMatch(messageToExpose, @".*.discord.com\/channels\/([\d+]*\/)+[\d+]*"))
         {
             if (messageToExpose.Length < 17)
             {
