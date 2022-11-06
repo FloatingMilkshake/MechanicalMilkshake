@@ -8,6 +8,8 @@ public class Markdown : ApplicationCommandModule
         string messageToExpose)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        
+        string embedContent = "";
 
         DiscordMessage message;
         if (!Regex.IsMatch(messageToExpose, @".*.discord.com\/channels\/([\d+]*\/)+[\d+]*"))
@@ -98,15 +100,32 @@ public class Markdown : ApplicationCommandModule
                 return;
             }
         }
-
-        if (string.IsNullOrWhiteSpace(message.Content))
+        
+        // If the message has an embed in it, we'll need to get the content from the embed.
+        if (message.Embeds.Count > 0)
+        {
+            var targetEmbed = message.Embeds[0];
+            embedContent = targetEmbed.Description;
+            if (embedContent == "")
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                "Hmm, that message doesn't have any content."));
+                return;
+            }
+        }
+        
+        // Let msgContent be the content of the message, or the content of the embed if there is one.
+        var msgContentEscaped = embedContent == "" ? message.Content : embedContent;
+        
+        if (string.IsNullOrWhiteSpace(msgContentEscaped))
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                "That message doesn't have any text content! I can only parse the Markdown data from messages with content (not including embeds...maybe some time in the future?)"));
+            "That message doesn't have any text content! I can only parse the Markdown data from messages with content or an embed with a description (for now...)."));
             return;
         }
 
-        var msgContentEscaped = message.Content.Replace("\\", "\\\\");
+        // Make the content to be escaped be either the embed content or the message content.
+        msgContentEscaped = msgContentEscaped.Replace("\\", "\\\\");
         msgContentEscaped = msgContentEscaped.Replace("`", @"\`");
         msgContentEscaped = msgContentEscaped.Replace("*", @"\*");
         msgContentEscaped = msgContentEscaped.Replace("_", @"\_");
