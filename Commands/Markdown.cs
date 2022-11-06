@@ -52,7 +52,7 @@ public class Markdown : ApplicationCommandModule
             messageToExpose = messageToExpose.Replace(selectionToRemove.ToString(), "");
 
             // Extract channel ID. This will leave you with "/channel_id".
-            Regex getChannelId = new(@"\/[a-zA-Z0-9]*");
+            Regex getChannelId = new(@"\/[A-z0-9]*");
             var channelId = getChannelId.Match(messageToExpose);
             // Remove '/' to get "channel_id"
             var targetChannelId = Convert.ToUInt64(channelId.ToString().Replace("/", ""));
@@ -71,7 +71,7 @@ public class Markdown : ApplicationCommandModule
 
             // Now we have the channel ID and need to get the message inside that channel. To do this we'll need the message ID from what we had before...
 
-            Regex getMessageId = new(@"[a-zA-Z0-9]*\/[a-zA-Z0-9]*\/");
+            Regex getMessageId = new(@"[A-z0-9]*\/[A-z0-9]*\/");
             var idsToRemove = getMessageId.Match(messageToExpose);
             var targetMsgId = messageToExpose.Replace(idsToRemove.ToString(), "");
 
