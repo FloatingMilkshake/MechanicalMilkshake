@@ -8,14 +8,6 @@ public static class MarkdownParser
     public static string Parse(string input)
     {
         var output = input;
-        // If the string has a link, skip it.
-        if (output.Contains("]("))
-        {
-            var link = output.Substring(output.IndexOf("](", StringComparison.Ordinal) + 2);
-            link = link.Substring(0, link.IndexOf(")", StringComparison.Ordinal));
-            output = output.Replace(link, "");
-        }
-        
         output = output.Replace("\\", "\\\\");
         output = output.Replace("`", @"\`");
         output = output.Replace("*", @"\*");
@@ -33,6 +25,12 @@ public static class MarkdownParser
         output = output.Replace("|", @"\|");
         output = output.Replace("{", @"\{");
         output = output.Replace("}", @"\}");
+        
+        // if output becomes greater than 4000 characters, return an error.
+        if (output.Length > 4000)
+        {
+            return "The output is too long for me to send.";
+        }
         
         return output;
     }
