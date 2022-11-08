@@ -85,7 +85,7 @@ public class Markdown : ApplicationCommandModule
             var targetMsgId = messageToExpose.Replace(idsToRemove.ToString(), "");
             
             // Remove '/' to get "message_id"
-            var targetMessage = Convert.ToUInt64(targetMsgId.ToString().Replace("/", ""));
+            var targetMessage = Convert.ToUInt64(targetMsgId.Replace("/", ""));
 
             try
             {
