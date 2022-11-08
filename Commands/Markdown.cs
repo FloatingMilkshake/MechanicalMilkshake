@@ -103,7 +103,7 @@ public class Markdown : ApplicationCommandModule
         var embeds = message.Embeds;
 
         var response = new DiscordFollowupMessageBuilder()
-            .WithContent("Here's the Markdown data for that message:");
+            .WithContent($"Here's the Markdown data for [that message]({message.JumpLink}):");
 
         if (!string.IsNullOrWhiteSpace(markdown))
             response.AddEmbed(new DiscordEmbedBuilder()
@@ -119,9 +119,12 @@ public class Markdown : ApplicationCommandModule
                     : $"Embed Content: {MarkdownParser.Parse(embeds[0].Title)}")
                 .WithDescription(embeds[0].Description != null ? MarkdownParser.Parse(embeds[0].Description) : "")
                 .WithColor((DiscordColor)message.Embeds[0].Color);
-            foreach (var field in embeds[0].Fields)
+            if (embeds[0].Fields != null)
             {
-                markdownEmbed.AddField(MarkdownParser.Parse(field.Name), MarkdownParser.Parse(field.Value), field.Inline);
+                foreach (var field in embeds[0].Fields)
+                {
+                    markdownEmbed.AddField(MarkdownParser.Parse(field.Name), MarkdownParser.Parse(field.Value), field.Inline);
+                }
             }
             response.AddEmbed(markdownEmbed);
         }
