@@ -3,7 +3,7 @@
 public class MessageEvents
 {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-    public static async Task MessageUpdated(DiscordClient _, MessageUpdateEventArgs e)
+    public static Task MessageUpdated(DiscordClient _, MessageUpdateEventArgs e)
     {
         Task.Run(async () =>
         {
@@ -16,9 +16,10 @@ public class MessageEvents
                 await ThrowMessageException(ex, e.Message, true);
             }
         });
+        return Task.CompletedTask;
     }
 
-    public static async Task MessageCreated(DiscordClient client, MessageCreateEventArgs e)
+    public static Task MessageCreated(DiscordClient client, MessageCreateEventArgs e)
     {
         Task.Run(async () =>
         {
@@ -304,7 +305,7 @@ public class MessageEvents
                     catch (Exception ex)
                     {
                         Program.Discord.Logger.LogError(Program.BotEventId,
-                            "A DM was received, but could not be forwarded!\nException Details: {ex.GetType()}: {ex.Message}\nMessage Content: {e.Message.Content}",
+                            "A DM was received, but could not be forwarded!\nException Details: {ex.GetType()}: {ExMessage}\nMessage Content: {MessageContent}",
                             ex.GetType(), ex.Message, e.Message.Content);
                     }
                 }
@@ -314,6 +315,7 @@ public class MessageEvents
                 await ThrowMessageException(ex, e.Message, false);
             }
         });
+        return Task.CompletedTask;
     }
 
     private static async Task ThrowMessageException(Exception ex, DiscordMessage message, bool isEdit)

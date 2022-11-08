@@ -90,13 +90,9 @@ public class KeywordTrackingHelpers
                 break;
 
             if (fieldValue.MatchWholeWord)
-            {
                 await KeywordAlert(fieldValue.UserId, message, field.Name, isEdit);
-            }
             else
-            {
                 await KeywordAlert(fieldValue.UserId, message, fieldValue.Keyword, isEdit);
-            }
         }
     }
 

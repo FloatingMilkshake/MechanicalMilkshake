@@ -11,7 +11,7 @@ public class InteractionEvents
     {
         await LogCmdUsage(e.Context);
     }
-    
+
     private static async Task LogCmdUsage(BaseContext context)
     {
         // Ignore home server, excluded servers, and authorized users
@@ -44,13 +44,13 @@ public class InteractionEvents
             catch (Exception ex) when (ex is UnauthorizedException or NotFoundException)
             {
                 Program.Discord.Logger.LogError(Program.BotEventId,
-                    "{user} used {command} in {guild} but it could not be logged because the log channel cannot be accessed.",
+                    "{User} used {Command} in {Guild} but it could not be logged because the log channel cannot be accessed",
                     context.User.Id, context.CommandName, context.Guild.Id);
             }
             catch (FormatException)
             {
                 Program.Discord.Logger.LogError(Program.BotEventId,
-                    "{user} used {command} in {guild} but it could not be logged because the log channel ID is invalid.",
+                    "{User} used {Command} in {Guild} but it could not be logged because the log channel ID is invalid",
                     context.User.Id, context.CommandName, context.Guild.Id);
             }
         }

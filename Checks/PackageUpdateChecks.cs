@@ -17,7 +17,7 @@ public class PackageUpdateChecks
         {
 #if DEBUG
             Program.Discord.Logger.LogInformation(Program.BotEventId,
-                "[PackageUpdateCheck] Checking for updates on host '{host}'.\"", host);
+                "[PackageUpdateCheck] Checking for updates on host '{Host}'.\"", host);
 #endif
             var cmdResult =
                 await EvalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
@@ -35,7 +35,7 @@ public class PackageUpdateChecks
         }
 #if DEBUG
         Program.Discord.Logger.LogInformation(Program.BotEventId,
-            "[PackageUpdateCheck] Finished checking for updates on all hosts.");
+            "[PackageUpdateCheck] Finished checking for updates on all hosts");
 #endif
 
         if (restartRequired) restartRequiredResponse = "A system restart is required to complete package updates.";

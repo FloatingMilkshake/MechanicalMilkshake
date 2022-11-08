@@ -3,7 +3,7 @@
 public class UserInfoHelpers
 {
     // Generate embed with extended info when provided with a DiscordMember
-    public static async Task<DiscordEmbed> GenerateUserInfoEmbed(DiscordMember member)
+    public static Task<DiscordEmbed> GenerateUserInfoEmbed(DiscordMember member)
     {
         var registeredAt = $"{IdHelpers.GetCreationTimestamp(member.Id, true)}";
 
@@ -98,11 +98,11 @@ public class UserInfoHelpers
         var badges = GetBadges(member);
         if (badges != "") extendedUserInfoEmbed.AddField("Badges", badges);
 
-        return extendedUserInfoEmbed;
+        return Task.FromResult<DiscordEmbed>(extendedUserInfoEmbed);
     }
 
     // Generate embed with limited info when provided with a DiscordUser
-    public static async Task<DiscordEmbed> GenerateUserInfoEmbed(DiscordUser user)
+    public static Task<DiscordEmbed> GenerateUserInfoEmbed(DiscordUser user)
     {
         var createdAt = IdHelpers.GetCreationTimestamp(user.Id, true);
 
@@ -115,7 +115,7 @@ public class UserInfoHelpers
         var userBadges = GetBadges(user);
         if (userBadges != "") basicUserInfoEmbed.AddField("Badges", userBadges);
 
-        return basicUserInfoEmbed;
+        return Task.FromResult<DiscordEmbed>(basicUserInfoEmbed);
     }
 
     private static string GetBadges(DiscordUser user)

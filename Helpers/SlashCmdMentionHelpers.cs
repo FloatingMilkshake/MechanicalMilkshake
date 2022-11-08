@@ -5,12 +5,9 @@ public class SlashCmdMentionHelpers
     public static string GetSlashCmdMention(string cmdName, string subCommand = default, string subSubCommand = default)
     {
         if (char.IsUpper(cmdName[0]) && subCommand == default && subSubCommand == default)
-        {
             // This is probably a context menu command.
             // Return it in inline code instead of a command mention.
-
             return $"`{cmdName}`";
-        }
 
         if (cmdName.Contains(' '))
         {

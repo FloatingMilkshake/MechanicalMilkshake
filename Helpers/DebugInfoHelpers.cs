@@ -59,7 +59,7 @@ public class DebugInfoHelpers
     }
 
     // If provided a DebugInfo object, use that...
-    private static async Task<DiscordEmbed> GenerateDebugInfoEmbed(DebugInfo debugInfo, bool isOnReadyEvent)
+    private static Task<DiscordEmbed> GenerateDebugInfoEmbed(DebugInfo debugInfo, bool isOnReadyEvent)
     {
         DiscordEmbedBuilder embed = new()
         {
@@ -77,7 +77,7 @@ public class DebugInfoHelpers
         embed.AddField(debugInfo.CommitTimeDescription, debugInfo.CommitTimestamp, true);
         embed.AddField("Commit Message", debugInfo.CommitMessage);
 
-        return embed;
+        return Task.FromResult<DiscordEmbed>(embed);
     }
 
     // ...otherwise, get debug info manually

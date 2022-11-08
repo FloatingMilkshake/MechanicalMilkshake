@@ -94,13 +94,17 @@ internal class Program
         if (ConfigJson?.Base is null)
         {
             Discord.Logger.LogCritical(BotEventId,
+                // ReSharper disable once LogMessageIsSentenceProblem
                 "Your config.json file is malformed. Please be sure it has all of the required values.");
             Environment.Exit(1);
         }
 
-        if (string.IsNullOrWhiteSpace(ConfigJson.Base.HomeChannel) || string.IsNullOrWhiteSpace(ConfigJson.Base.HomeServer) || string.IsNullOrWhiteSpace(ConfigJson.Base.BotToken))
+        if (string.IsNullOrWhiteSpace(ConfigJson.Base.HomeChannel) ||
+            string.IsNullOrWhiteSpace(ConfigJson.Base.HomeServer) ||
+            string.IsNullOrWhiteSpace(ConfigJson.Base.BotToken))
         {
             Discord.Logger.LogError(BotEventId,
+                // ReSharper disable once LogMessageIsSentenceProblem
                 "You are missing required values in your config.json file. Please make sure you have values for all of the keys under \"base\".");
             Environment.Exit(1);
         }
@@ -134,6 +138,7 @@ internal class Program
         catch
         {
             Discord.Logger.LogError(BotEventId,
+                // ReSharper disable once LogMessageIsSentenceProblem
                 "\"homeChannel\" or \"homeServer\" in config.json are misconfigured. Please make sure you have a valid ID for both of these values.");
             Environment.Exit(1);
         }
@@ -156,6 +161,7 @@ internal class Program
             ConfigJson.Cloudflare.Token == "")
         {
             Discord.Logger.LogWarning(BotEventId,
+                // ReSharper disable once LogMessageIsSentenceProblem
                 "CDN commands disabled due to missing S3 or Cloudflare information.");
 
             DisabledCommands.Add("cdn");
@@ -174,6 +180,7 @@ internal class Program
             ConfigJson.WorkerLinks.AccountId == "" || ConfigJson.WorkerLinks.Email == "")
         {
             Discord.Logger.LogWarning(BotEventId,
+                // ReSharper disable once LogMessageIsSentenceProblem
                 "Short-link commands disabled due to missing WorkerLinks information.");
 
             DisabledCommands.Add("wl");
@@ -191,7 +198,8 @@ internal class Program
 
         slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(HomeServer.Id);
 
-        Discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging.");
+        // ReSharper disable once LogMessageIsSentenceProblem
+        Discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging");
 
         // Register slash commands globally for 'production' bot
 #else
@@ -211,7 +219,7 @@ internal class Program
         foreach (var type in ownerSlashCommandClasses)
             slash.RegisterCommands(type, HomeServer.Id);
 
-        Discord.Logger.LogInformation(BotEventId, "Slash commands registered globally.");
+        Discord.Logger.LogInformation(BotEventId, "Slash commands registered globally");
 
 // Register slash commands for per-server features in respective servers
 // & testing server for 'production' bot
@@ -278,6 +286,7 @@ internal class Program
                 await ReminderChecks.ReminderCheck();
                 await Task.Delay(10000); // 10 seconds
             }
+            // ReSharper disable once FunctionNeverReturns
         });
 
         while (true)

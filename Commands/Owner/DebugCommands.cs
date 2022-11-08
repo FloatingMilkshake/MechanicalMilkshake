@@ -201,7 +201,8 @@ public class DebugCommands : ApplicationCommandModule
                 select new KeyValuePair<string, int>(cmd.Name, int.Parse(cmd.Value))).ToList();
             cmdCounts.Sort((x, y) => y.Value.CompareTo(x.Value));
 
-            var output = cmdCounts.Aggregate("", (current, cmd) => current + $"{SlashCmdMentionHelpers.GetSlashCmdMention(cmd.Key)}: {cmd.Value}\n");
+            var output = cmdCounts.Aggregate("",
+                (current, cmd) => current + $"{SlashCmdMentionHelpers.GetSlashCmdMention(cmd.Key)}: {cmd.Value}\n");
 
             if (string.IsNullOrWhiteSpace(output))
                 output = "I don't have any command counts saved!";

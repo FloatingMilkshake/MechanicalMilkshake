@@ -52,6 +52,7 @@ public class ReminderChecks
                     await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
                     return;
                 }
+
                 DiscordGuild mutualServer = default;
                 foreach (var guild in Program.Discord.Guilds)
                     if (guild.Value.Members.Any(m =>
