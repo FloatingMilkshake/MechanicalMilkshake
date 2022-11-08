@@ -38,9 +38,44 @@ public class ReminderChecks
                 embed.AddField("Need to delay this reminder?",
                     $"Use </{reminderCommand.Name} pushback:{reminderCommand.Id}> and set `message` to [loading...].");
 
-            var guildId = Convert.ToUInt64(reminderData.GuildId);
-            var guild = await Program.Discord.GetGuildAsync(guildId);
-            var targetMember = await guild.GetMemberAsync(reminderData.UserId);
+            DiscordMember targetMember;
+            if (reminderData.GuildId == "@me")
+            {
+                DiscordUser user;
+                try
+                {
+                    user = await Program.Discord.GetUserAsync(reminderData.UserId);
+                }
+                catch
+                {
+                    // Reminder will not be sent because user cannot be fetched..? Delete reminder to prevent error spam
+                    await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
+                    return true;
+                }
+                DiscordGuild mutualServer = default;
+                foreach (var guild in Program.Discord.Guilds)
+                    if (guild.Value.Members.Any(m =>
+                            m.Value.Username == user.Username && m.Value.Discriminator == user.Discriminator))
+                    {
+                        mutualServer = await Program.Discord.GetGuildAsync(guild.Value.Id);
+                        break;
+                    }
+
+                if (mutualServer == default)
+                {
+                    // Reminder cannot be sent because there's no way to DM the user... delete it to prevent error spam
+                    await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
+                    return true;
+                }
+
+                targetMember = await mutualServer.GetMemberAsync(user.Id);
+            }
+            else
+            {
+                var guildId = Convert.ToUInt64(reminderData.GuildId);
+                var guild = await Program.Discord.GetGuildAsync(guildId);
+                targetMember = await guild.GetMemberAsync(reminderData.UserId);
+            }
 
             if (reminderData.IsPrivate)
                 try
@@ -90,10 +125,13 @@ public class ReminderChecks
                     catch (Exception ex)
                     {
                         // Couldn't DM user or send an alert in the channel the reminder was set in... log error
+                        // Also delete reminder to prevent error spam...
 
                         await LogReminderError(Program.HomeChannel, ex);
 
-                        return false;
+                        await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
+
+                        return true;
                     }
                 }
 
@@ -142,10 +180,13 @@ public class ReminderChecks
                 catch (Exception ex)
                 {
                     // Couldn't DM user. Log error.
+                    // Delete reminder to prevent error spam...
 
                     await LogReminderError(Program.HomeChannel, ex);
 
-                    return false;
+                    await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
+
+                    return true;
                 }
             }
         }
