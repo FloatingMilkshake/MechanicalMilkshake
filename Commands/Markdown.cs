@@ -114,9 +114,13 @@ public class Markdown : ApplicationCommandModule
         if (embeds.Count > 0)
             foreach (var embed in embeds)
             {
-                // If the embed is just an image, skip it.
                 if (embed.Type == "image")
                     continue;
+                if (string.IsNullOrWhiteSpace(embed.Title) && string.IsNullOrWhiteSpace(embed.Description) &&
+                    string.IsNullOrWhiteSpace(embed.Footer?.Text) && string.IsNullOrWhiteSpace(embed.Author?.Name) &&
+                    string.IsNullOrWhiteSpace(embed.Fields.ToString()))
+                    continue;
+                
                 var markdownEmbed = new DiscordEmbedBuilder()
                     .WithTitle(string.IsNullOrWhiteSpace(embed.Title)
                         ? "Embed Content"
@@ -133,6 +137,13 @@ public class Markdown : ApplicationCommandModule
                 }
                 response.AddEmbed(markdownEmbed);
             }
+        
+        if (response.Embeds.Count == 0)
+        {
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                "That message doesn't have any text content! I can only parse the Markdown data from messages with content."));
+            return;
+        }
 
         await ctx.FollowUpAsync(response);
     }
