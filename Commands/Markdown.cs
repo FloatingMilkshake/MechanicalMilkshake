@@ -112,12 +112,19 @@ public class Markdown : ApplicationCommandModule
                 .WithColor(Program.BotColor));
 
         if (embeds.Count > 0)
-            response.AddEmbed(new DiscordEmbedBuilder()
+        {
+            var markdownEmbed = new DiscordEmbedBuilder()
                 .WithTitle(string.IsNullOrWhiteSpace(embeds[0].Title)
                     ? "Embed Content"
                     : $"Embed Content: {MarkdownParser.Parse(embeds[0].Title)}")
                 .WithDescription(embeds[0].Description != null ? MarkdownParser.Parse(embeds[0].Description) : "")
-                .WithColor((DiscordColor)message.Embeds[0].Color));
+                .WithColor((DiscordColor)message.Embeds[0].Color);
+            foreach (var field in embeds[0].Fields)
+            {
+                markdownEmbed.AddField(MarkdownParser.Parse(field.Name), MarkdownParser.Parse(field.Value), field.Inline);
+            }
+            response.AddEmbed(markdownEmbed);
+        }
 
         await ctx.FollowUpAsync(response);
     }
