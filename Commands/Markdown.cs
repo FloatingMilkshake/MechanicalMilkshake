@@ -112,22 +112,23 @@ public class Markdown : ApplicationCommandModule
                 .WithColor(Program.BotColor));
 
         if (embeds.Count > 0)
-        {
-            var markdownEmbed = new DiscordEmbedBuilder()
-                .WithTitle(string.IsNullOrWhiteSpace(embeds[0].Title)
-                    ? "Embed Content"
-                    : $"Embed Content: {MarkdownParser.Parse(embeds[0].Title)}")
-                .WithDescription(embeds[0].Description != null ? MarkdownParser.Parse(embeds[0].Description) : "")
-                .WithColor((DiscordColor)message.Embeds[0].Color);
-            if (embeds[0].Fields != null)
+            foreach (var embed in embeds)
             {
-                foreach (var field in embeds[0].Fields)
+                var markdownEmbed = new DiscordEmbedBuilder()
+                    .WithTitle(string.IsNullOrWhiteSpace(embed.Title)
+                        ? "Embed Content"
+                        : $"Embed Content: {MarkdownParser.Parse(embed.Title)}")
+                    .WithDescription(embeds[0].Description != null ? MarkdownParser.Parse(embed.Description) : "")
+                    .WithColor((DiscordColor)embed.Color);
+                if (embed.Fields != null)
                 {
-                    markdownEmbed.AddField(MarkdownParser.Parse(field.Name), MarkdownParser.Parse(field.Value), field.Inline);
+                    foreach (var field in embed.Fields)
+                    {
+                        markdownEmbed.AddField(MarkdownParser.Parse(field.Name), MarkdownParser.Parse(field.Value), field.Inline);
+                    }
                 }
+                response.AddEmbed(markdownEmbed);
             }
-            response.AddEmbed(markdownEmbed);
-        }
 
         await ctx.FollowUpAsync(response);
     }
