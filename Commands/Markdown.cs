@@ -9,8 +9,6 @@ public class Markdown : ApplicationCommandModule
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
         
-        string embedContent = "";
-
         DiscordMessage message;
         if (!Regex.IsMatch(messageToExpose, @".*.discord.com\/channels\/([\d+]*\/)+[\d+]*"))
         {
@@ -101,65 +99,26 @@ public class Markdown : ApplicationCommandModule
             }
         }
         
-        // If the message has an embed in it, we'll need to get the content from the embed.
-        if (message.Embeds.Count > 0)
-        {
-            var targetEmbed = message.Embeds[0];
-            embedContent = targetEmbed.Description;
-            if (embedContent == "")
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                "Hmm, that message doesn't have any content."));
-                return;
-            }
-        }
-        
-        // Let msgContent be the content of the message, or the content of the embed if there is one.
-        var msgContentEscaped = embedContent == "" ? message.Content : embedContent;
-        
-        if (string.IsNullOrWhiteSpace(msgContentEscaped))
-        {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-            "That message doesn't have any text content! I can only parse the Markdown data from messages with content or an embed with a description (for now...)."));
-            return;
-        }
+        var markdown = message.Content;
+        var embeds = message.Embeds;
 
-        // Make the content to be escaped be either the embed content or the message content.
-        msgContentEscaped = msgContentEscaped.Replace("\\", "\\\\");
-        msgContentEscaped = msgContentEscaped.Replace("`", @"\`");
-        msgContentEscaped = msgContentEscaped.Replace("*", @"\*");
-        msgContentEscaped = msgContentEscaped.Replace("_", @"\_");
-        msgContentEscaped = msgContentEscaped.Replace("~", @"\~");
-        msgContentEscaped = msgContentEscaped.Replace(">", @"\>");
-        msgContentEscaped = msgContentEscaped.Replace("[", @"\[");
-        msgContentEscaped = msgContentEscaped.Replace("]", @"\]");
-        msgContentEscaped = msgContentEscaped.Replace("(", @"\(");
-        msgContentEscaped = msgContentEscaped.Replace(")", @"\)");
-        msgContentEscaped = msgContentEscaped.Replace("#", @"\#");
-        msgContentEscaped = msgContentEscaped.Replace("+", @"\+");
-        msgContentEscaped = msgContentEscaped.Replace("-", @"\-");
-        msgContentEscaped = msgContentEscaped.Replace("=", @"\=");
-        msgContentEscaped = msgContentEscaped.Replace("|", @"\|");
-        msgContentEscaped = msgContentEscaped.Replace("{", @"\{");
-        msgContentEscaped = msgContentEscaped.Replace("}", @"\}");
-        msgContentEscaped = msgContentEscaped.Replace(".", @"\.");
-        msgContentEscaped = msgContentEscaped.Replace("!", @"\!");
-        
-        // If the escaped message is greater than 2000 characters, return an error to the user.
-        if (msgContentEscaped.Length > 4000)
-        {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                "Hmm, that message got a bit too long for me to handle. Try again with a shorter message."));
-            return;
-        }
+        var response = new DiscordFollowupMessageBuilder()
+            .WithContent("Here's the Markdown data for that message:");
 
-        DiscordEmbedBuilder embed = new()
-        {
-            Title = "Markdown",
-            Color = Program.BotColor,
-            Description = msgContentEscaped
-        };
+        if (!string.IsNullOrWhiteSpace(markdown))
+            response.AddEmbed(new DiscordEmbedBuilder()
+                .WithTitle("Message Content")
+                .WithDescription(MarkdownParser.Parse(markdown))
+                .WithColor(Program.BotColor));
 
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+        if (embeds.Count > 0)
+            response.AddEmbed(new DiscordEmbedBuilder()
+                .WithTitle(string.IsNullOrWhiteSpace(embeds[0].Title)
+                    ? "Embed Content"
+                    : $"Embed Content: {MarkdownParser.Parse(embeds[0].Title)}")
+                .WithDescription(embeds[0].Description != null ? MarkdownParser.Parse(embeds[0].Description) : "")
+                .WithColor((DiscordColor)message.Embeds[0].Color));
+
+        await ctx.FollowUpAsync(response);
     }
 }
