@@ -114,12 +114,16 @@ public class Markdown : ApplicationCommandModule
         if (embeds.Count > 0)
             foreach (var embed in embeds)
             {
+                // If the embed is just an image, skip it.
+                if (embed.Type == "image")
+                    continue;
                 var markdownEmbed = new DiscordEmbedBuilder()
                     .WithTitle(string.IsNullOrWhiteSpace(embed.Title)
                         ? "Embed Content"
                         : $"Embed Content: {MarkdownParser.Parse(embed.Title)}")
                     .WithDescription(embeds[0].Description != null ? MarkdownParser.Parse(embed.Description) : "")
-                    .WithColor((DiscordColor)embed.Color);
+                    .WithColor(embed.Color != null ? embed.Color.Value : Program.BotColor);
+                
                 if (embed.Fields != null)
                 {
                     foreach (var field in embed.Fields)
