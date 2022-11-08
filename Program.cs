@@ -273,10 +273,9 @@ internal class Program
 
         Task.Run(async () =>
         {
-            var returnValue = true;
-            while (returnValue)
+            while (true)
             {
-                returnValue = await ReminderChecks.ReminderCheck();
+                await ReminderChecks.ReminderCheck();
                 await Task.Delay(10000); // 10 seconds
             }
         });

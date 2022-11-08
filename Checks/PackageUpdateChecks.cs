@@ -2,7 +2,7 @@
 
 public class PackageUpdateChecks
 {
-    public static async Task<bool> PackageUpdateCheck()
+    public static async Task PackageUpdateCheck()
     {
         var updatesAvailableResponse = "";
         var restartRequiredResponse = "";
@@ -11,7 +11,7 @@ public class PackageUpdateChecks
         var restartRequired = false;
 
         if (!Program.ConfigJson.Base.SshHosts.Any())
-            return false;
+            return;
 
         foreach (var host in Program.ConfigJson.Base.SshHosts)
         {
@@ -23,7 +23,7 @@ public class PackageUpdateChecks
                 await EvalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
 
             if (string.IsNullOrWhiteSpace(cmdResult))
-                return false;
+                return;
 
             if (cmdResult.Contains(" can be upgraded"))
             {
@@ -53,7 +53,5 @@ public class PackageUpdateChecks
             var response = updatesAvailableResponse + restartRequiredResponse;
             await Program.HomeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{response}");
         }
-
-        return true;
     }
 }

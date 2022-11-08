@@ -175,28 +175,21 @@ public class DebugCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            var response = "Done!";
-            bool reminderCheckStatus;
-            bool pkgUpdateCheckStatus;
-
             switch (checksToRun)
             {
                 case "all":
-                    reminderCheckStatus = await ReminderChecks.ReminderCheck();
-                    pkgUpdateCheckStatus = await PackageUpdateChecks.PackageUpdateCheck();
-                    response = $"Done!\nReminders: `{reminderCheckStatus}`\nPackage Updates: `{pkgUpdateCheckStatus}`";
+                    await ReminderChecks.ReminderCheck();
+                    await PackageUpdateChecks.PackageUpdateCheck();
                     break;
                 case "reminders":
-                    reminderCheckStatus = await ReminderChecks.ReminderCheck();
-                    response = $"Done!\nReminders: `{reminderCheckStatus}`";
+                    await ReminderChecks.ReminderCheck();
                     break;
                 case "packageupdates":
-                    pkgUpdateCheckStatus = await PackageUpdateChecks.PackageUpdateCheck();
-                    response = $"Done!\nPackage Updates: `{pkgUpdateCheckStatus}`";
+                    await PackageUpdateChecks.PackageUpdateCheck();
                     break;
             }
 
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Done!"));
         }
 
         [SlashCommand("counts", "[Authorized users only] Show which commands are used the most.")]

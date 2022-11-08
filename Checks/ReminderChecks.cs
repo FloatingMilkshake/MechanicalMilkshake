@@ -2,7 +2,7 @@
 
 public class ReminderChecks
 {
-    public static async Task<bool> ReminderCheck()
+    public static async Task ReminderCheck()
     {
         var reminders = await Program.Db.HashGetAllAsync("reminders");
 
@@ -50,7 +50,7 @@ public class ReminderChecks
                 {
                     // Reminder will not be sent because user cannot be fetched..? Delete reminder to prevent error spam
                     await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
-                    return true;
+                    return;
                 }
                 DiscordGuild mutualServer = default;
                 foreach (var guild in Program.Discord.Guilds)
@@ -65,7 +65,7 @@ public class ReminderChecks
                 {
                     // Reminder cannot be sent because there's no way to DM the user... delete it to prevent error spam
                     await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
-                    return true;
+                    return;
                 }
 
                 targetMember = await mutualServer.GetMemberAsync(user.Id);
@@ -96,7 +96,7 @@ public class ReminderChecks
 
                     await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
 
-                    return true;
+                    return;
                 }
                 catch
                 {
@@ -120,7 +120,7 @@ public class ReminderChecks
                         await Program.Db.HashSetAsync("reminders", reminderData.ReminderId,
                             JsonConvert.SerializeObject(reminderData));
 
-                        return true;
+                        return;
                     }
                     catch (Exception ex)
                     {
@@ -131,7 +131,7 @@ public class ReminderChecks
 
                         await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
 
-                        return true;
+                        return;
                     }
                 }
 
@@ -152,7 +152,7 @@ public class ReminderChecks
 
                 await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
 
-                return true;
+                return;
             }
             catch
             {
@@ -175,7 +175,7 @@ public class ReminderChecks
 
                     await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
 
-                    return true;
+                    return;
                 }
                 catch (Exception ex)
                 {
@@ -186,12 +186,10 @@ public class ReminderChecks
 
                     await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
 
-                    return true;
+                    return;
                 }
             }
         }
-
-        return true;
     }
 
     private static async Task LogReminderError(DiscordChannel logChannel, Exception ex)
