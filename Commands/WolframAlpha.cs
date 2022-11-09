@@ -21,7 +21,7 @@ public class WolframAlpha : ApplicationCommandModule
             return;
         }
 
-        var queryEncoded = (HttpUtility.UrlEncode(query)).Replace("(", "%28").Replace(")", "%29");
+        var queryEncoded = HttpUtility.UrlEncode(query).Replace("(", "%28").Replace(")", "%29");
 
         if (Program.ConfigJson.Base.WolframAlphaAppId == "")
         {

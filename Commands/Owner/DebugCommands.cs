@@ -175,28 +175,21 @@ public class DebugCommands : ApplicationCommandModule
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-            var response = "Done!";
-            bool reminderCheckStatus;
-            bool pkgUpdateCheckStatus;
-
             switch (checksToRun)
             {
                 case "all":
-                    reminderCheckStatus = await ReminderChecks.ReminderCheck();
-                    pkgUpdateCheckStatus = await PackageUpdateChecks.PackageUpdateCheck();
-                    response = $"Done!\nReminders: `{reminderCheckStatus}`\nPackage Updates: `{pkgUpdateCheckStatus}`";
+                    await ReminderChecks.ReminderCheck();
+                    await PackageUpdateChecks.PackageUpdateCheck();
                     break;
                 case "reminders":
-                    reminderCheckStatus = await ReminderChecks.ReminderCheck();
-                    response = $"Done!\nReminders: `{reminderCheckStatus}`";
+                    await ReminderChecks.ReminderCheck();
                     break;
                 case "packageupdates":
-                    pkgUpdateCheckStatus = await PackageUpdateChecks.PackageUpdateCheck();
-                    response = $"Done!\nPackage Updates: `{pkgUpdateCheckStatus}`";
+                    await PackageUpdateChecks.PackageUpdateCheck();
                     break;
             }
 
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Done!"));
         }
 
         [SlashCommand("counts", "[Authorized users only] Show which commands are used the most.")]
@@ -208,7 +201,8 @@ public class DebugCommands : ApplicationCommandModule
                 select new KeyValuePair<string, int>(cmd.Name, int.Parse(cmd.Value))).ToList();
             cmdCounts.Sort((x, y) => y.Value.CompareTo(x.Value));
 
-            var output = cmdCounts.Aggregate("", (current, cmd) => current + $"{SlashCmdMentionHelpers.GetSlashCmdMention(cmd.Key)}: {cmd.Value}\n");
+            var output = cmdCounts.Aggregate("",
+                (current, cmd) => current + $"{SlashCmdMentionHelpers.GetSlashCmdMention(cmd.Key)}: {cmd.Value}\n");
 
             if (string.IsNullOrWhiteSpace(output))
                 output = "I don't have any command counts saved!";

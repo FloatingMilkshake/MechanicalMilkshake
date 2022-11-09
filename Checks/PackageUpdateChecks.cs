@@ -2,7 +2,7 @@
 
 public class PackageUpdateChecks
 {
-    public static async Task<bool> PackageUpdateCheck()
+    public static async Task PackageUpdateCheck()
     {
         var updatesAvailableResponse = "";
         var restartRequiredResponse = "";
@@ -11,19 +11,19 @@ public class PackageUpdateChecks
         var restartRequired = false;
 
         if (!Program.ConfigJson.Base.SshHosts.Any())
-            return false;
+            return;
 
         foreach (var host in Program.ConfigJson.Base.SshHosts)
         {
 #if DEBUG
             Program.Discord.Logger.LogInformation(Program.BotEventId,
-                "[PackageUpdateCheck] Checking for updates on host '{host}'.\"", host);
+                "[PackageUpdateCheck] Checking for updates on host '{Host}'.\"", host);
 #endif
             var cmdResult =
                 await EvalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
 
             if (string.IsNullOrWhiteSpace(cmdResult))
-                return false;
+                return;
 
             if (cmdResult.Contains(" can be upgraded"))
             {
@@ -35,7 +35,7 @@ public class PackageUpdateChecks
         }
 #if DEBUG
         Program.Discord.Logger.LogInformation(Program.BotEventId,
-            "[PackageUpdateCheck] Finished checking for updates on all hosts.");
+            "[PackageUpdateCheck] Finished checking for updates on all hosts");
 #endif
 
         if (restartRequired) restartRequiredResponse = "A system restart is required to complete package updates.";
@@ -53,7 +53,5 @@ public class PackageUpdateChecks
             var response = updatesAvailableResponse + restartRequiredResponse;
             await Program.HomeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{response}");
         }
-
-        return true;
     }
 }

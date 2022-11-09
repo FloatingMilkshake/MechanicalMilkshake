@@ -174,9 +174,9 @@ public class PerServerFeatures
 
         private ulong TargetGuild { get; }
 
-        public override async Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
+        public override Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
         {
-            return !ctx.Channel.IsPrivate && ctx.Guild.Id == TargetGuild;
+            return Task.FromResult(!ctx.Channel.IsPrivate && ctx.Guild.Id == TargetGuild);
         }
     }
 }
