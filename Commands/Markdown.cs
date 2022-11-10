@@ -127,7 +127,7 @@ public class Markdown : ApplicationCommandModule
                         ? "Embed Content"
                         : $"Embed Content: {MarkdownParser.Parse(embed.Title)}")
                     .WithDescription(embeds[0].Description != null ? MarkdownParser.Parse(embed.Description) : "")
-                    .WithColor(embed.Color != null ? embed.Color.Value : Program.BotColor);
+                    .WithColor(embed.Color.Value);
                 
                 if (embed.Fields != null)
                 {
