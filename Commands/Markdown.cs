@@ -1,4 +1,4 @@
-﻿namespace MechanicalMilkshake.Commands;
+namespace MechanicalMilkshake.Commands;
 
 public class Markdown : ApplicationCommandModule
 {
@@ -115,13 +115,15 @@ public class Markdown : ApplicationCommandModule
         if (embeds.Count > 0)
             foreach (var embed in embeds)
             {
+                if (response.Embeds.Count >= 10)
+                    continue;
                 if (embed.Type == "image")
                     continue;
                 if (string.IsNullOrWhiteSpace(embed.Title) && string.IsNullOrWhiteSpace(embed.Description) &&
                     string.IsNullOrWhiteSpace(embed.Footer?.Text) && string.IsNullOrWhiteSpace(embed.Author?.Name) &&
                     string.IsNullOrWhiteSpace(embed.Fields.ToString()))
                     continue;
-                
+
                 var markdownEmbed = new DiscordEmbedBuilder()
                     .WithTitle(string.IsNullOrWhiteSpace(embed.Title)
                         ? "Embed Content"
@@ -143,6 +145,14 @@ public class Markdown : ApplicationCommandModule
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                 "That message doesn't have any text content! I can only parse the Markdown data from messages with content."));
+            return;
+        }
+        
+        // If the embeds have more than 6000 characters, return a kind message instead of a 400 error.
+        if (response.Embeds.Sum(e => e.Description.Length + e.Title.Length + e.Fields.Sum(f => f.Name.Length + f.Value.Length)) > 6000)
+        {
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                "That message is too long! I can only parse the Markdown data from messages shorter than 6000 characters."));
             return;
         }
 
