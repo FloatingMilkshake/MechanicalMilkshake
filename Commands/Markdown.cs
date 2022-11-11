@@ -1,4 +1,4 @@
-﻿namespace MechanicalMilkshake.Commands;
+namespace MechanicalMilkshake.Commands;
 
 public class Markdown : ApplicationCommandModule
 {
@@ -8,7 +8,7 @@ public class Markdown : ApplicationCommandModule
         string messageToExpose)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-
+        
         DiscordMessage message;
         if (!Regex.IsMatch(messageToExpose, @".*.discord.com\/channels\/([\d+]*\/)+[\d+]*"))
         {
@@ -85,7 +85,8 @@ public class Markdown : ApplicationCommandModule
             var targetMsgId = messageToExpose.Replace(idsToRemove.ToString(), "");
             
             // Remove '/' to get "message_id"
-            var targetMessage = Convert.ToUInt64(targetMsgId.Replace("/", ""));
+            targetMsgId = Regex.Replace(targetMsgId, @"[^\d]", "");
+            var targetMessage = Convert.ToUInt64(targetMsgId);
 
             try
             {
@@ -98,41 +99,63 @@ public class Markdown : ApplicationCommandModule
                 return;
             }
         }
+        
+        var markdown = message.Content;
+        var embeds = message.Embeds;
 
-        if (string.IsNullOrWhiteSpace(message.Content))
+        var response = new DiscordFollowupMessageBuilder()
+            .WithContent($"Here's the Markdown data for [that message]({message.JumpLink}):");
+
+        if (!string.IsNullOrWhiteSpace(markdown))
+            response.AddEmbed(new DiscordEmbedBuilder()
+                .WithTitle("Message Content")
+                .WithDescription(MarkdownParser.Parse(markdown))
+                .WithColor(Program.BotColor));
+
+        if (embeds.Count > 0)
+            foreach (var embed in embeds)
+            {
+                if (response.Embeds.Count >= 10)
+                    continue;
+                if (embed.Type == "image")
+                    continue;
+                if (string.IsNullOrWhiteSpace(embed.Title) && string.IsNullOrWhiteSpace(embed.Description) &&
+                    string.IsNullOrWhiteSpace(embed.Footer?.Text) && string.IsNullOrWhiteSpace(embed.Author?.Name) &&
+                    string.IsNullOrWhiteSpace(embed.Fields.ToString()))
+                    continue;
+
+                var markdownEmbed = new DiscordEmbedBuilder()
+                    .WithTitle(string.IsNullOrWhiteSpace(embed.Title)
+                        ? "Embed Content"
+                        : $"Embed Content: {MarkdownParser.Parse(embed.Title)}")
+                    .WithDescription(embeds[0].Description != null ? MarkdownParser.Parse(embed.Description) : "")
+                    .WithColor(embed.Color.HasValue == false ? Program.BotColor : embed.Color.Value);
+
+                if (embed.Fields != null)
+                {
+                    foreach (var field in embed.Fields)
+                    {
+                        markdownEmbed.AddField(MarkdownParser.Parse(field.Name), MarkdownParser.Parse(field.Value), field.Inline);
+                    }
+                }
+                response.AddEmbed(markdownEmbed);
+            }
+        
+        if (response.Embeds.Count == 0)
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                "That message doesn't have any text content! I can only parse the Markdown data from messages with content (not including embeds...maybe some time in the future?)"));
+                "That message doesn't have any text content! I can only parse the Markdown data from messages with content."));
+            return;
+        }
+        
+        // If the embeds have more than 6000 characters, return a kind message instead of a 400 error.
+        if (response.Embeds.Sum(e => e.Description.Length + e.Title.Length + e.Fields.Sum(f => f.Name.Length + f.Value.Length)) > 6000)
+        {
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                "That message is too long! I can only parse the Markdown data from messages shorter than 6000 characters."));
             return;
         }
 
-        var msgContentEscaped = message.Content.Replace("\\", "\\\\");
-        msgContentEscaped = msgContentEscaped.Replace("`", @"\`");
-        msgContentEscaped = msgContentEscaped.Replace("*", @"\*");
-        msgContentEscaped = msgContentEscaped.Replace("_", @"\_");
-        msgContentEscaped = msgContentEscaped.Replace("~", @"\~");
-        msgContentEscaped = msgContentEscaped.Replace(">", @"\>");
-        msgContentEscaped = msgContentEscaped.Replace("[", @"\[");
-        msgContentEscaped = msgContentEscaped.Replace("]", @"\]");
-        msgContentEscaped = msgContentEscaped.Replace("(", @"\(");
-        msgContentEscaped = msgContentEscaped.Replace(")", @"\)");
-        msgContentEscaped = msgContentEscaped.Replace("#", @"\#");
-        msgContentEscaped = msgContentEscaped.Replace("+", @"\+");
-        msgContentEscaped = msgContentEscaped.Replace("-", @"\-");
-        msgContentEscaped = msgContentEscaped.Replace("=", @"\=");
-        msgContentEscaped = msgContentEscaped.Replace("|", @"\|");
-        msgContentEscaped = msgContentEscaped.Replace("{", @"\{");
-        msgContentEscaped = msgContentEscaped.Replace("}", @"\}");
-        msgContentEscaped = msgContentEscaped.Replace(".", @"\.");
-        msgContentEscaped = msgContentEscaped.Replace("!", @"\!");
-
-        DiscordEmbedBuilder embed = new()
-        {
-            Title = "Markdown",
-            Color = Program.BotColor,
-            Description = msgContentEscaped
-        };
-
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+        await ctx.FollowUpAsync(response);
     }
 }
