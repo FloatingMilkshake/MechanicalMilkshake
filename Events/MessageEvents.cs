@@ -37,7 +37,12 @@ public class MessageEvents
 
                 if (client.CurrentApplication.Owners.Contains(e.Author))
                 {
-                    if (!e.Message.Content.StartsWith("sendto"))
+                    if (!e.Message.Content.StartsWith("sendto") && e.Message.ReferencedMessage is null)
+                        return;
+
+                    if (e.Message.ReferencedMessage.Author != client.CurrentUser ||
+                        e.Message.ReferencedMessage.Embeds.Count < 1 ||
+                        !e.Message.ReferencedMessage.Embeds[0].Title.Contains("DM received"))
                         return;
 
                     Regex usernamePattern = new(".*#[0-9]{4}");
