@@ -82,7 +82,8 @@ public class CdnCommands : ApplicationCommandModule
                 Regex parameterRemovalPattern = new(@".*\?");
                 var parameterRemovalMatch = parameterRemovalPattern.Match(link);
 
-                link = parameterRemovalMatch.ToString();
+                if (!string.IsNullOrWhiteSpace(parameterRemovalMatch.ToString()))
+                    link = link.Replace(parameterRemovalMatch.ToString(), "");
 
                 var fileNameAndExtension = link.Replace("?", "");
 
