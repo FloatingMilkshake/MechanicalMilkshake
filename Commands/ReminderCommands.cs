@@ -102,7 +102,8 @@ public class ReminderCommands : ApplicationCommandModule
 
                 var message = await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder()
-                        .WithContent($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!").AsEphemeral(isPrivate));
+                        .WithContent($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
+                                     $"\nReminder ID: `{reminder.ReminderId}`").AsEphemeral(isPrivate));
                 reminder.MessageId = message.Id;
             }
             else
@@ -349,9 +350,12 @@ public class ReminderCommands : ApplicationCommandModule
 
                 if (reminderMessage.Content.Contains("pushed back"))
                     await reminderMessage.ModifyAsync(
-                        $"[Reminder](https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}) pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!");
+                        $"[Reminder](https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId})" +
+                        $" pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
+                        $"\nReminder ID: `{reminder.ReminderId}`");
                 else
-                    await reminderMessage.ModifyAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!");
+                    await reminderMessage.ModifyAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
+                                                      $"\nReminder ID: `{reminder.ReminderId}`");
             }
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
@@ -490,7 +494,9 @@ public class ReminderCommands : ApplicationCommandModule
 
             var response = await ctx.FollowUpAsync(
                 new DiscordFollowupMessageBuilder().WithContent(
-                        $"[Reminder](https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{msgId}) pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!")
+                        $"[Reminder](https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId})" +
+                        $" pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
+                        $"\nReminder ID: `{reminder.ReminderId}`")
                     .AsEphemeral(isPrivate));
             reminder.MessageId = response.Id;
 
