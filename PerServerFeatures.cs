@@ -148,6 +148,18 @@ public class PerServerFeatures
                         $"<@455432936339144705> `{ipAddr}` attempted to connect {attemptCount} times before being banned. It has been permanently banned automatically.");
                 }
             }
+
+            if (e.Guild == Program.HomeServer && e.Message.Author.Id == 1031968180974927903 &&
+                (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1)).FirstOrDefault().Content
+                .Contains("caption"))
+            {
+                var chan = await Program.Discord.GetChannelAsync(1048242806486999092);
+                if (!string.IsNullOrWhiteSpace(e.Message.Content))
+                    if (e.Message.Content.Contains("http"))
+                        await chan.SendMessageAsync(e.Message.Content);
+                else
+                    await chan.SendMessageAsync(e.Message.Attachments[0].Url);
+            }
         }
     }
 
