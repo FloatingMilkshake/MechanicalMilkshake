@@ -154,11 +154,11 @@ public class PerServerFeatures
                 .Contains("caption"))
             {
                 var chan = await Program.Discord.GetChannelAsync(1048242806486999092);
-                if (!string.IsNullOrWhiteSpace(e.Message.Content))
+                if (string.IsNullOrWhiteSpace(e.Message.Content))
+                    await chan.SendMessageAsync(e.Message.Attachments[0].Url);
+                else
                     if (e.Message.Content.Contains("http"))
                         await chan.SendMessageAsync(e.Message.Content);
-                else
-                    await chan.SendMessageAsync(e.Message.Attachments[0].Url);
             }
         }
     }
