@@ -33,7 +33,7 @@ public class InteractionEvents
                 .WithColor(Program.BotColor)
                 .WithAuthor(context.User.Username, null, context.User.AvatarUrl)
                 .WithDescription(
-                    $"{context.User.Mention} used {SlashCmdMentionHelpers.GetSlashCmdMention(context.CommandName)} in {context.Channel.Mention} (`{context.Channel.Id}`) in \"{context.Guild.Name}\" (`{context.Guild.Id}`)!")
+                    $"{context.User.Name} (`{context.User.Id}`) used {SlashCmdMentionHelpers.GetSlashCmdMention(context.CommandName)} in `{context.Channel.Name}` (`{context.Channel.Id}`) in \"{context.Guild.Name}\" (`{context.Guild.Id}`)!")
                 .WithTimestamp(DateTime.Now);
 
             try
