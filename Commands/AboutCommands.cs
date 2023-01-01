@@ -11,7 +11,7 @@ public class AboutCommands : ApplicationCommandModule
         const string privacyPolicyUrl = "https://floatingmilkshake.com/privacy#MechanicalMilkshake";
 
         // Set this to an empty string to disable the Support Server notice in /about, or change it your own Support Server invite if you have one.
-        const string supportServerInvite = "https://link.floatingmilkshake.com/botsupport";
+        const string supportServerInvite = "https://floatingmilkshake.link/bot/support";
 
         DiscordEmbedBuilder embed = new()
         {
