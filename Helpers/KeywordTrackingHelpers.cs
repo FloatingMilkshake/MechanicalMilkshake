@@ -62,13 +62,11 @@ public class KeywordTrackingHelpers
             if (fieldValue.GuildId != default && fieldValue.GuildId != message.Channel.Guild.Id)
                 continue;
 
-            for (var i = 0; i < 10; i++)
-            {
-                if (TypingEvent.TypingUsers.Any(kv =>
-                        kv.Key.Id == fieldValue.UserId && kv.Value.Id == message.Channel.Id)) continue;
-
-                await Task.Delay(1000);
-            }
+            // Wait 30 seconds in case the user sends a message; if they do, ignore
+            await Task.Delay(30000);
+            var messagesAfter30Sec = await message.Channel.GetMessagesAfterAsync(message.Id);
+            if (messagesAfter30Sec.Any(x => x.Author.Id == fieldValue.UserId))
+                continue;
 
             var messages = await message.Channel.GetMessagesAfterAsync(message.Id);
             if (messages.Any(m => m.Author.Id == fieldValue.UserId)) continue;
