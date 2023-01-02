@@ -99,6 +99,15 @@ public class ErrorEvents
             Console.WriteLine(
                 $"{ex.GetType()} occurred when {e.Context.User.Username}#{e.Context.User.Discriminator} used /{e.Context.CommandName}: {ex.Message}\n{ex.StackTrace}");
 
+            await Program.HomeChannel.SendMessageAsync(new DiscordEmbedBuilder
+            {
+                Title = "An exception occurred when executing a slash command",
+                Color = new DiscordColor("Red"),
+                Description = $"`{ex.GetType()}` occurred when " +
+                              $"`{e.Context.User.Username}#{e.Context.User.Discriminator}` (`{e.Context.User.Id}` " +
+                              $"used `/{e.Context.CommandName}`.",
+            }.AddField("Message", ex.Message));
+
             // I don't know how to tell whether the command response was deferred or not, so we're going to try both an interaction response and follow-up so that the interaction doesn't time-out.
             try
             {
