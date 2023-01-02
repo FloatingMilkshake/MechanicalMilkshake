@@ -8,7 +8,7 @@ public class Markdown : ApplicationCommandModule
         string messageToExpose)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-        
+
         DiscordMessage message;
         if (!Regex.IsMatch(messageToExpose, @".*.discord.com\/channels\/([\d+]*\/)+[\d+]*"))
         {
@@ -51,7 +51,7 @@ public class Markdown : ApplicationCommandModule
             Regex extractId = new(@".*.discord.com\/channels\/(\d+/)");
             var selectionToRemove = extractId.Match(messageToExpose);
             messageToExpose = messageToExpose.Replace(selectionToRemove.ToString(), "");
-            
+
             // If IDs have letters in them, the user provided an invalid link.
             if (Regex.IsMatch(messageToExpose, @"[A-z]"))
             {
@@ -83,7 +83,7 @@ public class Markdown : ApplicationCommandModule
             Regex getMessageId = new(@"[0-9]+\/");
             var idsToRemove = getMessageId.Match(messageToExpose);
             var targetMsgId = messageToExpose.Replace(idsToRemove.ToString(), "");
-            
+
             // Remove '/' to get "message_id"
             targetMsgId = Regex.Replace(targetMsgId, @"[^\d]", "");
             var targetMessage = Convert.ToUInt64(targetMsgId);
@@ -99,7 +99,7 @@ public class Markdown : ApplicationCommandModule
                 return;
             }
         }
-        
+
         var markdown = message.Content;
         var embeds = message.Embeds;
 
@@ -109,7 +109,7 @@ public class Markdown : ApplicationCommandModule
         if (!string.IsNullOrWhiteSpace(markdown))
             response.AddEmbed(new DiscordEmbedBuilder()
                 .WithTitle("Message Content")
-                .WithDescription(MarkdownParser.Parse(markdown))
+                .WithDescription(MarkdownHelpers.Parse(markdown))
                 .WithColor(Program.BotColor));
 
         if (embeds.Count > 0)
@@ -127,29 +127,27 @@ public class Markdown : ApplicationCommandModule
                 var markdownEmbed = new DiscordEmbedBuilder()
                     .WithTitle(string.IsNullOrWhiteSpace(embed.Title)
                         ? "Embed Content"
-                        : $"Embed Content: {MarkdownParser.Parse(embed.Title)}")
-                    .WithDescription(embeds[0].Description != null ? MarkdownParser.Parse(embed.Description) : "")
+                        : $"Embed Content: {MarkdownHelpers.Parse(embed.Title)}")
+                    .WithDescription(embeds[0].Description is not null ? MarkdownHelpers.Parse(embed.Description) : "")
                     .WithColor(embed.Color.HasValue == false ? Program.BotColor : embed.Color.Value);
 
-                if (embed.Fields != null)
-                {
+                if (embed.Fields is not null)
                     foreach (var field in embed.Fields)
-                    {
-                        markdownEmbed.AddField(MarkdownParser.Parse(field.Name), MarkdownParser.Parse(field.Value), field.Inline);
-                    }
-                }
+                        markdownEmbed.AddField(MarkdownHelpers.Parse(field.Name), MarkdownHelpers.Parse(field.Value),
+                            field.Inline);
                 response.AddEmbed(markdownEmbed);
             }
-        
+
         if (response.Embeds.Count == 0)
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                 "That message doesn't have any text content! I can only parse the Markdown data from messages with content."));
             return;
         }
-        
+
         // If the embeds have more than 6000 characters, return a kind message instead of a 400 error.
-        if (response.Embeds.Sum(e => e.Description.Length + e.Title.Length + e.Fields.Sum(f => f.Name.Length + f.Value.Length)) > 6000)
+        if (response.Embeds.Sum(e =>
+                e.Description.Length + e.Title.Length + e.Fields.Sum(f => f.Name.Length + f.Value.Length)) > 6000)
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                 "That message is too long! I can only parse the Markdown data from messages shorter than 6000 characters."));

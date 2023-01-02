@@ -3,6 +3,8 @@
 [SlashRequireAuth]
 public class EvalCommands : ApplicationCommandModule
 {
+    private static readonly List<string> RestrictedTerms = new() { "poweroff", "shutdown", "reboot", "halt" };
+
     // The idea for this command, and a lot of the code, is taken from Erisa's Lykos. References are linked below.
     // https://github.com/Erisa/Lykos/blob/5f9c17c/src/Modules/Owner.cs#L116-L144
     // https://github.com/Erisa/Lykos/blob/822e9c5/src/Modules/Helpers.cs#L36-L82
@@ -17,12 +19,12 @@ public class EvalCommands : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
             new DiscordInteractionResponseBuilder());
 
-        if (command.Contains("poweroff") || command.Contains("shutdown") || command.Contains("reboot") ||
-            command.Contains("halt"))
-        {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You can't do that."));
-            return;
-        }
+        if (RestrictedTerms.Any(command.Contains))
+            if (!Program.Discord.CurrentApplication.Owners.Contains(ctx.User))
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You can't do that."));
+                return;
+            }
 
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(await RunCommand(command)));
     }
@@ -83,7 +85,7 @@ public class EvalCommands : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
             new DiscordInteractionResponseBuilder());
 
-        if (code.Contains("poweroff") || code.Contains("shutdown") || code.Contains("reboot") || code.Contains("halt"))
+        if (RestrictedTerms.Any(code.Contains))
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You can't do that."));
             return;
@@ -104,30 +106,22 @@ public class EvalCommands : ApplicationCommandModule
             script.Compile();
             var result = await script.RunAsync(globals).ConfigureAwait(false);
 
-            if (result == null)
+            if (result?.ReturnValue is null)
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("null"));
             }
             else
             {
-                if (result.ReturnValue == null)
+                if (string.IsNullOrWhiteSpace(result.ReturnValue.ToString()))
                 {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("null"));
-                }
-                else
-                {
-                    if (string.IsNullOrWhiteSpace(result.ReturnValue.ToString()))
-                    {
-                        // Isn't null, so it has to be whitespace
-                        await ctx.FollowUpAsync(
-                            new DiscordFollowupMessageBuilder().WithContent($"\"{result.ReturnValue}\""));
-                        return;
-                    }
-
+                    // Isn't null, so it has to be whitespace
                     await ctx.FollowUpAsync(
-                        new DiscordFollowupMessageBuilder().WithContent(
-                            HideSensitiveInfo(result.ReturnValue.ToString())));
+                        new DiscordFollowupMessageBuilder().WithContent($"\"{result.ReturnValue}\""));
+                    return;
                 }
+
+                await ctx.FollowUpAsync(
+                    new DiscordFollowupMessageBuilder().WithContent(HideSensitiveInfo(result.ReturnValue.ToString())));
             }
         }
         catch (Exception e)

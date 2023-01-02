@@ -182,7 +182,7 @@ public class MessageEvents
                     return;
                 }
 
-                if (client.CurrentApplication.Owners.Contains(e.Author) && e.Message.ReferencedMessage != null &&
+                if (client.CurrentApplication.Owners.Contains(e.Author) && e.Message.ReferencedMessage is not null &&
                     e.Message.ReferencedMessage.Author.IsCurrent && e.Message.ReferencedMessage.Embeds.Count != 0 &&
                     e.Message.ReferencedMessage.Embeds[0].Title.Contains("DM received from"))
                 {
@@ -275,7 +275,7 @@ public class MessageEvents
                             DiscordMessageBuilder messageBuilder = new();
 
                             var isReply = "No";
-                            if (e.Message.ReferencedMessage != null)
+                            if (e.Message.ReferencedMessage is not null)
                             {
                                 isReply = "Yes";
                                 DiscordButtonComponent button = new(ButtonStyle.Primary,
@@ -289,7 +289,7 @@ public class MessageEvents
                                 await e.Channel.GetMessagesBeforeAsync(e.Message.Id);
                             var contextExists = false;
                             foreach (var msg in messages)
-                                if (msg.Content != null)
+                                if (msg.Content is not null)
                                     contextExists = true;
 
                             if (contextExists)

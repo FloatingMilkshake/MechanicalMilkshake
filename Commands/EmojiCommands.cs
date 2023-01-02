@@ -15,7 +15,7 @@ public class EmojiCommands : ApplicationCommandModule
         if (server.Any(character => !char.IsNumber(character)))
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                $"That doesn't look like a server ID!\nA server ID is composed of only numbers and looks something like this: `{ctx.Guild.Id}`.\nPlease try again."));
+                "That doesn't look like a server ID!\nA server ID is composed of only numbers and looks something like this: `799644062973427743`.\nPlease try again."));
             return;
         }
 

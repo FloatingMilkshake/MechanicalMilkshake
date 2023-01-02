@@ -13,10 +13,10 @@ public class Nickname : ApplicationCommandModule
         await bot.ModifyAsync(x =>
         {
             x.Nickname = nickname;
-            x.AuditLogReason = $"Nickname changed by {ctx.User.Username} (ID: {ctx.User.Id}).";
+            x.AuditLogReason = $"Nickname changed by {ctx.User.Username} ({ctx.User.Id}).";
         });
 
-        if (nickname != null)
+        if (nickname is not null)
             await ctx.CreateResponseAsync(
                 new DiscordInteractionResponseBuilder().WithContent(
                     $"Nickname changed to **{nickname}** successfully!"));

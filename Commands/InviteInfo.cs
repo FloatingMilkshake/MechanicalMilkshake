@@ -28,7 +28,7 @@ public class InviteInfo : ApplicationCommandModule
 
         var embed = new DiscordEmbedBuilder
         {
-            Title = invite.Guild.VanityUrlCode == null
+            Title = invite.Guild.VanityUrlCode is null
                 ? $"Invite Info for {invite.Guild.Name}"
                 : $"Invite info for {invite.Guild.Name}\n(discord.gg/{invite.Guild.VanityUrlCode})",
             //Title = $"Invite Info for {invite.Guild.Name}",
@@ -36,15 +36,15 @@ public class InviteInfo : ApplicationCommandModule
             Color = Program.BotColor
         };
 
-        if (invite.Guild.VanityUrlCode == null)
+        if (invite.Guild.VanityUrlCode is null)
         {
             embed.AddField("Inviter",
-                invite.Inviter == null
+                invite.Inviter is null
                     ? "unknown"
                     : $"{invite.Inviter.Username}#{invite.Inviter.Discriminator} (`{invite.Inviter.Id}`)");
 
             embed.AddField("Expires At",
-                invite.ExpiresAt == null
+                invite.ExpiresAt is null
                     ? "Invite does not expire."
                     : $"<t:{((DateTimeOffset)invite.ExpiresAt).ToUnixTimeSeconds()}:F> (<t:{((DateTimeOffset)invite.ExpiresAt).ToUnixTimeSeconds()}:R>)");
         }
@@ -64,10 +64,10 @@ public class InviteInfo : ApplicationCommandModule
             $"<t:{invite.Guild.CreationTimestamp.ToUnixTimeSeconds()}:F> (<t:{invite.Guild.CreationTimestamp.ToUnixTimeSeconds()}:R>)");
 
         embed.AddField("Members",
-            invite.ApproximateMemberCount == null ? "unknown" : invite.ApproximateMemberCount.ToString(), true);
+            invite.ApproximateMemberCount is null ? "unknown" : invite.ApproximateMemberCount.ToString(), true);
 
         embed.AddField("Online",
-            invite.ApproximatePresenceCount == null ? "unknown" : invite.ApproximatePresenceCount.ToString(), true);
+            invite.ApproximatePresenceCount is null ? "unknown" : invite.ApproximatePresenceCount.ToString(), true);
 
         embed.WithThumbnail(invite.Guild.IconUrl);
 

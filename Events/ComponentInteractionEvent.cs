@@ -44,11 +44,13 @@ public class ComponentInteractionEvent
                 break;
             }
             case "slash-fail-restart-button":
+            {
                 e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder()
                         .WithContent($"{e.User.Mention}, you are not authorized to perform this action!")
                         .AsEphemeral());
                 break;
+            }
             case "shutdown-button" when Program.ConfigJson.Base.AuthorizedUsers.Contains(e.User.Id.ToString()):
             {
                 DiscordButtonComponent shutdownButton =
@@ -65,11 +67,13 @@ public class ComponentInteractionEvent
                 break;
             }
             case "shutdown-button":
+            {
                 e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder()
                         .WithContent($"{e.User.Mention}, you are not authorized to perform this action!")
                         .AsEphemeral());
                 break;
+            }
             case "shutdown-cancel-button" when Program.ConfigJson.Base.AuthorizedUsers.Contains(e.User.Id.ToString()):
             {
                 DiscordButtonComponent shutdownButton =
@@ -82,11 +86,13 @@ public class ComponentInteractionEvent
                 break;
             }
             case "shutdown-cancel-button":
+            {
                 e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder()
                         .WithContent($"{e.User.Mention}, you are not authorized to perform this action!")
                         .AsEphemeral());
                 break;
+            }
             case "view-dm-reply-info":
             {
                 var channelIdField =
@@ -141,7 +147,7 @@ public class ComponentInteractionEvent
                     break;
                 }
 
-                if (string.IsNullOrWhiteSpace(contextContent) && contextMsg?.Embeds != null)
+                if (string.IsNullOrWhiteSpace(contextContent) && contextMsg?.Embeds is not null)
                     contextContent = "[Embed Content]\n" + contextMsg.Embeds[0].Description;
 
                 DiscordEmbedBuilder embed = new()
@@ -183,7 +189,7 @@ public class ComponentInteractionEvent
                     return;
                 }
 
-                if (targetMember.GuildAvatarUrl == null)
+                if (targetMember.GuildAvatarUrl is null)
                 {
                     await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder()
@@ -231,13 +237,13 @@ public class ComponentInteractionEvent
                     script.Compile();
                     var result = await script.RunAsync(globals).ConfigureAwait(false);
 
-                    if (result == null)
+                    if (result is null)
                     {
                         await ctx.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent("null"));
                     }
                     else
                     {
-                        if (result.ReturnValue == null)
+                        if (result.ReturnValue is null)
                         {
                             await ctx.CreateFollowupMessageAsync(
                                 new DiscordFollowupMessageBuilder().WithContent("null"));
@@ -266,6 +272,7 @@ public class ComponentInteractionEvent
                 break;
             }
             case "clear-confirm-callback":
+            {
                 Task.Run(async () =>
                 {
                     var messagesToClear = Clear.MessagesToClear;
@@ -294,6 +301,7 @@ public class ComponentInteractionEvent
                         .AsEphemeral());
                 });
                 break;
+            }
             case "track-details-dropdown":
             {
                 await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
@@ -486,6 +494,7 @@ public class ComponentInteractionEvent
                 break;
             }
             case "track-remove-confirm-button":
+            {
                 Task.Run(async () =>
                 {
                     await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
@@ -537,6 +546,7 @@ public class ComponentInteractionEvent
                     }
                 });
                 break;
+            }
             case "reminder-delete-dropdown":
             {
                 Reminder reminder;
@@ -651,7 +661,7 @@ public class EventGlobals
         Channel = ctx.Channel;
         Guild = ctx.Guild;
         User = ctx.User;
-        if (Guild != null) Member = Guild.GetMemberAsync(User.Id).ConfigureAwait(false).GetAwaiter().GetResult();
+        if (Guild is not null) Member = Guild.GetMemberAsync(User.Id).ConfigureAwait(false).GetAwaiter().GetResult();
 
         Context = ctx;
     }

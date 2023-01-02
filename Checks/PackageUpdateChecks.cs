@@ -10,20 +10,17 @@ public class PackageUpdateChecks
         var updatesAvailable = false;
         var restartRequired = false;
 
-        if (!Program.ConfigJson.Base.SshHosts.Any())
-            return;
+        if (!Program.ConfigJson.Base.SshHosts.Any()) return;
 
         foreach (var host in Program.ConfigJson.Base.SshHosts)
         {
-#if DEBUG
-            Program.Discord.Logger.LogInformation(Program.BotEventId,
+            Program.Discord.Logger.LogDebug(Program.BotEventId,
                 "[PackageUpdateCheck] Checking for updates on host '{Host}'.\"", host);
-#endif
+
             var cmdResult =
                 await EvalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
 
-            if (string.IsNullOrWhiteSpace(cmdResult))
-                return;
+            if (string.IsNullOrWhiteSpace(cmdResult)) return;
 
             if (cmdResult.Contains(" can be upgraded"))
             {
@@ -33,10 +30,9 @@ public class PackageUpdateChecks
 
             if (cmdResult.Contains("System restart required")) restartRequired = true;
         }
-#if DEBUG
-        Program.Discord.Logger.LogInformation(Program.BotEventId,
+
+        Program.Discord.Logger.LogDebug(Program.BotEventId,
             "[PackageUpdateCheck] Finished checking for updates on all hosts");
-#endif
 
         if (restartRequired) restartRequiredResponse = "A system restart is required to complete package updates.";
 

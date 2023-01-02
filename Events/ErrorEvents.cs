@@ -127,7 +127,7 @@ public class ErrorEvents
     public static async Task CommandsNextService_CommandErrored(CommandsNextExtension cnext,
         CommandErrorEventArgs e)
     {
-        if (e.Exception is CommandNotFoundException && (e.Command == null || e.Command.QualifiedName != "help"))
+        if (e.Exception is CommandNotFoundException && (e.Command is null || e.Command.QualifiedName != "help"))
             return;
 
         List<Exception> exs = new();
@@ -140,7 +140,7 @@ public class ErrorEvents
         {
             switch (ex)
             {
-                case CommandNotFoundException when e.Command == null || e.Command.QualifiedName != "help":
+                case CommandNotFoundException when e.Command is null || e.Command.QualifiedName != "help":
                     return;
                 case ChecksFailedException:
                     await e.Context.RespondAsync(

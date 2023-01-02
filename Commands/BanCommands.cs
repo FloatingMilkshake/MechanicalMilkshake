@@ -28,7 +28,7 @@ public class BanCommands : ApplicationCommandModule
         catch (Exception e)
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    $"Hmm, something went wrong while trying to ban that user!\n\nThis was Discord's response:\n> {e.Message}\n\nIf you'd like to contact the bot owner about this, include this debug info:\n```{e}\n```")
+                    $"Hmm, something went wrong while trying to ban that user!\n\nThis was Discord's response:\n> {e.Message}")
                 .AsEphemeral());
             return;
         }

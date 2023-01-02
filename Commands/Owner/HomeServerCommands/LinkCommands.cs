@@ -2,17 +2,6 @@
 
 public class LinkCommands : ApplicationCommandModule
 {
-    private static async void FailOnMissingInfo(InteractionContext ctx, bool followUp)
-    {
-        const string failureMsg =
-            "Link commands are disabled! Please make sure you have provided values for all of the keys under `workerLinks` in the config file.";
-
-        if (followUp)
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(failureMsg));
-        else
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(failureMsg));
-    }
-
     [SlashCommandGroup("link", "Set, update, or delete a short link with Cloudflare worker-links.")]
     public class Link
     {
@@ -25,7 +14,7 @@ public class LinkCommands : ApplicationCommandModule
         {
             if (Program.DisabledCommands.Contains("wl"))
             {
-                FailOnMissingInfo(ctx, false);
+                CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
                 return;
             }
 
@@ -33,7 +22,7 @@ public class LinkCommands : ApplicationCommandModule
 
             if (url.Contains('>')) url = url.Replace(">", "");
 
-            if (Program.ConfigJson.WorkerLinks.BaseUrl == null)
+            if (Program.ConfigJson.WorkerLinks.BaseUrl is null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
@@ -52,7 +41,7 @@ public class LinkCommands : ApplicationCommandModule
                 ? new HttpRequestMessage(HttpMethod.Post, "")
                 : new HttpRequestMessage(HttpMethod.Put, key);
 
-            if (Program.ConfigJson.WorkerLinks.Secret == null)
+            if (Program.ConfigJson.WorkerLinks.Secret is null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
@@ -86,7 +75,7 @@ public class LinkCommands : ApplicationCommandModule
         {
             if (Program.DisabledCommands.Contains("wl"))
             {
-                FailOnMissingInfo(ctx, false);
+                CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
                 return;
             }
 
@@ -99,7 +88,7 @@ public class LinkCommands : ApplicationCommandModule
 
             if (!url.Contains(baseUrl)) url = $"{baseUrl}/{url}";
 
-            if (Program.ConfigJson.WorkerLinks.Secret == null)
+            if (Program.ConfigJson.WorkerLinks.Secret is null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
@@ -131,7 +120,7 @@ public class LinkCommands : ApplicationCommandModule
         {
             if (Program.DisabledCommands.Contains("wl"))
             {
-                FailOnMissingInfo(ctx, false);
+                CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
                 return;
             }
 
@@ -146,11 +135,11 @@ public class LinkCommands : ApplicationCommandModule
         {
             if (Program.DisabledCommands.Contains("wl"))
             {
-                FailOnMissingInfo(ctx, false);
+                CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
                 return;
             }
 
-            if (Program.ConfigJson.WorkerLinks.Secret == null)
+            if (Program.ConfigJson.WorkerLinks.Secret is null)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(

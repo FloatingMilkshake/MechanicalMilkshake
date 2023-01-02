@@ -80,13 +80,13 @@ public class UserInfoHelpers
         extendedUserInfoEmbed.AddField(rolesFieldName, roles);
         extendedUserInfoEmbed.WithThumbnail(member.AvatarUrl);
 
-        if (acknowledgements != null) extendedUserInfoEmbed.AddField("Acknowledgements", acknowledgements);
+        if (acknowledgements is not null) extendedUserInfoEmbed.AddField("Acknowledgements", acknowledgements);
 
         if (notablePerms.Count > 0)
             extendedUserInfoEmbed.AddField("Notable Permissions",
                 notablePerms.Aggregate("", (current, perm) => current + $"{perm}\n"));
 
-        if (member.PremiumSince != null)
+        if (member.PremiumSince is not null)
         {
             var premiumSinceUtc = member.PremiumSince.Value.UtcDateTime;
             var unixTime = ((DateTimeOffset)premiumSinceUtc).ToUnixTimeSeconds();

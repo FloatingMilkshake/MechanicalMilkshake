@@ -208,7 +208,7 @@ public class Clear : ApplicationCommandModule
                     .AsEphemeral());
                 return;
             // All filters checked. 'messages' is now our final list of messages to delete.
-            // Warn the mod if we're going to be deleting 50 or more messages.
+            // Warn if we're going to be deleting 50 or more messages.
             case >= 50:
             {
                 DiscordButtonComponent confirmButton =

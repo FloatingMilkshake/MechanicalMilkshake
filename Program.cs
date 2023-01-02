@@ -1,7 +1,4 @@
-﻿using System.Globalization;
-using MechanicalMilkshake.Checks;
-
-namespace MechanicalMilkshake;
+﻿namespace MechanicalMilkshake;
 
 internal class Program
 {
@@ -186,11 +183,20 @@ internal class Program
             DisabledCommands.Add("wl");
         }
 
+        if (ConfigJson.Base.WolframAlphaAppId == "")
+        {
+            Discord.Logger.LogWarning(BotEventId,
+                // ReSharper disable once LogMessageIsSentenceProblem
+                "WolframAlpha commands disabled due to missing App ID.");
+
+            DisabledCommands.Add("wa");
+        }
+
         // Register slash commands as guild commands in home server when
         // running in development mode
 #if DEBUG
         var slashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-            t.IsClass && t.Namespace != null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
+            t.IsClass && t.Namespace is not null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
             !t.IsNested);
 
         foreach (var type in slashCommandClasses)
@@ -204,7 +210,7 @@ internal class Program
         // Register slash commands globally for 'production' bot
 #else
         var globalSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-            t.IsClass && t.Namespace != null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
+            t.IsClass && t.Namespace is not null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
             !t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") && !t.IsNested);
 
         foreach (var type in globalSlashCommandClasses)
@@ -212,7 +218,7 @@ internal class Program
 
 
         var ownerSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-            t.IsClass && t.Namespace != null &&
+            t.IsClass && t.Namespace is not null &&
             t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") &&
             !t.IsNested);
 
@@ -291,7 +297,7 @@ internal class Program
         while (true)
         {
             await Task.Delay(3600000); // 1 hour
-            await CustomStatusHelper.SetCustomStatus();
+            await CustomStatusHelpers.SetCustomStatus();
         }
         // ReSharper disable once FunctionNeverReturns
     }

@@ -14,7 +14,13 @@ public class WolframAlpha : ApplicationCommandModule
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-        if (query == null)
+        if (Program.DisabledCommands.Contains("cdn"))
+        {
+            CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
+            return;
+        }
+
+        if (query is null)
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                 "Hmm, it doesn't look like you entered a valid query. Try something like `/wolframalpha query:What is the meaning of life?`."));
@@ -23,28 +29,20 @@ public class WolframAlpha : ApplicationCommandModule
 
         var queryEncoded = HttpUtility.UrlEncode(query).Replace("(", "%28").Replace(")", "%29");
 
-        if (Program.ConfigJson.Base.WolframAlphaAppId == "")
-        {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                "Looks like you don't have an App ID! Check the `wolframAlphaAppId` field in your config file. "
-                + "If you don't know how to get an App ID, see Getting Started here: <https://products.wolframalpha.com/short-answers-api/documentation/>"));
-            return;
-        }
-
         var appid = Program.ConfigJson.Base.WolframAlphaAppId;
 
-        var queryEscaped = query.Replace("`", @"\`");
-        queryEscaped = queryEscaped.Replace("*", @"\*");
-        queryEscaped = queryEscaped.Replace("_", @"\_");
-        queryEscaped = queryEscaped.Replace("~", @"\~");
-        queryEscaped = queryEscaped.Replace(">", @"\>");
+        var queryEscaped = query.Replace("`", @"\`")
+            .Replace("*", @"\*")
+            .Replace("_", @"\_")
+            .Replace("~", @"\~")
+            .Replace(">", @"\>");
 
         if (responseType == "text")
             try
             {
-                var data =
-                    await Program.HttpClient.GetStringAsync(
-                        $"https://api.wolframalpha.com/v1/result?appid={appid}&i={queryEncoded}");
+                var data = await Program.HttpClient.GetStringAsync(
+                    $"https://api.wolframalpha.com/v1/result?appid={appid}&i={queryEncoded}");
+
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"> {queryEscaped}\n" +
                     data + $"\n\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
             }
@@ -59,12 +57,14 @@ public class WolframAlpha : ApplicationCommandModule
                 var data =
                     await Program.HttpClient.GetByteArrayAsync(
                         $"https://api.wolframalpha.com/v1/simple?appid={appid}&i={queryEncoded}");
-                await File.WriteAllBytesAsync("result.gif", data);
+                var stream = new MemoryStream(data);
+
+                var msg = new DiscordMessageBuilder().WithFile("result.gif", stream);
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         $"> {queryEscaped}\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)")
-                    .AddFile(File.OpenRead("result.gif")));
+                    .AddFile("result.gif", stream));
             }
             catch
             {

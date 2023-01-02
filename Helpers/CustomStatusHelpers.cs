@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Helpers;
 
-public class CustomStatusHelper
+public class CustomStatusHelpers
 {
     public static async Task SetCustomStatus()
     {
@@ -43,7 +43,7 @@ public class CustomStatusHelper
                 }
 
                 var chosenStatus = random.Next(0, customStatusList.Length);
-                if (Program.Discord.CurrentUser.Presence.Activity.Name != null)
+                if (Program.Discord.CurrentUser.Presence.Activity.Name is not null)
                     if (customStatusList.Length != 1)
                         while (customStatusList[chosenStatus].Name.ToString() ==
                                Program.Discord.CurrentUser.Presence.Activity.Name)

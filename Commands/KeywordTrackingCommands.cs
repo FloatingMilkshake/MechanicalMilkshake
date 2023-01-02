@@ -177,9 +177,6 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                 }
             }
 
-            ulong guildId = default;
-            if (currentGuildOnly) guildId = ctx.Guild.Id;
-
             KeywordConfig keywordConfig = new()
             {
                 Keyword = keyword,
@@ -190,7 +187,7 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                 ChannelIgnoreList = channelsToIgnore,
                 GuildIgnoreList = guildsToIgnore,
                 Id = ctx.InteractionId,
-                GuildId = guildId
+                GuildId = currentGuildOnly ? ctx.Guild.Id : default
             };
 
             await Program.Db.HashSetAsync("keywords", ctx.InteractionId,

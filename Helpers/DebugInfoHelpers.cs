@@ -4,28 +4,10 @@ public class DebugInfoHelpers
 {
     private static DebugInfo GetDebugInfo()
     {
-        var commitHash = "";
-        if (File.Exists("CommitHash.txt"))
-        {
-            StreamReader readHash = new("CommitHash.txt");
-            commitHash = readHash.ReadToEnd().Trim();
-        }
+        var commitHash = FileHelpers.ReadFile("CommitHash.txt", "dev");
 
-        if (commitHash == "") commitHash = "dev";
-
-        var commitTime = "";
-        var commitTimeDescription = "";
-        if (File.Exists("CommitTime.txt"))
-        {
-            StreamReader readTime = new("CommitTime.txt");
-            commitTime = readTime.ReadToEnd();
-
-            var dateToConvert = Convert.ToDateTime(commitTime);
-            var unixTime = ((DateTimeOffset)dateToConvert).ToUnixTimeSeconds();
-            commitTime = $"<t:{unixTime}:F>";
-
-            commitTimeDescription = "Commit Timestamp";
-        }
+        var commitTime = FileHelpers.ReadFile("CommitTime.txt");
+        string commitTimeDescription;
 
         if (commitTime == "")
         {
@@ -33,16 +15,16 @@ public class DebugInfoHelpers
             commitTime = $"<t:{unixTime}:F>";
             commitTimeDescription = "Last connected to Discord at";
         }
-
-        var commitMessage = "";
-        if (File.Exists("CommitMessage.txt"))
+        else
         {
-            StreamReader readMessage = new("CommitMessage.txt");
-            commitMessage = readMessage.ReadToEnd();
+            var unixTime = ((DateTimeOffset)Convert.ToDateTime(commitTime)).ToUnixTimeSeconds();
+            commitTime = $"<t:{unixTime}:F>";
+
+            commitTimeDescription = "Commit Timestamp";
         }
 
-        if (commitMessage == "")
-            commitMessage = $"Running in development mode; process started at {Program.ProcessStartTime}";
+        var commitMessage = FileHelpers.ReadFile("CommitMessage.txt",
+            $"Running in development mode; process started at {Program.ProcessStartTime}");
 
         var loadTime = (Program.ConnectTime - Convert.ToDateTime(Program.ProcessStartTime)).Humanize();
 

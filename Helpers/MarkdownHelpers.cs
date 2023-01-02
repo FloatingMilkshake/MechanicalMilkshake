@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Helpers;
 
-public static class MarkdownParser
+public static class MarkdownHelpers
 {
     /*
      * This parses a string and escapes all the markdown characters.
@@ -25,13 +25,10 @@ public static class MarkdownParser
         output = output.Replace("|", @"\|");
         output = output.Replace("{", @"\{");
         output = output.Replace("}", @"\}");
-        
+
         // if output becomes greater than 4000 characters, return an error.
-        if (output.Length > 4000)
-        {
-            return "The output is too long for me to send.";
-        }
-        
+        if (output.Length > 4000) return "The output is too long for me to send.";
+
         return output;
     }
 }

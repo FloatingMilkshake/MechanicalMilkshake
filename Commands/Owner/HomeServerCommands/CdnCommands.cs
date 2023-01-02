@@ -2,17 +2,6 @@
 
 public class CdnCommands : ApplicationCommandModule
 {
-    private static async void FailOnMissingInfo(InteractionContext ctx, bool followUp)
-    {
-        const string failureMsg =
-            "CDN commands are disabled! Please make sure you have provided values for all of the keys under `s3` and `cloudflare` in the config file.";
-
-        if (followUp)
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(failureMsg));
-        else
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(failureMsg));
-    }
-
     [SlashCommandGroup("cdn", "Manage files uploaded to Amazon S3-compatible cloud storage.")]
     public class Cdn
     {
@@ -29,7 +18,7 @@ public class CdnCommands : ApplicationCommandModule
 
             if (Program.DisabledCommands.Contains("cdn"))
             {
-                FailOnMissingInfo(ctx, true);
+                CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
                 return;
             }
 
@@ -40,54 +29,28 @@ public class CdnCommands : ApplicationCommandModule
                 return;
             }
 
-            if (file != null) link = file.Url;
+            if (file is not null) link = file.Url;
 
-            if (link.Contains('<'))
-            {
-                link = link.Replace("<", "");
-                link = link.Replace("<", "");
-            }
-
-            if (link.Contains('>'))
-            {
-                link = link.Replace(">", "");
-                link = link.Replace(">", "");
-            }
+            link = link.Replace("<", "");
+            link = link.Replace(">", "");
 
             string fileName;
 
+            // Get file, where 'link' is the URL
             MemoryStream memStream = new(await Program.HttpClient.GetByteArrayAsync(link));
 
             try
             {
-                Dictionary<string, string> meta = new();
-
-                //meta["x-amz-acl"] = "public-read";
-
-                if (Program.ConfigJson.S3.Bucket == null)
-                {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                        "Error: S3 bucket info missing! Make sure the bucket field under s3 in your config.json file is set."));
-                    return;
-                }
-
                 var bucket = Program.ConfigJson.S3.Bucket;
 
-                Regex urlRemovalPattern = new(@".*\/\/.*\/");
-                var urlRemovalMatch = urlRemovalPattern.Match(link);
-                link = link.Replace(urlRemovalMatch.ToString(), "");
+                // Strip the URL down to just the file name
 
-                // At this point 'link' will probably look like a filename (example.png), but if a link was provided that had parameters then 'link' might look more like (example.png?someparameter=something)
+                // Regex partially taken from https://stackoverflow.com/a/26253039
+                Regex fileNamePattern = new(@"[^/\\&\?#]+\.\w*(?=([\?&#].*$|$))");
 
-                Regex parameterRemovalPattern = new(@".*\?");
-                var parameterRemovalMatch = parameterRemovalPattern.Match(link);
+                var fileNameAndExtension = fileNamePattern.Match(link).Value;
 
-                if (!string.IsNullOrWhiteSpace(parameterRemovalMatch.ToString()))
-                    link = link.Replace(parameterRemovalMatch.ToString(), "");
-
-                var fileNameAndExtension = link.Replace("?", "");
-
-                // From here on out we can be sure that 'fileNameAndExtension' is in the format (example.png).
+                // From here on out we can be sure that 'fileNameAndExtension' is in the format 'example.png'.
 
                 var extension = Path.GetExtension(fileNameAndExtension);
 
@@ -95,10 +58,7 @@ public class CdnCommands : ApplicationCommandModule
 
                 fileName = name switch
                 {
-                    "random" => new string(Enumerable.Repeat(chars, 10)
-                        .Select(s => s[Program.Random.Next(s.Length)])
-                        .ToArray()) + extension,
-                    "generate" => new string(Enumerable.Repeat(chars, 10)
+                    "random" or "generate" => new string(Enumerable.Repeat(chars, 10)
                         .Select(s => s[Program.Random.Next(s.Length)])
                         .ToArray()) + extension,
                     "preserve" => fileNameAndExtension,
@@ -110,8 +70,7 @@ public class CdnCommands : ApplicationCommandModule
                     .WithObject(fileName)
                     .WithStreamData(memStream)
                     .WithObjectSize(memStream.Length)
-                    .WithContentType(MimeTypeMap.GetMimeType(extension))
-                    .WithHeaders(meta);
+                    .WithContentType(MimeTypeMap.GetMimeType(extension));
 
                 await Program.Minio.PutObjectAsync(args);
             }
@@ -130,18 +89,8 @@ public class CdnCommands : ApplicationCommandModule
                 return;
             }
 
-            if (Program.ConfigJson.S3.CdnBaseUrl == null)
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    $"Upload successful!\nThere's no CDN URL set in your config.json, so I can't give you a link. But your file was uploaded as {fileName}."));
-            }
-            else
-            {
-                var cdnUrl = Program.ConfigJson.S3.CdnBaseUrl;
-                await ctx.FollowUpAsync(
-                    new DiscordFollowupMessageBuilder().WithContent(
-                        $"Upload successful!\n<{cdnUrl}/{fileName}>"));
-            }
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                $"Upload successful!\n<{Program.ConfigJson.S3.CdnBaseUrl}/{fileName}>"));
         }
 
         [SlashCommand("delete", "Delete a file from Amazon S3-compatible cloud storage.")]
@@ -154,31 +103,19 @@ public class CdnCommands : ApplicationCommandModule
 
             if (Program.DisabledCommands.Contains("cdn"))
             {
-                FailOnMissingInfo(ctx, true);
+                CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
                 return;
             }
 
-            if (fileToDelete.Contains('<')) fileToDelete = fileToDelete.Replace("<", "");
+            fileToDelete = fileToDelete.Replace("<", "");
+            fileToDelete = fileToDelete.Replace(">", "");
 
-            if (fileToDelete.Contains('>')) fileToDelete = fileToDelete.Replace(">", "");
-
-            if (Program.ConfigJson.S3.Bucket == null)
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "Error: S3 bucket info missing! Make sure the bucket field under s3 in your config.json file is set."));
-                return;
-            }
-
-            var bucket = Program.ConfigJson.S3.Bucket;
-
-            var fileName = !fileToDelete.Contains($"{Program.ConfigJson.S3.CdnBaseUrl}/")
-                ? fileToDelete
-                : fileToDelete.Replace($"{Program.ConfigJson.S3.CdnBaseUrl}/", "");
+            var fileName = fileToDelete.Replace($"{Program.ConfigJson.S3.CdnBaseUrl}/", "");
 
             try
             {
                 var args = new RemoveObjectArgs()
-                    .WithBucket(bucket)
+                    .WithBucket(Program.ConfigJson.S3.Bucket)
                     .WithObject(fileName);
 
                 await Program.Minio.RemoveObjectAsync(args);
@@ -200,17 +137,7 @@ public class CdnCommands : ApplicationCommandModule
                 new DiscordFollowupMessageBuilder().WithContent(
                     "File deleted successfully!\nAttempting to purge Cloudflare cache..."));
 
-            string cloudflareUrlPrefix;
-            if (Program.ConfigJson.Cloudflare.UrlPrefix != null)
-            {
-                cloudflareUrlPrefix = Program.ConfigJson.Cloudflare.UrlPrefix;
-            }
-            else
-            {
-                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(
-                    "File deleted successfully!\nError: missing Zone ID for Cloudflare. Unable to purge cache! Check the urlPrefix field under cloudflare in your config.json file."));
-                return;
-            }
+            var cloudflareUrlPrefix = Program.ConfigJson.Cloudflare.UrlPrefix;
 
             // This code is (mostly) taken from https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L113.
             // (Note that I originally found it here: https://github.com/Erisa/Lykos/blob/1f32e03/src/Modules/Owner.cs#L232)
@@ -224,36 +151,12 @@ public class CdnCommands : ApplicationCommandModule
                     BaseAddress = new Uri("https://api.cloudflare.com/")
                 };
 
-                string zoneId;
-                if (Program.ConfigJson.Cloudflare.ZoneId != null)
-                {
-                    zoneId = Program.ConfigJson.Cloudflare.ZoneId;
-                }
-                else
-                {
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(
-                        "File deleted successfully!\nError: missing Zone ID for Cloudflare. Unable to purge cache! Check the urlPrefix field under cloudflare in your config.json file."));
-                    return;
-                }
-
-                string cloudflareToken;
-                if (Program.ConfigJson.Cloudflare.Token != null)
-                {
-                    cloudflareToken = Program.ConfigJson.Cloudflare.Token;
-                }
-                else
-                {
-                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(
-                        "File deleted successfully!\nError: missing token for Cloudflare. Unable to purge cache! Check the token field under cloudflare in your config.json file."));
-                    return;
-                }
-
                 HttpRequestMessage request =
-                    new(HttpMethod.Delete, "client/v4/zones/" + zoneId + "/purge_cache/files")
+                    new(HttpMethod.Delete, $"client/v4/zones/{Program.ConfigJson.Cloudflare.ZoneId}/purge_cache/files")
                     {
                         Content = new StringContent(cloudflareContentString, Encoding.UTF8, "application/json")
                     };
-                request.Headers.Add("Authorization", $"Bearer {cloudflareToken}");
+                request.Headers.Add("Authorization", $"Bearer {Program.ConfigJson.Cloudflare.Token}");
 
                 var response = await httpClient.SendAsync(request);
                 var responseText = await response.Content.ReadAsStringAsync();
@@ -279,7 +182,7 @@ public class CdnCommands : ApplicationCommandModule
         {
             if (Program.DisabledCommands.Contains("cdn"))
             {
-                FailOnMissingInfo(ctx, false);
+                CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
                 return;
             }
 
@@ -287,7 +190,8 @@ public class CdnCommands : ApplicationCommandModule
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
-                        "Hmm, it doesn't look like you included a file extension. Be sure to include the proper file extension so I can find the image you're looking for."));
+                        "Hmm, it doesn't look like you included a file extension. Be sure to include the proper file" +
+                        " extension so I can find the image you're looking for."));
                 return;
             }
 
@@ -297,7 +201,8 @@ public class CdnCommands : ApplicationCommandModule
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
-                        "Hmm, it looks like that file doesn't exist! If you're sure it does, perhaps you got the extension wrong."));
+                        "Hmm, it looks like that file doesn't exist! If you're sure it does, perhaps you got the" +
+                        " extension wrong."));
                 return;
             }
 
@@ -308,6 +213,7 @@ public class CdnCommands : ApplicationCommandModule
     }
 
     // This code is taken from https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197.
+    // (minus the ReSharper disable comments)
     // (Note that I originally found it here: https://github.com/Erisa/Lykos/blob/3335c38/src/Modules/Owner.cs#L313)
     private readonly struct CloudflareContent
     {

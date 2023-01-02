@@ -11,8 +11,8 @@ public class ReminderChecks
             var reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
 
             if (reminderData!.ReminderTime is null) continue;
-
             if (reminderData!.ReminderTime > DateTime.Now) continue;
+
             var setTime = ((DateTimeOffset)reminderData.SetTime).ToUnixTimeSeconds();
             DiscordEmbedBuilder embed = new()
             {
@@ -25,18 +25,17 @@ public class ReminderChecks
             if (reminderData.IsPrivate)
                 context =
                     "This reminder was set privately, so I can't link back to the message where it was set!" +
-                    $" However, [this link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId}) should show you messages around the time that you set the reminder.";
+                    $" However, [this link](https://discord.com/channels/{reminderData.GuildId}" +
+                    $"/{reminderData.ChannelId}/{reminderData.MessageId}) should show you messages around the time" +
+                    " that you set the reminder.";
             else
                 context =
-                    $"[Jump Link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId})";
+                    $"[Jump Link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}" +
+                    $"/{reminderData.MessageId})";
 
             embed.AddField("Context", context);
 
-            var reminderCommand = Program.ApplicationCommands.FirstOrDefault(sc => sc.Name == "reminder");
-
-            if (reminderCommand is not null)
-                embed.AddField("Need to delay this reminder?",
-                    $"Use </{reminderCommand.Name} pushback:{reminderCommand.Id}> and set `message` to [loading...].");
+            AddReminderPushbackEmbedField(embed);
 
             DiscordMember targetMember;
             if (reminderData.GuildId == "@me")
@@ -88,11 +87,7 @@ public class ReminderChecks
                         embed);
 
                     embed.RemoveFieldAt(1);
-
-                    if (reminderCommand is not null)
-                        embed.AddField("Need to delay this reminder?",
-                            $"Use </{reminderCommand.Name} pushback:{reminderCommand.Id}> and set `message` to `{msg.Id}`.");
-
+                    AddReminderPushbackEmbedField(embed, msg.Id);
                     await msg.ModifyAsync(msg.Content, embed.Build());
 
                     await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
@@ -144,11 +139,7 @@ public class ReminderChecks
                     embed);
 
                 embed.RemoveFieldAt(1);
-
-                if (reminderCommand is not null)
-                    embed.AddField("Need to delay this reminder?",
-                        $"Use </{reminderCommand.Name} pushback:{reminderCommand.Id}> and set `message` to `{msg.Id}`.");
-
+                AddReminderPushbackEmbedField(embed, msg.Id);
                 await msg.ModifyAsync(msg.Content, embed.Build());
 
                 await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
@@ -167,11 +158,7 @@ public class ReminderChecks
                         embed);
 
                     embed.RemoveFieldAt(1);
-
-                    if (reminderCommand is not null)
-                        embed.AddField("Need to delay this reminder?",
-                            $"Use </{reminderCommand.Name} pushback:{reminderCommand.Id}> and set `message` to `{msg.Id}`.");
-
+                    AddReminderPushbackEmbedField(embed, msg.Id);
                     await msg.ModifyAsync(msg.Content, embed.Build());
 
                     await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
@@ -209,5 +196,13 @@ public class ReminderChecks
             $"{ex.GetType()} occurred when checking reminders: {ex.Message}\n{ex.StackTrace}");
 
         await logChannel.SendMessageAsync(errorEmbed);
+    }
+
+    private static void AddReminderPushbackEmbedField(DiscordEmbedBuilder embed, ulong msgId = default)
+    {
+        var id = msgId == default ? "[loading...]" : $"`{msgId}`";
+
+        embed.AddField("Need to delay this reminder?",
+            $"Use {SlashCmdMentionHelpers.GetSlashCmdMention("reminder", "pushback")}and set `message` to {id}.");
     }
 }

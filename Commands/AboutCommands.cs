@@ -7,7 +7,7 @@ public class AboutCommands : ApplicationCommandModule
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-        // Set this to an empty string to disable the Privacy Policy notice in `/about`, or change it to your own Privacy Policy URL if you have one.
+        // Set this to an empty string to disable the Privacy Policy notice in /about, or change it to your own Privacy Policy URL if you have one.
         const string privacyPolicyUrl = "https://floatingmilkshake.com/privacy#MechanicalMilkshake";
 
         // Set this to an empty string to disable the Support Server notice in /about, or change it your own Support Server invite if you have one.
@@ -23,32 +23,17 @@ public class AboutCommands : ApplicationCommandModule
         embed.AddField("Servers", ctx.Client.Guilds.Count.ToString(), true);
         embed.AddField("Commands", Program.ApplicationCommands.Count.ToString(), true);
 
+        // Privacy Policy link; hidden if privacyPolicyUrl is empty.
         if (!string.IsNullOrWhiteSpace(privacyPolicyUrl))
             embed.Description += $"\n\nThis bot's Privacy Policy can be found [here]({privacyPolicyUrl}).";
 
+        // Support Server link; hidden if supportServerInvite is empty.
         if (!string.IsNullOrWhiteSpace(supportServerInvite))
             embed.Description += $"\nNeed help? Join the bot's support server [here]({supportServerInvite})!";
 
         // Commit hash / version
-        var commitHash = "";
-        if (File.Exists("CommitHash.txt"))
-        {
-            StreamReader readHash = new("CommitHash.txt");
-            commitHash = (await readHash.ReadToEndAsync()).Trim();
-        }
-
-        if (commitHash == "") commitHash = "dev";
-
-        var remoteUrl = "";
-        if (File.Exists("RemoteUrl.txt"))
-        {
-            StreamReader readUrl = new("RemoteUrl.txt");
-            remoteUrl = $"{(await readUrl.ReadToEndAsync()).Trim()}";
-        }
-
-        if (remoteUrl == "") remoteUrl = "N/A";
-
-        //embed.AddField("Version", $"[{commitHash}]({commitUrl})", true);
+        var commitHash = await FileHelpers.ReadFileAsync("CommitHash.txt", "dev");
+        var remoteUrl = await FileHelpers.ReadFileAsync("RemoteUrl.txt", "N/A");
         embed.AddField("Source Code Repository", remoteUrl);
 
         var botOwners = ctx.Client.CurrentApplication.Owners.ToList();
@@ -58,9 +43,8 @@ public class AboutCommands : ApplicationCommandModule
             : botOwners.Aggregate("Bot owners are:",
                 (current, owner) => current + $"\n- {owner.Username}#{owner.Discriminator}");
 
-        ownerOutput = ownerOutput.Trim() + "\n\nFor any issues with the bot, DM it or a bot owner.";
-
-        ownerOutput = ownerOutput.Trim();
+        ownerOutput = ownerOutput.Trim() +
+                      "\n\nFor any issues with the bot, DM the bot itself or an owner. DMs sent to the bot are forwarded to owners.";
 
         embed.AddField("Owners", ownerOutput);
 
@@ -79,31 +63,9 @@ public class AboutCommands : ApplicationCommandModule
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
-        var commitHash = "";
-        if (File.Exists("CommitHash.txt"))
-        {
-            StreamReader readHash = new("CommitHash.txt");
-            commitHash = (await readHash.ReadToEndAsync()).Trim();
-        }
-
-        if (commitHash == "") commitHash = "dev";
-
-        var commitMessage = "";
-        if (File.Exists("CommitMessage.txt"))
-        {
-            StreamReader readMessage = new("CommitMessage.txt");
-            commitMessage = (await readMessage.ReadToEndAsync()).Trim();
-        }
-
-        if (commitMessage == "") commitMessage = "dev";
-
-        var commitUrl = "";
-        if (File.Exists("RemoteUrl.txt"))
-        {
-            StreamReader readUrl = new("RemoteUrl.txt");
-            var remoteUrl = $"{(await readUrl.ReadToEndAsync()).Trim()}";
-            commitUrl = $"{remoteUrl}/commit/{commitHash}";
-        }
+        var commitHash = await FileHelpers.ReadFileAsync("CommitHash.txt", "dev");
+        var commitMessage = await FileHelpers.ReadFileAsync("CommitMessage.txt", "dev");
+        var commitUrl = await FileHelpers.ReadFileAsync("RemoteUrl.txt");
 
         await ctx.FollowUpAsync(
             new DiscordFollowupMessageBuilder().WithContent(

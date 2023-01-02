@@ -13,7 +13,7 @@ public class Avatar : ApplicationCommandModule
         DiscordButtonComponent userAvatarButton =
             new(ButtonStyle.Primary, "user-avatar-ctx-cmd-button", "User Avatar");
 
-        if (user == null) user = ctx.User;
+        user ??= ctx.User;
 
         DiscordMember member = default;
         try
@@ -25,7 +25,7 @@ public class Avatar : ApplicationCommandModule
             // User is not in the server, so no guild avatar available
         }
 
-        if (member == default || member.GuildAvatarUrl == null)
+        if (member == default || member.GuildAvatarUrl is null)
             await ctx.CreateResponseAsync(
                 new DiscordInteractionResponseBuilder().WithContent(
                     $"{user.AvatarUrl}".Replace("size=1024", "size=4096")));

@@ -315,16 +315,16 @@ public class ReminderCommands : ApplicationCommandModule
                 return;
             }
 
-            if (text == null && time == null)
+            if (text is null && time is null)
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Reminder unchanged.")
                     .AsEphemeral());
                 return;
             }
 
-            if (text != null) reminder.ReminderText = text;
+            if (text is not null) reminder.ReminderText = text;
 
-            if (time != null)
+            if (time is not null)
                 try
                 {
                     reminder.ReminderTime = HumanDateParser.HumanDateParser.Parse(time);

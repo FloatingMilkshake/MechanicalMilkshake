@@ -10,7 +10,7 @@ public class Tellraw : ApplicationCommandModule
         [Option("channel", "The channel to send the message in.")]
         DiscordChannel channel = null)
     {
-        var targetChannel = channel != null ? channel : ctx.Channel;
+        var targetChannel = channel ?? ctx.Channel;
 
         DiscordMessage sentMessage;
         try
@@ -35,8 +35,8 @@ public class Tellraw : ApplicationCommandModule
 
         foreach (var owner in Program.Discord.CurrentApplication.Owners)
         {
-            if (owner.Id == ctx.User.Id)
-                return;
+            // Don't send tellraw log to owners if an owner sent the message
+            if (Program.Discord.CurrentApplication.Owners.Contains(ctx.User)) return;
 
             try
             {

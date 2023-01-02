@@ -1,7 +1,4 @@
-﻿using HumanDateParser;
-using MechanicalMilkshake.Checks;
-
-namespace MechanicalMilkshake.Commands.Owner;
+﻿namespace MechanicalMilkshake.Commands.Owner;
 
 [SlashRequireAuth]
 public class DebugCommands : ApplicationCommandModule

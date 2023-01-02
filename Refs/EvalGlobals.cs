@@ -14,7 +14,7 @@ public class Globals
         Channel = ctx.Channel;
         Guild = ctx.Guild;
         User = ctx.User;
-        if (Guild != null)
+        if (Guild is not null)
             Member = Guild.GetMemberAsync(User.Id).ConfigureAwait(false).GetAwaiter().GetResult();
 
         Context = ctx;
