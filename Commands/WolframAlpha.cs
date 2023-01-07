@@ -59,8 +59,6 @@ public class WolframAlpha : ApplicationCommandModule
                         $"https://api.wolframalpha.com/v1/simple?appid={appid}&i={queryEncoded}");
                 var stream = new MemoryStream(data);
 
-                var msg = new DiscordMessageBuilder().WithFile("result.gif", stream);
-
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         $"> {queryEscaped}\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)")
