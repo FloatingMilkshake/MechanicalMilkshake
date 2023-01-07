@@ -482,6 +482,7 @@ public class ReminderCommands : ApplicationCommandModule
             {
                 UserId = ctx.User.Id,
                 ChannelId = ctx.Channel.Id,
+                MessageId = message.Id,
                 GuildId = guildId,
                 ReminderId = reminderId,
                 ReminderText = message.Embeds[0].Description,
