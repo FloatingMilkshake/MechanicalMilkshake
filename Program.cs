@@ -112,6 +112,7 @@ internal class Program
             Token = ConfigJson.Base.BotToken,
             TokenType = TokenType.Bot,
             Intents = DiscordIntents.All,
+            LogUnknownEvents = false,
 #if DEBUG
             MinimumLogLevel = LogLevel.Debug
 #else
