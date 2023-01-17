@@ -204,6 +204,7 @@ internal class Program
             slash.RegisterCommands(type, HomeServer.Id);
 
         slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(HomeServer.Id);
+        slash.RegisterCommands<PerServerFeatures.MusicUtilityCommands>(HomeServer.Id);
 
         // ReSharper disable once LogMessageIsSentenceProblem
         Discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging");
@@ -234,6 +235,8 @@ internal class Program
         slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(984903591816990730);
         slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(HomeServer.Id);
         slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
+        slash.RegisterCommands<PerServerFeatures.MusicUtilityCommands>(852355801896189953);
+        slash.RegisterCommands<PerServerFeatures.MusicUtilityCommands>(HomeServer.Id);
 #endif
 
         // Register CommandsNext commands

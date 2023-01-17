@@ -112,6 +112,22 @@ public class PerServerFeatures
         }
     }
 
+    public class MusicUtilityCommands : ApplicationCommandModule
+    {
+        [SlashCommand("fixmusic", "Fixes the music bot by restarting Lavalink.")]
+        public static async Task FixMusic(InteractionContext ctx) {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            await EvalCommands.RunCommand("ssh floatingmilkshake@meow.floatingmilkshake.com " +
+                                          "\"tmux kill-session -t lavalink && tmux new -s lavalink -d " +
+                                          "/home/floatingmilkshake/.sdkman/candidates/java/current/bin/java " +
+                                          "-Djdk.tls.client.protocols=TLSv1.2 -jar " +
+                                          "/home/floatingmilkshake/projects/esmbot/Lavalink/Lavalink.jar\"");
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Done!"));
+        }
+    }
+
     public class Checks
     {
         public static async Task MessageCreateChecks(MessageCreateEventArgs e)
