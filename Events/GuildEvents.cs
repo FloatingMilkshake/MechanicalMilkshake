@@ -28,6 +28,11 @@ public class GuildEvents
         embed.AddField("Server", $"{guild.Name}\n(`{guild.Id}`)", true);
         embed.AddField("Members", guild.MemberCount.ToString(), true);
 
-        await chan.SendMessageAsync(embed);
+        DiscordEmbedBuilder userInfoEmbed = new DiscordEmbedBuilder(await UserInfoHelpers.GenerateUserInfoEmbed((DiscordUser)guild.Owner)); 
+        userInfoEmbed.WithColor(Program.BotColor);
+        userInfoEmbed.WithTitle("User Info for Server Owner");
+        userInfoEmbed.WithDescription($"{guild.Owner.Username}#{guild.Owner.Discriminator}");
+
+        await chan.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).AddEmbed(userInfoEmbed));
     }
 }
