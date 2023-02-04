@@ -35,15 +35,16 @@ public class MessageEvents
                 if (e.Author.IsCurrent)
                     return;
 
-                if (client.CurrentApplication.Owners.Contains(e.Author))
+                if (client.CurrentApplication.Owners.Contains(e.Author) && e.Message.ReferencedMessage is null)
                 {
-                    if (!e.Message.Content.StartsWith("sendto") && e.Message.ReferencedMessage is null)
+                    if (!e.Message.Content.StartsWith("sendto"))
                         return;
 
-                    if (e.Message.ReferencedMessage.Author != client.CurrentUser ||
+                    if (e.Message.ReferencedMessage is not null)
+                        if (e.Message.ReferencedMessage.Author != client.CurrentUser ||
                         e.Message.ReferencedMessage.Embeds.Count < 1 ||
                         !e.Message.ReferencedMessage.Embeds[0].Title.Contains("DM received"))
-                        return;
+                            return;
 
                     Regex usernamePattern = new(".*#[0-9]{4}");
                     Regex idPattern = new("[0-9]{5,}");
@@ -187,6 +188,13 @@ public class MessageEvents
                     e.Message.ReferencedMessage.Embeds[0].Title.Contains("DM received from"))
                 {
                     // If these conditions are true, a bot owner has replied to a forwarded message. Now we need to forward that reply.
+
+                    if (e.Message.Content.Contains("sendto"))
+                    {
+                        await e.Message.RespondAsync(
+                            "Did you mean to reply, or to use `sendto`? Please only do one at a time.");
+                        return;
+                    }
 
                     var userIdField = e.Message.ReferencedMessage.Embeds[0].Fields.First(f => f.Name == "User ID");
                     var userId = Convert.ToUInt64(userIdField.Value.Replace("`", ""));
