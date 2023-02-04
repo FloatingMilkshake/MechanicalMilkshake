@@ -367,6 +367,7 @@ public class ComponentInteractionEvent
                 embed.AddField("Ignored Servers", ignoredGuildNames, true);
                 embed.AddField("Ignore Bots", keyword.IgnoreBots.ToString(), true);
                 embed.AddField("Match Whole Word", matchWholeWord, true);
+                embed.AddField("Assume Presence", keyword.AssumePresence.ToString(), true);
                 embed.AddField("Limited to Server", limitedGuild, true);
 
                 await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed)
@@ -438,6 +439,7 @@ public class ComponentInteractionEvent
                 embed.AddField("Ignored Servers", ignoredGuildNames, true);
                 embed.AddField("Ignore Bots", keyword.IgnoreBots.ToString(), true);
                 embed.AddField("Match Whole Word", matchWholeWord, true);
+                embed.AddField("Assume Presence", keyword.AssumePresence.ToString(), true);
                 embed.AddField("Limited to Server", limitedGuild, true);
 
                 DiscordButtonComponent confirmButton = new(ButtonStyle.Danger, "track-remove-confirm-button", "Remove");

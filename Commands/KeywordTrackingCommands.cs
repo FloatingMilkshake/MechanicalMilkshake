@@ -14,6 +14,8 @@ public class KeywordTrackingCommands : ApplicationCommandModule
             bool matchWholeWord = false,
             [Option("ignore_bots", "Whether to ignore messages from bots. Defaults to True.")]
             bool ignoreBots = true,
+            [Option("assume_presence", "Whether to assume you're present and ignore messages sent directly after your own. Defaults to True.")]
+            bool assumePresence = true,
             [Option("user_ignore_list", "Users to ignore. Use IDs and/or mentions. Separate with spaces.")]
             string userIgnoreList = null,
             [Option("channel_ignore_list", "Channels to ignore. Use IDs only. Separate with spaces.")]
@@ -183,6 +185,7 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                 UserId = ctx.User.Id,
                 MatchWholeWord = matchWholeWord,
                 IgnoreBots = ignoreBots,
+                AssumePresence = assumePresence,
                 UserIgnoreList = usersToIgnore,
                 ChannelIgnoreList = channelsToIgnore,
                 GuildIgnoreList = guildsToIgnore,

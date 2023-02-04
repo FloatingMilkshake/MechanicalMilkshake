@@ -10,6 +10,8 @@ public class KeywordConfig
 
     [JsonProperty("ignoreBots")] public bool IgnoreBots { get; set; }
 
+    [JsonProperty("assumePresence")] public bool AssumePresence { get; set; }
+
     [JsonProperty("userIgnoreList")] public List<ulong> UserIgnoreList { get; set; }
 
     [JsonProperty("channelIgnoreList")] public List<ulong> ChannelIgnoreList { get; set; }

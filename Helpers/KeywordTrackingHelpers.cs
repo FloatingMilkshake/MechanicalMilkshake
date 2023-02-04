@@ -57,6 +57,12 @@ public class KeywordTrackingHelpers
             // If message was sent by a bot and bots should be ignored for this keyword, ignore
             if (fieldValue.IgnoreBots && message.Author.IsBot)
                 continue;
+            
+            // If user is seemingly present and we should assume presence, ignore
+            if (fieldValue.AssumePresence)
+                if ((await message.Channel.GetMessagesBeforeAsync(message.Id, 1)).Count > 0)
+                    if ((await message.Channel.GetMessagesBeforeAsync(message.Id, 1))[0].Author.Id == fieldValue.UserId)
+                        continue;
 
             // If keyword is limited to a guild and this is not that guild, ignore
             if (fieldValue.GuildId != default && fieldValue.GuildId != message.Channel.Guild.Id)
