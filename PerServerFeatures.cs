@@ -119,7 +119,8 @@ public class PerServerFeatures
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
             await EvalCommands.RunCommand("ssh floatingmilkshake@meow.floatingmilkshake.com " +
-                                          "\"tmux kill-session -t lavalink && tmux new -s lavalink -d " +
+                                          "\"tmux kill-session -t lavalink && " +
+                                          "cd /home/floatingmilkshake/projects/esmbot/Lavalink && tmux new -s lavalink -d " +
                                           "/home/floatingmilkshake/.sdkman/candidates/java/current/bin/java " +
                                           "-Djdk.tls.client.protocols=TLSv1.2 -jar " +
                                           "/home/floatingmilkshake/projects/esmbot/Lavalink/Lavalink.jar\"");
