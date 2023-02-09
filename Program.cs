@@ -236,6 +236,7 @@ internal class Program
         slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(HomeServer.Id);
         slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
         slash.RegisterCommands<PerServerFeatures.MusicUtilityCommands>(852355801896189953);
+        slash.RegisterCommands<PerServerFeatures.MusicUtilityCommands>(984903591816990730);
         slash.RegisterCommands<PerServerFeatures.MusicUtilityCommands>(HomeServer.Id);
 #endif
 
