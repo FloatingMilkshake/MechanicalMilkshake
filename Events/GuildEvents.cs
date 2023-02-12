@@ -28,10 +28,21 @@ public class GuildEvents
         embed.AddField("Server", $"{guild.Name}\n(`{guild.Id}`)", true);
         embed.AddField("Members", guild.MemberCount.ToString(), true);
 
-        DiscordEmbedBuilder userInfoEmbed = new DiscordEmbedBuilder(await UserInfoHelpers.GenerateUserInfoEmbed((DiscordUser)guild.Owner)); 
-        userInfoEmbed.WithColor(Program.BotColor);
-        userInfoEmbed.WithTitle("User Info for Server Owner");
-        userInfoEmbed.WithDescription($"{guild.Owner.Username}#{guild.Owner.Discriminator}");
+        DiscordEmbedBuilder userInfoEmbed;
+        try
+        {
+            userInfoEmbed =
+                new DiscordEmbedBuilder(await UserInfoHelpers.GenerateUserInfoEmbed((DiscordUser)guild.Owner));
+            userInfoEmbed.WithColor(Program.BotColor);
+            userInfoEmbed.WithTitle("User Info for Server Owner");
+            userInfoEmbed.WithDescription($"{guild.Owner.Username}#{guild.Owner.Discriminator}");
+        }
+        catch (Exception ex)
+        {
+            userInfoEmbed = new DiscordEmbedBuilder().WithTitle("User Info for Server Owner")
+                .WithDescription("Failed to fetch server owner.")
+                .AddField("Exception", $"{ex.GetType()}: {ex.Message}");
+        }
 
         await chan.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).AddEmbed(userInfoEmbed));
     }
