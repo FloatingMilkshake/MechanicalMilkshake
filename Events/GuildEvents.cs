@@ -12,6 +12,12 @@ public class GuildEvents
     public static async Task GuildDeleted(DiscordClient client, GuildDeleteEventArgs e)
     {
         var chan = await client.GetChannelAsync(1019068256163729461);
+        if (e.Guild.IsUnavailable)
+        {
+            await chan.SendMessageAsync(
+                $"Guild delete event fired for {e.Guild.Id}, however the guild is unavailable.");
+            return;
+        }
         await SendGuildEventLogEmbed(chan, e.Guild, false);
     }
 
