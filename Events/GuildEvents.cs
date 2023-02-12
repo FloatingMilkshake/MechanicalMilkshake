@@ -2,22 +2,37 @@
 
 public class GuildEvents
 {
+    private static readonly List<ulong> UnavailableGuilds = new();
+    
     public static async Task GuildCreated(DiscordClient client, GuildCreateEventArgs e)
     {
         // TODO: dont hardcode ID, probably make it a config value
         var chan = await client.GetChannelAsync(1019068256163729461);
+        
+        if (UnavailableGuilds.Contains(e.Guild.Id))
+        {
+            var embed = new DiscordEmbedBuilder().WithColor(Program.BotColor).WithTitle("Guild no longer unavailable")
+                .WithDescription(
+                    $"The guild {e.Guild.Name} (`{e.Guild.Id}`) was previously unavailable, but is now available again.")
+                .AddField("Members", e.Guild.MemberCount.ToString(), true).AddField("Owner",
+                    $"{e.Guild.Owner.Username}#{e.Guild.Owner.Discriminator} (`{e.Guild.Owner.Id}`)", true);
+
+            await chan.SendMessageAsync(embed);
+            return;
+        }
+        
         await SendGuildEventLogEmbed(chan, e.Guild, true);
     }
 
     public static async Task GuildDeleted(DiscordClient client, GuildDeleteEventArgs e)
     {
-        var chan = await client.GetChannelAsync(1019068256163729461);
         if (e.Guild.IsUnavailable)
         {
-            await chan.SendMessageAsync(
-                $"Guild delete event fired for {e.Guild.Id}, however the guild is unavailable.");
+            UnavailableGuilds.Add(e.Guild.Id);
             return;
         }
+        
+        var chan = await client.GetChannelAsync(1019068256163729461);
         await SendGuildEventLogEmbed(chan, e.Guild, false);
     }
 
