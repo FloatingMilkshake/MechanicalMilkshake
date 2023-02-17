@@ -2,6 +2,8 @@
 
 public class WolframAlpha : ApplicationCommandModule
 {
+    public static readonly string QueryUrlLinkDisplayText = "Click here for more details";
+    
     [SlashCommand("wolframalpha", "Search WolframAlpha without leaving Discord!")]
     public static async Task WolframAlphaCommand(InteractionContext ctx,
         [Option("query", "What to search for.")]
@@ -44,12 +46,12 @@ public class WolframAlpha : ApplicationCommandModule
                     $"https://api.wolframalpha.com/v1/result?appid={appid}&i={queryEncoded}");
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"> {queryEscaped}\n" +
-                    data + $"\n\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
+                    data + $"\n\n[{QueryUrlLinkDisplayText}](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
             }
             catch
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    $"Something went wrong while searching WolframAlpha and I couldn't get a simple answer for your query! You might have better luck if you set `responsetype` to `Image`.\n\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
+                    $"Something went wrong while searching WolframAlpha and I couldn't get a simple answer for your query! You might have better luck if you set `responsetype` to `Image`.\n\n[{QueryUrlLinkDisplayText}](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
             }
         else
             try
@@ -61,13 +63,13 @@ public class WolframAlpha : ApplicationCommandModule
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
-                        $"> {queryEscaped}\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)")
+                        $"> {queryEscaped}\n[{QueryUrlLinkDisplayText}](<https://www.wolframalpha.com/input/?i={queryEncoded}>)")
                     .AddFile("result.gif", stream));
             }
             catch
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    $"Something went wrong while searching WolframAlpha and I couldn't get an image response for your query! You might have better luck if you set `responsetype` to `Text`.\n\n[Query URL](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
+                    $"Something went wrong while searching WolframAlpha and I couldn't get an image response for your query! You might have better luck if you set `responsetype` to `Text`.\n\n[{QueryUrlLinkDisplayText}](<https://www.wolframalpha.com/input/?i={queryEncoded}>)"));
             }
     }
 }
