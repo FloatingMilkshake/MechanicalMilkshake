@@ -185,6 +185,19 @@ public class CdnCommands : ApplicationCommandModule
                 CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
                 return;
             }
+            
+            // Credit to @Erisa for this line of regex. https://github.com/Erisa/Cliptok/blob/a80e700/Constants/RegexConstants.cs#L8
+            Regex urlRx = new("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]");
+
+            if (urlRx.IsMatch(name) && !name.Contains(Program.ConfigJson.S3.CdnBaseUrl))
+            {
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder().WithContent(
+                        "I can only preview images on the configured CDN!" +
+                        " Please be sure the domain you are providing matches the one set in the configuration file" +
+                        " under `s3` > `cdnBaseUrl`."));
+                return;
+            }
 
             if (!name.Contains('.'))
             {
