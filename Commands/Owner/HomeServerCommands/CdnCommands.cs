@@ -98,8 +98,7 @@ public class CdnCommands : ApplicationCommandModule
             [Option("file", "The file to delete.")]
             string fileToDelete)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder());
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
             if (Program.DisabledCommands.Contains("cdn"))
             {
@@ -107,8 +106,7 @@ public class CdnCommands : ApplicationCommandModule
                 return;
             }
 
-            fileToDelete = fileToDelete.Replace("<", "");
-            fileToDelete = fileToDelete.Replace(">", "");
+            fileToDelete = fileToDelete.Replace("<", "").Replace(">", "");
 
             var fileName = fileToDelete.Replace($"{Program.ConfigJson.S3.CdnBaseUrl}/", "");
 
