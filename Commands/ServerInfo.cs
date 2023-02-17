@@ -2,40 +2,80 @@
 
 public class ServerInfo : ApplicationCommandModule
 {
-    [SlashCommand("serverinfo", "Returns information about the server.")]
+    [SlashCommand("serverinfo", "Look up information about a server.")]
     [SlashRequireGuild]
-    public static async Task ServerInfoCommand(InteractionContext ctx)
+    public static async Task ServerInfoCommand(InteractionContext ctx,
+        [Option("server",
+            "The ID of the server to look up. Defaults to the current server if you're not using this in DMs.")]
+        string guildId = default)
     {
+        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        
+        DiscordGuild guild;
+        
+        if (ctx.Channel.IsPrivate && guildId == default)
+        {
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("You can't use this command in DMs without specifying a server ID! Please try again."));
+            return;
+        }
+
+        if (guildId == default)
+        {
+            guild = ctx.Guild;
+        }
+        else
+        {
+            try
+            {
+                guild = await ctx.Client.GetGuildAsync(Convert.ToUInt64(guildId));
+            }
+            catch (Exception ex) when (ex is UnauthorizedException or NotFoundException)
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent(
+                        "Sorry, I can't read the details for that server because I'm not in it or it doesn't exist!"));
+                return;
+            }
+            catch (FormatException)
+            {
+                await ctx.FollowUpAsync(
+                    new DiscordFollowupMessageBuilder().WithContent(
+                        "That doesn't look like a valid server ID! Please try again."));
+                return;
+            }
+        }
+        
         var description = "None";
 
-        if (ctx.Guild.Description is not null) description = ctx.Guild.Description;
+        if (guild.Description is not null) description = guild.Description;
 
-        var createdAt = $"{IdHelpers.GetCreationTimestamp(ctx.Guild.Id, true)}";
+        var createdAt = $"{IdHelpers.GetCreationTimestamp(guild.Id, true)}";
 
-        var categoryCount = ctx.Guild.Channels.Count(channel => channel.Value.Type == ChannelType.Category);
+        var categoryCount = guild.Channels.Count(channel => channel.Value.Type == ChannelType.Category);
 
         var embed = new DiscordEmbedBuilder()
             .WithColor(Program.BotColor)
-            .AddField("Server Owner", $"{ctx.Guild.Owner.Username}#{ctx.Guild.Owner.Discriminator}")
+            .AddField("Server Owner", $"{guild.Owner.Username}#{guild.Owner.Discriminator}")
             .AddField("Description", $"{description}")
             .AddField("Created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)")
-            .AddField("Channels", $"{ctx.Guild.Channels.Count - categoryCount}", true)
+            .AddField("Channels", $"{guild.Channels.Count - categoryCount}", true)
             .AddField("Categories", $"{categoryCount}", true)
-            .AddField("Roles", $"{ctx.Guild.Roles.Count}", true)
-            .AddField("Members (total)", $"{ctx.Guild.MemberCount}", true)
+            .AddField("Roles", $"{guild.Roles.Count}", true)
+            .AddField("Members (total)", $"{guild.MemberCount}", true)
             .AddField("Bots", "loading... this might take a while", true)
             .AddField("Humans", "loading... this might take a while", true)
-            .WithThumbnail($"{ctx.Guild.IconUrl}")
-            .WithFooter($"Server ID: {ctx.Guild.Id}");
+            .WithThumbnail($"{guild.IconUrl}")
+            .WithFooter($"Server ID: {guild.Id}");
 
-        var response = new DiscordInteractionResponseBuilder()
-            .WithContent($"Server Info for **{ctx.Guild.Name}**").AddEmbed(embed);
+        var response = new DiscordFollowupMessageBuilder()
+            .WithContent($"Server Info for **{guild.Name}**").AddEmbed(embed);
 
-        await ctx.CreateResponseAsync(response);
+        await ctx.FollowUpAsync(response);
 
-        var members = await ctx.Guild.GetAllMembersAsync();
+        var members = await guild.GetAllMembersAsync();
         var botCount = members.Count(member => member.IsBot);
-        var humanCount = ctx.Guild.MemberCount - botCount;
+        var humanCount = guild.MemberCount - botCount;
 
         var newEmbed = response.Embeds[0];
 
