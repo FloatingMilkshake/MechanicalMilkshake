@@ -2,7 +2,7 @@
 
 public class GuildEvents
 {
-    private static readonly List<ulong> UnavailableGuilds = new();
+    public static readonly List<ulong> UnavailableGuilds = new();
     
     public static async Task GuildCreated(DiscordClient client, GuildCreateEventArgs e)
     {
