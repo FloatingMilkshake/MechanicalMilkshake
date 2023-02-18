@@ -322,53 +322,7 @@ public class ComponentInteractionEvent
                     return;
                 }
 
-                var ignoredUserMentions = "\n";
-                foreach (var userToIgnore in keyword!.UserIgnoreList)
-                {
-                    var user = await Program.Discord.GetUserAsync(userToIgnore);
-                    ignoredUserMentions += $"- {user.Mention}\n";
-                }
-
-                if (ignoredUserMentions == "\n") ignoredUserMentions = " None\n";
-
-                var ignoredChannelMentions = "\n";
-                foreach (var channelToIgnore in keyword.ChannelIgnoreList)
-                {
-                    var channel = await Program.Discord.GetChannelAsync(channelToIgnore);
-                    ignoredChannelMentions += $"- {channel.Mention}\n";
-                }
-
-                if (ignoredChannelMentions == "\n") ignoredChannelMentions = " None\n";
-
-                var ignoredGuildNames = "\n";
-                foreach (var guildToIgnore in keyword.GuildIgnoreList)
-                {
-                    var guild = await Program.Discord.GetGuildAsync(guildToIgnore);
-                    ignoredGuildNames += $"- {guild.Name}\n";
-                }
-
-                if (ignoredGuildNames == "\n") ignoredGuildNames = " None\n";
-
-                var matchWholeWord = keyword.MatchWholeWord.ToString().Trim();
-
-                var limitedGuild = keyword.GuildId == default
-                    ? "None"
-                    : (await Program.Discord.GetGuildAsync(keyword.GuildId)).Name;
-
-                DiscordEmbedBuilder embed = new()
-                {
-                    Title = "Keyword Details",
-                    Color = Program.BotColor,
-                    Description = keyword.Keyword
-                };
-
-                embed.AddField("Ignored Users", ignoredUserMentions, true);
-                embed.AddField("Ignored Channels", ignoredChannelMentions, true);
-                embed.AddField("Ignored Servers", ignoredGuildNames, true);
-                embed.AddField("Ignore Bots", keyword.IgnoreBots.ToString(), true);
-                embed.AddField("Match Whole Word", matchWholeWord, true);
-                embed.AddField("Assume Presence", keyword.AssumePresence.ToString(), true);
-                embed.AddField("Limited to Server", limitedGuild, true);
+                var embed = await GenerateKeywordDetailsEmbed(keyword);
 
                 await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed)
                     .AsEphemeral());
@@ -394,53 +348,9 @@ public class ComponentInteractionEvent
                     return;
                 }
 
-                var embed = new DiscordEmbedBuilder
-                {
-                    Title = "Are you sure you want to remove this keyword?",
-                    Color = DiscordColor.Red,
-                    Description = keyword!.Keyword
-                };
-
-                var ignoredUserMentions = "\n";
-                foreach (var userToIgnore in keyword.UserIgnoreList)
-                {
-                    var user = await Program.Discord.GetUserAsync(userToIgnore);
-                    ignoredUserMentions += $"- {user.Mention}\n";
-                }
-
-                if (ignoredUserMentions == "\n") ignoredUserMentions = " None\n";
-
-                var ignoredChannelMentions = "\n";
-                foreach (var channelToIgnore in keyword.ChannelIgnoreList)
-                {
-                    var channel = await Program.Discord.GetChannelAsync(channelToIgnore);
-                    ignoredChannelMentions += $"- {channel.Mention}\n";
-                }
-
-                if (ignoredChannelMentions == "\n") ignoredChannelMentions = " None\n";
-
-                var ignoredGuildNames = "\n";
-                foreach (var guildToIgnore in keyword.GuildIgnoreList)
-                {
-                    var guild = await Program.Discord.GetGuildAsync(guildToIgnore);
-                    ignoredGuildNames += $"- {guild.Name}\n";
-                }
-
-                if (ignoredGuildNames == "\n") ignoredGuildNames = " None\n";
-
-                var matchWholeWord = keyword.MatchWholeWord.ToString().Trim();
-
-                var limitedGuild = keyword.GuildId == default
-                    ? "None"
-                    : (await Program.Discord.GetGuildAsync(keyword.GuildId)).Name;
-
-                embed.AddField("Ignored Users", ignoredUserMentions, true);
-                embed.AddField("Ignored Channels", ignoredChannelMentions, true);
-                embed.AddField("Ignored Servers", ignoredGuildNames, true);
-                embed.AddField("Ignore Bots", keyword.IgnoreBots.ToString(), true);
-                embed.AddField("Match Whole Word", matchWholeWord, true);
-                embed.AddField("Assume Presence", keyword.AssumePresence.ToString(), true);
-                embed.AddField("Limited to Server", limitedGuild, true);
+                var embed = (await GenerateKeywordDetailsEmbed(keyword))
+                    .WithTitle("Are you sure you want to remove this keyword?").WithColor(DiscordColor.Red)
+                    .WithDescription(keyword!.Keyword);
 
                 DiscordButtonComponent confirmButton = new(ButtonStyle.Danger, "track-remove-confirm-button", "Remove");
 
@@ -646,6 +556,59 @@ public class ComponentInteractionEvent
                         "Unknown interaction ID! Contact the bot developer for assistance.").AsEphemeral());
                 break;
         }
+    }
+
+    private static async Task<DiscordEmbedBuilder> GenerateKeywordDetailsEmbed(KeywordConfig keyword)
+    {
+        var ignoredUserMentions = "\n";
+        foreach (var userToIgnore in keyword!.UserIgnoreList)
+        {
+            var user = await Program.Discord.GetUserAsync(userToIgnore);
+            ignoredUserMentions += $"- {user.Mention}\n";
+        }
+
+        if (ignoredUserMentions == "\n") ignoredUserMentions = " None\n";
+
+        var ignoredChannelMentions = "\n";
+        foreach (var channelToIgnore in keyword.ChannelIgnoreList)
+        {
+            var channel = await Program.Discord.GetChannelAsync(channelToIgnore);
+            ignoredChannelMentions += $"- {channel.Mention}\n";
+        }
+
+        if (ignoredChannelMentions == "\n") ignoredChannelMentions = " None\n";
+
+        var ignoredGuildNames = "\n";
+        foreach (var guildToIgnore in keyword.GuildIgnoreList)
+        {
+            var guild = await Program.Discord.GetGuildAsync(guildToIgnore);
+            ignoredGuildNames += $"- {guild.Name}\n";
+        }
+
+        if (ignoredGuildNames == "\n") ignoredGuildNames = " None\n";
+
+        var matchWholeWord = keyword.MatchWholeWord.ToString().Trim();
+
+        var limitedGuild = keyword.GuildId == default
+            ? "None"
+            : (await Program.Discord.GetGuildAsync(keyword.GuildId)).Name;
+
+        DiscordEmbedBuilder embed = new()
+        {
+            Title = "Keyword Details",
+            Color = Program.BotColor,
+            Description = keyword.Keyword
+        };
+
+        embed.AddField("Ignored Users", ignoredUserMentions, true);
+        embed.AddField("Ignored Channels", ignoredChannelMentions, true);
+        embed.AddField("Ignored Servers", ignoredGuildNames, true);
+        embed.AddField("Ignore Bots", keyword.IgnoreBots.ToString(), true);
+        embed.AddField("Match Whole Word", matchWholeWord, true);
+        embed.AddField("Assume Presence", keyword.AssumePresence.ToString(), true);
+        embed.AddField("Limited to Server", limitedGuild, true);
+
+        return embed;
     }
 }
 
