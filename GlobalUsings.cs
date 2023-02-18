@@ -28,6 +28,7 @@ global using MimeTypes;
 global using Minio;
 global using Minio.Exceptions;
 global using Newtonsoft.Json;
+global using Newtonsoft.Json.Linq;
 global using StackExchange.Redis;
 global using System;
 global using System.Collections.Generic;

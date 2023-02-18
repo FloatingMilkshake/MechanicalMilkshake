@@ -3,6 +3,9 @@
     "botToken": "",
     "homeChannel": "",
     "homeServer": "",
+    
+    "hastebinUrl": "",
+    
     "wolframAlphaAppId": "",
 
     "authorizedUsers": [

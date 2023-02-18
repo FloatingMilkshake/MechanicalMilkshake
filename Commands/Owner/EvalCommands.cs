@@ -69,9 +69,10 @@ public class EvalCommands : ApplicationCommandModule
 
         if (result.Length > 1947)
         {
-            Console.WriteLine(result);
-            return
-                $"Finished with exit code `{proc.ExitCode}`! It was too long to send in a message though; see the console for the full output.";
+            var hasteUploadResult = await HastebinHelpers.UploadToHastebinAsync(result);
+
+            return $"Finished with exit code `{proc.ExitCode}`!" +
+                   $" The result was too long to post here, so it was uploaded to Hastebin here: {hasteUploadResult}";
         }
 
         return $"Finished with exit code `{proc.ExitCode}`! Output: ```\n{HideSensitiveInfo(result)}```";
@@ -119,7 +120,19 @@ public class EvalCommands : ApplicationCommandModule
                         new DiscordFollowupMessageBuilder().WithContent($"\"{result.ReturnValue}\""));
                     return;
                 }
+                
+                // Upload to Hastebin if content is too long for Discord
+                if (result.ReturnValue.ToString()!.Length > 1947)
+                {
+                    var hasteUploadResult = await HastebinHelpers.UploadToHastebinAsync(result.ReturnValue.ToString());
 
+                    await ctx.FollowUpAsync(
+                        new DiscordFollowupMessageBuilder().WithContent(
+                            $"The result was too long to post here, so it was uploaded to Hastebin here: {hasteUploadResult}"));
+                    return;
+                }
+                
+                // Respond in channel if content length within Discord character limit
                 await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder().WithContent(HideSensitiveInfo(result.ReturnValue.ToString())));
             }
