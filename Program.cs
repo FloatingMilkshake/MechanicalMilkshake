@@ -193,6 +193,15 @@ internal class Program
             DisabledCommands.Add("wa");
         }
 
+        if (ConfigJson.Ids.FeedbackChannel == "")
+        {
+            Discord.Logger.LogWarning(BotEventId,
+                // ReSharper disable once LogMessageIsSentenceProblem
+                "Feedback command disabled due to missing channel ID.");
+
+            DisabledCommands.Add("feedback");
+        }
+
         // Register slash commands as guild commands in home server when
         // running in development mode
 #if DEBUG

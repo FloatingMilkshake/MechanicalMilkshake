@@ -3,6 +3,8 @@ namespace MechanicalMilkshake;
 public class ConfigJson
 {
     [JsonProperty("base")] public BaseConfig Base { get; private set; }
+    
+    [JsonProperty("ids")] public IdsConfig Ids { get; private set; }
 
     [JsonProperty("workerLinks")] public WorkerLinksConfig WorkerLinks { get; private set; }
 
@@ -28,6 +30,11 @@ public class BaseConfig
     [JsonProperty("authorizedUsers")] public string[] AuthorizedUsers { get; private set; }
 
     [JsonProperty("sshHosts")] public string[] SshHosts { get; private set; }
+}
+
+public class IdsConfig
+{
+    [JsonProperty("feedbackChannel")] public string FeedbackChannel { get; private set; }
 }
 
 public class WorkerLinksConfig
@@ -72,6 +79,8 @@ public class CloudflareConfig
 public class LogConfig
 {
     [JsonProperty("slashCommands")] public SlashCommandLogConfig SlashCommands { get; private set; }
+    
+    [JsonProperty("guilds")] public string Guilds { get; private set; }
     
     public class SlashCommandLogConfig
     {

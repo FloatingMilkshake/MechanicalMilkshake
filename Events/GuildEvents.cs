@@ -2,12 +2,15 @@
 
 public class GuildEvents
 {
+    // ReSharper disable once MemberCanBePrivate.Global
     public static readonly List<ulong> UnavailableGuilds = new();
+    private static DiscordChannel _guildLogChannel;
     
     public static async Task GuildCreated(DiscordClient client, GuildCreateEventArgs e)
     {
-        // TODO: dont hardcode ID, probably make it a config value
-        var chan = await client.GetChannelAsync(1019068256163729461);
+        // Fail silently if log channel ID missing or invalid
+        if (Program.ConfigJson.Logs.Guilds == "") return;
+        if (!await GetFeedbackChannel()) return;
         
         if (UnavailableGuilds.Contains(e.Guild.Id))
         {
@@ -17,23 +20,26 @@ public class GuildEvents
                 .AddField("Members", e.Guild.MemberCount.ToString(), true).AddField("Owner",
                     $"{e.Guild.Owner.Username}#{e.Guild.Owner.Discriminator} (`{e.Guild.Owner.Id}`)", true);
 
-            await chan.SendMessageAsync(embed);
+            await _guildLogChannel.SendMessageAsync(embed);
             return;
         }
         
-        await SendGuildEventLogEmbed(chan, e.Guild, true);
+        await SendGuildEventLogEmbed(_guildLogChannel, e.Guild, true);
     }
 
     public static async Task GuildDeleted(DiscordClient client, GuildDeleteEventArgs e)
     {
+        // Fail silently if log channel ID missing or invalid
+        if (Program.ConfigJson.Logs.Guilds == "") return;
+        if (!await GetFeedbackChannel()) return;
+        
         if (e.Guild.IsUnavailable)
         {
             UnavailableGuilds.Add(e.Guild.Id);
             return;
         }
         
-        var chan = await client.GetChannelAsync(1019068256163729461);
-        await SendGuildEventLogEmbed(chan, e.Guild, false);
+        await SendGuildEventLogEmbed(_guildLogChannel, e.Guild, false);
     }
 
     private static async Task SendGuildEventLogEmbed(DiscordChannel chan, DiscordGuild guild, bool isJoin)
@@ -66,5 +72,23 @@ public class GuildEvents
         }
 
         await chan.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).AddEmbed(userInfoEmbed));
+    }
+
+    private static async Task<bool> GetFeedbackChannel()
+    {
+        var success = false;
+        
+        try
+        {
+            var chanId = Convert.ToUInt64(Program.ConfigJson.Logs.Guilds);
+            _guildLogChannel = await Program.Discord.GetChannelAsync(chanId);
+            success = true;
+        }
+        catch (Exception ex) when (ex is FormatException or NotFoundException or UnauthorizedException)
+        {
+            // do nothing, will return false
+        }
+
+        return success;
     }
 }

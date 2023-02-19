@@ -18,6 +18,10 @@
       ""
     ]
   },
+  
+  "ids": {
+    "feedbackChannel": ""
+  },
 
   "workerLinks": {
     "baseUrl": "",
@@ -50,6 +54,7 @@
         "",
         ""
       ]
-    }
+    },
+    "guilds": ""
   }
 }
