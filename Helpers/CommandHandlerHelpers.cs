@@ -8,7 +8,7 @@ public class CommandHandlerHelpers
     /// </summary>
     /// <param name="ctx">Interaction context used to respond to the interaction.</param>
     /// <param name="isFollowUp">Whether to follow-up to the interaction (as opposed to creating a new interaction response).</param>
-    public static async void FailOnMissingInfo(InteractionContext ctx, bool isFollowUp)
+    public static async Task FailOnMissingInfo(InteractionContext ctx, bool isFollowUp)
     {
         const string failureMsg =
             "Link commands are disabled! Please make sure you have provided values for all of the keys under `workerLinks` in the config file.";
