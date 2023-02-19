@@ -18,9 +18,9 @@ public class Feedback : ApplicationCommandModule
         {
             var aboutCmd = SlashCmdMentionHelpers.GetSlashCmdMention("about");
             
-            await ctx.CreateResponseAsync(
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
                 $"The feedback channel ID set in `config.json` is invalid! Please contact the bot owner;" +
-                $" you can find who this is and how to contact them in {aboutCmd}.");
+                $" you can find who this is and how to contact them in {aboutCmd}.").AsEphemeral());
             return;
         }
         
