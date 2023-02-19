@@ -14,7 +14,7 @@ public class LinkCommands : ApplicationCommandModule
         {
             if (Program.DisabledCommands.Contains("wl"))
             {
-                CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
+                await CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
                 return;
             }
 
@@ -75,7 +75,7 @@ public class LinkCommands : ApplicationCommandModule
         {
             if (Program.DisabledCommands.Contains("wl"))
             {
-                CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
+                await CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
                 return;
             }
 
@@ -120,7 +120,7 @@ public class LinkCommands : ApplicationCommandModule
         {
             if (Program.DisabledCommands.Contains("wl"))
             {
-                CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
+                await CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
                 return;
             }
 
@@ -135,7 +135,7 @@ public class LinkCommands : ApplicationCommandModule
         {
             if (Program.DisabledCommands.Contains("wl"))
             {
-                CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
+                await CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
                 return;
             }
 

@@ -18,7 +18,7 @@ public class CdnCommands : ApplicationCommandModule
 
             if (Program.DisabledCommands.Contains("cdn"))
             {
-                CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
+                await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
                 return;
             }
 
@@ -102,7 +102,7 @@ public class CdnCommands : ApplicationCommandModule
 
             if (Program.DisabledCommands.Contains("cdn"))
             {
-                CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
+                await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
                 return;
             }
 
@@ -180,7 +180,7 @@ public class CdnCommands : ApplicationCommandModule
         {
             if (Program.DisabledCommands.Contains("cdn"))
             {
-                CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
+                await CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
                 return;
             }
             

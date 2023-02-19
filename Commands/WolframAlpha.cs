@@ -18,7 +18,7 @@ public class WolframAlpha : ApplicationCommandModule
 
         if (Program.DisabledCommands.Contains("cdn"))
         {
-            CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
+            await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
             return;
         }
 
