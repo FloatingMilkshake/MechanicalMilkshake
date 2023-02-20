@@ -167,7 +167,7 @@ public class PerServerFeatures
             }
 
             if (e.Guild == Program.HomeServer && e.Message.Author.Id == 1031968180974927903 &&
-                (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1)).FirstOrDefault().Content
+                (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1))[0].Content
                 .Contains("caption"))
             {
                 var chan = await Program.Discord.GetChannelAsync(1048242806486999092);
