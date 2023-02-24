@@ -195,25 +195,39 @@ public class PerServerFeatures
         [Command("remind")]
         [Aliases("remindme", "reminder", "remember")]
         [Description("Reminds you of something.")]
-        public async Task Remind(CommandContext ctx, string time, [RemainingText] string text)
+        public async Task Remind(CommandContext ctx, string time, string firstTimeOrText, string secondTimeOrText = null, [RemainingText] string text = null)
         {
             if (ctx.Guild.Id != 1007457740655968327 && ctx.Guild.Id != Program.HomeServer.Id) return;
-            
+
             DateTime? reminderTime;
             if (time != "null")
             {
                 try
                 {
-                    reminderTime = HumanDateParser.HumanDateParser.Parse(time);
+                    reminderTime = HumanDateParser.HumanDateParser.Parse(time + firstTimeOrText + secondTimeOrText);
                 }
                 catch
                 {
-                    // Parse error, either because the user did it wrong or because HumanDateParser is weird
+                    try
+                    {
+                        reminderTime = HumanDateParser.HumanDateParser.Parse(time + firstTimeOrText);
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            reminderTime = HumanDateParser.HumanDateParser.Parse(time);
+                        }
+                        catch
+                        {
+                            // Parse error, either because the user did it wrong or because HumanDateParser is weird
 
-                    await ctx.RespondAsync($"I couldn't parse \"{time}\" as a time! Please try again.");
-                    return;
+                            await ctx.RespondAsync($"I couldn't parse \"{time} {firstTimeOrText} {secondTimeOrText}\" as a time! Please try again.");
+                            return;
+                        }
+                    }
                 }
-
+                
                 if (reminderTime <= DateTime.Now)
                 {
                     // If user says something like "4pm" and its past 4pm, assume they mean "4pm tomorrow"
