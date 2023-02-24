@@ -39,38 +39,6 @@ internal class Program
         { "earlySupporter", 1001317583124971582 }
     };
 
-    // Use a custom help message to show that there are no CommandsNext commands since they
-    // have all been migrated to slash commands
-    private class CustomHelpFormatter : BaseHelpFormatter
-    {
-        private readonly DiscordEmbedBuilder _embed;
-
-        public CustomHelpFormatter(CommandContext ctx) : base(ctx)
-        {
-            _embed = new DiscordEmbedBuilder();
-        }
-
-        public override BaseHelpFormatter WithCommand(Command command)
-        {
-            return this;
-        }
-
-        public override BaseHelpFormatter WithSubcommands(IEnumerable<Command> cmds)
-        {
-            _embed.Title = "Help";
-            _embed.Description =
-                $"No commands are available with this prefix.\n\nAll commands have been moved to slash (`/`) commands. Type `/` and select {Discord.CurrentUser.Username} to see available commands.";
-            _embed.Color = DiscordColor.Red;
-
-            return this;
-        }
-
-        public override CommandHelpMessage Build()
-        {
-            return new CommandHelpMessage(embed: _embed);
-        }
-    }
-
     internal static async Task Main()
     {
         // Read config.json, or config.dev.json if running in development mode
@@ -147,10 +115,11 @@ internal class Program
         // Set up slash commands and CommandsNext
         var slash = Discord.UseSlashCommands();
 
-        var commands = Discord.UseCommandsNext(new CommandsNextConfiguration());
-
-        // Use the custom help message set with CustomHelpFormatter
-        commands.SetHelpFormatter<CustomHelpFormatter>();
+        var commands = Discord.UseCommandsNext(new CommandsNextConfiguration
+        {
+            StringPrefixes = new[] { "pls" },
+            EnableDefaultHelp = false
+        });
 
         // Set up Minio (used for some Owner commands)
         if (ConfigJson.S3.Bucket == "" || ConfigJson.S3.CdnBaseUrl == "" || ConfigJson.S3.Endpoint == "" ||

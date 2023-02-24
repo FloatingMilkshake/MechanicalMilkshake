@@ -191,6 +191,87 @@ public class PerServerFeatures
             await ctx.RespondAsync(
                 "Hi! This command does nothing other than prevent an exception from being thrown when the bot is run. :)");
         }
+        
+        [Command("remind")]
+        [Aliases("remindme", "reminder", "remember")]
+        [Description("Reminds you of something.")]
+        public async Task Remind(CommandContext ctx, string time, [RemainingText] string text)
+        {
+            if (ctx.Guild.Id != 1007457740655968327 && ctx.Guild.Id != Program.HomeServer.Id) return;
+            
+            DateTime? reminderTime;
+            if (time != "null")
+            {
+                try
+                {
+                    reminderTime = HumanDateParser.HumanDateParser.Parse(time);
+                }
+                catch
+                {
+                    // Parse error, either because the user did it wrong or because HumanDateParser is weird
+
+                    await ctx.RespondAsync($"I couldn't parse \"{time}\" as a time! Please try again.");
+                    return;
+                }
+
+                if (reminderTime <= DateTime.Now)
+                {
+                    // If user says something like "4pm" and its past 4pm, assume they mean "4pm tomorrow"
+                    if (reminderTime.Value.Date == DateTime.Now.Date &&
+                        reminderTime.Value.TimeOfDay < DateTime.Now.TimeOfDay)
+                    {
+                        reminderTime = reminderTime.Value.AddDays(1);
+                    }
+                    else
+                    {
+                        await ctx.RespondAsync("You can't set a reminder to go off in the past!");
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                reminderTime = null;
+            }
+
+            var guildId = ctx.Channel.IsPrivate ? "@me" : ctx.Guild.Id.ToString();
+
+            Random random = new();
+            var reminderId = random.Next(1000, 9999);
+
+            var reminders = await Program.Db.HashGetAllAsync("reminders");
+            foreach (var rem in reminders)
+                while (rem.Name == reminderId)
+                    reminderId = random.Next(1000, 9999);
+            // This is to avoid the potential for duplicate reminders
+            Reminder reminder = new()
+            {
+                UserId = ctx.User.Id,
+                ChannelId = ctx.Channel.Id,
+                GuildId = guildId,
+                ReminderId = reminderId,
+                ReminderText = text,
+                ReminderTime = reminderTime,
+                SetTime = DateTime.Now,
+                IsPrivate = false
+            };
+
+            if (reminderTime is not null)
+            {
+                var unixTime = ((DateTimeOffset)reminderTime).ToUnixTimeSeconds();
+
+                var message = await ctx.RespondAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
+                                                     $"\nReminder ID: `{reminder.ReminderId}`");
+                reminder.MessageId = message.Id;
+            }
+            else
+            {
+                var message = await ctx.RespondAsync("Reminder set!");
+                reminder.MessageId = message.Id;
+            }
+
+            await Program.Db.HashSetAsync("reminders", reminderId, JsonConvert.SerializeObject(reminder));
+        }
     }
 
     public class TargetServerAttribute : CheckBaseAttribute
