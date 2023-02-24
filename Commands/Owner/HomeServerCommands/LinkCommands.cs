@@ -12,9 +12,12 @@ public class LinkCommands : ApplicationCommandModule
             [Option("url", "The URL the short link should point to.")]
             string url)
         {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                new DiscordInteractionResponseBuilder());
+        
             if (Program.DisabledCommands.Contains("wl"))
             {
-                await CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
+                await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
                 return;
             }
 
@@ -24,9 +27,8 @@ public class LinkCommands : ApplicationCommandModule
 
             if (Program.ConfigJson.WorkerLinks.BaseUrl is null)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent(
-                        "Error: No base URL provided! Make sure the baseUrl field under workerLinks in your config.json file is set."));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "Error: No base URL provided! Make sure the baseUrl field under workerLinks in your config.json file is set."));
                 return;
             }
 
@@ -43,9 +45,8 @@ public class LinkCommands : ApplicationCommandModule
 
             if (Program.ConfigJson.WorkerLinks.Secret is null)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent(
-                        "Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set."));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set."));
                 return;
             }
 
@@ -54,18 +55,31 @@ public class LinkCommands : ApplicationCommandModule
             request.Headers.Add("Authorization", secret);
             request.Headers.Add("URL", url);
 
-            var response = await httpClient.SendAsync(request);
+            HttpResponseMessage response;
+            try
+            {
+                response = await httpClient.SendAsync(request);
+            }
+            catch (Exception ex)
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    $"An exception occurred while trying to send the request! `{ex.GetType()}: {ex.Message}`"));
+                return;
+            }
+            
             var httpStatusCode = (int)response.StatusCode;
             var httpStatus = response.StatusCode.ToString();
             var responseText = await response.Content.ReadAsStringAsync();
-            if (responseText.Length > 1940)
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent(
-                        $"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service."));
+            if (responseText.Length > 1947)
+            {
+                var hasteUrl = await HastebinHelpers.UploadToHastebinAsync(responseText);
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    $"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. It was uploaded to Hastebin here: {hasteUrl}"));
+                return;
+            }
 
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder().WithContent(
-                    $"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```"));
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                $"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```"));
         }
 
         [SlashCommand("delete", "Delete a short link with Cloudflare worker-links.")]
@@ -73,9 +87,11 @@ public class LinkCommands : ApplicationCommandModule
             [Option("link", "The key or URL of the short link to delete.")]
             string url)
         {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            
             if (Program.DisabledCommands.Contains("wl"))
             {
-                await CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
+                await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
                 return;
             }
 
@@ -90,9 +106,8 @@ public class LinkCommands : ApplicationCommandModule
 
             if (Program.ConfigJson.WorkerLinks.Secret is null)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent(
-                        "Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set."));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set."));
                 return;
             }
 
@@ -101,18 +116,31 @@ public class LinkCommands : ApplicationCommandModule
             HttpRequestMessage request = new(HttpMethod.Delete, url);
             request.Headers.Add("Authorization", secret);
 
-            var response = await httpClient.SendAsync(request);
+            HttpResponseMessage response;
+            try
+            {
+                response = await httpClient.SendAsync(request);
+            }
+            catch (Exception ex)
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    $"An exception occurred while trying to send the request! `{ex.GetType()}: {ex.Message}`"));
+                return;
+            }
+            
             var httpStatusCode = (int)response.StatusCode;
             var httpStatus = response.StatusCode.ToString();
             var responseText = await response.Content.ReadAsStringAsync();
-            if (responseText.Length > 1940)
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent(
-                        $"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. Think about connecting this to a pastebin-like service."));
+            if (responseText.Length > 1947)
+            {
+                var hasteUrl = await HastebinHelpers.UploadToHastebinAsync(responseText);
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    $"Worker responded with code: `{httpStatusCode}`...but the full response is too long to post here. It was uploaded to Hastebin here: {hasteUrl}"));
+                return;
+            }
 
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder().WithContent(
-                    $"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```"));
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                $"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```"));
         }
 
         [SlashCommand("list", "List all short links configured with Cloudflare worker-links.")]
@@ -133,17 +161,18 @@ public class LinkCommands : ApplicationCommandModule
             [Option("link", "The key or URL of the short link to get.")]
             string url)
         {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            
             if (Program.DisabledCommands.Contains("wl"))
             {
-                await CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
+                await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
                 return;
             }
 
             if (Program.ConfigJson.WorkerLinks.Secret is null)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent(
-                        "Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set."));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set."));
                 return;
             }
 
@@ -166,19 +195,27 @@ public class LinkCommands : ApplicationCommandModule
             HttpRequestMessage request = new(HttpMethod.Get, url);
             request.Headers.Add("Authorization", secret);
 
-            var response = await httpClient.SendAsync(request);
-
-            if (response.Headers.Location is null)
+            HttpResponseMessage response;
+            try
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent(
-                        "That link doesn't exist!"));
+                response = await httpClient.SendAsync(request);
+            }
+            catch (Exception ex)
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    $"An exception occurred while trying to send the request! `{ex.GetType()}: {ex.Message}`"));
                 return;
             }
 
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder().WithContent(
-                    $"<{url}>\npoints to:\n<{response.Headers.Location}>"));
+            if (response.Headers.Location is null)
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "That link doesn't exist!"));
+                return;
+            }
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                $"<{url}>\npoints to:\n<{response.Headers.Location}>"));
         }
 
         public class CloudflareResponse
