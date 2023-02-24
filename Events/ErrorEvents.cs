@@ -102,7 +102,7 @@ public class ErrorEvents
             await Program.HomeChannel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Title = "An exception occurred when executing a slash command",
-                Color = new DiscordColor("Red"),
+                Color = DiscordColor.Red,
                 Description = $"`{ex.GetType()}` occurred when " +
                               $"`{e.Context.User.Username}#{e.Context.User.Discriminator}` (`{e.Context.User.Id}` " +
                               $"used `/{e.Context.CommandName}`.",
