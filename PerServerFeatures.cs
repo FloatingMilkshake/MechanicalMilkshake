@@ -195,9 +195,15 @@ public class PerServerFeatures
         [Command("remind")]
         [Aliases("remindme", "reminder", "remember")]
         [Description("Reminds you of something.")]
-        public async Task Remind(CommandContext ctx, string time, string firstTimeOrText, string secondTimeOrText = null, [RemainingText] string text = null)
+        public async Task Remind(CommandContext ctx, string time, string firstTimeOrText = null, string secondTimeOrText = null, [RemainingText] string text = null)
         {
             if (ctx.Guild.Id != 1007457740655968327 && ctx.Guild.Id != Program.HomeServer.Id) return;
+
+            if (firstTimeOrText is null && secondTimeOrText is null && text is null)
+            {
+                await ctx.RespondAsync("I couldn't understand that time. Try something like \"in 5 minutes\" or \"tomorrow at 4pm\".");
+                return;
+            }
 
             DateTime? reminderTime;
             if (time != "null")
@@ -222,7 +228,7 @@ public class PerServerFeatures
                         {
                             // Parse error, either because the user did it wrong or because HumanDateParser is weird
 
-                            await ctx.RespondAsync($"I couldn't parse \"{time} {firstTimeOrText} {secondTimeOrText}\" as a time! Please try again.");
+                            await ctx.RespondAsync("I couldn't understand that time. Try something like \"in 5 minutes\" or \"tomorrow at 4pm\".");
                             return;
                         }
                     }

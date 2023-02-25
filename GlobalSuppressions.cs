@@ -27,4 +27,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly:
     SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member",
         Target =
-            "~M:MechanicalMilkshake.PerServerFeatures.MessageCommands.Remind(DSharpPlus.CommandsNext.CommandContext,System.String,System.String)~System.Threading.Tasks.Task")]
+            "~M:MechanicalMilkshake.PerServerFeatures.MessageCommands.Remind(DSharpPlus.CommandsNext.CommandContext,System.String,System.String,System.String,System.String)~System.Threading.Tasks.Task")]
