@@ -161,7 +161,7 @@ public class PerServerFeatures
                 Reminder reminder = new()
                 {
                     UserId = ctx.User.Id,
-                    ChannelId = ctx.Channel.Id,
+                    ChannelId = sinkReminder.Channel,
                     GuildId = guildId,
                     ReminderId = reminderId,
                     ReminderText = sinkReminder.Message,
