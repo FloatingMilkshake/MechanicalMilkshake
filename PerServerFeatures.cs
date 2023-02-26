@@ -129,6 +129,66 @@ public class PerServerFeatures
         }
     }
 
+    public class ReminderCommands : ApplicationCommandModule
+    {
+        [SlashCommand("import_sink_reminders", "Import reminders exported from Kitchen Sink.")]
+        public static async Task ImportSinkRemindersCommand(InteractionContext ctx,
+            [Option("file", "The JSON file containing your reminders exported from Kitchen Sink.")] DiscordAttachment file)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            var sinkReminders =
+                JsonConvert.DeserializeObject<List<SinkReminderList>>(
+                    await Program.HttpClient.GetStringAsync(file.Url));
+
+            foreach (var sinkReminder in sinkReminders)
+            {
+                // parse sinkReminder.ReminderDue which would be a unix timestamp (like what you would put in discord as <t:timestamp:F>)
+
+                var reminderTime = DateTimeOffset.FromUnixTimeSeconds((long)sinkReminder.ReminderDue).ToLocalTime().DateTime;
+    
+                Random random = new();
+                var reminderId = random.Next(1000, 9999);
+    
+                var reminders = await Program.Db.HashGetAllAsync("reminders");
+                foreach (var rem in reminders)
+                    while (rem.Name == reminderId)
+                        reminderId = random.Next(1000, 9999);
+                
+                var channel = await Program.Discord.GetChannelAsync(sinkReminder.Channel);
+                var guildId = channel.Guild.Id.ToString();
+                
+                Reminder reminder = new()
+                {
+                    UserId = ctx.User.Id,
+                    ChannelId = ctx.Channel.Id,
+                    GuildId = guildId,
+                    ReminderId = reminderId,
+                    ReminderText = sinkReminder.Message,
+                    ReminderTime = reminderTime,
+                    SetTime = DateTime.Now,
+                    IsPrivate = false
+                };
+    
+                await Program.Db.HashSetAsync("reminders", reminderId, JsonConvert.SerializeObject(reminder));
+            }
+
+            await ctx.FollowUpAsync(
+                new DiscordFollowupMessageBuilder().WithContent("Reminders successfully imported from Kitchen Sink!"));
+        }
+
+        private class SinkReminderList
+        {
+            [JsonProperty("id")] public ulong Id { get; set; }
+            
+            [JsonProperty("channel")] public ulong Channel { get; set; }
+            
+            [JsonProperty("message")] public string Message { get; set; }
+            
+            [JsonProperty("reminder_due")] public ulong ReminderDue { get; set; }
+        }
+    }
+
     public class Checks
     {
         public static async Task MessageCreateChecks(MessageCreateEventArgs e)
@@ -156,10 +216,7 @@ public class PerServerFeatures
 
 
                     await EvalCommands.RunCommand(
-                        $"ssh ubuntu@lxd \"sudo ufw deny from {ipAddr} to any && sudo ufw reload\"");
-                    await EvalCommands.RunCommand(
-                        $"ssh ubuntu@lxd \"lxc exec cdnupload -- ufw deny from {ipAddr} to any\"");
-                    await EvalCommands.RunCommand("ssh ubuntu@lxd \"lxc exec cdnupload -- ufw reload\"");
+                        $"ssh meow@meow \"sudo ufw deny from {ipAddr} to any && sudo ufw reload\"");
 
                     await msg.ModifyAsync(
                         $"<@455432936339144705> `{ipAddr}` attempted to connect {attemptCount} times before being banned. It has been permanently banned automatically.");
@@ -217,12 +274,14 @@ public class PerServerFeatures
                     try
                     {
                         reminderTime = HumanDateParser.HumanDateParser.Parse(time + firstTimeOrText);
+                        text = secondTimeOrText;
                     }
                     catch
                     {
                         try
                         {
                             reminderTime = HumanDateParser.HumanDateParser.Parse(time);
+                            text = firstTimeOrText;
                         }
                         catch
                         {
