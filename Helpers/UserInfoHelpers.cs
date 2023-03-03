@@ -10,36 +10,38 @@ public class UserInfoHelpers
         var t = member.JoinedAt - new DateTime(1970, 1, 1);
         var joinedAtTimestamp = (int)t.TotalSeconds;
 
-        string acknowledgements = null;
-        if (member.Permissions.HasPermission(Permissions.KickMembers) &&
-            member.Permissions.HasPermission(Permissions.BanMembers))
-            acknowledgements = "Server Moderator (can kick and ban members)";
-        if (member.Permissions.HasPermission(Permissions.Administrator)) acknowledgements = "Server Administrator";
-        if (member.IsOwner) acknowledgements = "Server Owner";
-
         List<string> notablePerms = new();
-        if (member.Permissions.HasPermission(Permissions.Administrator))
+        if (member.IsOwner)
+        {
+            notablePerms.Add("Server Owner");
+        }
+        else if (member.Permissions.HasPermission(Permissions.Administrator))
+        {
             notablePerms.Add("Administrator");
-        if (member.Permissions.HasPermission(Permissions.ManageChannels))
-            notablePerms.Add("Manage Channels");
-        if (member.Permissions.HasPermission(Permissions.ManageEmojis))
-            notablePerms.Add("Manage Emojis and Stickers");
-        if (member.Permissions.HasPermission(Permissions.ManageEvents))
-            notablePerms.Add("Manage Events");
-        if (member.Permissions.HasPermission(Permissions.ManageGuild))
-            notablePerms.Add("Manage Server");
-        if (member.Permissions.HasPermission(Permissions.ManageMessages))
-            notablePerms.Add("Manage Messages");
-        if (member.Permissions.HasPermission(Permissions.ManageNicknames))
-            notablePerms.Add("Manage Nicknames");
-        if (member.Permissions.HasPermission(Permissions.ManageRoles))
-            notablePerms.Add("Manage Roles");
-        if (member.Permissions.HasPermission(Permissions.ManageThreads))
-            notablePerms.Add(member.Guild.Features.Contains("COMMUNITY")
-                ? "Manage Threads and Posts"
-                : "Manage Threads");
-        if (member.Permissions.HasPermission(Permissions.ManageWebhooks))
-            notablePerms.Add("Manage Webhooks");
+        }
+        else
+        {
+            if (member.Permissions.HasPermission(Permissions.ManageChannels))
+                notablePerms.Add("Manage Channels");
+            if (member.Permissions.HasPermission(Permissions.ManageEmojis))
+                notablePerms.Add("Manage Emojis and Stickers");
+            if (member.Permissions.HasPermission(Permissions.ManageEvents))
+                notablePerms.Add("Manage Events");
+            if (member.Permissions.HasPermission(Permissions.ManageGuild))
+                notablePerms.Add("Manage Server");
+            if (member.Permissions.HasPermission(Permissions.ManageMessages))
+                notablePerms.Add("Manage Messages");
+            if (member.Permissions.HasPermission(Permissions.ManageNicknames))
+                notablePerms.Add("Manage Nicknames");
+            if (member.Permissions.HasPermission(Permissions.ManageRoles))
+                notablePerms.Add("Manage Roles");
+            if (member.Permissions.HasPermission(Permissions.ManageThreads))
+                notablePerms.Add(member.Guild.Features.Contains("COMMUNITY")
+                    ? "Manage Threads and Posts"
+                    : "Manage Threads");
+            if (member.Permissions.HasPermission(Permissions.ManageWebhooks))
+                notablePerms.Add("Manage Webhooks");
+        }
 
         var roles = "None";
         if (member.Roles.Any())
@@ -69,34 +71,40 @@ public class UserInfoHelpers
 
         var extendedUserInfoEmbed = new DiscordEmbedBuilder()
             .WithColor(new DiscordColor($"{member.Color}"))
-            .AddField("User Mention", member.Mention)
-            .AddField("User ID", $"{member.Id}");
-
+            .AddField("User Mention", member.Mention, true)
+            .WithFooter($"User ID: {member.Id}");
+        
         if (member.Nickname is not null)
-            extendedUserInfoEmbed.AddField("Nickname", member.Nickname);
+            extendedUserInfoEmbed.AddField("Nickname", member.Nickname, true);
 
         extendedUserInfoEmbed.AddField("Account registered on", $"<t:{registeredAt}:F> (<t:{registeredAt}:R>)");
         extendedUserInfoEmbed.AddField("Joined server on", $"<t:{joinedAtTimestamp}:F> (<t:{joinedAtTimestamp}:R>)");
         extendedUserInfoEmbed.AddField(rolesFieldName, roles);
         extendedUserInfoEmbed.WithThumbnail(member.AvatarUrl);
+        
+        var badges = GetBadges(member);
+        if (badges != "") extendedUserInfoEmbed.AddField("Badges", badges, true);
+        
+        if (member.Presence != null && member.Presence.Activities.Count > 0)
+        {
+            var activities =
+                member.Presence.Activities.Aggregate("", (current, activity) => current + $"\n{activity.Name}");
 
-        if (acknowledgements is not null) extendedUserInfoEmbed.AddField("Acknowledgements", acknowledgements);
-
-        if (notablePerms.Count > 0)
-            extendedUserInfoEmbed.AddField("Notable Permissions",
-                notablePerms.Aggregate("", (current, perm) => current + $"{perm}\n"));
-
+            extendedUserInfoEmbed.AddField("Activities", activities, true);
+        }
+        
         if (member.PremiumSince is not null)
         {
             var premiumSinceUtc = member.PremiumSince.Value.UtcDateTime;
             var unixTime = ((DateTimeOffset)premiumSinceUtc).ToUnixTimeSeconds();
             var boostingSince = $"Boosting since <t:{unixTime}:R> (<t:{unixTime}:F>";
 
-            extendedUserInfoEmbed.AddField("Server Booster", boostingSince);
+            extendedUserInfoEmbed.AddField("Server Booster", boostingSince, true);
         }
 
-        var badges = GetBadges(member);
-        if (badges != "") extendedUserInfoEmbed.AddField("Badges", badges);
+        if (notablePerms.Count > 0)
+            extendedUserInfoEmbed.AddField("Notable Permissions",
+                notablePerms.Aggregate("", (current, perm) => current + $"{perm}\n"));
 
         return Task.FromResult<DiscordEmbed>(extendedUserInfoEmbed);
     }
