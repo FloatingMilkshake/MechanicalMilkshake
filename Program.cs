@@ -79,7 +79,6 @@ internal class Program
         {
             Token = ConfigJson.Base.BotToken,
             TokenType = TokenType.Bot,
-            //Intents = DiscordIntents.All,
             Intents = DiscordIntents.AllUnprivileged | DiscordIntents.GuildMessages | DiscordIntents.GuildMembers,
             LogUnknownEvents = false,
 #if DEBUG
