@@ -256,12 +256,6 @@ public class PerServerFeatures
         {
             if (ctx.Guild.Id != 1007457740655968327 && ctx.Guild.Id != Program.HomeServer.Id) return;
 
-            if (firstTimeOrText is null && secondTimeOrText is null && text is null)
-            {
-                await ctx.RespondAsync("I couldn't understand that time. Try something like \"in 5 minutes\" or \"tomorrow at 4pm\".");
-                return;
-            }
-
             DateTime? reminderTime;
             if (time != "null")
             {
@@ -274,14 +268,19 @@ public class PerServerFeatures
                     try
                     {
                         reminderTime = HumanDateParser.HumanDateParser.Parse(time + firstTimeOrText);
-                        text = secondTimeOrText;
+                        var temp = secondTimeOrText;
+                        if (text is not null) temp += " " + text;
+                        text = temp;
                     }
                     catch
                     {
                         try
                         {
                             reminderTime = HumanDateParser.HumanDateParser.Parse(time);
-                            text = firstTimeOrText;
+                            var temp = firstTimeOrText;
+                            if (secondTimeOrText is not null) temp += " " + secondTimeOrText;
+                            if (text is not null) temp += " " + text;
+                            text = temp;
                         }
                         catch
                         {
