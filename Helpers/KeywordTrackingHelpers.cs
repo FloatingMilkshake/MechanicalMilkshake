@@ -20,6 +20,18 @@ public class KeywordTrackingHelpers
             // Checks
 
             var fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+            
+            // Try to get member; if they are not in the guild, skip
+            DiscordMember member;
+            try
+            {
+                member = await message.Channel.Guild.GetMemberAsync(fieldValue.UserId);
+            }
+            catch
+            {
+                // User is not in guild. Skip.
+                continue;
+            }
 
             // If keyword is set to only match whole word, use regex to check
             if (fieldValue!.MatchWholeWord)
@@ -76,17 +88,6 @@ public class KeywordTrackingHelpers
 
             var messages = await message.Channel.GetMessagesAfterAsync(message.Id);
             if (messages.Any(m => m.Author.Id == fieldValue.UserId)) continue;
-
-            DiscordMember member;
-            try
-            {
-                member = await message.Channel.Guild.GetMemberAsync(fieldValue.UserId);
-            }
-            catch
-            {
-                // User is not in guild. Skip.
-                continue;
-            }
 
             // Don't DM the user if their keyword was mentioned in a channel they do not have permissions to view.
             // If we don't do this we may leak private channels, which - even if the user might want to - I don't want to be doing.
