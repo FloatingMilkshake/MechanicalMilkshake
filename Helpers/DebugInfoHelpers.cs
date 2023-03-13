@@ -2,7 +2,7 @@
 
 public class DebugInfoHelpers
 {
-    private static DebugInfo GetDebugInfo()
+    public static DebugInfo GetDebugInfo()
     {
         var commitHash = FileHelpers.ReadFile("CommitHash.txt", "dev");
 
@@ -69,7 +69,7 @@ public class DebugInfoHelpers
     }
 
 
-    private class DebugInfo
+    public class DebugInfo
     {
         public DebugInfo(string framework = null, string platform = null, string library = null,
             string loadTime = null, string commitHash = null, string commitTimeDescription = null,

@@ -67,8 +67,8 @@ public class AboutCommands : ApplicationCommandModule
         var commitMessage = await FileHelpers.ReadFileAsync("CommitMessage.txt", "dev");
         var commitUrl = await FileHelpers.ReadFileAsync("RemoteUrl.txt");
 
-        await ctx.FollowUpAsync(
-            new DiscordFollowupMessageBuilder().WithContent(
-                $"Running commit [{commitHash}]({commitUrl}): \"{commitMessage}\""));
+        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
+            .AddField("Version", $"[{commitHash}]({commitUrl}): \"{commitMessage}\"")
+            .AddField("Last updated on", DebugInfoHelpers.GetDebugInfo().CommitTimestamp)));
     }
 }
