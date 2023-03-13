@@ -68,7 +68,8 @@ public class AboutCommands : ApplicationCommandModule
         var commitUrl = await FileHelpers.ReadFileAsync("RemoteUrl.txt");
 
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
-            .AddField("Version", $"[{commitHash}]({commitUrl}): \"{commitMessage}\"")
+            .WithColor(Program.BotColor)
+            .AddField("Version", $"[{commitHash}]({commitUrl}): {commitMessage}")
             .AddField("Last updated on", DebugInfoHelpers.GetDebugInfo().CommitTimestamp)));
     }
 }
