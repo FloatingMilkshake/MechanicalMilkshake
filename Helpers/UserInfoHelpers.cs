@@ -85,14 +85,6 @@ public class UserInfoHelpers
         var badges = GetBadges(member);
         if (badges != "") extendedUserInfoEmbed.AddField("Badges", badges, true);
         
-        if (member.Presence != null && member.Presence.Activities.Count > 0)
-        {
-            var activities =
-                member.Presence.Activities.Aggregate("", (current, activity) => current + $"\n{activity.Name}");
-
-            extendedUserInfoEmbed.AddField("Activities", activities, true);
-        }
-        
         if (member.PremiumSince is not null)
         {
             var premiumSinceUtc = member.PremiumSince.Value.UtcDateTime;
