@@ -261,13 +261,13 @@ public class PerServerFeatures
             {
                 try
                 {
-                    reminderTime = HumanDateParser.HumanDateParser.Parse(time + firstTimeOrText + secondTimeOrText);
+                    reminderTime = HumanDateParser.HumanDateParser.Parse(String.Join(" ", time, firstTimeOrText, secondTimeOrText));
                 }
                 catch
                 {
                     try
                     {
-                        reminderTime = HumanDateParser.HumanDateParser.Parse(time + firstTimeOrText);
+                        reminderTime = HumanDateParser.HumanDateParser.Parse(String.Join(" ", time, firstTimeOrText));
                         var temp = secondTimeOrText;
                         if (text is not null) temp += " " + text;
                         text = temp;
