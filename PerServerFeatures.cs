@@ -350,6 +350,22 @@ public class PerServerFeatures
 
             await Program.Db.HashSetAsync("reminders", reminderId, JsonConvert.SerializeObject(reminder));
         }
+
+        [Command("poop")]
+        [Description("immaturity is key")]
+        [Aliases("shit")]
+        public async Task Poop(CommandContext ctx)
+        {
+            if (ctx.Channel.IsPrivate) return;
+            
+            var chan = await Program.Discord.GetChannelAsync(892978015309557870);
+            var msg = await chan.GetMessageAsync(1085253151155830895);
+            
+            var phrases = msg.Content.Split("\n");
+
+            await ctx.Channel.SendMessageAsync(phrases[Program.Random.Next(0, phrases.Length)]
+                .Replace("{user}", ctx.Member!.DisplayName));
+        }
     }
 
     public class TargetServerAttribute : CheckBaseAttribute
