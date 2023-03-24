@@ -8,7 +8,7 @@ public class CdnCommands : ApplicationCommandModule
         [SlashCommand("upload", "Upload a file to Amazon S3-compatible cloud storage.")]
         public static async Task Upload(InteractionContext ctx,
             [Option("name", "The name for the uploaded file.")]
-            string name,
+            string name = "preserve",
             [Option("link", "A link to a file to upload.")]
             string link = null,
             [Option("file", "A direct file to upload. This will override a link if both are provided!")]
