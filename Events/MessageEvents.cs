@@ -333,6 +333,9 @@ public class MessageEvents
 
     private static async Task ThrowMessageException(Exception ex, DiscordMessage message, bool isEdit)
     {
+        // Ignore some HTTP errors
+        if (ex is HttpRequestException && ex.Message.Contains("Resource temporarily unavailable")) return;
+    
         DiscordEmbedBuilder embed = new()
         {
             Color = DiscordColor.Red,
