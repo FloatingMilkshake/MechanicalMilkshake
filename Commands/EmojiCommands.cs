@@ -2,7 +2,7 @@
 
 public class EmojiCommands : ApplicationCommandModule
 {
-    private static readonly Regex EmojiRegex = new(@"<(a)?:(.*):([0-9]*)>");
+    private static readonly Regex EmojiRegex = new(@"<(a)?:([A-z]*):([0-9]*)>");
     
     [SlashCommand("stealemoji",
         "Fetch all of a server's emoji! Note that the bot must be in the server for this to work.")]
@@ -32,56 +32,60 @@ public class EmojiCommands : ApplicationCommandModule
                 return;
             }
 
-            // split emoji into pieces
-            var emojiRxMatches = EmojiRegex.Match(emojiToAdd);
+            var emojiRxMatches = EmojiRegex.Matches(emojiToAdd);
 
-            if (emojiRxMatches.Captures.Count < 1)
+            if (emojiRxMatches[0].Captures.Count < 1)
             {
                 await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder().WithContent(
                         "Hmm, that doesn't look like an emoji! Please try again."));
                 return;
             }
+
+            // keep list of added emoji for reference later
+            List<DiscordEmoji> addedEmoji = new();
             
-            // get link
-            emojiToAdd = $"https://cdn.discordapp.com/emojis/{emojiRxMatches.Groups[3]}.{(emojiRxMatches.Groups[1].ToString() == "a" ? "gif" : "png")}";
-            
-            // set added emoji to var for reference later
-            DiscordEmoji addedEmoji;
-            
-            // add to server
-            try
+            foreach (Match match in emojiRxMatches)
             {
-                var stream = await Program.HttpClient.GetStreamAsync(emojiToAdd);
-                using MemoryStream ms = new();
-                await stream.CopyToAsync(ms);
-                ms.Position = 0;
-                addedEmoji = await ctx.Guild.CreateEmojiAsync(emojiRxMatches.Groups[2].ToString(), ms, null,
-                    $"Emoji added with /{ctx.CommandName} by user {ctx.User.Username}#{ctx.User.Discriminator} ({ctx.User.Id}).");
-            }
-            catch (Exception ex)
-            {
-                await ctx.FollowUpAsync(
-                    new DiscordFollowupMessageBuilder().WithContent(
-                        "I couldn't add that emoji! An unknown error occurred. Please try again."));
+                // get link
+                emojiToAdd = $"https://cdn.discordapp.com/emojis/{match.Groups[3]}.{(match.Groups[1].ToString() == "a" ? "gif" : "png")}";
+            
+                // add to server
+                try
+                {
+                    var stream = await Program.HttpClient.GetStreamAsync(emojiToAdd);
+                    using MemoryStream ms = new();
+                    await stream.CopyToAsync(ms);
+                    ms.Position = 0;
+                    addedEmoji.Add(await ctx.Guild.CreateEmojiAsync(match.Groups[2].ToString(), ms, null,
+                        $"Emoji added with /{ctx.CommandName} by user {ctx.User.Username}#{ctx.User.Discriminator} ({ctx.User.Id})."));
+                }
+                catch (Exception ex)
+                {
+                    await ctx.FollowUpAsync(
+                        new DiscordFollowupMessageBuilder().WithContent(
+                            "I couldn't add that emoji! An unknown error occurred. Please try again."));
                 
-                // log error to home channel for debugging
-                await Program.HomeChannel.SendMessageAsync(new DiscordEmbedBuilder()
-                    .WithColor(DiscordColor.Red)
-                    .WithTitle("An error occurred when executing a slash command")
-                    .WithDescription("An unknown error occurred while using `/stealemoji` with the `emoji` argument.")
-                    .AddField("Invoking User", ctx.User.Id.ToString())
-                    .AddField("Emoji URL", emojiToAdd)
-                    .AddField("Target Guild", ctx.Guild.Id.ToString())
-                    .AddField("Bot has Manage Emoji Permission",
-                        ctx.Guild.CurrentMember.Permissions.HasPermission(Permissions.ManageEmojis).ToString())
-                    .AddField("Stack Trace", $"```\n{ex.StackTrace}\n```"));
+                    // log error to home channel for debugging
+                    await Program.HomeChannel.SendMessageAsync(new DiscordEmbedBuilder()
+                        .WithColor(DiscordColor.Red)
+                        .WithTitle("An error occurred when executing a slash command")
+                        .WithDescription("An unknown error occurred while using `/stealemoji` with the `emoji` argument.")
+                        .AddField("Invoking User", ctx.User.Id.ToString())
+                        .AddField("Emoji URL", emojiToAdd)
+                        .AddField("Target Guild", ctx.Guild.Id.ToString())
+                        .AddField("Bot has Manage Emoji Permission",
+                            ctx.Guild.CurrentMember.Permissions.HasPermission(Permissions.ManageEmojis).ToString())
+                        .AddField("Stack Trace", $"```\n{ex.StackTrace}\n```"));
                 
-                return;
+                    return;
+                }
             }
 
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Done! " +
-                (addedEmoji != null ? $"<{(addedEmoji.IsAnimated ? "a:" : ":") + addedEmoji.Name}:{addedEmoji.Id}" : "") + ">"));
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(addedEmoji.Aggregate("Done! ",
+                (current, emoji) =>
+                    current + ((emoji != null ? $"<{(emoji.IsAnimated ? "a:" : ":") + emoji.Name}:{emoji.Id}" : "") +
+                               ">"))));
 
             return;
         }
