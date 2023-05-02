@@ -5,7 +5,7 @@
 .env
 config.json
 config.dev.json
-id_rsa
+id_ed25519
 db/*
 
 ### Csharp ###
