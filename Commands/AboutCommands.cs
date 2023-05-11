@@ -2,7 +2,7 @@
 
 public class AboutCommands : ApplicationCommandModule
 {
-    [SlashCommand("about", "View information about the bot!")]
+    [SlashCommand("about", "View information about me!")]
     public static async Task About(InteractionContext ctx)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
@@ -58,10 +58,17 @@ public class AboutCommands : ApplicationCommandModule
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
     }
 
-    [SlashCommand("version", "Show version information.")]
-    public static async Task CommitInfo(InteractionContext ctx)
+    [SlashCommand("version", "Show my version information.")]
+    public static async Task CommitInfo(InteractionContext ctx,
+        [Option("extended", "Whether to show extended info. Defaults to False.")] Boolean extended = false)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+        if (extended) {
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(
+                await DebugInfoHelpers.GenerateDebugInfoEmbed(false)));
+            return;
+        }
 
         var commitHash = await FileHelpers.ReadFileAsync("CommitHash.txt", "dev");
         var commitMessage = await FileHelpers.ReadFileAsync("CommitMessage.txt", "dev");
@@ -69,7 +76,29 @@ public class AboutCommands : ApplicationCommandModule
 
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
             .WithColor(Program.BotColor)
-            .AddField("Version", $"[{commitHash}]({commitUrl}): {commitMessage}")
+            .AddField("Version", (commitHash == "dev" ? "`dev`" : $"[`{commitHash}`]({commitUrl}): {commitMessage}"))
             .AddField("Last updated on", DebugInfoHelpers.GetDebugInfo().CommitTimestamp)));
     }
+
+    [SlashCommand("uptime", "Check my uptime!")]
+        public static async Task Uptime(InteractionContext ctx)
+        {
+            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = "Uptime",
+                Color = Program.BotColor
+            };
+
+            var connectUnixTime = ((DateTimeOffset)Program.ConnectTime).ToUnixTimeSeconds();
+
+            var startTime = Convert.ToDateTime(Program.ProcessStartTime);
+            var startUnixTime = ((DateTimeOffset)startTime).ToUnixTimeSeconds();
+
+            embed.AddField("Process started at", $"<t:{startUnixTime}:F> (<t:{startUnixTime}:R>)");
+            embed.AddField("Last connected to Discord at", $"<t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)");
+
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+        }
 }

@@ -49,13 +49,18 @@ public class DebugInfoHelpers
             Color = Program.BotColor
         };
 
+        var remoteUrl = FileHelpers.ReadFile("RemoteUrl.txt");
+        var commitHash = debugInfo.CommitHash == "dev"
+            ? "`dev`"
+            : $"[`{debugInfo.CommitHash}`]({remoteUrl}/commit/{debugInfo.CommitHash})";
+
         embed.AddField("Framework", debugInfo.Framework, true);
         embed.AddField("Platform", debugInfo.Platform, true);
         embed.AddField("Library", debugInfo.Library, true);
         embed.AddField("Server Count", Program.Discord.Guilds.Count.ToString(), true);
         embed.AddField("Command Count", Program.ApplicationCommands.Count.ToString(), true);
         if (isOnReadyEvent) embed.AddField("Load Time", debugInfo.LoadTime, true);
-        embed.AddField("Commit Hash", $"`{debugInfo.CommitHash}`", true);
+        embed.AddField("Commit Hash", commitHash, true);
         embed.AddField(debugInfo.CommitTimeDescription, debugInfo.CommitTimestamp, true);
         embed.AddField("Commit Message", debugInfo.CommitMessage);
 

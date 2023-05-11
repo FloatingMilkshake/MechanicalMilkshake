@@ -6,38 +6,6 @@ public class DebugCommands : ApplicationCommandModule
     [SlashCommandGroup("debug", "[Authorized users only] Commands for checking if the bot is working properly.")]
     public class DebugCmds : ApplicationCommandModule
     {
-        [SlashCommand("info", "[Authorized users only] Show debug information about the bot.")]
-        public static async Task DebugInfo(InteractionContext ctx)
-        {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-
-            await ctx.FollowUpAsync(
-                new DiscordFollowupMessageBuilder().AddEmbed(await DebugInfoHelpers.GenerateDebugInfoEmbed(false)));
-        }
-
-        [SlashCommand("uptime",
-            "[Authorized users only] Check the bot's uptime (from the time it connects to Discord).")]
-        public static async Task Uptime(InteractionContext ctx)
-        {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-
-            DiscordEmbedBuilder embed = new()
-            {
-                Title = "Uptime",
-                Color = Program.BotColor
-            };
-
-            var connectUnixTime = ((DateTimeOffset)Program.ConnectTime).ToUnixTimeSeconds();
-
-            var startTime = Convert.ToDateTime(Program.ProcessStartTime);
-            var startUnixTime = ((DateTimeOffset)startTime).ToUnixTimeSeconds();
-
-            embed.AddField("Process started at", $"<t:{startUnixTime}:F> (<t:{startUnixTime}:R>)");
-            embed.AddField("Last connected to Discord at", $"<t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)");
-
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
-        }
-
         [SlashCommand("timecheck",
             "[Authorized users only] Return the current time on the machine the bot is running on.")]
         public static async Task TimeCheck(InteractionContext ctx)
@@ -189,8 +157,8 @@ public class DebugCommands : ApplicationCommandModule
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Done!"));
         }
 
-        [SlashCommand("counts", "[Authorized users only] Show which commands are used the most.")]
-        public static async Task Counts(InteractionContext ctx)
+        [SlashCommand("usage", "[Authorized users only] Show which commands are used the most.")]
+        public static async Task Usage(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
