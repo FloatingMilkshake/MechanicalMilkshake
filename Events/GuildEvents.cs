@@ -18,7 +18,7 @@ public class GuildEvents
                 .WithDescription(
                     $"The guild {e.Guild.Name} (`{e.Guild.Id}`) was previously unavailable, but is now available again.")
                 .AddField("Members", e.Guild.MemberCount.ToString(), true).AddField("Owner",
-                    $"{e.Guild.Owner.Username}#{e.Guild.Owner.Discriminator} (`{e.Guild.Owner.Id}`)", true);
+                    $"{UserInfoHelpers.GetFullUsername(e.Guild.Owner)} (`{e.Guild.Owner.Id}`)", true);
 
             await _guildLogChannel.SendMessageAsync(embed);
             return;
@@ -62,7 +62,7 @@ public class GuildEvents
                 new DiscordEmbedBuilder(await UserInfoHelpers.GenerateUserInfoEmbed((DiscordUser)guild.Owner));
             userInfoEmbed.WithColor(Program.BotColor);
             userInfoEmbed.WithTitle("User Info for Server Owner");
-            userInfoEmbed.WithDescription($"{guild.Owner.Username}#{guild.Owner.Discriminator}");
+            userInfoEmbed.WithDescription($"{UserInfoHelpers.GetFullUsername(guild.Owner)}");
         }
         catch (Exception ex)
         {

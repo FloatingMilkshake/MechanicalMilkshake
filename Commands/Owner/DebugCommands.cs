@@ -74,10 +74,10 @@ public class DebugCommands : ApplicationCommandModule
                 authorizedUsers.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
 
             var botOwnerList = botOwners.Aggregate("",
-                (current, owner) => current + $"\n- {owner.Username}#{owner.Discriminator} (`{owner.Id}`)");
+                (current, owner) => current + $"\n- {UserInfoHelpers.GetFullUsername(owner)} (`{owner.Id}`)");
 
             var authUsersList = authorizedUsers.Aggregate("",
-                (current, user) => current + $"\n- {user.Username}#{user.Discriminator} (`{user.Id}`)");
+                (current, user) => current + $"\n- {UserInfoHelpers.GetFullUsername(user)} (`{user.Id}`)");
 
             embed.AddField("Bot Owners", botOwnerList);
             embed.AddField("Authorized Users",

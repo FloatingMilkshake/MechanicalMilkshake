@@ -36,7 +36,7 @@ public class Feedback : ApplicationCommandModule
             Color = Program.BotColor,
             Description = feedbackMsg
         };
-        embed.AddField("Sent by", $"{ctx.User.Username}#{ctx.User.Discriminator} (`{ctx.User.Id}`)");
+        embed.AddField("Sent by", $"{UserInfoHelpers.GetFullUsername(ctx.User)} (`{ctx.User.Id}`)");
         embed.AddField("Sent from", $"\"{ctx.Guild.Name}\" (`{ctx.Guild.Id}`)");
         await feedbackChannel.SendMessageAsync(embed);
     }

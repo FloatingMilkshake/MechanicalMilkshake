@@ -20,7 +20,7 @@ public class UserInfo : ApplicationCommandModule
         }
 
         await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-            .WithContent($"User Info for **{ctx.TargetUser.Username}#{ctx.TargetUser.Discriminator}**")
+            .WithContent($"User Info for **{UserInfoHelpers.GetFullUsername(ctx.TargetUser)}**")
             .AddEmbed(userInfoEmbed).AsEphemeral());
     }
 }

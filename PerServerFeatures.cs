@@ -45,7 +45,7 @@ public class PerServerFeatures
                 Color = Program.BotColor,
                 Description = complaint
             };
-            embed.AddField("Sent by", $"{ctx.User.Username}#{ctx.User.Discriminator} (`{ctx.User.Id}`)");
+            embed.AddField("Sent by", $"{UserInfoHelpers.GetFullUsername(ctx.User)} (`{ctx.User.Id}`)");
             embed.AddField("Sent from", $"\"{ctx.Guild.Name}\" (`{ctx.Guild.Id}`)");
             embed.AddField("Department", department);
             await logChannel.SendMessageAsync(embed);

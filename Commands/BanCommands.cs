@@ -21,7 +21,7 @@ public class BanCommands : ApplicationCommandModule
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
-                    $"Something went wrong. You or I may not be allowed to ban **{userToBan.Username}#{userToBan.Discriminator}**! Please check the role hierarchy and permissions.")
+                    $"Something went wrong. You or I may not be allowed to ban **{UserInfoHelpers.GetFullUsername(userToBan)}**! Please check the role hierarchy and permissions.")
                 .AsEphemeral());
             return;
         }
@@ -54,7 +54,7 @@ public class BanCommands : ApplicationCommandModule
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
-                    $"Something went wrong. You or I may not be allowed to unban **{userToUnban.Username}#{userToUnban.Discriminator}**! Please check the role hierarchy and permissions.")
+                    $"Something went wrong. You or I may not be allowed to unban **{UserInfoHelpers.GetFullUsername(userToUnban)}**! Please check the role hierarchy and permissions.")
                 .AsEphemeral());
             return;
         }
@@ -69,6 +69,6 @@ public class BanCommands : ApplicationCommandModule
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
             .WithContent("User unbanned successfully.").AsEphemeral());
         await ctx.Channel.SendMessageAsync(
-            $"Successfully unbanned **{userToUnban.Username}#{userToUnban.Discriminator}**!");
+            $"Successfully unbanned **{UserInfoHelpers.GetFullUsername(userToUnban)}**!");
     }
 }

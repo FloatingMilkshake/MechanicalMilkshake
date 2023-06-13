@@ -60,7 +60,7 @@ public class MessageEvents
                         DiscordGuild mutualServer = default;
                         foreach (var guild in client.Guilds)
                             if (guild.Value.Members.Any(m =>
-                                    $"{m.Value.Username}#{m.Value.Discriminator}" == usernameMatch))
+                                    $"{UserInfoHelpers.GetFullUsername(m.Value)}" == usernameMatch))
                             {
                                 mutualServer = await client.GetGuildAsync(guild.Value.Id);
                                 break;
@@ -78,7 +78,7 @@ public class MessageEvents
                         try
                         {
                             targetMember = mutualServer.Members.FirstOrDefault(m =>
-                                $"{m.Value.Username}#{m.Value.Discriminator}" == usernameMatch).Value;
+                                $"{UserInfoHelpers.GetFullUsername(m.Value)}" == usernameMatch).Value;
                         }
                         catch (Exception ex)
                         {
@@ -251,7 +251,7 @@ public class MessageEvents
                             DiscordEmbedBuilder embed = new()
                             {
                                 Color = DiscordColor.Yellow,
-                                Title = $"DM received from {e.Author.Username}#{e.Author.Discriminator}!",
+                                Title = $"DM received from {UserInfoHelpers.GetFullUsername(e.Author)}!",
                                 Description = $"{e.Message.Content}",
                                 Timestamp = DateTime.UtcNow
                             };

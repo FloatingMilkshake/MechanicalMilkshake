@@ -73,6 +73,10 @@ public class UserInfoHelpers
             .WithColor(new DiscordColor($"{member.Color}"))
             .AddField("User Mention", member.Mention, true)
             .WithFooter($"User ID: {member.Id}");
+
+        // todo: make this work with global Display Name (pomelo) when D#+ supports it
+        //if (member.DisplayName is not null)
+        //    extendedUserInfoEmbed.AddField("Display Name", member.DisplayName, true);
         
         if (member.Nickname is not null)
             extendedUserInfoEmbed.AddField("Nickname", member.Nickname, true);
@@ -110,12 +114,28 @@ public class UserInfoHelpers
             .WithThumbnail($"{user.AvatarUrl}")
             .WithColor(Program.BotColor)
             .AddField("ID", $"{user.Id}")
+            //.AddField("Display Name", $"{user.DisplayName}") // todo: make this work with global Display Name (pomelo) when D#+ supports it
             .AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
 
         var userBadges = GetBadges(user);
         if (userBadges != "") basicUserInfoEmbed.AddField("Badges", userBadges);
 
         return Task.FromResult<DiscordEmbed>(basicUserInfoEmbed);
+    }
+
+    // Get a user's discriminator, or return an empty string if they have the new username style (discrim == #0)
+    public static String GetDiscriminator(DiscordUser user)
+    {
+        if (user.Discriminator == "0")
+            return "";
+        else
+            return $"#{user.Discriminator}";
+    }
+
+    // Get a user's full username, including discriminator if applicable
+    public static String GetFullUsername(DiscordUser user)
+    {
+        return $"{user.Username + GetDiscriminator(user)}";
     }
 
     private static string GetBadges(DiscordUser user)

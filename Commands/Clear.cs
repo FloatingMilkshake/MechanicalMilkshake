@@ -223,7 +223,7 @@ public class Clear : ApplicationCommandModule
             case >= 1:
             {
                 await ctx.Channel.DeleteMessagesAsync(messagesToClear,
-                    $"[Clear by {ctx.User.Username}#{ctx.User.Discriminator}]");
+                    $"[Clear by {UserInfoHelpers.GetFullUsername(ctx.User)}]");
                 if (skipped)
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                         .WithContent(

@@ -42,9 +42,9 @@ public class AboutCommands : ApplicationCommandModule
         var botOwners = ctx.Client.CurrentApplication.Owners.ToList();
 
         var ownerOutput = botOwners.Count == 1
-            ? $"The bot owner is {botOwners.First().Username}#{botOwners.First().Discriminator}."
+            ? $"The bot owner is @{UserInfoHelpers.GetFullUsername(botOwners.First())}."
             : botOwners.Aggregate("Bot owners are:",
-                (current, owner) => current + $"\n- {owner.Username}#{owner.Discriminator}");
+                (current, owner) => current + $"\n- @{UserInfoHelpers.GetFullUsername(owner)}");
 
         embed.AddField("Owners", ownerOutput);
 

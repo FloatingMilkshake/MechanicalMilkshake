@@ -292,7 +292,7 @@ public class ComponentInteractionEvent
                     var messages = messagesToClear.GetValueOrDefault(e.Message.Id);
 
                     await e.Channel.DeleteMessagesAsync(messages,
-                        $"[Clear by {e.User.Username}#{e.User.Discriminator}]");
+                        $"[Clear by {UserInfoHelpers.GetFullUsername(e.User)}]");
 
                     messagesToClear.Remove(e.Message.Id);
 

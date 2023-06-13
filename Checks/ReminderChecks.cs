@@ -55,7 +55,7 @@ public class ReminderChecks
                 DiscordGuild mutualServer = default;
                 foreach (var guild in Program.Discord.Guilds)
                     if (guild.Value.Members.Any(m =>
-                            m.Value.Username == user.Username && m.Value.Discriminator == user.Discriminator))
+                            m.Value.Username == user.Username && UserInfoHelpers.GetDiscriminator(m.Value) == UserInfoHelpers.GetDiscriminator(user)))
                     {
                         mutualServer = await Program.Discord.GetGuildAsync(guild.Value.Id);
                         break;

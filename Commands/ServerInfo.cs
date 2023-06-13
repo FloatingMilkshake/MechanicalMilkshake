@@ -56,7 +56,7 @@ public class ServerInfo : ApplicationCommandModule
 
         var embed = new DiscordEmbedBuilder()
             .WithColor(Program.BotColor)
-            .AddField("Server Owner", $"{guild.Owner.Username}#{guild.Owner.Discriminator}")
+            .AddField("Server Owner", $"{UserInfoHelpers.GetFullUsername(guild.Owner)}")
             .AddField("Description", $"{description}")
             .AddField("Created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)")
             .AddField("Channels", $"{guild.Channels.Count - categoryCount}", true)

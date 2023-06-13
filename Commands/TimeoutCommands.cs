@@ -66,7 +66,7 @@ public class TimeoutCommands : ApplicationCommandModule
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
-                        $"Something went wrong. You or I may not be allowed to time out **{user.Username}#{user.Discriminator}**! Please check the role hierarchy and permissions.")
+                        $"Something went wrong. You or I may not be allowed to time out **{UserInfoHelpers.GetFullUsername(user)}**! Please check the role hierarchy and permissions.")
                     .AsEphemeral());
                 return;
             }
@@ -116,7 +116,7 @@ public class TimeoutCommands : ApplicationCommandModule
             catch (UnauthorizedException)
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    $"Something went wrong. You or I may not be allowed to clear the timeout for **{user.Username}#{user.Discriminator}**! Please check the role hierarchy and permissions."));
+                    $"Something went wrong. You or I may not be allowed to clear the timeout for **{UserInfoHelpers.GetFullUsername(user)}**! Please check the role hierarchy and permissions."));
                 return;
             }
             catch (Exception e)

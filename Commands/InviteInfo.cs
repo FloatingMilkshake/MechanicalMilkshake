@@ -41,7 +41,7 @@ public class InviteInfo : ApplicationCommandModule
             embed.AddField("Inviter",
                 invite.Inviter is null
                     ? "unknown"
-                    : $"{invite.Inviter.Username}#{invite.Inviter.Discriminator} (`{invite.Inviter.Id}`)");
+                    : $"{UserInfoHelpers.GetFullUsername(invite.Inviter)} (`{invite.Inviter.Id}`)");
 
             embed.AddField("Expires At",
                 invite.ExpiresAt is null

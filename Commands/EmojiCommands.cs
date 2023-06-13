@@ -58,7 +58,7 @@ public class EmojiCommands : ApplicationCommandModule
                     await stream.CopyToAsync(ms);
                     ms.Position = 0;
                     addedEmoji.Add(await ctx.Guild.CreateEmojiAsync(match.Groups[2].ToString(), ms, null,
-                        $"Emoji added with /{ctx.CommandName} by user {ctx.User.Username}#{ctx.User.Discriminator} ({ctx.User.Id})."));
+                        $"Emoji added with /{ctx.CommandName} by user {UserInfoHelpers.GetFullUsername(ctx.User)} ({ctx.User.Id})."));
                 }
                 catch (Exception ex)
                 {
@@ -151,7 +151,7 @@ public class EmojiCommands : ApplicationCommandModule
             try
             {
                 await ctx.Guild.CreateEmojiAsync(emoji.Value.Name, ms, null,
-                    $"Emoji copied from guild {guild.Id} with /{ctx.CommandName} by user {ctx.User.Username}#{ctx.User.Discriminator} ({ctx.User.Id}).");
+                    $"Emoji copied from guild {guild.Id} with /{ctx.CommandName} by user {UserInfoHelpers.GetFullUsername(ctx.User)} ({ctx.User.Id}).");
             }
             catch
             {

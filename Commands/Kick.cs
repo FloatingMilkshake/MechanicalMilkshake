@@ -22,7 +22,7 @@ public class Kick : ApplicationCommandModule
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
-                    $"Hmm, **{userToKick.Username}#{userToKick.Discriminator}** doesn't seem to be in the server.")
+                    $"Hmm, **{UserInfoHelpers.GetFullUsername(userToKick)}** doesn't seem to be in the server.")
                 .AsEphemeral());
             return;
         }
@@ -35,7 +35,7 @@ public class Kick : ApplicationCommandModule
         {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
-                    $"Something went wrong. You or I may not be allowed to kick **{userToKick.Username}#{userToKick.Discriminator}**! Please check the role hierarchy and permissions.")
+                    $"Something went wrong. You or I may not be allowed to kick **{UserInfoHelpers.GetFullUsername(userToKick)}**! Please check the role hierarchy and permissions.")
                 .AsEphemeral());
             return;
         }

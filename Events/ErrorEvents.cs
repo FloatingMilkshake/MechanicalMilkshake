@@ -97,14 +97,14 @@ public class ErrorEvents
             embed.AddField("Message", ex.Message);
 
             Console.WriteLine(
-                $"{ex.GetType()} occurred when {e.Context.User.Username}#{e.Context.User.Discriminator} used /{e.Context.CommandName}: {ex.Message}\n{ex.StackTrace}");
+                $"{ex.GetType()} occurred when {UserInfoHelpers.GetFullUsername(e.Context.User)} used /{e.Context.CommandName}: {ex.Message}\n{ex.StackTrace}");
 
             await Program.HomeChannel.SendMessageAsync(new DiscordEmbedBuilder
             {
                 Title = "An exception occurred when executing a slash command",
                 Color = DiscordColor.Red,
                 Description = $"`{ex.GetType()}` occurred when " +
-                              $"`{e.Context.User.Username}#{e.Context.User.Discriminator}` (`{e.Context.User.Id}` " +
+                              $"`{UserInfoHelpers.GetFullUsername(e.Context.User)}` (`{e.Context.User.Id}` " +
                               $"used `/{e.Context.CommandName}`.",
             }.AddField("Message", ex.Message));
 
@@ -167,7 +167,7 @@ public class ErrorEvents
             embed.AddField("Message", ex.Message);
 
             Console.WriteLine(
-                $"{ex.GetType()} occurred when {e.Context.User.Username}#{e.Context.User.Discriminator} used {e.Command!.QualifiedName}: {ex.Message}\n{ex.StackTrace}");
+                $"{ex.GetType()} occurred when {UserInfoHelpers.GetFullUsername(e.Context.User)} used {e.Command!.QualifiedName}: {ex.Message}\n{ex.StackTrace}");
 
             // System.ArgumentException
             if (ex.GetType().ToString() == "System.ArgumentException")
