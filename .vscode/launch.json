@@ -21,6 +21,12 @@
             "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach"
+        },
+        {
+            "name": ".NET Watch",
+            "type": "DotNetWatch",
+            "request": "launch",
+            "args": []
         }
     ]
 }
