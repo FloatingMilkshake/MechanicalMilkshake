@@ -265,7 +265,7 @@ internal class Program
             while (true)
             {
                 await PackageUpdateChecks.PackageUpdateCheck();
-                await Task.Delay(21600000); // 6 hours
+                await Task.Delay(259200000); // 3 days
             }
             // ReSharper disable once FunctionNeverReturns
         });
