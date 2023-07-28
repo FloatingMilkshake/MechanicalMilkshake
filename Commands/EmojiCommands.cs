@@ -41,15 +41,15 @@ public class EmojiCommands : ApplicationCommandModule
                     "I was able to find that server, but I don't have access to its emoji! "
                     + "The most likely reason for this is that I am not in that server; "
                     + "I cannot fetch emoji from a server I am not in."
-                    + "\n\nIf you think I am in the server and you're still seeing this, contact the bot owner for "
+                    + "\n\nIf you think I am in the server and you're still seeing this, contact a bot owner for "
                     + $"help (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!)."));
                 return;
             }
             catch
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    $"I couldn't find that server! Make sure `{server}` is a server ID. "
-                    + "If you're sure it is and you're still seeing this, contact the bot owner for help."));
+                    $"I couldn't find that server! That either means I'm not in it, or {((server.Length > 20) ? "that" : $"`{server}`")} isn't a server ID. "
+                    + "If you've tried again and you're still seeing this, contact a bot owner for help."));
                 return;
             }
 
@@ -73,6 +73,13 @@ public class EmojiCommands : ApplicationCommandModule
             response += "\n\n**Animated Emoji**\n";
             response = foundEmoji.Where(emoji => emoji.IsAnimated)
                 .Aggregate(response, (current, emoji) => current + $"<a:{emoji.Name}:{emoji.Id}> ");
+
+            // Check response length to ensure the length limit is not hit
+            if (response.Length > 2000)
+            {
+                response = "Hmm, it looks like there are too many emoji in that server to show them all here! A zip file is attached containing all of them.";
+                zip = true;
+            }
 
             // Create response builder; will be updated to add zip file if necessary, or sent as-is
             var responseBuilder = new DiscordFollowupMessageBuilder().WithContent(response);
@@ -161,7 +168,7 @@ public class EmojiCommands : ApplicationCommandModule
             var matches = EmojiRegex.Matches(emoji);
 
             var response = "";
-            foreach (Match match in matches)
+            foreach (Match match in matches.Cast<Match>())
             {
                 var groups = match.Groups;
                 var emojiUrl = groups[1].Value == "a"
@@ -172,6 +179,9 @@ public class EmojiCommands : ApplicationCommandModule
                 var httpResponse = await Program.HttpClient.SendAsync(httpRequest);
                 response += (httpResponse.IsSuccessStatusCode ? emojiUrl : "[This emoji doesn't seem to exist! Please try again...]") + "\n";
             }
+
+            if (response.Length > 2000)
+                response = "It looks like this message is too long to send! Try entering less emoji, or contact a bot owner if you need help.";
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
         }
