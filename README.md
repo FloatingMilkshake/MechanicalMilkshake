@@ -22,7 +22,7 @@ This bot depends on a few projects and services to provide the features that it 
 ### Special Thanks
 Without these people I wouldn't be where I am today, and this project wouldn't be here.
 - [Erisa](https://erisa.uk/) for the help and the answers to all my questions - especially when I was first starting out with this. You've played a huge role in helping me learn more about this and I really, really appreciate it. Thank you so much. ♥
-- [auravoid](https://auravoid.dev/) for the sponsorship, feedback, contributions, and ideas; and for helping to further my interest in technology over the years (and for basically being my personal QA tester :P). Thank you!
+- [auravoid](https://auravoid.dev/) for the feedback, contributions, and ideas; and for helping to further my interest in technology over the years (and for basically being my personal QA tester :P). Thank you!
 
 ## How can I add the bot to my server?
 
