@@ -18,7 +18,7 @@ public class PackageUpdateChecks
                 "[PackageUpdateCheck] Checking for updates on host '{Host}'.\"", host);
 
             var cmdResult =
-                await EvalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
+                await EvalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"", false);
 
             if (string.IsNullOrWhiteSpace(cmdResult)) return;
 

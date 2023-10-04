@@ -29,7 +29,7 @@ public class EvalCommands : ApplicationCommandModule
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(await RunCommand(command)));
     }
 
-    public static async Task<string> RunCommand(string command)
+    public static async Task<string> RunCommand(string command, bool useHastebin = true)
     {
         var osDescription = RuntimeInformation.OSDescription;
         string fileName;
@@ -67,7 +67,7 @@ public class EvalCommands : ApplicationCommandModule
         var result = await proc.StandardOutput.ReadToEndAsync();
         await proc.WaitForExitAsync();
 
-        if (result.Length > 1947)
+        if (useHastebin && result.Length > 1947)
         {
             var hasteUploadResult = await HastebinHelpers.UploadToHastebinAsync(result);
 
