@@ -104,7 +104,7 @@ public class ErrorEvents
                 Title = "An exception occurred when executing a slash command",
                 Color = DiscordColor.Red,
                 Description = $"`{ex.GetType()}` occurred when " +
-                              $"`{UserInfoHelpers.GetFullUsername(e.Context.User)}` (`{e.Context.User.Id}` " +
+                              $"`{UserInfoHelpers.GetFullUsername(e.Context.User)}` (`{e.Context.User.Id}`) " +
                               $"used `/{e.Context.CommandName}`.",
             }.AddField("Message", ex.Message));
 
