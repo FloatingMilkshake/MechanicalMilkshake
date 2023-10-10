@@ -30,6 +30,8 @@ public class BaseConfig
     [JsonProperty("authorizedUsers")] public string[] AuthorizedUsers { get; private set; }
 
     [JsonProperty("sshHosts")] public string[] SshHosts { get; private set; }
+
+    [JsonProperty("usePerServerFeatures")] public bool UsePerServerFeatures { get; private set; }
 }
 
 public class IdsConfig

@@ -181,9 +181,12 @@ internal class Program
         foreach (var type in slashCommandClasses)
             slash.RegisterCommands(type, HomeServer.Id);
 
-        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(HomeServer.Id);
-        slash.RegisterCommands<PerServerFeatures.MusicUtilityCommands>(HomeServer.Id);
-        slash.RegisterCommands<PerServerFeatures.ReminderCommands>(HomeServer.Id);
+        if (ConfigJson.Base.UsePerServerFeatures)
+        {
+            slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(HomeServer.Id);
+            slash.RegisterCommands<PerServerFeatures.MusicUtilityCommands>(HomeServer.Id);
+            slash.RegisterCommands<PerServerFeatures.ReminderCommands>(HomeServer.Id);
+        }
 
         // ReSharper disable once LogMessageIsSentenceProblem
         Discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging");
@@ -208,21 +211,27 @@ internal class Program
 
         Discord.Logger.LogInformation(BotEventId, "Slash commands registered globally");
 
-// Register slash commands for per-server features in respective servers
-// & testing server for 'production' bot
-        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(631118217384951808);
-        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(984903591816990730);
-        slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(HomeServer.Id);
-        slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
-        slash.RegisterCommands<PerServerFeatures.MusicUtilityCommands>(852355801896189953);
-        slash.RegisterCommands<PerServerFeatures.MusicUtilityCommands>(984903591816990730);
-        slash.RegisterCommands<PerServerFeatures.MusicUtilityCommands>(HomeServer.Id);
-        slash.RegisterCommands<PerServerFeatures.ReminderCommands>(1007457740655968327);
-        slash.RegisterCommands<PerServerFeatures.ReminderCommands>(HomeServer.Id);
+        if (ConfigJson.Base.UsePerServerFeatures)
+        {
+            // Register slash commands for per-server features in respective servers
+            // & testing server for 'production' bot
+            slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(631118217384951808);
+            slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(984903591816990730);
+            slash.RegisterCommands<PerServerFeatures.ComplaintSlashCommands>(HomeServer.Id);
+            slash.RegisterCommands<PerServerFeatures.RoleCommands>(984903591816990730);
+            slash.RegisterCommands<PerServerFeatures.MusicUtilityCommands>(852355801896189953);
+            slash.RegisterCommands<PerServerFeatures.MusicUtilityCommands>(984903591816990730);
+            slash.RegisterCommands<PerServerFeatures.MusicUtilityCommands>(HomeServer.Id);
+            slash.RegisterCommands<PerServerFeatures.ReminderCommands>(1007457740655968327);
+            slash.RegisterCommands<PerServerFeatures.ReminderCommands>(HomeServer.Id);
+        }
 #endif
 
-        // Register CommandsNext commands
-        commands.RegisterCommands<PerServerFeatures.MessageCommands>();
+        if (ConfigJson.Base.UsePerServerFeatures)
+        {
+            // Register CommandsNext commands
+            commands.RegisterCommands<PerServerFeatures.MessageCommands>();
+        }
 
         await Discord.ConnectAsync();
 

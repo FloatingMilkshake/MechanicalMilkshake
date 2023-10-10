@@ -16,7 +16,9 @@
     "sshHosts": [
       "",
       ""
-    ]
+    ],
+
+    "usePerServerFeatures": false
   },
   
   "ids": {

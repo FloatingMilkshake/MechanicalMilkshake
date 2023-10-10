@@ -40,8 +40,6 @@ This is the other way to get the bot into one of your servers, and is best for d
 
 > ### Note
 > These instructions assume you know how to create a bot application through Discord's Developer Portal and how to obtain a bot token, channel ID, etc. If you need help with any of this, feel free to reach out to me with any of the contact methods listed on [my website](https://floatingmilkshake.com)!
-> 
-> Also - if you notice the bot throwing errors for `PerServerFeatures.cs` - the easiest way to get around that is probably to remove the file and any references to it. There are some features that are hardcoded for specific servers/channels, so I figured I would isolate them to a single file. Sorry if this is confusing! I'm happy to help out if there's trouble, and ideally I can negate this problem in the future.
 
 ### With Docker
 This is the easiest way to run the bot yourself if you just want to run it and don't need to work on development.
