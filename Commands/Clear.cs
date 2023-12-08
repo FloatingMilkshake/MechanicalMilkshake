@@ -20,6 +20,8 @@ public class Clear : ApplicationCommandModule
         bool ignoreMe = false,
         [Option("match", "Optionally filter the deletion to only messages containing certain text.")]
         string match = "",
+        [Option("include_embeds", "Optionally include embed content when searching for matches.")]
+        bool includeEmbeds = false,
         [Option("bots_only", "Optionally filter the deletion to only bots.")]
         bool botsOnly = false,
         [Option("humans_only", "Optionally filter the deletion to only humans.")]
@@ -27,7 +29,9 @@ public class Clear : ApplicationCommandModule
         [Option("attachments_only", "Optionally filter the deletion to only messages with attachments.")]
         bool attachmentsOnly = false,
         [Option("links_only", "Optionally filter the deletion to only messages containing links.")]
-        bool linksOnly = false
+        bool linksOnly = false,
+        [Option("dry_run", "Optionally show the number of messages that would be deleted, without actually deleting them.")]
+        bool dryRun = false
     )
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
@@ -41,8 +45,9 @@ public class Clear : ApplicationCommandModule
         switch (count)
         {
             // If all args are unset
-            case 0 when upTo == "" && user == default && ignoreMe == false && match == "" && botsOnly == false &&
-                        humansOnly == false && attachmentsOnly == false && linksOnly == false:
+            case 0 when upTo == "" && user == default && ignoreMe == false && match == "" && includeEmbeds == false &&
+                        botsOnly == false && humansOnly == false && attachmentsOnly == false && linksOnly == false &&
+                        dryRun == false:
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("You must provide at least one argument! I need to know which messages to delete.")
                     .AsEphemeral());
@@ -140,12 +145,26 @@ public class Clear : ApplicationCommandModule
         if (ignoreMe)
             foreach (var message in messagesToClear.ToList().Where(message => message.Author == ctx.User))
                 messagesToClear.Remove(message);
-
-        // Match text
+        
+        // Match text, including embeds if selected
         if (match != "")
+        {
             foreach (var message in messagesToClear.ToList()
-                         .Where(message => !message.Content.ToLower().Contains(match.ToLower())))
-                messagesToClear.Remove(message);
+                .Where(message => !message.Content.ToLower().Contains(match.ToLower())))
+            {
+                if (includeEmbeds && message.Embeds.Count > 0)
+                {
+                    var embeds = message.Embeds.ToList();
+                    foreach (var embed in embeds)
+                    {
+                        if (embed.Description is not null && !embed.Description.ToLower().Contains(match.ToLower())
+                            && embed.Fields.ToList().All(field => !field.Value.ToLower().Contains(match.ToLower())))
+                            messagesToClear.Remove(message);
+                    }
+                }
+                else messagesToClear.Remove(message);
+            }
+        }
 
         // Bots only
         if (botsOnly)
@@ -212,9 +231,11 @@ public class Clear : ApplicationCommandModule
             case >= 50:
             {
                 DiscordButtonComponent confirmButton =
-                    new(ButtonStyle.Danger, "clear-confirm-callback", "Delete Messages");
+                    new(ButtonStyle.Danger, "clear-confirm-callback", "Delete Messages", disabled: dryRun);
                 var confirmationMessage = await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent($"You're about to delete {messagesToClear.Count} messages. Are you sure?")
+                    .WithContent(dryRun ? $"You would be about to delete {messagesToClear.Count} messages, but since "
+                                            + "you used `dry_run = True`, I won't do anything."
+                                        : $"You're about to delete {messagesToClear.Count} messages. Are you sure?")
                     .AddComponents(confirmButton).AsEphemeral());
 
                 MessagesToClear.Add(confirmationMessage.Id, messagesToClear);
@@ -222,6 +243,13 @@ public class Clear : ApplicationCommandModule
             }
             case >= 1:
             {
+                if (dryRun)
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"You would be about to"
+                    + $" delete {messagesToClear.Count} messages, but since you used `dry_run = True`,"
+                    + " I won't do anything.").AsEphemeral());
+                    break;
+                }
                 await ctx.Channel.DeleteMessagesAsync(messagesToClear,
                     $"[Clear by {UserInfoHelpers.GetFullUsername(ctx.User)}]");
                 if (skipped)
