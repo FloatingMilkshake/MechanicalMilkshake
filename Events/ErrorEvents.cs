@@ -7,38 +7,51 @@ public class ErrorEvents
         switch (e.Exception)
         {
             case SlashExecutionChecksFailedException execChecksFailedEx
-                when execChecksFailedEx.FailedChecks.OfType<SlashRequireGuildAttribute>().Any():
-                await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder()
-                        .WithContent(
+                when execChecksFailedEx.FailedChecks is not null && execChecksFailedEx.FailedChecks.OfType<SlashRequireGuildAttribute>().Any():
+                try
+                {
+                    await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                        new DiscordInteractionResponseBuilder().WithContent(
+                                $"This command cannot be used in DMs. Please use it in a server. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).")
+                            .AsEphemeral());
+                }
+                catch
+                {
+                    await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                             $"This command cannot be used in DMs. Please use it in a server. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).")
                         .AsEphemeral());
+                }
+                
                 return;
             case SlashExecutionChecksFailedException:
-                await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent(
+                try
+                {
+                    await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                        new DiscordInteractionResponseBuilder().WithContent(
+                                $"Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).")
+                            .AsEphemeral());
+                }
+                catch
+                {
+                    await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
                             $"Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).")
                         .AsEphemeral());
+                }
+                
                 return;
-            case InvalidOperationException when
-                e.Exception.Message == "Slash commands failed to register properly on startup.":
-            case NullReferenceException:
+            default:
             {
                 var exception = e.Exception;
 
-                var ownerMention =
-                    Program.Discord.CurrentApplication.Owners.Aggregate("",
-                        (current, owner) => current + owner.Mention + "\n");
-
                 DiscordEmbedBuilder embed = new()
                 {
-                    Title = "Slash commands failed to register",
+                    Title = "An exception was thrown when executing a slash command",
                     Description =
-                        $"Slash commands failed to register on bot startup and {e.Context.User.Mention}'s usage of `/{e.Context.CommandName}` failed. Please restart the bot. Details are below.",
+                        $"An exception was thrown when {e.Context.User.Mention} used `/{e.Context.CommandName}`. Details are below.",
                     Color = DiscordColor.Red
                 };
                 embed.AddField("Exception Details",
-                    $"{exception.GetType()}: {exception.Message}\n```\n{exception.StackTrace}\n```");
+                    $"```{exception.GetType()}: {exception.Message}:\n{exception.StackTrace}\n```");
 
                 try
                 {
@@ -49,18 +62,33 @@ public class ErrorEvents
                             .WithContent(
                                 "It looks like slash commands are having issues! Sorry for the inconvenience. Bot owners have been alerted.")
                             .AsEphemeral());
-                        await Program.HomeChannel.SendMessageAsync(ownerMention, embed);
+                        await Program.HomeChannel.SendMessageAsync(embed);
                         return;
                     }
                 }
                 catch
                 {
                     // /proc/self/cgroup could not be found, which means the bot is not running in Docker.
-                    await e.Context.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+
+                    // Try to respond to the interaction
+                    try
+                    {
+                        await e.Context.CreateResponseAsync(new DiscordInteractionResponseBuilder()
                         .WithContent(
                             "It looks like slash commands are having issues! Sorry for the inconvenience. Bot owners have been alerted.")
                         .AsEphemeral());
-                    await Program.HomeChannel.SendMessageAsync(ownerMention, embed);
+                    }
+                    catch (BadRequestException)
+                    {
+                        // If the interaction was deferred, CreateResponseAsync() won't work
+                        // Try using FollowUpAsync() instead
+                        await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                        .WithContent(
+                            "It looks like slash commands are having issues! Sorry for the inconvenience. Bot owners have been alerted.")
+                        .AsEphemeral());
+                    }
+                    
+                    await Program.HomeChannel.SendMessageAsync(embed);
                     return;
                 }
 
@@ -71,8 +99,9 @@ public class ErrorEvents
                         .AsEphemeral());
 
                 embed.Description =
-                    $"Slash commands failed to register on bot startup and {e.Context.User.Mention}'s usage of `/{e.Context.CommandName}` failed. **The bot is attempting to restart automatically.** Details are below.";
-                await Program.HomeChannel.SendMessageAsync(ownerMention, embed);
+                    $"An exception was thrown when {e.Context.User.Mention} used `/{e.Context.CommandName}`."
+                    + " Details are below. The bot is restarting to attempt to fix this in case it was caused by a failure to register commands.";
+                await Program.HomeChannel.SendMessageAsync(embed);
 
                 Environment.Exit(1);
                 break;

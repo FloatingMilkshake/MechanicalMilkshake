@@ -174,5 +174,34 @@ public class DebugCommands : ApplicationCommandModule
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(output.Trim()));
         }
+
+        [SlashCommand("throw", "[Authorized users only] Intentionally throw an exception for debugging.")]
+        public static async Task Error(InteractionContext ctx,
+            [Option("exception", "The type of exception to throw.")]
+            [Choice("NullReferenceException", "nullref")]
+            [Choice("InvalidOperationException", "invalidop")]
+            [Choice("SlashExecutionChecksFailedException", "slashchecksfailed")]
+            string exceptionType)
+        {
+            string exceptionFullName = exceptionType switch
+            {
+                "nullref" => "NullReferenceException",
+                "invalidop" => "InvalidOperationException",
+                "slashchecksfailed" => "SlashExecutionChecksFailedException",
+                _ => throw new NotImplementedException()
+            };
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
+                $"Throwing {exceptionFullName}..."));
+
+            switch (exceptionType)
+            {
+                case "nullref":
+                    throw new NullReferenceException("This is a test exception");
+                case "invalidop":
+                    throw new InvalidOperationException("This is a test exception");
+                case "slashchecksfailed":
+                    throw new SlashExecutionChecksFailedException();
+            }
+        }
     }
 }
