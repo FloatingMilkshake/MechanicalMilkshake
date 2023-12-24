@@ -56,7 +56,7 @@ public class ErrorEvents
                 try
                 {
                     var dockerCheckFile = await File.ReadAllTextAsync("/proc/self/cgroup");
-                    if (string.IsNullOrWhiteSpace(dockerCheckFile))
+                    if (!string.IsNullOrWhiteSpace(dockerCheckFile))
                     {
                         await e.Context.CreateResponseAsync(new DiscordInteractionResponseBuilder()
                             .WithContent(
