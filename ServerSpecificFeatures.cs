@@ -1,6 +1,6 @@
 namespace MechanicalMilkshake;
 
-public class PerServerFeatures
+public class ServerSpecificFeatures
 {
     public class Checks
     {
@@ -28,7 +28,7 @@ public class PerServerFeatures
                             (((mentionRegex.Matches(msgBefore.Content)[0].Groups[3].Value == string.Empty) && mentionRegex.Matches(e.Message.Content)[0].Groups[3].Value == string.Empty &&
                             (mentionRegex.Matches(msgBefore.Content)[0].Groups[1].Value == string.Empty) && (mentionRegex.Matches(e.Message.Content)[0].Groups[1].Value == string.Empty))))
                         {
-                            await member.ModifyAsync(member => member.CommunicationDisabledUntil = (DateTimeOffset)DateTime.Now.AddMinutes(5));
+                            await member.ModifyAsync(m => m.CommunicationDisabledUntil = (DateTimeOffset)DateTime.Now.AddMinutes(5));
                             await e.Message.RespondAsync("no mass pings :3");
                         }
                     }
@@ -107,7 +107,6 @@ public class PerServerFeatures
             catch
             {
                 await ctx.RespondAsync("sorry, no can do.");
-                return;
             }
         }
     }
