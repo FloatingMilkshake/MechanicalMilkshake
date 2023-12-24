@@ -8,33 +8,34 @@ public class ErrorEvents
         {
             case SlashExecutionChecksFailedException execChecksFailedEx
                 when execChecksFailedEx.FailedChecks is not null && execChecksFailedEx.FailedChecks.OfType<SlashRequireGuildAttribute>().Any():
+                var noDmResponse = "This command cannot be used in DMs. Please use it in a server." +
+                                   " Contact the bot owner if you need help or think I messed up" +
+                                   $" (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).";
                 try
                 {
                     await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                        new DiscordInteractionResponseBuilder().WithContent(
-                                $"This command cannot be used in DMs. Please use it in a server. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).")
-                            .AsEphemeral());
+                        new DiscordInteractionResponseBuilder().WithContent(noDmResponse).AsEphemeral());
                 }
                 catch
                 {
-                    await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                            $"This command cannot be used in DMs. Please use it in a server. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).")
+                    await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(noDmResponse)
                         .AsEphemeral());
                 }
                 
                 return;
             case SlashExecutionChecksFailedException:
+                var cmdFailedResponse = $"Hmm, it looks like one of the checks for this command failed." +
+                                        $" Make sure you and I both have the permissions required to use it," +
+                                        $" and that you're using it properly. Contact the bot owner if you need help or" +
+                                        $" think I messed up (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).";
                 try
                 {
                     await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                        new DiscordInteractionResponseBuilder().WithContent(
-                                $"Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).")
-                            .AsEphemeral());
+                        new DiscordInteractionResponseBuilder().WithContent(cmdFailedResponse).AsEphemeral());
                 }
                 catch
                 {
-                    await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                            $"Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).")
+                    await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(cmdFailedResponse)
                         .AsEphemeral());
                 }
                 
@@ -51,7 +52,24 @@ public class ErrorEvents
                     Color = DiscordColor.Red
                 };
                 embed.AddField("Exception Details",
-                    $"```{exception.GetType()}: {exception.Message}:\n{exception.StackTrace}\n```");
+                    $"```{exception.GetType()}: {exception.Message}:\n{exception.StackTrace}".Truncate(1020) + "\n```");
+
+                if (e.Context.CommandName is "cdn" or "link")
+                {
+                    // Try to respond to the interaction
+                    try
+                    {
+                        await e.Context.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(embed));
+                    }
+                    catch (BadRequestException)
+                    {
+                        // If the interaction was deferred, CreateResponseAsync() won't work
+                        // Try using FollowUpAsync() instead
+                        await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+                    }
+
+                    return;
+                }
 
                 try
                 {
@@ -60,7 +78,9 @@ public class ErrorEvents
                     {
                         await e.Context.CreateResponseAsync(new DiscordInteractionResponseBuilder()
                             .WithContent(
-                                "It looks like slash commands are having issues! Sorry for the inconvenience. Bot owners have been alerted.")
+                                "It looks like this command is having issues! Sorry for the inconvenience." +
+                                " Bot owners have been alerted. Try again in a few minutes, or DM a bot owner if this" +
+                                $" keeps happening. See {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list of owners.")
                             .AsEphemeral());
                         await Program.HomeChannel.SendMessageAsync(embed);
                         return;
@@ -74,8 +94,10 @@ public class ErrorEvents
                     try
                     {
                         await e.Context.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-                        .WithContent(
-                            "It looks like slash commands are having issues! Sorry for the inconvenience. Bot owners have been alerted.")
+                            .WithContent(
+                                "It looks like this command is having issues! Sorry for the inconvenience." +
+                                " Bot owners have been alerted. Try again in a few minutes, or DM a bot owner if this" +
+                                $" keeps happening. See {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list of owners.")
                         .AsEphemeral());
                     }
                     catch (BadRequestException)
@@ -83,8 +105,10 @@ public class ErrorEvents
                         // If the interaction was deferred, CreateResponseAsync() won't work
                         // Try using FollowUpAsync() instead
                         await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent(
-                            "It looks like slash commands are having issues! Sorry for the inconvenience. Bot owners have been alerted.")
+                            .WithContent(
+                                "It looks like this command is having issues! Sorry for the inconvenience." +
+                                " Bot owners have been alerted. Try again in a few minutes, or DM a bot owner if this" +
+                                $" keeps happening. See {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list of owners.")
                         .AsEphemeral());
                     }
                     
@@ -94,7 +118,7 @@ public class ErrorEvents
 
                 await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
-                            "It looks like slash commands are having issues! **I'm trying to fix this issue automatically. Please run the command again in a moment!**" +
+                            "It looks like this command is having issues! **I'm trying to fix this issue automatically. Please run the command again in a moment!**" +
                             "\n\nIf it still fails and you see this message again, try again later. Sorry for the inconvenience! Bot owners have been alerted.")
                         .AsEphemeral());
 
