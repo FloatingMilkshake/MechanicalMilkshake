@@ -23,7 +23,7 @@ public class MessageEvents
     {
         Task.Run(async () =>
         {
-            if (Program.ConfigJson.Base.UsePerServerFeatures) await PerServerFeatures.Checks.MessageCreateChecks(e);
+            if (Program.ConfigJson.Base.UseServerSpecificFeatures) await ServerSpecificFeatures.Checks.MessageCreateChecks(e);
 
             try
             {

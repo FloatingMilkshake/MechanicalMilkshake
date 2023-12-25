@@ -206,10 +206,10 @@ internal class Program
         Discord.Logger.LogInformation(BotEventId, "Slash commands registered globally");
 #endif
 
-        if (ConfigJson.Base.UsePerServerFeatures)
+        if (ConfigJson.Base.UseServerSpecificFeatures)
         {
             // Register CommandsNext commands
-            commands.RegisterCommands<PerServerFeatures.MessageCommands>();
+            commands.RegisterCommands<ServerSpecificFeatures.MessageCommands>();
         }
 
         await Discord.ConnectAsync();

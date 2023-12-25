@@ -18,7 +18,7 @@
       ""
     ],
 
-    "usePerServerFeatures": false
+    "useServerSpecificFeatures": false
   },
   
   "ids": {

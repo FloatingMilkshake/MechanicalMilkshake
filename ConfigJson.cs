@@ -31,7 +31,7 @@ public class BaseConfig
 
     [JsonProperty("sshHosts")] public string[] SshHosts { get; private set; }
 
-    [JsonProperty("usePerServerFeatures")] public bool UsePerServerFeatures { get; private set; }
+    [JsonProperty("useServerSpecificFeatures")] public bool UseServerSpecificFeatures { get; private set; }
 }
 
 public class IdsConfig
