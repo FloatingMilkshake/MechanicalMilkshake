@@ -3,7 +3,7 @@
 public class GuildEvents
 {
     // ReSharper disable once MemberCanBePrivate.Global
-    public static readonly List<ulong> UnavailableGuilds = new();
+    public static readonly List<ulong> UnavailableGuilds = [];
     private static DiscordChannel _guildLogChannel;
     
     public static async Task GuildCreated(DiscordClient client, GuildCreateEventArgs e)

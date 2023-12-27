@@ -34,10 +34,8 @@ public class LinkCommands : ApplicationCommandModule
 
             var baseUrl = Program.ConfigJson.WorkerLinks.BaseUrl;
 
-            using HttpClient httpClient = new()
-            {
-                BaseAddress = new Uri(baseUrl)
-            };
+            using HttpClient httpClient = new();
+            httpClient.BaseAddress = new Uri(baseUrl);
 
             var request = key is "null" or "random" or "rand"
                 ? new HttpRequestMessage(HttpMethod.Post, "")
@@ -97,10 +95,8 @@ public class LinkCommands : ApplicationCommandModule
 
             var baseUrl = Program.ConfigJson.WorkerLinks.BaseUrl;
 
-            using HttpClient httpClient = new()
-            {
-                BaseAddress = new Uri(baseUrl)
-            };
+            using HttpClient httpClient = new();
+            httpClient.BaseAddress = new Uri(baseUrl);
 
             if (!url.Contains(baseUrl)) url = $"{baseUrl}/{url}";
 
@@ -185,10 +181,8 @@ public class LinkCommands : ApplicationCommandModule
                 AllowAutoRedirect = false
             };
 
-            using HttpClient httpClient = new(handler)
-            {
-                BaseAddress = new Uri(baseUrl)
-            };
+            using HttpClient httpClient = new(handler);
+            httpClient.BaseAddress = new Uri(baseUrl);
 
             if (!url.Contains(baseUrl)) url = $"{baseUrl}/{url}";
 

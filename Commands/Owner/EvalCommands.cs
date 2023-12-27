@@ -3,7 +3,7 @@
 [SlashRequireAuth]
 public class EvalCommands : ApplicationCommandModule
 {
-    private static readonly List<string> RestrictedTerms = new() { "poweroff", "shutdown", "reboot", "halt" };
+    private static readonly List<string> RestrictedTerms = ["poweroff", "shutdown", "reboot", "halt"];
 
     // The idea for this command, and a lot of the code, is taken from Erisa's Lykos. References are linked below.
     // https://github.com/Erisa/Lykos/blob/5f9c17c/src/Modules/Owner.cs#L116-L144
@@ -38,7 +38,7 @@ public class EvalCommands : ApplicationCommandModule
 
         if (osDescription.Contains("Windows"))
         {
-            fileName = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe";
+            fileName = @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe";
             args = $"-Command \"{escapedArgs} 2>&1\"";
         }
         else
@@ -94,7 +94,7 @@ public class EvalCommands : ApplicationCommandModule
 
         try
         {
-            Globals globals = new(ctx.Client, ctx);
+            Globals globals = new(ctx);
 
             var scriptOptions = ScriptOptions.Default;
             scriptOptions = scriptOptions.WithImports("System", "System.Collections.Generic", "System.Linq",

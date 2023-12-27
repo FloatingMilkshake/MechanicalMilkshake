@@ -1,8 +1,6 @@
 ﻿global using DSharpPlus;
 global using DSharpPlus.CommandsNext;
 global using DSharpPlus.CommandsNext.Attributes;
-global using DSharpPlus.CommandsNext.Converters;
-global using DSharpPlus.CommandsNext.Entities;
 global using DSharpPlus.CommandsNext.Exceptions;
 global using DSharpPlus.Entities;
 global using DSharpPlus.EventArgs;

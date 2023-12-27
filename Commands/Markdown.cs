@@ -1,6 +1,6 @@
 namespace MechanicalMilkshake.Commands;
 
-public class Markdown : ApplicationCommandModule
+public partial class Markdown : ApplicationCommandModule
 {
     [SlashCommand("markdown", "Expose the Markdown formatting behind a message!")]
     public static async Task MarkdownCommand(InteractionContext ctx,
@@ -10,7 +10,55 @@ public class Markdown : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
         DiscordMessage message;
-        if (!Regex.IsMatch(messageToExpose, @".*.discord.com\/channels\/([\d+]*\/)+[\d+]*"))
+        if (DiscordUrlPattern().IsMatch(messageToExpose))
+        {
+            // Assume the user provided a message link. Extract channel and message IDs to get message content.
+
+            // If IDs have letters in them, the user provided an invalid link.
+            if (AlphanumericCharacterPatern().IsMatch(messageToExpose))
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "Hmm, that doesn't look like a valid message ID or link. I wasn't able to get the Markdown data from it."));
+                return;
+            }
+            
+            // Pattern to extract channel and message IDs from URL
+            var idPattern = IdPattern();
+
+            // Get channel ID
+            var targetChannelId =
+                Convert.ToUInt64(idPattern.Match(messageToExpose).Groups[1].ToString().Replace("/", ""));
+
+            // Try to fetch channel
+            DiscordChannel channel;
+            try
+            {
+                channel = await ctx.Client.GetChannelAsync(targetChannelId);
+            }
+            catch
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "I wasn't able to find that message! Make sure I have permission to see the channel it's in."));
+                return;
+            }
+            
+            // Get message ID
+            var targetMessage =
+                Convert.ToUInt64(idPattern.Match(messageToExpose).Groups[2].ToString().Replace("/", ""));
+
+            // Try to fetch message
+            try
+            {
+                message = await channel.GetMessageAsync(targetMessage);
+            }
+            catch
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "I wasn't able to read that message! Make sure I have permission to access it."));
+                return;
+            }
+        }
+        else
         {
             if (messageToExpose.Length < 17)
             {
@@ -34,63 +82,6 @@ public class Markdown : ApplicationCommandModule
             try
             {
                 message = await ctx.Channel.GetMessageAsync(messageId);
-            }
-            catch
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "I wasn't able to read that message! Make sure I have permission to access it."));
-                return;
-            }
-        }
-        else
-        {
-            // Assume the user provided a message link. Extract channel and message IDs to get message content.
-
-            // Extract all IDs from URL. This will leave you with something like "guild_id/channel_id/message_id".
-            // Remove the guild ID, leaving you with "channel_id/message_id".
-            Regex extractId = new(@".*.discord.com\/channels\/(\d+/)");
-            var selectionToRemove = extractId.Match(messageToExpose);
-            messageToExpose = messageToExpose.Replace(selectionToRemove.ToString(), "");
-
-            // If IDs have letters in them, the user provided an invalid link.
-            if (Regex.IsMatch(messageToExpose, @"[A-z]"))
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "Hmm, that doesn't look like a valid message ID or link. I wasn't able to get the Markdown data from it."));
-                return;
-            }
-
-            // Extract channel ID. This will leave you with "/channel_id".
-            Regex getChannelId = new(@"[0-9]+\/");
-            var channelId = getChannelId.Match(messageToExpose);
-            // Remove '/' to get "channel_id"
-            var targetChannelId = Convert.ToUInt64(channelId.ToString().Replace("/", ""));
-
-            DiscordChannel channel;
-            try
-            {
-                channel = await ctx.Client.GetChannelAsync(targetChannelId);
-            }
-            catch
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "I wasn't able to find that message! Make sure I have permission to see the channel it's in."));
-                return;
-            }
-
-            // Now we have the channel ID and need to get the message inside that channel. To do this we'll need the message ID from what we had before...
-
-            Regex getMessageId = new(@"[0-9]+\/");
-            var idsToRemove = getMessageId.Match(messageToExpose);
-            var targetMsgId = messageToExpose.Replace(idsToRemove.ToString(), "");
-
-            // Remove '/' to get "message_id"
-            targetMsgId = Regex.Replace(targetMsgId, @"[^\d]", "");
-            var targetMessage = Convert.ToUInt64(targetMsgId);
-
-            try
-            {
-                message = await channel.GetMessageAsync(targetMessage);
             }
             catch
             {
@@ -156,4 +147,11 @@ public class Markdown : ApplicationCommandModule
 
         await ctx.FollowUpAsync(response);
     }
+
+    [GeneratedRegex(@".*.discord.com\/channels\/([\d+]*\/)+[\d+]*")]
+    private static partial Regex DiscordUrlPattern();
+    [GeneratedRegex("[A-z]")]
+    private static partial Regex AlphanumericCharacterPatern();
+    [GeneratedRegex(@"(?:.*\/)([0-9]{1,})\/([0-9]{1,})$")]
+    private static partial Regex IdPattern();
 }

@@ -2,8 +2,8 @@
 
 public class WolframAlpha : ApplicationCommandModule
 {
-    public static readonly string QueryUrlLinkDisplayText = "Click here for more details";
-    
+    private const string QueryUrlLinkDisplayText = "Click here for more details";
+
     [SlashCommand("wolframalpha", "Search WolframAlpha without leaving Discord!")]
     public static async Task WolframAlphaCommand(InteractionContext ctx,
         [Option("query", "What to search for.")]

@@ -2,9 +2,9 @@
 
 namespace MechanicalMilkshake.Commands;
 
-public class EmojiCommands : ApplicationCommandModule
+public partial class EmojiCommands : ApplicationCommandModule
 {
-    private static readonly Regex EmojiRegex = new(@"<(a)?:([A-z]*):([0-9]*)>");
+    private static readonly Regex EmojiRegex = EmojiPattern();
 
     [SlashCommandGroup("emoji", "Commands for working with emoji.")]
     [SlashCommandPermissions(Permissions.ManageEmojis)]
@@ -48,17 +48,13 @@ public class EmojiCommands : ApplicationCommandModule
             catch
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    $"I couldn't find that server! That either means I'm not in it, or {((server.Length > 20) ? "that" : $"`{server}`")} isn't a server ID. "
+                    $"I couldn't find that server! That either means I'm not in it, or {(server.Length > 20 ? "that" : $"`{server}`")} isn't a server ID. "
                     + "If you've tried again and you're still seeing this, contact a bot owner for help."));
                 return;
             }
 
             // Keep a list of found emoji for downloading
-            var foundEmoji = new List<DiscordEmoji>();
-            foreach (DiscordEmoji emoji in guild.Emojis.Values)
-            {
-                foundEmoji.Add(emoji);
-            }
+            var foundEmoji = guild.Emojis.Values.ToList();
 
             // Collect emoji and create response
 
@@ -85,7 +81,7 @@ public class EmojiCommands : ApplicationCommandModule
             var responseBuilder = new DiscordFollowupMessageBuilder().WithContent(response);
 
             // Fetch each emoji, download & archive
-            string tempDir = "";
+            var tempDir = "";
             FileStream file = default;
             if (zip)
             {
@@ -119,7 +115,7 @@ public class EmojiCommands : ApplicationCommandModule
                 var zipPath = Path.Combine(tempDir, $"{guild.Id}.zip");
 
                 // Add each emoji to zip
-                using (FileStream zipStream = File.Create(zipPath))
+                await using (var zipStream = File.Create(zipPath))
                 {
                     ZipArchive zipArchive = new(zipStream, ZipArchiveMode.Create);
                     foreach (var emoji in foundEmoji)
@@ -148,7 +144,7 @@ public class EmojiCommands : ApplicationCommandModule
             await ctx.FollowUpAsync(responseBuilder);
 
             // Clean up
-            await file.DisposeAsync();
+            if (file is not null) await file.DisposeAsync();
             Directory.Delete(tempDir, true);
         }
 
@@ -168,7 +164,7 @@ public class EmojiCommands : ApplicationCommandModule
             var matches = EmojiRegex.Matches(emoji);
 
             var response = "";
-            foreach (Match match in matches.Cast<Match>())
+            foreach (var match in matches.Cast<Match>())
             {
                 var groups = match.Groups;
                 var emojiUrl = groups[1].Value == "a"
@@ -186,4 +182,7 @@ public class EmojiCommands : ApplicationCommandModule
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
         }
     }
+
+    [GeneratedRegex("<(a)?:([A-z]*):([0-9]*)>")]
+    private static partial Regex EmojiPattern();
 }

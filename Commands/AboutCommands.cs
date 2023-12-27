@@ -22,7 +22,7 @@ public class AboutCommands : ApplicationCommandModule
             Title = $"About {ctx.Client.CurrentUser.Username}",
             Description =
                 "Hi! I'm a multipurpose bot that can do a bunch of different stuff. If you want to see a list of"
-                + $" commands, hit `/` and pick me!",
+                + " commands, hit `/` and pick me!",
             Color = Program.BotColor
         };
 
@@ -35,7 +35,7 @@ public class AboutCommands : ApplicationCommandModule
             embed.Description += $"\n\nMy Privacy Policy can be found [here]({privacyPolicyUrl})!";
 
         // Repo link
-        var remoteUrl = await FileHelpers.ReadFileAsync("RemoteUrl.txt", "");
+        var remoteUrl = await FileHelpers.ReadFileAsync("RemoteUrl.txt");
         if (remoteUrl != "") embed.AddField("Source Code Repository", remoteUrl);
 
         // Bot owner info
@@ -52,15 +52,15 @@ public class AboutCommands : ApplicationCommandModule
         embed.AddField("Need help?",
             "If you need help with the bot or would like to report an issue, there are a few ways to do so! You can:"
         + (string.IsNullOrWhiteSpace(supportServerInvite) ? "" : $"\n- Join the bot's [support server]({supportServerInvite})")
-        + $"\n- DM the bot itself (DMs are forwarded to owners!)"
-        + $"\n- DM a bot owner (see above for a list!)");
+        + "\n- DM the bot itself (DMs are forwarded to owners!)"
+        + "\n- DM a bot owner (see above for a list!)");
 
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
     }
 
     [SlashCommand("version", "Show my version information.")]
     public static async Task CommitInfo(InteractionContext ctx,
-        [Option("extended", "Whether to show extended info. Defaults to False.")] Boolean extended = false)
+        [Option("extended", "Whether to show extended info. Defaults to False.")] bool extended = false)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
@@ -76,7 +76,7 @@ public class AboutCommands : ApplicationCommandModule
 
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
             .WithColor(Program.BotColor)
-            .AddField("Version", (commitHash == "dev" ? "`dev`" : $"[`{commitHash}`]({commitUrl}): {commitMessage}"))
+            .AddField("Version", commitHash == "dev" ? "`dev`" : $"[`{commitHash}`]({commitUrl}): {commitMessage}")
             .AddField("Last updated on", DebugInfoHelpers.GetDebugInfo().CommitTimestamp)));
     }
 

@@ -8,7 +8,7 @@ public static class MarkdownHelpers
     public static string Parse(string input)
     {
         var output = input;
-        output = output.Replace("\\", "\\\\");
+        output = output.Replace(@"\", @"\\");
         output = output.Replace("`", @"\`");
         output = output.Replace("*", @"\*");
         output = output.Replace("_", @"\_");
@@ -27,8 +27,6 @@ public static class MarkdownHelpers
         output = output.Replace("}", @"\}");
 
         // if output becomes greater than 4000 characters, return an error.
-        if (output.Length > 4000) return "The output is too long for me to send.";
-
-        return output;
+        return output.Length > 4000 ? "The output is too long for me to send." : output;
     }
 }

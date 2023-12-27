@@ -37,7 +37,7 @@ public class KeywordTrackingHelpers
             if (fieldValue!.MatchWholeWord)
             {
                 if (!Regex.IsMatch(message.Content.ToLower().Replace("\n", " "),
-                        $"\\b{field.Name.ToString().Replace("\n", " ")}\\b")) continue;
+                        $@"\b{field.Name.ToString().Replace("\n", " ")}\b")) continue;
             }
             // Otherwise, use a simple .Contains()
             else

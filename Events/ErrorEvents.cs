@@ -6,8 +6,8 @@ public class ErrorEvents
     {
         switch (e.Exception)
         {
-            case SlashExecutionChecksFailedException execChecksFailedEx
-                when execChecksFailedEx.FailedChecks is not null && execChecksFailedEx.FailedChecks.OfType<SlashRequireGuildAttribute>().Any():
+            case SlashExecutionChecksFailedException { FailedChecks: not null } execChecksFailedEx
+                when execChecksFailedEx.FailedChecks.OfType<SlashRequireGuildAttribute>().Any():
                 var noDmResponse = "This command cannot be used in DMs. Please use it in a server." +
                                    " Contact the bot owner if you need help or think I messed up" +
                                    $" (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).";
@@ -71,116 +71,12 @@ public class ErrorEvents
                     return;
                 }
 
-                try
-                {
-                    var dockerCheckFile = await File.ReadAllTextAsync("/proc/self/cgroup");
-                    if (!string.IsNullOrWhiteSpace(dockerCheckFile))
-                    {
-                        await e.Context.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-                            .WithContent(
-                                "It looks like this command is having issues! Sorry for the inconvenience." +
-                                " Bot owners have been alerted. Try again in a few minutes, or DM a bot owner if this" +
-                                $" keeps happening. See {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list of owners.")
-                            .AsEphemeral());
-                        await Program.HomeChannel.SendMessageAsync(embed);
-                        return;
-                    }
-                }
-                catch
-                {
-                    // /proc/self/cgroup could not be found, which means the bot is not running in Docker.
-
-                    // Try to respond to the interaction
-                    try
-                    {
-                        await e.Context.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-                            .WithContent(
-                                "It looks like this command is having issues! Sorry for the inconvenience." +
-                                " Bot owners have been alerted. Try again in a few minutes, or DM a bot owner if this" +
-                                $" keeps happening. See {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list of owners.")
-                        .AsEphemeral());
-                    }
-                    catch (BadRequestException)
-                    {
-                        // If the interaction was deferred, CreateResponseAsync() won't work
-                        // Try using FollowUpAsync() instead
-                        await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder()
-                            .WithContent(
-                                "It looks like this command is having issues! Sorry for the inconvenience." +
-                                " Bot owners have been alerted. Try again in a few minutes, or DM a bot owner if this" +
-                                $" keeps happening. See {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list of owners.")
-                        .AsEphemeral());
-                    }
-                    
-                    await Program.HomeChannel.SendMessageAsync(embed);
-                    return;
-                }
-
-                await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent(
-                            "It looks like this command is having issues! **I'm trying to fix this issue automatically. Please run the command again in a moment!**" +
-                            "\n\nIf it still fails and you see this message again, try again later. Sorry for the inconvenience! Bot owners have been alerted.")
-                        .AsEphemeral());
-
-                embed.Description =
-                    $"An exception was thrown when {e.Context.User.Mention} used `/{e.Context.CommandName}`."
-                    + " Details are below. The bot is restarting to attempt to fix this in case it was caused by a failure to register commands.";
-                await Program.HomeChannel.SendMessageAsync(embed);
-
-                Environment.Exit(1);
+                await e.Context.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
+                    "It looks like this command is having issues! Sorry for the inconvenience." +
+                    " Bot owners have been alerted. Try again in a few minutes, or DM a bot owner if this" +
+                    $" keeps happening. See {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list of owners."));
+                
                 break;
-            }
-        }
-
-        List<Exception> exs = new();
-        if (e.Exception is AggregateException ae)
-            exs.AddRange(ae.InnerExceptions);
-        else
-            exs.Add(e.Exception);
-
-        foreach (var ex in exs)
-        {
-            DiscordEmbedBuilder embed = new()
-            {
-                Color = new DiscordColor("#FF0000"),
-                Title = "An exception occurred when executing a slash command",
-                Description = $"`{ex.GetType()}` occurred when executing `{e.Context.CommandName}`.",
-                Timestamp = DateTime.UtcNow
-            };
-            embed.AddField("Message", ex.Message);
-
-            Console.WriteLine(
-                $"{ex.GetType()} occurred when {UserInfoHelpers.GetFullUsername(e.Context.User)} used /{e.Context.CommandName}: {ex.Message}\n{ex.StackTrace}");
-
-            await Program.HomeChannel.SendMessageAsync(new DiscordEmbedBuilder
-            {
-                Title = "An exception occurred when executing a slash command",
-                Color = DiscordColor.Red,
-                Description = $"`{ex.GetType()}` occurred when " +
-                              $"`{UserInfoHelpers.GetFullUsername(e.Context.User)}` (`{e.Context.User.Id}`) " +
-                              $"used `/{e.Context.CommandName}`.",
-            }.AddField("Message", ex.Message));
-
-            // I don't know how to tell whether the command response was deferred or not, so we're going to try both an interaction response and follow-up so that the interaction doesn't time-out.
-            try
-            {
-                await e.Context.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(embed.Build())
-                    .AsEphemeral());
-            }
-            catch
-            {
-                // Sometimes a follow-up also doesn't work - if that's the case, we'll forward the error to the bot's home channel.
-                try
-                {
-                    await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed.Build())
-                        .AsEphemeral());
-                }
-                catch
-                {
-                    embed.Description =
-                        $"`{ex.GetType()}` occurred when {e.Context.User.Mention} used `{e.Context.CommandName}`.";
-                    await Program.HomeChannel.SendMessageAsync(embed);
-                }
             }
         }
     }
@@ -192,7 +88,7 @@ public class ErrorEvents
         if (e.Exception is CommandNotFoundException && (e.Command is null || e.Command.QualifiedName != "help"))
             return;
 
-        List<Exception> exs = new();
+        List<Exception> exs = [];
         if (e.Exception is AggregateException ae)
             exs.AddRange(ae.InnerExceptions);
         else

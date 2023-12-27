@@ -1,9 +1,9 @@
 ﻿namespace MechanicalMilkshake.Commands.Owner.HomeServerCommands;
 
-public class CdnCommands : ApplicationCommandModule
+public partial class CdnCommands : ApplicationCommandModule
 {
     [SlashCommandGroup("cdn", "Manage files uploaded to Amazon S3-compatible cloud storage.")]
-    public class Cdn
+    public partial class Cdn
     {
         [SlashCommand("upload", "Upload a file to Amazon S3-compatible cloud storage.")]
         public static async Task Upload(InteractionContext ctx,
@@ -46,7 +46,7 @@ public class CdnCommands : ApplicationCommandModule
                 // Strip the URL down to just the file name
 
                 // Regex partially taken from https://stackoverflow.com/a/26253039
-                Regex fileNamePattern = new(@"[^/\\&\?#]+\.\w*(?=([\?&#].*$|$))");
+                var fileNamePattern = FileNamePattern();
 
                 var fileNameAndExtension = fileNamePattern.Match(link).Value;
 
@@ -140,28 +140,21 @@ public class CdnCommands : ApplicationCommandModule
             // This code is (mostly) taken from https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L113.
             // (Note that I originally found it here: https://github.com/Erisa/Lykos/blob/1f32e03/src/Modules/Owner.cs#L232)
 
-            CloudflareContent content = new(new List<string> { cloudflareUrlPrefix + fileName });
+            CloudflareContent content = new([cloudflareUrlPrefix + fileName]);
             var cloudflareContentString = JsonConvert.SerializeObject(content);
             try
             {
-                using HttpClient httpClient = new()
-                {
-                    BaseAddress = new Uri("https://api.cloudflare.com/")
-                };
-
-                HttpRequestMessage request =
-                    new(HttpMethod.Delete, $"client/v4/zones/{Program.ConfigJson.Cloudflare.ZoneId}/purge_cache/files")
-                    {
-                        Content = new StringContent(cloudflareContentString, Encoding.UTF8, "application/json")
-                    };
+                using HttpRequestMessage request =
+                    new(HttpMethod.Delete, $"https://api.cloudflare.com/client/v4/zones/{Program.ConfigJson.Cloudflare.ZoneId}/purge_cache/files");
+                request.Content = new StringContent(cloudflareContentString, Encoding.UTF8, "application/json");
                 request.Headers.Add("Authorization", $"Bearer {Program.ConfigJson.Cloudflare.Token}");
 
-                var response = await httpClient.SendAsync(request);
+                var response = await Program.HttpClient.SendAsync(request);
                 var responseText = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(
-                        $"File deleted successfully!\nSuccesssfully purged the Cloudflare cache for `{fileName}`!"));
+                        $"File deleted successfully!\nSuccessfully purged the Cloudflare cache for `{fileName}`!"));
                 else
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(
                         $"File deleted successfully!\nAn API error occured when purging the Cloudflare cache: ```json\n{responseText}```"));
@@ -185,7 +178,7 @@ public class CdnCommands : ApplicationCommandModule
             }
             
             // Credit to @Erisa for this line of regex. https://github.com/Erisa/Cliptok/blob/a80e700/Constants/RegexConstants.cs#L8
-            Regex urlRx = new("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]");
+            var urlRx = UrlPattern();
 
             if (urlRx.IsMatch(name) && !name.Contains(Program.ConfigJson.S3.CdnBaseUrl))
             {
@@ -221,20 +214,18 @@ public class CdnCommands : ApplicationCommandModule
                 new DiscordInteractionResponseBuilder().WithContent(
                     $"{Program.ConfigJson.S3.CdnBaseUrl}/{name}"));
         }
+
+        [GeneratedRegex(@"[^/\\&\?#]+\.\w*(?=([\?&#].*$|$))")]
+        private static partial Regex FileNamePattern();
+        [GeneratedRegex("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]")]
+        private static partial Regex UrlPattern();
     }
 
-    // This code is taken from https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197.
-    // (minus the ReSharper disable comments)
+    // This code is taken from https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197,
+    // minus some minor changes.
     // (Note that I originally found it here: https://github.com/Erisa/Lykos/blob/3335c38/src/Modules/Owner.cs#L313)
-    private readonly struct CloudflareContent
+    private readonly struct CloudflareContent(List<string> urls)
     {
-        public CloudflareContent(List<string> urls)
-        {
-            Files = urls;
-        }
-
-        // ReSharper disable once UnusedAutoPropertyAccessor.Local
-        // ReSharper disable once MemberCanBePrivate.Local
-        public List<string> Files { get; }
+        public List<string> Files { get; } = urls;
     }
 }

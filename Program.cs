@@ -3,8 +3,9 @@
 internal class Program
 {
     public static DiscordClient Discord;
+    private static readonly string[] Prefixes = ["pls"];
     public static MinioClient Minio;
-    public static readonly List<string> DisabledCommands = new();
+    public static readonly List<string> DisabledCommands = [];
     public static readonly Random Random = new();
     public static DateTime ConnectTime;
     public static readonly HttpClient HttpClient = new();
@@ -118,7 +119,7 @@ internal class Program
 
         var commands = Discord.UseCommandsNext(new CommandsNextConfiguration
         {
-            StringPrefixes = new[] { "pls" },
+            StringPrefixes = Prefixes,
             EnableDefaultHelp = false
         });
 
@@ -182,7 +183,6 @@ internal class Program
         foreach (var type in slashCommandClasses)
             slash.RegisterCommands(type, HomeServer.Id);
 
-        // ReSharper disable once LogMessageIsSentenceProblem
         Discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging");
 
         // Register slash commands globally for 'production' bot

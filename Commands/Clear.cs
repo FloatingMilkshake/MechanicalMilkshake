@@ -1,10 +1,9 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
 [SlashRequireGuild]
-public class Clear : ApplicationCommandModule
+public partial class Clear : ApplicationCommandModule
 {
-    // ReSharper disable once FieldCanBeMadeReadOnly.Global
-    public static Dictionary<ulong, List<DiscordMessage>> MessagesToClear = new();
+    public static readonly Dictionary<ulong, List<DiscordMessage>> MessagesToClear = new();
 
     [SlashCommand("clear", "Delete many messages from the current channel.", false)]
     [SlashCommandPermissions(Permissions.ManageMessages)]
@@ -37,10 +36,10 @@ public class Clear : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
             new DiscordInteractionResponseBuilder().AsEphemeral());
 
-        Regex discordLinkRx = new(@".*discord(?:app)?.com\/channels\/((?:@)?[a-z0-9]*)\/([0-9]*)(?:\/)?([0-9]*)");
+        var discordLinkRx = DiscordLinkPattern();
 
         // Credit to @Erisa for this line of regex. https://github.com/Erisa/Cliptok/blob/a80e700/Constants/RegexConstants.cs#L8
-        Regex urlRx = new("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]");
+        var urlRx = UrlPattern();
 
         switch (count)
         {
@@ -84,7 +83,7 @@ public class Clear : ApplicationCommandModule
             return;
         }
 
-        List<DiscordMessage> messagesToClear = new();
+        List<DiscordMessage> messagesToClear = [];
         if (upTo == "")
         {
             var messages = await ctx.Channel.GetMessagesAsync((int)count);
@@ -150,16 +149,15 @@ public class Clear : ApplicationCommandModule
         if (match != "")
         {
             foreach (var message in messagesToClear.ToList()
-                .Where(message => !message.Content.ToLower().Contains(match.ToLower())))
+                .Where(message => !message.Content.Contains(match, StringComparison.OrdinalIgnoreCase)))
             {
                 if (includeEmbeds && message.Embeds.Count > 0)
                 {
                     var embeds = message.Embeds.ToList();
-                    foreach (var embed in embeds)
+                    foreach (var _ in embeds.Where(embed => embed.Description is not null && !embed.Description.Contains(match, StringComparison.OrdinalIgnoreCase)
+                                 && embed.Fields.ToList().All(field => !field.Value.Contains(match, StringComparison.OrdinalIgnoreCase))))
                     {
-                        if (embed.Description is not null && !embed.Description.ToLower().Contains(match.ToLower())
-                            && embed.Fields.ToList().All(field => !field.Value.ToLower().Contains(match.ToLower())))
-                            messagesToClear.Remove(message);
+                        messagesToClear.Remove(message);
                     }
                 }
                 else messagesToClear.Remove(message);
@@ -269,4 +267,9 @@ public class Clear : ApplicationCommandModule
                 break;
         }
     }
+
+    [GeneratedRegex(@".*discord(?:app)?.com\/channels\/((?:@)?[a-z0-9]*)\/([0-9]*)(?:\/)?([0-9]*)")]
+    private static partial Regex DiscordLinkPattern();
+    [GeneratedRegex("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]")]
+    private static partial Regex UrlPattern();
 }

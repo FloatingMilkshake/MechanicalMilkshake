@@ -10,7 +10,7 @@ public class PackageUpdateChecks
         var updatesAvailable = false;
         var restartRequired = false;
 
-        if (!Program.ConfigJson.Base.SshHosts.Any()) return;
+        if (Program.ConfigJson.Base.SshHosts.Length == 0) return;
 
         foreach (var host in Program.ConfigJson.Base.SshHosts)
         {

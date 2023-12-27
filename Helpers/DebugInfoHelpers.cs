@@ -74,29 +74,23 @@ public class DebugInfoHelpers
     }
 
 
-    public class DebugInfo
+    public class DebugInfo(
+        string framework = null,
+        string platform = null,
+        string library = null,
+        string loadTime = null,
+        string commitHash = null,
+        string commitTimeDescription = null,
+        string commitTimestamp = null,
+        string commitMessage = null)
     {
-        public DebugInfo(string framework = null, string platform = null, string library = null,
-            string loadTime = null, string commitHash = null, string commitTimeDescription = null,
-            string commitTimestamp = null, string commitMessage = null)
-        {
-            Framework = framework;
-            Platform = platform;
-            Library = library;
-            LoadTime = loadTime;
-            CommitHash = commitHash;
-            CommitTimeDescription = commitTimeDescription;
-            CommitTimestamp = commitTimestamp;
-            CommitMessage = commitMessage;
-        }
-
-        public string Framework { get; }
-        public string Platform { get; }
-        public string Library { get; }
-        public string LoadTime { get; }
-        public string CommitHash { get; }
-        public string CommitTimeDescription { get; }
-        public string CommitTimestamp { get; }
-        public string CommitMessage { get; }
+        public string Framework { get; } = framework;
+        public string Platform { get; } = platform;
+        public string Library { get; } = library;
+        public string LoadTime { get; } = loadTime;
+        public string CommitHash { get; } = commitHash;
+        public string CommitTimeDescription { get; } = commitTimeDescription;
+        public string CommitTimestamp { get; } = commitTimestamp;
+        public string CommitMessage { get; } = commitMessage;
     }
 }

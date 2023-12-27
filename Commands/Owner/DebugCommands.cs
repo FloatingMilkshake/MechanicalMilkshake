@@ -66,7 +66,7 @@ public class DebugCommands : ApplicationCommandModule
                 Color = Program.BotColor
             };
 
-            List<DiscordUser> authorizedUsers = new();
+            List<DiscordUser> authorizedUsers = [];
 
             var botOwners = ctx.Client.CurrentApplication.Owners.ToList();
 
@@ -183,7 +183,7 @@ public class DebugCommands : ApplicationCommandModule
             [Choice("SlashExecutionChecksFailedException", "slashchecksfailed")]
             string exceptionType)
         {
-            string exceptionFullName = exceptionType switch
+            var exceptionFullName = exceptionType switch
             {
                 "nullref" => "NullReferenceException",
                 "invalidop" => "InvalidOperationException",

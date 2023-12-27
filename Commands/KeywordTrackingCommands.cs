@@ -1,9 +1,9 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class KeywordTrackingCommands : ApplicationCommandModule
+public partial class KeywordTrackingCommands : ApplicationCommandModule
 {
     [SlashCommandGroup("track", "Track or untrack keywords.")]
-    public class Track
+    public partial class Track
     {
         [SlashCommand("add", "Track a new keyword.")]
         public static async Task TrackAdd(InteractionContext ctx,
@@ -44,9 +44,9 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                 break;
             }
 
-            List<string> checkedUsers = new();
+            List<string> checkedUsers = [];
 
-            List<ulong> usersToIgnore = new();
+            List<ulong> usersToIgnore = [];
             if (userIgnoreList is not null)
             {
                 var users = userIgnoreList.Split(' ');
@@ -56,7 +56,7 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                     if (checkedUsers.Any(u => u.ToString() == user)) continue;
                     checkedUsers.Add(user);
 
-                    Regex idRegex = new("[0-9]+");
+                    var idRegex = UserIdPattern();
                     var id = user.Contains('@') ? idRegex.Match(user).ToString() : user;
 
                     DiscordUser userToAdd;
@@ -77,9 +77,9 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                 }
             }
 
-            List<string> checkedChannels = new();
+            List<string> checkedChannels = [];
 
-            List<ulong> channelsToIgnore = new();
+            List<ulong> channelsToIgnore = [];
             if (channelIgnoreList is not null)
             {
                 var channels = channelIgnoreList.Split(' ');
@@ -89,7 +89,7 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                     if (checkedChannels.Any(c => c.ToString() == channel)) continue;
                     checkedChannels.Add(channel);
 
-                    Regex idRegex = new("[0-9]+");
+                    var idRegex = UserIdPattern();
                     var id = idRegex.Match(channel).ToString();
 
                     DiscordChannel channelToAdd;
@@ -128,9 +128,9 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                 }
             }
 
-            List<string> checkedGuilds = new();
+            List<string> checkedGuilds = [];
 
-            List<ulong> guildsToIgnore = new();
+            List<ulong> guildsToIgnore = [];
             if (guildIgnoreList is not null)
             {
                 var guilds = guildIgnoreList.Split(' ');
@@ -140,7 +140,7 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                     if (checkedGuilds.Any(g => g.ToString() == guild)) continue;
                     checkedGuilds.Add(guild);
 
-                    Regex idRegex = new("[0-9]+");
+                    var idRegex = UserIdPattern();
                     var id = idRegex.Match(guild).ToString();
 
                     DiscordGuild guildToAdd;
@@ -311,5 +311,8 @@ public class KeywordTrackingCommands : ApplicationCommandModule
                 .WithContent("Please choose a keyword to stop tracking.").AddComponents(dropdown)
                 .AddComponents(untrackAllButton));
         }
+        
+        [GeneratedRegex("[0-9]+")]
+        private static partial Regex UserIdPattern();
     }
 }

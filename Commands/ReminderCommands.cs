@@ -1,9 +1,9 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class ReminderCommands : ApplicationCommandModule
+public partial class ReminderCommands : ApplicationCommandModule
 {
     [SlashCommandGroup("reminder", "Set, modify and delete reminders.")]
-    public class ReminderCmds
+    public partial class ReminderCmds
     {
         [SlashCommand("set", "Set a reminder.")]
         public static async Task SetReminder(InteractionContext ctx,
@@ -151,7 +151,7 @@ public class ReminderCommands : ApplicationCommandModule
                 if (reminder.ReminderTime is not null)
                     reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
 
-                Regex idRegex = new("[0-9]+");
+                var idRegex = IdPattern();
                 string guildName;
                 if (idRegex.IsMatch(reminder.GuildId))
                 {
@@ -282,7 +282,7 @@ public class ReminderCommands : ApplicationCommandModule
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
-            Regex idRegex = new("[0-9]+");
+            var idRegex = IdPattern();
             if (!idRegex.IsMatch(reminderToModify.ToString()))
             {
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
@@ -433,7 +433,7 @@ public class ReminderCommands : ApplicationCommandModule
                 }
             }
 
-            Regex userIdRegex = new("[0-9]+");
+            var userIdRegex = IdPattern();
 
             var origUserId = Convert.ToUInt64(userIdRegex.Matches(message.Content)[0].ToString());
 
@@ -470,7 +470,7 @@ public class ReminderCommands : ApplicationCommandModule
                         : "Warning: you might have already pushed back this reminder! Another reminder already exists with the same content." +
                           $"\n\nTo see details, use </{reminderCmd.Name} show:{reminderCmd.Id}> and select `{reminderData.ReminderId}`." +
                           $"\n\nIf you still want to create this reminder, use </{reminderCmd.Name} set:{reminderCmd.Id}>." +
-                          $" This will create a second reminder with the same message but a different time and ID."));
+                          " This will create a second reminder with the same message but a different time and ID."));
                 return;
             }
 
@@ -549,5 +549,8 @@ public class ReminderCommands : ApplicationCommandModule
                     .AddComponents(new DiscordSelectComponent("reminder-show-dropdown", null, options))
                     .AsEphemeral());
         }
+
+        [GeneratedRegex("[0-9]+")]
+        private static partial Regex IdPattern();
     }
 }

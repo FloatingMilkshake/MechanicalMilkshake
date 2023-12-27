@@ -10,7 +10,7 @@ public class UserInfoHelpers
         var t = member.JoinedAt - new DateTime(1970, 1, 1);
         var joinedAtTimestamp = (int)t.TotalSeconds;
 
-        List<string> notablePerms = new();
+        List<string> notablePerms = [];
         if (member.IsOwner)
         {
             notablePerms.Add("Server Owner");
@@ -124,16 +124,13 @@ public class UserInfoHelpers
     }
 
     // Get a user's discriminator, or return an empty string if they have the new username style (discrim == #0)
-    public static String GetDiscriminator(DiscordUser user)
+    public static string GetDiscriminator(DiscordUser user)
     {
-        if (user.Discriminator == "0")
-            return "";
-        else
-            return $"#{user.Discriminator}";
+        return user.Discriminator == "0" ? "" : $"#{user.Discriminator}";
     }
 
     // Get a user's full username, including discriminator if applicable
-    public static String GetFullUsername(DiscordUser user)
+    public static string GetFullUsername(DiscordUser user)
     {
         return $"{user.Username + GetDiscriminator(user)}";
     }

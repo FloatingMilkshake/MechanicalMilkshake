@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Events;
 
-public class MessageEvents
+public partial class MessageEvents
 {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
     public static Task MessageUpdated(DiscordClient _, MessageUpdateEventArgs e)
@@ -46,8 +46,8 @@ public class MessageEvents
                         !e.Message.ReferencedMessage.Embeds[0].Title.Contains("DM received"))
                             return;
 
-                    Regex usernamePattern = new(".*#[0-9]{4}");
-                    Regex idPattern = new("[0-9]{5,}");
+                    var usernamePattern = UsernamePattern();
+                    var idPattern = IdPattern();
                     DiscordChannel targetChannel = default;
                     DiscordUser targetUser = default;
                     DiscordMember targetMember;
@@ -154,9 +154,8 @@ public class MessageEvents
                         targetChannel = await targetMember.CreateDmChannelAsync();
                     }
 
-                    Regex getContentPattern = new(".*[0-9]+ ");
-                    var getContentMatch = getContentPattern.Match(e.Message.Content);
-                    var content = e.Message.Content.Replace(getContentMatch.ToString(), "");
+                    var contentPattern = ContentPattern();
+                    var content = contentPattern.Matches(e.Message.Content)[0].Groups[1].Value;
 
                     if (e.Message.Attachments.Any())
                         content = e.Message.Attachments.Aggregate(content,
@@ -202,9 +201,8 @@ public class MessageEvents
                     var mutualServersField = e.Message.ReferencedMessage.Embeds[0].Fields
                         .First(f => f.Name == "Mutual Servers");
 
-                    Regex mutualIdPattern = new(@"[0-9]*;");
-                    var firstMutualId = Convert.ToUInt64(mutualIdPattern.Match(mutualServersField.Value)
-                        .ToString().Replace(";", "").Replace("`", ""));
+                    var mutualIdPattern = MutualServerIdPattern();
+                    var firstMutualId = Convert.ToUInt64(mutualIdPattern.Match(mutualServersField.Value).Groups[1].Value);
 
                     var mutualServer = await client.GetGuildAsync(firstMutualId);
                     var member = await mutualServer.GetMemberAsync(userId);
@@ -352,4 +350,13 @@ public class MessageEvents
 
         await Program.HomeChannel.SendMessageAsync(embed);
     }
+
+    [GeneratedRegex(".*#[0-9]{4}")]
+    private static partial Regex UsernamePattern();
+    [GeneratedRegex("[0-9]{5,}")]
+    private static partial Regex IdPattern();
+    [GeneratedRegex(".*[0-9]+ (.*)")]
+    private static partial Regex ContentPattern();
+    [GeneratedRegex("Guild ([0-9]+);.*$")]
+    private static partial Regex MutualServerIdPattern();
 }

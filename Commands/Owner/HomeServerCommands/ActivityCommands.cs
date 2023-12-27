@@ -355,7 +355,7 @@ public class ActivityCommands : ApplicationCommandModule
 
             if (activity.Name.Contains("{userCount}"))
             {
-                List<DiscordUser> uniqueUsers = new();
+                List<DiscordUser> uniqueUsers = [];
                 foreach (var guild in Program.Discord.Guilds)
                 foreach (var member in guild.Value.Members)
                 {

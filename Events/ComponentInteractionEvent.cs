@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Events;
 
-public class ComponentInteractionEvent
+public partial class ComponentInteractionEvent
 {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
     public static async Task ComponentInteractionCreated(DiscordClient s, ComponentInteractionCreateEventArgs e)
@@ -170,7 +170,7 @@ public class ComponentInteractionEvent
             }
             case "server-avatar-ctx-cmd-button":
             {
-                Regex idPattern = new(@"\d+");
+                var idPattern = IdPattern();
                 var targetUserId = Convert.ToUInt64(idPattern.Match(e.Message.Content).ToString());
                 var targetUser = await s.GetUserAsync(targetUserId);
 
@@ -207,7 +207,7 @@ public class ComponentInteractionEvent
             }
             case "user-avatar-ctx-cmd-button":
             {
-                Regex idPattern = new(@"\d+");
+                var idPattern = IdPattern();
                 var targetUserId = Convert.ToUInt64(idPattern.Match(e.Message.Content).ToString());
                 var targetUser = await s.GetUserAsync(targetUserId);
 
@@ -224,7 +224,7 @@ public class ComponentInteractionEvent
                 var ctx = e.Interaction;
                 try
                 {
-                    EventGlobals globals = new(Program.Discord, ctx);
+                    EventGlobals globals = new(ctx);
 
                     var scriptOptions = ScriptOptions.Default;
                     scriptOptions = scriptOptions.WithImports("System", "System.Collections.Generic", "System.Linq",
@@ -614,31 +614,20 @@ public class ComponentInteractionEvent
 
         return embed;
     }
+
+    [GeneratedRegex(@"\d+")]
+    private static partial Regex IdPattern();
 }
 
-// ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
-// ReSharper disable NotAccessedField.Global
 public class EventGlobals
 {
-    public DiscordClient Client;
-
-    public EventGlobals(DiscordClient client, DiscordInteraction ctx)
+    public EventGlobals(DiscordInteraction ctx)
     {
-        Client = client;
-        Channel = ctx.Channel;
         Guild = ctx.Guild;
         User = ctx.User;
-        if (Guild is not null) Member = Guild.GetMemberAsync(User.Id).ConfigureAwait(false).GetAwaiter().GetResult();
-
-        Context = ctx;
+        Guild?.GetMemberAsync(User.Id).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
-    public DiscordMessage Message { get; set; }
-    public DiscordChannel Channel { get; set; }
-    public DiscordGuild Guild { get; set; }
-    public DiscordUser User { get; set; }
-    public DiscordMember Member { get; set; }
-    public DiscordInteraction Context { get; set; }
+    private DiscordGuild Guild { get; }
+    private DiscordUser User { get; }
 }

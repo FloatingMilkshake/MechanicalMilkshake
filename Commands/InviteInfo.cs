@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class InviteInfo : ApplicationCommandModule
+public partial class InviteInfo : ApplicationCommandModule
 {
     [SlashCommand("inviteinfo", "Return information about a Discord invite.")]
     public static async Task InviteInfoCommand(InteractionContext ctx,
@@ -10,10 +10,10 @@ public class InviteInfo : ApplicationCommandModule
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
         if (targetInvite.Contains(".gg")) // discord.gg link
-            targetInvite = Regex.Replace(targetInvite, ".*.gg/", "");
+            targetInvite = DiscordDotGgLinkPattern().Replace(targetInvite, "");
         else if (targetInvite.Contains("discord.com") ||
                  targetInvite.Contains("discordapp.com")) // discord(app).com/invite link
-            targetInvite = Regex.Replace(targetInvite, @".*\/invite\/", "");
+            targetInvite = DiscordDotComLinkPattern().Replace(targetInvite, "");
 
         DiscordInvite invite;
         try
@@ -73,4 +73,9 @@ public class InviteInfo : ApplicationCommandModule
 
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
     }
+
+    [GeneratedRegex(".*.gg/")]
+    private static partial Regex DiscordDotGgLinkPattern();
+    [GeneratedRegex(@".*\/invite\/")]
+    private static partial Regex DiscordDotComLinkPattern();
 }
