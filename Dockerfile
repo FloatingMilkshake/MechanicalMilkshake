@@ -6,7 +6,7 @@ RUN dotnet restore
 COPY . ./
 RUN dotnet build -c Release -o out
 FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine
-LABEL com.centurylinklabs.watchtower.enable = true
+LABEL com.centurylinklabs.watchtower.enable="true"
 WORKDIR /app
 COPY --from=build-env /app/out .
 RUN apk add bash openssh redis icu-libs --no-cache
