@@ -59,7 +59,7 @@ public partial class ServerSpecificFeatures
         [Description("immaturity is key")]
         [Aliases("shit")]
         [TargetServer(799644062973427743)]
-        public static async Task Poop(CommandContext ctx)
+        public async Task Poop(CommandContext ctx)
         {
             if (ctx.Channel.IsPrivate)
             {
