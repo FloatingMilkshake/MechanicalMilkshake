@@ -1,16 +1,25 @@
 ﻿namespace MechanicalMilkshake.Refs;
 
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 public class Globals
 {
-    // ReSharper disable once SuggestBaseTypeForParameterInConstructor
-    public Globals(InteractionContext ctx)
+    public Globals(DiscordClient client, InteractionContext ctx)
     {
+        Context = ctx;
+        Client = client;
+        Channel = ctx.Channel;
         Guild = ctx.Guild;
         User = ctx.User;
-        Guild?.GetMemberAsync(User.Id).ConfigureAwait(false).GetAwaiter().GetResult();
+        if (Guild is not null) Member = Guild.GetMemberAsync(User.Id).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
-    private DiscordMessage Message { get; set; }
-    private DiscordGuild Guild { get; }
-    private DiscordUser User { get; }
+    public DiscordClient Client { get; set; }
+    public DiscordMessage Message { get; set; }
+    public DiscordChannel Channel { get; set; }
+    public DiscordGuild Guild { get; set; }
+    public DiscordUser User { get; set; }
+    public DiscordMember Member { get; set; }
+    public InteractionContext Context { get; set; }
 }

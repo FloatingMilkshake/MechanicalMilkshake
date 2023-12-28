@@ -94,7 +94,7 @@ public class EvalCommands : ApplicationCommandModule
 
         try
         {
-            Globals globals = new(ctx);
+            Globals globals = new(Program.Discord, ctx);
 
             var scriptOptions = ScriptOptions.Default;
             scriptOptions = scriptOptions.WithImports("System", "System.Collections.Generic", "System.Linq",

@@ -224,7 +224,7 @@ public partial class ComponentInteractionEvent
                 var ctx = e.Interaction;
                 try
                 {
-                    EventGlobals globals = new(ctx);
+                    EventGlobals globals = new(Program.Discord, ctx);
 
                     var scriptOptions = ScriptOptions.Default;
                     scriptOptions = scriptOptions.WithImports("System", "System.Collections.Generic", "System.Linq",
@@ -619,15 +619,26 @@ public partial class ComponentInteractionEvent
     private static partial Regex IdPattern();
 }
 
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 public class EventGlobals
 {
-    public EventGlobals(DiscordInteraction ctx)
+    public EventGlobals(DiscordClient client, DiscordInteraction ctx)
     {
+        Context = ctx;
+        Client = client;
+        Channel = ctx.Channel;
         Guild = ctx.Guild;
         User = ctx.User;
-        Guild?.GetMemberAsync(User.Id).ConfigureAwait(false).GetAwaiter().GetResult();
+        if (Guild is not null) Member = Guild.GetMemberAsync(User.Id).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
-    private DiscordGuild Guild { get; }
-    private DiscordUser User { get; }
+    public DiscordClient Client { get; set; }
+    public DiscordMessage Message { get; set; }
+    public DiscordChannel Channel { get; set; }
+    public DiscordGuild Guild { get; set; }
+    public DiscordUser User { get; set; }
+    public DiscordMember Member { get; set; }
+    public DiscordInteraction Context { get; set; }
 }
