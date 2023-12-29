@@ -66,9 +66,9 @@ public partial class RandomCommands : ApplicationCommandModule
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"{dog}"));
         }
 
-        [GeneratedRegex(@"https:\/\/cdn2.thecatapi.com\/images\/.*(.png|.jpg)")]
+        [GeneratedRegex(@"https:\/\/cdn2.thecatapi.com\/images\/.*(\.[A-Za-z]{3,4})")]
         private static partial Regex CatApiUrlPattern();
-        [GeneratedRegex(@"https:\\\/\\\/images.dog.ceo\\\/breeds\\\/.*(.png|.jpg)")]
+        [GeneratedRegex(@"https:\\\/\\\/images.dog.ceo\\\/breeds\\\/.*(\.[A-Za-z]{3,4})")]
         private static partial Regex DogApiUrlPattern();
     }
 }

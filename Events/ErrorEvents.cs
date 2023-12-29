@@ -54,6 +54,7 @@ public class ErrorEvents
                 embed.AddField("Exception Details",
                     $"```{exception.GetType()}: {exception.Message}:\n{exception.StackTrace}".Truncate(1020) + "\n```");
 
+                // For /cdn and /link, respond directly to the interaction with the exception embed
                 if (e.Context.CommandName is "cdn" or "link")
                 {
                     // Try to respond to the interaction
@@ -70,11 +71,28 @@ public class ErrorEvents
 
                     return;
                 }
+                
+                // For other commands, send the embed to the bot's home channel, and respond with a friendlier message
 
-                await e.Context.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
-                    "It looks like this command is having issues! Sorry for the inconvenience." +
-                    " Bot owners have been alerted. Try again in a few minutes, or DM a bot owner if this" +
-                    $" keeps happening. See {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list of owners."));
+                var friendlyResponse = "It looks like this command is having issues! Sorry for the inconvenience."
+                   + " Bot owners have been alerted. Try again in a few minutes, or DM a bot owner if this"
+                   + $" keeps happening. See {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list of owners.";
+
+                // Try to respond to the interaction
+                try
+                {
+                    await e.Context.CreateResponseAsync(
+                        new DiscordInteractionResponseBuilder().WithContent(friendlyResponse));
+                }
+                catch (BadRequestException)
+                {
+                    // If the interaction was deferred, CreateResponseAsync() won't work
+                    // Try using FollowUpAsync() instead
+                    await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(friendlyResponse));
+                }
+                
+                // Send the exception embed to the bot's home channel
+                await Program.HomeChannel.SendMessageAsync(embed);
                 
                 break;
             }
