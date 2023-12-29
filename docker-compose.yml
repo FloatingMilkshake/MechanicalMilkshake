@@ -3,7 +3,8 @@ services:
   bot:
     image: ghcr.io/floatingmilkshake/mechanicalmilkshake
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: on-failure
     volumes:
       - type: bind
@@ -17,12 +18,17 @@ services:
         source: ./id_ed25519
         target: /app/id_ed25519
   redis:
-    image: 'redis:alpine3.16'
+    image: redis:alpine
     restart: always
     volumes:
       - type: bind
         source: ./db
         target: /data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     command: --appendonly yes
   watchtower:
     image: containrrr/watchtower
