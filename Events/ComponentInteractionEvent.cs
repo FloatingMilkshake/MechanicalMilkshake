@@ -554,10 +554,16 @@ public partial class ComponentInteractionEvent
                     new DiscordInteractionResponseBuilder().AddEmbed(embed).AsEphemeral());
                 break;
             }
+            case "right":
+            case "rightskip":
+            case "left":
+            case "leftskip":
+            case "stop":
+                break; // avoid getting in the way when pagination is used
             default:
                 e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
-                        "Unknown interaction ID! Contact the bot developer for assistance.").AsEphemeral());
+                        $"Unknown interaction ID `{e.Id}`! Contact the bot developer for assistance.").AsEphemeral());
                 break;
         }
     }

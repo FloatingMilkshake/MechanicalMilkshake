@@ -142,14 +142,74 @@ public class LinkCommands : ApplicationCommandModule
         [SlashCommand("list", "List all short links configured with Cloudflare worker-links.")]
         public static async Task ListWorkerLinks(InteractionContext ctx)
         {
+            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Working on it..."));
+            
             if (Program.DisabledCommands.Contains("wl"))
             {
-                await CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
+                await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
                 return;
             }
 
-            await ctx.CreateResponseAsync(
-                $"You can view the list of short links at Cloudflare [here](https://dash.cloudflare.com/{Program.ConfigJson.WorkerLinks.AccountId}/workers/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId})!");
+            var requestUri =
+                $"https://api.cloudflare.com/client/v4/accounts/{Program.ConfigJson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId}/keys";
+            HttpRequestMessage request = new(HttpMethod.Get, requestUri);
+
+            request.Headers.Add("X-Auth-Key", Program.ConfigJson.WorkerLinks.ApiKey);
+            request.Headers.Add("X-Auth-Email", Program.ConfigJson.WorkerLinks.Email);
+            var response = await Program.HttpClient.SendAsync(request);
+
+            var responseText = await response.Content.ReadAsStringAsync();
+
+            var parsedResponse = JsonConvert.DeserializeObject<CloudflareResponse>(responseText);
+
+            var kvListResponse = "";
+
+            foreach (var item in parsedResponse.Result)
+            {
+                var key = item.Name.Replace("/", "%2F");
+
+                var valueRequestUri =
+                    $"https://api.cloudflare.com/client/v4/accounts/{Program.ConfigJson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId}/values/{key}";
+                HttpRequestMessage valueRequest = new(HttpMethod.Get, valueRequestUri);
+
+                valueRequest.Headers.Add("X-Auth-Key", Program.ConfigJson.WorkerLinks.ApiKey);
+                valueRequest.Headers.Add("X-Auth-Email", Program.ConfigJson.WorkerLinks.Email);
+                var valueResponse = await Program.HttpClient.SendAsync(valueRequest);
+
+                var value = await valueResponse.Content.ReadAsStringAsync();
+                value = value.Replace(value, $"<{value}>");
+                kvListResponse += $"**{item.Name}**: {value}\n\n";
+            }
+
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = "Link List"
+            };
+            try
+            {
+                var pages = Program.Discord.GetInteractivity()
+                    .GeneratePagesInEmbed(kvListResponse, SplitType.Line, embed);
+
+                var leftSkip = new DiscordButtonComponent(ButtonStyle.Primary, "leftskip", "<<<");
+                var left = new DiscordButtonComponent(ButtonStyle.Primary, "left", "<");
+                var right = new DiscordButtonComponent(ButtonStyle.Primary, "right", ">");
+                var rightSkip = new DiscordButtonComponent(ButtonStyle.Primary, "rightskip", ">>>");
+                var stop = new DiscordButtonComponent(ButtonStyle.Danger, "stop", "Stop");
+
+                await ctx.Interaction.SendPaginatedResponseAsync(false, ctx.User, pages,
+                    new PaginationButtons
+                        { SkipLeft = leftSkip, Left = left, Right = right, SkipRight = rightSkip, Stop = stop },
+                    deletion: ButtonPaginationBehavior.DeleteMessage,
+                    asEditResponse: true);
+            }
+            catch (Exception ex)
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    $"Hmm, I couldn't send the list of links here!" +
+                    $" You can see the full list on Cloudflare's website [here](https://dash.cloudflare.com/" +
+                    $"{Program.ConfigJson.WorkerLinks.AccountId}/workers/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId})." +
+                    $" Exception details are below.\n```\n{ex.GetType()}: {ex.Message}\n```"));
+            }
         }
 
         [SlashCommand("get", "Get the long URL for a short link.")]

@@ -7,6 +7,7 @@ global using DSharpPlus.EventArgs;
 global using DSharpPlus.Exceptions;
 global using DSharpPlus.Interactivity;
 global using DSharpPlus.Interactivity.Enums;
+global using DSharpPlus.Interactivity.EventHandling;
 global using DSharpPlus.Interactivity.Extensions;
 global using DSharpPlus.SlashCommands;
 global using DSharpPlus.SlashCommands.Attributes;
