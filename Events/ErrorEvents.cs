@@ -79,6 +79,7 @@ public class ErrorEvents
                    + $" keeps happening. See {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list of owners.";
 
                 // Try to respond to the interaction
+                var failedToRespond = false;
                 try
                 {
                     await e.Context.CreateResponseAsync(
@@ -86,10 +87,21 @@ public class ErrorEvents
                 }
                 catch (BadRequestException)
                 {
-                    // If the interaction was deferred, CreateResponseAsync() won't work
-                    // Try using FollowUpAsync() instead
-                    await e.Context.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(friendlyResponse));
+                    try
+                    {
+                        // If the interaction was deferred, CreateResponseAsync() won't work
+                        // Try using FollowUpAsync() instead
+                        await e.Context.FollowUpAsync(
+                            new DiscordFollowupMessageBuilder().WithContent(friendlyResponse));
+                    }
+                    catch
+                    {
+                        // Failed to respond to the interaction. Ignore and continue to send error to home channel
+                        failedToRespond = true;
+                    }
                 }
+
+                if (failedToRespond) embed.Description += " I was unable to respond to the interaction with an error.";
                 
                 // Send the exception embed to the bot's home channel
                 await Program.HomeChannel.SendMessageAsync(embed);
