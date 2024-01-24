@@ -6,7 +6,7 @@ public class LinkCommands : ApplicationCommandModule
     public class Link
     {
         [SlashCommand("set", "Set or update a short link with Cloudflare worker-links.")]
-        public static async Task SetLink(InteractionContext ctx,
+        public static async Task SetWorkerLink(InteractionContext ctx,
             [Option("key", "Set a custom key for the short link.")]
             string key,
             [Option("url", "The URL the short link should point to.")]
@@ -213,7 +213,7 @@ public class LinkCommands : ApplicationCommandModule
         }
 
         [SlashCommand("get", "Get the long URL for a short link.")]
-        public static async Task LinkShow(InteractionContext ctx,
+        public static async Task GetWorkerLink(InteractionContext ctx,
             [Option("link", "The key or URL of the short link to get.")]
             string url)
         {
@@ -225,34 +225,24 @@ public class LinkCommands : ApplicationCommandModule
                 return;
             }
 
-            if (Program.ConfigJson.WorkerLinks.Secret is null)
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "Error: No secret provided! Make sure the secret field under workerLinks in your config.json file is set."));
-                return;
-            }
+            var key = url.Contains($"{Program.ConfigJson.WorkerLinks.BaseUrl}/")
+                ? url.Replace($"{Program.ConfigJson.WorkerLinks.BaseUrl}/", "")
+                : url;
 
-            var secret = Program.ConfigJson.WorkerLinks.Secret;
+            if (!key.StartsWith('/') && !key.StartsWith("%2F")) key = $"%2F{key}";
+            if (key.StartsWith('/')) key = key.Replace("/", "%2F");
 
-            var baseUrl = Program.ConfigJson.WorkerLinks.BaseUrl;
+            var requestUri =
+                $"https://api.cloudflare.com/client/v4/accounts/{Program.ConfigJson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId}/values/{key}";
+            HttpRequestMessage request = new(HttpMethod.Get, requestUri);
 
-            var handler = new HttpClientHandler
-            {
-                AllowAutoRedirect = false
-            };
-
-            using HttpClient httpClient = new(handler);
-            httpClient.BaseAddress = new Uri(baseUrl);
-
-            if (!url.Contains(baseUrl)) url = $"{baseUrl}/{url}";
-
-            HttpRequestMessage request = new(HttpMethod.Get, url);
-            request.Headers.Add("Authorization", secret);
+            request.Headers.Add("X-Auth-Key", Program.ConfigJson.WorkerLinks.ApiKey);
+            request.Headers.Add("X-Auth-Email", Program.ConfigJson.WorkerLinks.Email);
 
             HttpResponseMessage response;
             try
             {
-                response = await httpClient.SendAsync(request);
+                response = await Program.HttpClient.SendAsync(request);
             }
             catch (Exception ex)
             {
@@ -260,16 +250,19 @@ public class LinkCommands : ApplicationCommandModule
                     $"An exception occurred while trying to send the request! `{ex.GetType()}: {ex.Message}`"));
                 return;
             }
-
-            if (response.Headers.Location is null)
+            
+            var responseData = await response.Content.ReadAsStringAsync();
+            if (responseData.Contains("not found") || responseData.Contains("not_found"))
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "That link doesn't exist!"));
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("That link doesn't exist!"));
                 return;
             }
-
+            
+            if (!url.StartsWith(Program.ConfigJson.WorkerLinks.BaseUrl) && !url.StartsWith('/')) url = $"/{url}";
+            if (!url.StartsWith(Program.ConfigJson.WorkerLinks.BaseUrl)) url = $"{Program.ConfigJson.WorkerLinks.BaseUrl}{url}";
+            
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                $"<{url}>\npoints to:\n<{response.Headers.Location}>"));
+                $"<{url}>\npoints to:\n<{responseData}>"));
         }
 
         public class CloudflareResponse
