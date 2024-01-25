@@ -53,16 +53,26 @@ public partial class ComponentInteractionEvent
             }
             case "shutdown-button" when Program.ConfigJson.Base.AuthorizedUsers.Contains(e.User.Id.ToString()):
             {
+                if (e.User.Id != e.Message.Interaction.User.Id)
+                {
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                        new DiscordInteractionResponseBuilder().WithContent(
+                            "Only the person that used this command can respond to it!").AsEphemeral());
+                    return;
+                }
+                
                 DiscordButtonComponent shutdownButton =
                     new(ButtonStyle.Danger, "shutdown-button", "Shut Down", true);
                 DiscordButtonComponent cancelButton =
                     new(ButtonStyle.Primary, "shutdown-cancel-button", "Cancel", true);
                 e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
                     new DiscordInteractionResponseBuilder()
-                        .WithContent("**Warning: The bot is now shutting down. This action is permanent.**")
+                        .WithContent("Warning: The bot is now shutting down. This action cannot be undone.")
                         .AddComponents(shutdownButton, cancelButton));
 
+                await Task.Delay(1000);
                 Program.Discord.DisconnectAsync();
+                await Task.Delay(1000);
                 Environment.Exit(0);
                 break;
             }
@@ -76,6 +86,14 @@ public partial class ComponentInteractionEvent
             }
             case "shutdown-cancel-button" when Program.ConfigJson.Base.AuthorizedUsers.Contains(e.User.Id.ToString()):
             {
+                if (e.User.Id != e.Message.Interaction.User.Id)
+                {
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                        new DiscordInteractionResponseBuilder().WithContent(
+                            "Only the person that used this command can respond to it!").AsEphemeral());
+                    return;
+                }
+                
                 DiscordButtonComponent shutdownButton =
                     new(ButtonStyle.Danger, "shutdown-button", "Shut Down", true);
                 DiscordButtonComponent cancelButton =
