@@ -1,13 +1,13 @@
-﻿namespace MechanicalMilkshake.Commands.Owner;
+﻿namespace MechanicalMilkshake.Commands.Owner.HomeServerCommands;
 
 [SlashRequireAuth]
 public class DebugCommands : ApplicationCommandModule
 {
-    [SlashCommandGroup("debug", "[Authorized users only] Commands for checking if the bot is working properly.")]
+    [SlashCommandGroup("debug", "Commands for checking if the bot is working properly.")]
     public class DebugCmds : ApplicationCommandModule
     {
         [SlashCommand("timecheck",
-            "[Authorized users only] Return the current time on the machine the bot is running on.")]
+            "Return the current time on the machine the bot is running on.")]
         public static async Task TimeCheck(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
@@ -17,7 +17,7 @@ public class DebugCommands : ApplicationCommandModule
             }));
         }
 
-        [SlashCommand("shutdown", "[Authorized users only] Shut down the bot.")]
+        [SlashCommand("shutdown", "Shut down the bot.")]
         public static async Task Shutdown(InteractionContext ctx)
         {
             DiscordButtonComponent shutdownButton = new(ButtonStyle.Danger, "shutdown-button", "Shut Down");
@@ -28,7 +28,7 @@ public class DebugCommands : ApplicationCommandModule
                 .AddComponents(shutdownButton, cancelButton));
         }
 
-        [SlashCommand("restart", "[Authorized users only] Restart the bot.")]
+        [SlashCommand("restart", "Restart the bot.")]
         public static async Task Restart(InteractionContext ctx)
         {
             try
@@ -55,7 +55,7 @@ public class DebugCommands : ApplicationCommandModule
             Environment.Exit(1);
         }
 
-        [SlashCommand("owners", "[Authorized users only] Show the bot's owners.")]
+        [SlashCommand("owners", "Show the bot's owners.")]
         public static async Task Owners(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
@@ -86,7 +86,7 @@ public class DebugCommands : ApplicationCommandModule
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
         }
 
-        [SlashCommand("guilds", "[Authorized users only] Show the guilds that the bot is in.")]
+        [SlashCommand("guilds", "Show the guilds that the bot is in.")]
         public static async Task Guilds(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
@@ -104,7 +104,7 @@ public class DebugCommands : ApplicationCommandModule
         }
 
         [SlashCommand("humandateparser",
-            "[Authorized users only] See what happens when HumanDateParser tries to parse a date.")]
+            "See what happens when HumanDateParser tries to parse a date.")]
         public static async Task HumanDateParserCmd(InteractionContext ctx,
             [Option("date", "The date (or time) for HumanDateParser to parse.")]
             string date)
@@ -130,7 +130,7 @@ public class DebugCommands : ApplicationCommandModule
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
         }
 
-        [SlashCommand("checks", "[Authorized users only] Run the bot's timed checks manually.")]
+        [SlashCommand("checks", "Run the bot's timed checks manually.")]
         public static async Task DebugChecks(InteractionContext ctx,
             [Option("checks", "The checks that should be run.")]
             [Choice("All", "all")]
@@ -157,7 +157,7 @@ public class DebugCommands : ApplicationCommandModule
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Done!"));
         }
 
-        [SlashCommand("usage", "[Authorized users only] Show which commands are used the most.")]
+        [SlashCommand("usage", "Show which commands are used the most.")]
         public static async Task Usage(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
@@ -175,7 +175,7 @@ public class DebugCommands : ApplicationCommandModule
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(output.Trim()));
         }
 
-        [SlashCommand("throw", "[Authorized users only] Intentionally throw an exception for debugging.")]
+        [SlashCommand("throw", "Intentionally throw an exception for debugging.")]
         public static async Task Error(InteractionContext ctx,
             [Option("exception", "The type of exception to throw.")]
             [Choice("NullReferenceException", "nullref")]

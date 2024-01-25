@@ -201,7 +201,18 @@ internal class Program
             !t.IsNested);
 
         foreach (var type in ownerSlashCommandClasses)
+        {
             slash.RegisterCommands(type, HomeServer.Id);
+            try
+            {
+                slash.RegisterCommands(type, 1007457740655968327);
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+            
 
         Discord.Logger.LogInformation(BotEventId, "Slash commands registered globally");
 #endif
