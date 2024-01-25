@@ -26,13 +26,13 @@ public class DebugInfoHelpers
         var commitMessage = FileHelpers.ReadFile("CommitMessage.txt",
             $"Running in development mode; process started at {Program.ProcessStartTime}");
 
-        var loadTime = (Program.ConnectTime - Convert.ToDateTime(Program.ProcessStartTime)).Humanize();
+        var timeSinceProcessStart = (Program.ConnectTime - Convert.ToDateTime(Program.ProcessStartTime)).Humanize();
 
         return new DebugInfo(
             RuntimeInformation.FrameworkDescription,
             RuntimeInformation.OSDescription,
             $"DSharpPlus {Program.Discord.VersionString}",
-            loadTime,
+            timeSinceProcessStart,
             commitHash,
             commitTimeDescription,
             commitTime,
@@ -45,7 +45,7 @@ public class DebugInfoHelpers
     {
         DiscordEmbedBuilder embed = new()
         {
-            Title = isOnReadyEvent ? "Connected!" : "Debug Info",
+            Title = isOnReadyEvent ? "Connected!" : "",
             Color = Program.BotColor
         };
 
@@ -59,7 +59,7 @@ public class DebugInfoHelpers
         embed.AddField("Library", debugInfo.Library, true);
         embed.AddField("Server Count", Program.Discord.Guilds.Count.ToString(), true);
         embed.AddField("Command Count", Program.ApplicationCommands.Count.ToString(), true);
-        if (isOnReadyEvent) embed.AddField("Load Time", debugInfo.LoadTime, true);
+        if (isOnReadyEvent) embed.AddField("Time Since Process Start", debugInfo.TimeSinceProcessStart, true);
         embed.AddField("Commit Hash", commitHash, true);
         embed.AddField(debugInfo.CommitTimeDescription, debugInfo.CommitTimestamp, true);
         embed.AddField("Commit Message", debugInfo.CommitMessage);
@@ -78,7 +78,7 @@ public class DebugInfoHelpers
         string framework = null,
         string platform = null,
         string library = null,
-        string loadTime = null,
+        string timeSinceProcessStart = null,
         string commitHash = null,
         string commitTimeDescription = null,
         string commitTimestamp = null,
@@ -87,7 +87,7 @@ public class DebugInfoHelpers
         public string Framework { get; } = framework;
         public string Platform { get; } = platform;
         public string Library { get; } = library;
-        public string LoadTime { get; } = loadTime;
+        public string TimeSinceProcessStart { get; } = timeSinceProcessStart;
         public string CommitHash { get; } = commitHash;
         public string CommitTimeDescription { get; } = commitTimeDescription;
         public string CommitTimestamp { get; } = commitTimestamp;

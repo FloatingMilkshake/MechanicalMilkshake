@@ -2,10 +2,9 @@
 
 public class ReadyEvent
 {
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-    public static Task OnReady(DiscordClient client, ReadyEventArgs e)
+    public static async Task OnReady(DiscordClient client, ReadyEventArgs e)
     {
-        Task.Run(async () =>
+        await Task.Run(async () =>
         {
             Program.ConnectTime = DateTime.Now;
 
@@ -13,6 +12,5 @@ public class ReadyEvent
 
             await CustomStatusHelpers.SetCustomStatus();
         });
-        return Task.CompletedTask;
     }
 }
