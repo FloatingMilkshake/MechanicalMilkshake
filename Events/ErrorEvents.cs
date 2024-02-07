@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake.Events;
+﻿using Minio.DataModel;
+
+namespace MechanicalMilkshake.Events;
 
 public class ErrorEvents
 {
@@ -159,5 +161,57 @@ public class ErrorEvents
                 .HasPermission(Permissions.SendMessages))
                 await e.Context.RespondAsync(embed.Build()).ConfigureAwait(false);
         }
+    }
+    
+    /// <summary>
+    /// Handler for database connection errors.
+    /// </summary>
+    /// <param name="ex">The exception thrown.</param>
+    /// <returns>True if the exception was handled here. False otherwise.</returns>
+    public static async Task<bool> DatabaseConnectionErrored(Exception ex)
+    {
+        // match timeout exceptions
+        if (ex is RedisTimeoutException)
+        {
+            // use double.NaN as comparison value for unreachable
+            var dbPing = double.NaN;
+            try
+            {
+                // attempt to ping db
+                dbPing = (await Program.Db.PingAsync()).TotalMilliseconds;
+            }
+            catch (RedisTimeoutException)
+            {
+                // db ping failed
+                
+                // if exceptions are already suppressed, don't report
+                if (Program.RedisExceptionsSuppressed) return true;
+                
+                // report and suppress further timeout exceptions
+                
+                var ownerMention =
+                    Program.Discord.CurrentApplication.Owners.Aggregate("",
+                        (current, user) => current + user.Mention + " ");
+
+                var pingMsg = double.IsNaN(dbPing)
+                    ? "I couldn't ping Redis."
+                    : $"Redis is reachable, and took {dbPing}ms to respond.";
+                await Program.HomeChannel.SendMessageAsync(
+                    $"{ownerMention} Redis is timing out! {pingMsg}" +
+                    $" Database exceptions will be suppressed until the next check.",
+                    embed: new DiscordEmbedBuilder
+                    {
+                        Color = DiscordColor.Red,
+                        Title = "A database error occurred",
+                        Description = $"```{ex.GetType()}: {ex.Message}\n{ex.StackTrace}```".Truncate(4096),
+                    });
+                
+                Program.RedisExceptionsSuppressed = true;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }

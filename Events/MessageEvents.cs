@@ -333,6 +333,9 @@ public partial class MessageEvents
     {
         // Ignore some HTTP errors
         if (ex is HttpRequestException && ex.Message.Contains("Resource temporarily unavailable")) return;
+        
+        // Handle redis timeout errors differently
+        if (await ErrorEvents.DatabaseConnectionErrored(ex)) return;
     
         DiscordEmbedBuilder embed = new()
         {

@@ -11,10 +11,13 @@ public class Ping : ApplicationCommandModule
         var websocketPing = ctx.Client.Ping;
         var msg = await ctx.Interaction.GetOriginalResponseAsync();
         var interactionLatency = Math.Round((timeNow - msg.CreationTimestamp.UtcDateTime).TotalMilliseconds);
+
+        var dbPing = await DatabaseChecks.CheckDatabaseConnectionAsync();
         
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(
             $"Pong!\n"
             + $"Websocket ping: `{websocketPing}ms`\n"
-            + $"Interaction latency: `{interactionLatency}ms`"));
+            + $"Interaction latency: `{interactionLatency}ms`\n"
+            + $"Database ping: {(double.IsNaN(dbPing) ? "Unreachable!" : $"`{dbPing}ms`")}"));
     }
 }

@@ -22,6 +22,7 @@ public class Program
     private static readonly ConnectionMultiplexer Redis = ConnectionMultiplexer.Connect("redis");
 #endif
     public static readonly IDatabase Db = Redis.GetDatabase();
+    public static bool RedisExceptionsSuppressed;
 
     public static readonly Dictionary<string, ulong> UserFlagEmoji = new()
     {
@@ -275,6 +276,16 @@ public class Program
             {
                 await ReminderChecks.ReminderCheck();
                 await Task.Delay(10000); // 10 seconds
+            }
+            // ReSharper disable once FunctionNeverReturns
+        });
+
+        Task.Run(async () =>
+        {
+            while (true)
+            {
+                await DatabaseChecks.CheckDatabaseConnectionAsync();
+                await Task.Delay(5000); // 5 seconds
             }
             // ReSharper disable once FunctionNeverReturns
         });

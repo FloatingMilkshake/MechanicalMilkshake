@@ -152,6 +152,9 @@ public class DebugCommands : ApplicationCommandModule
                 case "packageupdates":
                     await PackageUpdateChecks.PackageUpdateCheck();
                     break;
+                case "databaseConnection":
+                    await DatabaseChecks.CheckDatabaseConnectionAsync();
+                    break;
             }
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Done!"));
