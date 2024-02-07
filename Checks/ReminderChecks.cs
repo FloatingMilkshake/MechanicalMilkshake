@@ -2,17 +2,34 @@
 
 public class ReminderChecks
 {
-    public static async Task ReminderCheck()
+    public static async Task<(int numRemindersBefore, int numRemindersAfter, int numRemindersSent, int numRemindersFailed)> CheckRemindersAsync()
     {
+        // keep some tallies to report back for manual checks
+        var numRemindersSent = 0;
+        var numRemindersFailed = 0;
+        
+        // FETCH REMINDERS
+        
+        // get reminders from db
         var reminders = await Program.Db.HashGetAllAsync("reminders");
 
+        // get number of reminders in db before check
+        var numRemindersBefore = reminders.Length;
+
+        // iterate through reminders
         foreach (var reminder in reminders)
         {
+            // deserialize reminder
             var reminderData = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
 
+            // skip if reminder time is null or in the future
+            // (this reminder will be re-checked and sent later)
             if (reminderData!.ReminderTime is null) continue;
             if (reminderData!.ReminderTime > DateTime.Now) continue;
+            
+            // BUILD MESSAGE
 
+            // get time reminder was set and start building embed
             var setTime = ((DateTimeOffset)reminderData.SetTime).ToUnixTimeSeconds();
             DiscordEmbedBuilder embed = new()
             {
@@ -21,6 +38,8 @@ public class ReminderChecks
                 Description = $"{reminderData.ReminderText}"
             };
 
+            // add context field
+            
             string context;
             if (reminderData.IsPrivate)
                 context =
@@ -35,149 +54,185 @@ public class ReminderChecks
 
             embed.AddField("Context", context);
 
+            // add pushback field
             AddReminderPushbackEmbedField(embed);
+            
+            // GET USER
 
-            DiscordMember targetMember;
-            if (reminderData.GuildId == "@me")
+            // try to fetch user to send reminder to in case of private reminder or if channel send fails
+            DiscordUser user;
+            try
             {
-                DiscordUser user;
-                try
-                {
-                    user = await Program.Discord.GetUserAsync(reminderData.UserId);
-                }
-                catch
-                {
-                    // Reminder will not be sent because user cannot be fetched..? Delete reminder to prevent error spam
-                    await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
-                    return;
-                }
-
+                // try to fetch user
+                user = await Program.Discord.GetUserAsync(reminderData.UserId);
+            }
+            catch
+            {
+                // user cannot be fetched
+                // reminder can still be sent in channel, but not privately!
+                user = default;
+            }
+            
+            // get server member if user was able to be fetched
+            DiscordMember targetMember = default;
+            if (user != default)
+            {
+                // try to find mutual server with user; iterate through guilds to find user, then get member from guild if found
                 DiscordGuild mutualServer = default;
                 foreach (var guild in Program.Discord.Guilds)
                     if (guild.Value.Members.Any(m =>
-                            m.Value.Username == user.Username && UserInfoHelpers.GetDiscriminator(m.Value) == UserInfoHelpers.GetDiscriminator(user)))
+                        m.Value.Username == user.Username && UserInfoHelpers.GetDiscriminator(m.Value) == UserInfoHelpers.GetDiscriminator(user)))
                     {
                         mutualServer = await Program.Discord.GetGuildAsync(guild.Value.Id);
                         break;
                     }
 
+                // no mutual server found
                 if (mutualServer == default)
                 {
-                    // Reminder cannot be sent because there's no way to DM the user... delete it to prevent error spam
-                    await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
-                    return;
+                    // mutual server could not be found, so member cannot be fetched.
+                    // reminder can still be sent in channel, but not privately!
                 }
-
-                targetMember = await mutualServer.GetMemberAsync(user.Id);
+                else
+                {
+                    // mutual server found; get member
+                    targetMember = await mutualServer.GetMemberAsync(user.Id);
+                }
             }
-            else
-            {
-                var guildId = Convert.ToUInt64(reminderData.GuildId);
-                var guild = await Program.Discord.GetGuildAsync(guildId);
-                targetMember = await guild.GetMemberAsync(reminderData.UserId);
-            }
-
+            
+            // SEND REMINDER
+            
+            // PRIVATE REMINDERS
+            
+            // if reminder is private, try to send in DM
             if (reminderData.IsPrivate)
+            {
                 try
                 {
-                    // Try to DM user for private reminder
-
+                    // send dm to user
                     var msg = await targetMember.SendMessageAsync(
                         $"<@{reminderData.UserId}>, I have a reminder for you:",
                         embed);
 
+                    // update pushback field to include message id
                     embed.RemoveFieldAt(1);
                     AddReminderPushbackEmbedField(embed, msg.Id);
                     await msg.ModifyAsync(msg.Content, embed.Build());
 
+                    // delete reminder from db
                     await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
 
-                    return;
+                    // increment sent reminder count
+                    numRemindersSent++;
+
+                    // continue to next reminder
+                    continue;
                 }
                 catch
                 {
                     // Couldn't DM user for private reminder - DMs are disabled or bot is blocked. Try to ping in public channel.
+                    // (we are not sending the reminder content publicly here in case of sensitive information; just alert the user)
                     try
                     {
-                        var reminderCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "reminder");
-
                         var reminderChannel = await Program.Discord.GetChannelAsync(reminderData.ChannelId);
                         var msgContent =
                             $"Hi {targetMember.Mention}! I have a reminder for you. I tried to DM it to you, but either your DMs are off or I am blocked." +
-                            " Please make sure that I can DM you.\n\n**Your reminder will not be sent automatically following this alert.**";
-
-                        if (reminderCmd is not null)
-                            msgContent +=
-                                $" You can use </{reminderCmd.Name} modify:{reminderCmd.Id}> to modify your reminder, or </{reminderCmd.Name} delete:{reminderCmd.Id}> to delete it.";
+                            " Please make sure that I can DM you.\n\n**Your reminder will not be sent automatically following this alert.**" +
+                            $" You can use the `/reminder` commands to show, modify, or delete it.";
 
                         await reminderChannel.SendMessageAsync(msgContent);
 
+                        // set reminder time to null so that it will never be automatically sent
+                        // user must modify or delete it manually
                         reminderData.ReminderTime = null;
                         await Program.Db.HashSetAsync("reminders", reminderData.ReminderId,
                             JsonConvert.SerializeObject(reminderData));
-
-                        return;
+                        
+                        // continue to next reminder
+                        continue;
                     }
                     catch (Exception ex)
                     {
-                        // Couldn't DM user or send an alert in the channel the reminder was set in... log error
-                        // Also delete reminder to prevent error spam...
+                        // Couldn't DM user or send an alert in the channel the reminder was set in!
+                        // Log error and delete reminder to prevent error spam
 
                         await LogReminderError(Program.HomeChannel, ex);
 
                         await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
-
-                        return;
+                        
+                        // increment failed reminder count
+                        numRemindersFailed++;
+                        
+                        // continue to next reminder
+                        continue;
                     }
                 }
+            }
+            
+            // PUBLIC REMINDERS
 
+            // reminder is not private; try to send in channel
             try
             {
+                // fetch channel and send reminder
                 var targetChannel = await Program.Discord.GetChannelAsync(reminderData.ChannelId);
                 var msg = await targetChannel.SendMessageAsync(
                     $"<@{reminderData.UserId}>, I have a reminder for you:",
                     embed);
 
+                // update pushback field to include message id
                 embed.RemoveFieldAt(1);
                 AddReminderPushbackEmbedField(embed, msg.Id);
                 await msg.ModifyAsync(msg.Content, embed.Build());
 
+                // delete reminder from db
                 await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
 
-                return;
+                // increment sent reminder count
+                numRemindersSent++;
             }
-            catch
+            catch // failed to send in channel
             {
                 try
                 {
                     // Couldn't send the reminder in the channel it was created in.
                     // Try to DM user instead.
 
+                    // send dm
                     var msg = await targetMember.SendMessageAsync(
                         $"<@{reminderData.UserId}>, I have a reminder for you:",
                         embed);
 
+                    // update pushback field to include message id
                     embed.RemoveFieldAt(1);
                     AddReminderPushbackEmbedField(embed, msg.Id);
                     await msg.ModifyAsync(msg.Content, embed.Build());
 
+                    // delete reminder from db
                     await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
 
-                    return;
+                    // increment sent reminder count
+                    numRemindersSent++;
                 }
                 catch (Exception ex)
                 {
-                    // Couldn't DM user. Log error.
-                    // Delete reminder to prevent error spam...
+                    // Couldn't DM user! Log error and delete reminder to prevent error spam
 
                     await LogReminderError(Program.HomeChannel, ex);
 
                     await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
-
-                    return;
+                    
+                    // increment failed reminder count
+                    numRemindersFailed++;
                 }
             }
         }
+        
+        // get number of reminders in db after check
+        reminders = await Program.Db.HashGetAllAsync("reminders");
+        var numRemindersAfter = reminders.Length;
+        
+        return (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed);
     }
 
     private static async Task LogReminderError(DiscordChannel logChannel, Exception ex)

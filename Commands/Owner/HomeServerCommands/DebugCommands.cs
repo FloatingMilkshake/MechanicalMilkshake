@@ -135,29 +135,79 @@ public class DebugCommands : ApplicationCommandModule
             [Option("checks", "The checks that should be run.")]
             [Choice("All", "all")]
             [Choice("Reminders", "reminders")]
-            [Choice("Package Updates", "packageupdates")]
+            [Choice("Package Updates", "packageUpdates")]
+            [Choice("Database Connection", "databaseConnection")]
             string checksToRun)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
 
+            // declare variables for check results
+            int numRemindersBefore = default;
+            int numRemindersAfter = default;
+            int numRemindersSent = default;
+            int numRemindersFailed = default;
+            double dbPing = default;
+            int numHostsChecked = default;
+            int totalNumHosts = default;
+
             switch (checksToRun)
             {
                 case "all":
-                    await ReminderChecks.ReminderCheck();
-                    await PackageUpdateChecks.PackageUpdateCheck();
+                    (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed) =
+                        await ReminderChecks.CheckRemindersAsync();
+                    (numHostsChecked, totalNumHosts) = await PackageUpdateChecks.PackageUpdateCheck();
+                    dbPing = await DatabaseChecks.CheckDatabaseConnectionAsync();
                     break;
                 case "reminders":
-                    await ReminderChecks.ReminderCheck();
+                    (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed) =
+                        await ReminderChecks.CheckRemindersAsync();
                     break;
-                case "packageupdates":
-                    await PackageUpdateChecks.PackageUpdateCheck();
+                case "packageUpdates":
+                    (numHostsChecked, totalNumHosts) = await PackageUpdateChecks.PackageUpdateCheck();
                     break;
                 case "databaseConnection":
-                    await DatabaseChecks.CheckDatabaseConnectionAsync();
+                    dbPing = await DatabaseChecks.CheckDatabaseConnectionAsync();
                     break;
             }
-
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Done!"));
+            
+            // templates for check result messages
+            
+            // reminders
+            var reminderCheckResultMessage = $"Reminders: "
+                                        + $"Before: `{numRemindersBefore}`; "
+                                        + $"After: `{numRemindersAfter}`; "
+                                        + $"Sent: `{numRemindersSent}`; "
+                                        + $"Failed: `{numRemindersFailed}`\n";
+            
+            // package updates
+            var packageUpdateCheckResultMessage = numHostsChecked == 0
+                ? "No hosts to check for package updates.\n"
+                : $"Checked `{numHostsChecked}`/`{totalNumHosts}` hosts for package updates.\n";
+            
+            // database ping
+            var dbPingResultMessage = $"Database ping: {(double.IsNaN(dbPing) ? "Unreachable!" : $"`{dbPing}ms`")}";
+            
+            // set up response msg content
+            // include relevant check results (see variables)
+            var response = "Done!\n";
+            switch (checksToRun)
+            {
+                case "all":
+                    response += reminderCheckResultMessage + packageUpdateCheckResultMessage + dbPingResultMessage;
+                    break;
+                case "reminders":
+                    response += reminderCheckResultMessage;
+                    break;
+                case "packageUpdates":
+                    response += packageUpdateCheckResultMessage;
+                    break;
+                case "databaseConnection":
+                    response += dbPingResultMessage;
+                    break;
+            }
+            
+            // send response
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
         }
 
         [SlashCommand("usage", "Show which commands are used the most.")]

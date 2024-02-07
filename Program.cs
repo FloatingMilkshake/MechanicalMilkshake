@@ -274,7 +274,7 @@ public class Program
         {
             while (true)
             {
-                await ReminderChecks.ReminderCheck();
+                await ReminderChecks.CheckRemindersAsync();
                 await Task.Delay(10000); // 10 seconds
             }
             // ReSharper disable once FunctionNeverReturns
