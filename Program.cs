@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake;
 
-internal class Program
+public class Program
 {
     public static DiscordClient Discord;
     private static readonly string[] Prefixes = ["pls"];
