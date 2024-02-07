@@ -461,16 +461,11 @@ public partial class ReminderCommands : ApplicationCommandModule
                 if (reminderData.ReminderText != message.Embeds[0].Description) continue;
                 // Reminder is a potential duplicate
 
-                var reminderCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "reminder");
-
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    reminderCmd is null
-                        ? "Warning: you might have already pushed back this reminder! Another reminder already exists with the same content." +
-                          "\n\nIf you still want to create this reminder, please set it manually."
-                        : "Warning: you might have already pushed back this reminder! Another reminder already exists with the same content." +
-                          $"\n\nTo see details, use </{reminderCmd.Name} show:{reminderCmd.Id}> and select `{reminderData.ReminderId}`." +
-                          $"\n\nIf you still want to create this reminder, use </{reminderCmd.Name} set:{reminderCmd.Id}>." +
-                          " This will create a second reminder with the same message but a different time and ID."));
+                    "Warning: you might have already pushed back this reminder! Another reminder already exists with the same content." +
+                    $"\n\nTo see details, use {SlashCmdMentionHelpers.GetSlashCmdMention("reminder", "show")} and select `{reminderData.ReminderId}`." +
+                    $"\n\nIf you still want to create this reminder, use {SlashCmdMentionHelpers.GetSlashCmdMention("reminder", "set")}." +
+                    " This will create a second reminder with the same message but a different time and ID."));
                 return;
             }
 
