@@ -146,6 +146,7 @@ public class DebugCommands : ApplicationCommandModule
             int numRemindersAfter = default;
             int numRemindersSent = default;
             int numRemindersFailed = default;
+            int numRemindersWithNullTime = default;
             double dbPing = default;
             int numHostsChecked = default;
             int totalNumHosts = default;
@@ -153,13 +154,13 @@ public class DebugCommands : ApplicationCommandModule
             switch (checksToRun)
             {
                 case "all":
-                    (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed) =
+                    (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime) =
                         await ReminderChecks.CheckRemindersAsync();
                     (numHostsChecked, totalNumHosts) = await PackageUpdateChecks.PackageUpdateCheck();
                     dbPing = await DatabaseChecks.CheckDatabaseConnectionAsync();
                     break;
                 case "reminders":
-                    (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed) =
+                    (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime) =
                         await ReminderChecks.CheckRemindersAsync();
                     break;
                 case "packageUpdates":
@@ -177,7 +178,8 @@ public class DebugCommands : ApplicationCommandModule
                                         + $"Before: `{numRemindersBefore}`; "
                                         + $"After: `{numRemindersAfter}`; "
                                         + $"Sent: `{numRemindersSent}`; "
-                                        + $"Failed: `{numRemindersFailed}`\n";
+                                        + $"Failed: `{numRemindersFailed}`; "
+                                        + $"Null Time: `{numRemindersWithNullTime}`\n";
             
             // package updates
             var packageUpdateCheckResultMessage = numHostsChecked == 0

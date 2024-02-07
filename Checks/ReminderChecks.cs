@@ -2,11 +2,12 @@
 
 public class ReminderChecks
 {
-    public static async Task<(int numRemindersBefore, int numRemindersAfter, int numRemindersSent, int numRemindersFailed)> CheckRemindersAsync()
+    public static async Task<(int numRemindersBefore,int numRemindersAfter, int numRemindersSent, int numRemindersFailed, int numRemindersWithNullTime)> CheckRemindersAsync()
     {
         // keep some tallies to report back for manual checks
         var numRemindersSent = 0;
         var numRemindersFailed = 0;
+        var numRemindersWithNullTime = 0;
         
         // FETCH REMINDERS
         
@@ -24,7 +25,11 @@ public class ReminderChecks
 
             // skip if reminder time is null or in the future
             // (this reminder will be re-checked and sent later)
-            if (reminderData!.ReminderTime is null) continue;
+            if (reminderData!.ReminderTime is null)
+            {
+                numRemindersWithNullTime++;
+                continue;
+            }
             if (reminderData!.ReminderTime > DateTime.Now) continue;
             
             // BUILD MESSAGE
@@ -145,6 +150,7 @@ public class ReminderChecks
                         // set reminder time to null so that it will never be automatically sent
                         // user must modify or delete it manually
                         reminderData.ReminderTime = null;
+                        numRemindersWithNullTime++;
                         await Program.Db.HashSetAsync("reminders", reminderData.ReminderId,
                             JsonConvert.SerializeObject(reminderData));
                         
@@ -232,7 +238,7 @@ public class ReminderChecks
         reminders = await Program.Db.HashGetAllAsync("reminders");
         var numRemindersAfter = reminders.Length;
         
-        return (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed);
+        return (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime);
     }
 
     private static async Task LogReminderError(DiscordChannel logChannel, Exception ex)
