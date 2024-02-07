@@ -1,6 +1,4 @@
-﻿using Minio.DataModel;
-
-namespace MechanicalMilkshake.Events;
+﻿namespace MechanicalMilkshake.Events;
 
 public class ErrorEvents
 {
