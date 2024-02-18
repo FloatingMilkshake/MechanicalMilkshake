@@ -13,7 +13,7 @@ public class DebugCommands : ApplicationCommandModule
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
             {
                 Title = "Time Check", Color = Program.BotColor,
-                Description = $"Seems to me like it's currently `{DateTime.Now}`."
+                Description = $"Seems to me like it's currently `{DateTime.Now:s}`."
             }));
         }
 
