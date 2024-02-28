@@ -36,7 +36,7 @@ public partial class InviteInfo : ApplicationCommandModule
             Color = Program.BotColor
         };
 
-        if (invite.Guild.VanityUrlCode is null)
+        if (invite.Guild.VanityUrlCode is null || invite.Code != invite.Guild.VanityUrlCode)
         {
             embed.AddField("Inviter",
                 invite.Inviter is null
