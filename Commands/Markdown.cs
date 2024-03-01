@@ -13,14 +13,6 @@ public partial class Markdown : ApplicationCommandModule
         if (DiscordUrlPattern().IsMatch(messageToExpose))
         {
             // Assume the user provided a message link. Extract channel and message IDs to get message content.
-
-            // If IDs have letters in them, the user provided an invalid link.
-            if (AlphanumericCharacterPatern().IsMatch(messageToExpose))
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "Hmm, that doesn't look like a valid message ID or link. I wasn't able to get the Markdown data from it."));
-                return;
-            }
             
             // Pattern to extract channel and message IDs from URL
             var idPattern = IdPattern();
