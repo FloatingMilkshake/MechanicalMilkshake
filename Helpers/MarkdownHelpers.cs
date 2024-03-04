@@ -19,12 +19,7 @@ public static class MarkdownHelpers
         output = output.Replace("(", @"\(");
         output = output.Replace(")", @"\)");
         output = output.Replace("#", @"\#");
-        output = output.Replace("+", @"\+");
-        output = output.Replace("-", @"\-");
-        output = output.Replace("=", @"\=");
         output = output.Replace("|", @"\|");
-        output = output.Replace("{", @"\{");
-        output = output.Replace("}", @"\}");
 
         // if output becomes greater than 4000 characters, return an error.
         return output.Length > 4000 ? "The output is too long for me to send." : output;
