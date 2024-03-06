@@ -140,7 +140,10 @@ public class LinkCommands : ApplicationCommandModule
         }
 
         [SlashCommand("list", "List all short links configured with Cloudflare worker-links.")]
-        public static async Task ListWorkerLinks(InteractionContext ctx)
+        public static async Task ListWorkerLinks(InteractionContext ctx,
+            [Option("match_keys", "Optionally filter by key.")] string keyFilter = "",
+            [Option("match_values", "Optionally filter by value.")] string valueFilter = "",
+            [Option("exact_match", "Whether to match filters exactly. Defaults to false.")] bool exactMatch = false)
         {
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Working on it..."));
             
@@ -167,6 +170,16 @@ public class LinkCommands : ApplicationCommandModule
             foreach (var item in parsedResponse.Result)
             {
                 var key = item.Name.Replace("/", "%2F");
+                
+                // Check key filter; if key does not match, skip
+                if (exactMatch)
+                {
+                    if (!string.IsNullOrWhiteSpace(keyFilter) && key != keyFilter.Replace("/", "%2F")) continue;
+                }
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(keyFilter) && !key.Contains(keyFilter.Replace("/", "%2F"))) continue;
+                }
 
                 var valueRequestUri =
                     $"https://api.cloudflare.com/client/v4/accounts/{Program.ConfigJson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId}/values/{key}";
@@ -178,13 +191,38 @@ public class LinkCommands : ApplicationCommandModule
 
                 var value = await valueResponse.Content.ReadAsStringAsync();
                 value = value.Replace(value, $"<{value}>");
+                
+                // Check value filter; if value does not match, skip
+                if (exactMatch)
+                {
+                    if (!string.IsNullOrWhiteSpace(valueFilter) &&
+                        value.Replace("<", "").Replace(">", "") != valueFilter) continue;
+                }
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(valueFilter) && !value.Contains(valueFilter)) continue;
+                }
+                
                 kvListResponse += $"**{item.Name}**: {value}\n\n";
             }
 
             DiscordEmbedBuilder embed = new()
             {
-                Title = "Link List"
+                Title = string.IsNullOrWhiteSpace(keyFilter) && string.IsNullOrWhiteSpace(valueFilter)
+                    ? "Link List"
+                    : "Matching Links",
+                Color = Program.BotColor
             };
+
+            if (string.IsNullOrWhiteSpace(kvListResponse))
+            {
+                embed.Description = "No links matched the specified filters.";
+                embed.Color = DiscordColor.Red;
+                
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed));
+                return;
+            }
+            
             try
             {
                 var pages = Program.Discord.GetInteractivity()
@@ -196,11 +234,14 @@ public class LinkCommands : ApplicationCommandModule
                 var rightSkip = new DiscordButtonComponent(ButtonStyle.Primary, "rightskip", ">>>");
                 var stop = new DiscordButtonComponent(ButtonStyle.Danger, "stop", "Stop");
 
-                await ctx.Interaction.SendPaginatedResponseAsync(false, ctx.User, pages,
-                    new PaginationButtons
-                        { SkipLeft = leftSkip, Left = left, Right = right, SkipRight = rightSkip, Stop = stop },
-                    deletion: ButtonPaginationBehavior.DeleteMessage,
-                    asEditResponse: true);
+                if (pages.Count() > 1)
+                    await ctx.Interaction.SendPaginatedResponseAsync(false, ctx.User, pages,
+                        new PaginationButtons
+                            { SkipLeft = leftSkip, Left = left, Right = right, SkipRight = rightSkip, Stop = stop },
+                        deletion: ButtonPaginationBehavior.DeleteMessage,
+                        asEditResponse: true);
+                else
+                    await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed.WithDescription(kvListResponse)));
             }
             catch (Exception ex)
             {
@@ -210,59 +251,6 @@ public class LinkCommands : ApplicationCommandModule
                     $"{Program.ConfigJson.WorkerLinks.AccountId}/workers/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId})." +
                     $" Exception details are below.\n```\n{ex.GetType()}: {ex.Message}\n```"));
             }
-        }
-
-        [SlashCommand("get", "Get the long URL for a short link.")]
-        public static async Task GetWorkerLink(InteractionContext ctx,
-            [Option("link", "The key or URL of the short link to get.")]
-            string url)
-        {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-            
-            if (Program.DisabledCommands.Contains("wl"))
-            {
-                await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
-                return;
-            }
-
-            var key = url.Contains($"{Program.ConfigJson.WorkerLinks.BaseUrl}/")
-                ? url.Replace($"{Program.ConfigJson.WorkerLinks.BaseUrl}/", "")
-                : url;
-
-            if (!key.StartsWith('/') && !key.StartsWith("%2F")) key = $"%2F{key}";
-            if (key.StartsWith('/')) key = key.Replace("/", "%2F");
-
-            var requestUri =
-                $"https://api.cloudflare.com/client/v4/accounts/{Program.ConfigJson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId}/values/{key}";
-            HttpRequestMessage request = new(HttpMethod.Get, requestUri);
-
-            request.Headers.Add("X-Auth-Key", Program.ConfigJson.WorkerLinks.ApiKey);
-            request.Headers.Add("X-Auth-Email", Program.ConfigJson.WorkerLinks.Email);
-
-            HttpResponseMessage response;
-            try
-            {
-                response = await Program.HttpClient.SendAsync(request);
-            }
-            catch (Exception ex)
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    $"An exception occurred while trying to send the request! `{ex.GetType()}: {ex.Message}`"));
-                return;
-            }
-            
-            var responseData = await response.Content.ReadAsStringAsync();
-            if (responseData.Contains("not found") || responseData.Contains("not_found"))
-            {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("That link doesn't exist!"));
-                return;
-            }
-            
-            if (!url.StartsWith(Program.ConfigJson.WorkerLinks.BaseUrl) && !url.StartsWith('/')) url = $"/{url}";
-            if (!url.StartsWith(Program.ConfigJson.WorkerLinks.BaseUrl)) url = $"{Program.ConfigJson.WorkerLinks.BaseUrl}{url}";
-            
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
-                $"<{url}>\npoints to:\n<{responseData}>"));
         }
 
         public class CloudflareResponse
