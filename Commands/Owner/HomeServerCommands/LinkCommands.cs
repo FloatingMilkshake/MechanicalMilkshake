@@ -24,6 +24,8 @@ public class LinkCommands : ApplicationCommandModule
             if (url.Contains('<')) url = url.Replace("<", "");
 
             if (url.Contains('>')) url = url.Replace(">", "");
+            
+            if (key[0] == '/') key = key[1..];
 
             if (Program.ConfigJson.WorkerLinks.BaseUrl is null)
             {
@@ -92,6 +94,8 @@ public class LinkCommands : ApplicationCommandModule
                 await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
                 return;
             }
+            
+            if (url[0] == '/') url = url[1..];
 
             var baseUrl = Program.ConfigJson.WorkerLinks.BaseUrl;
 
