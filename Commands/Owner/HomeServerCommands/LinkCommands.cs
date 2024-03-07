@@ -230,7 +230,7 @@ public class LinkCommands : ApplicationCommandModule
             try
             {
                 var pages = Program.Discord.GetInteractivity()
-                    .GeneratePagesInEmbed(kvListResponse, SplitType.Line, embed);
+                    .GeneratePagesInEmbed(kvListResponse, SplitType.Line, embed).ToList();
 
                 var leftSkip = new DiscordButtonComponent(ButtonStyle.Primary, "leftskip", "<<<");
                 var left = new DiscordButtonComponent(ButtonStyle.Primary, "left", "<");
@@ -238,7 +238,7 @@ public class LinkCommands : ApplicationCommandModule
                 var rightSkip = new DiscordButtonComponent(ButtonStyle.Primary, "rightskip", ">>>");
                 var stop = new DiscordButtonComponent(ButtonStyle.Danger, "stop", "Stop");
 
-                if (pages.Count() > 1)
+                if (pages.Count > 1)
                     await ctx.Interaction.SendPaginatedResponseAsync(false, ctx.User, pages,
                         new PaginationButtons
                             { SkipLeft = leftSkip, Left = left, Right = right, SkipRight = rightSkip, Stop = stop },
