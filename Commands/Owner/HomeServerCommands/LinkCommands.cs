@@ -2,10 +2,10 @@
 
 public class LinkCommands : ApplicationCommandModule
 {
-    [SlashCommandGroup("link", "Set, update, or delete a short link with Cloudflare worker-links.")]
+    [SlashCommandGroup("link", "Set, update, or delete a short link.")]
     public class Link
     {
-        [SlashCommand("set", "Set or update a short link with Cloudflare worker-links.")]
+        [SlashCommand("set", "Set or update a short link.")]
         public static async Task SetWorkerLink(InteractionContext ctx,
             [Option("key", "Set a custom key for the short link.")]
             string key,
@@ -82,7 +82,7 @@ public class LinkCommands : ApplicationCommandModule
                 $"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```"));
         }
 
-        [SlashCommand("delete", "Delete a short link with Cloudflare worker-links.")]
+        [SlashCommand("delete", "Delete a short link.")]
         public static async Task DeleteWorkerLink(InteractionContext ctx,
             [Option("link", "The key or URL of the short link to delete.")]
             string url)
@@ -143,7 +143,7 @@ public class LinkCommands : ApplicationCommandModule
                 $"Worker responded with code: `{httpStatusCode}` (`{httpStatus}`)\n```json\n{responseText}\n```"));
         }
 
-        [SlashCommand("list", "List all short links configured with Cloudflare worker-links.")]
+        [SlashCommand("list", "List all short links.")]
         public static async Task ListWorkerLinks(InteractionContext ctx,
             [Option("match_keys", "Optionally filter by key.")] string keyFilter = "",
             [Option("match_values", "Optionally filter by value.")] string valueFilter = "",
