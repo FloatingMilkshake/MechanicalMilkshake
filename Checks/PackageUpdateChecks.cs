@@ -26,11 +26,28 @@ public class PackageUpdateChecks
 
             if (cmdResult.Contains(" can be upgraded"))
             {
-                updatesAvailableResponse += $"`{host}`\n";
+                // Get hostname of machine
+                Regex hostnamePattern = new(@"[A-Za-z0-9-]+\@([A-Za-z0-9-]+)");
+                var hostnameMatch = hostnamePattern.Match(host);
+                var hostname = hostnameMatch.Groups[1].Value;
+                
+                // Get number of packages that can be upgraded
+                Regex numPackageUpdatesPattern = new(@"([0-9]+) packages can be upgraded");
+                var numPackageUpdatesMatch = numPackageUpdatesPattern.Match(cmdResult);
+                var numPackageUpdates = numPackageUpdatesMatch.Groups[1].Value;
+
+                updatesAvailableResponse +=
+                    $"{hostname}: {numPackageUpdates} package{(int.Parse(numPackageUpdates) > 1 ? "s" : "")}";
                 updatesAvailable = true;
             }
 
-            if (cmdResult.Contains("System restart required")) restartRequired = true;
+            if (cmdResult.Contains("System restart required"))
+            {
+                updatesAvailableResponse += "*";
+                restartRequired = true;
+            }
+
+            updatesAvailableResponse += "\n";
 
             numHostsChecked++;
         }
@@ -38,13 +55,14 @@ public class PackageUpdateChecks
         Program.Discord.Logger.LogDebug(Program.BotEventId,
             $"[PackageUpdateCheck] Finished checking for updates on {numHostsChecked}/{totalNumHosts} hosts");
 
-        if (restartRequired) restartRequiredResponse = "A system restart is required to complete package updates.";
-
         if (updatesAvailable || restartRequired)
         {
+            string restartRequiredMessage = "";
+            if (restartRequired)
+                restartRequiredMessage = " Hosts marked with a * require a restart to apply updates.";
+            
             if (updatesAvailable)
-                updatesAvailableResponse = "Package updates are available on the following hosts:\n" +
-                                           updatesAvailableResponse;
+                updatesAvailableResponse = $"Package updates are available.{restartRequiredMessage}\n{updatesAvailableResponse}";
 
             var ownerMention =
                 Program.Discord.CurrentApplication.Owners.Aggregate("",
