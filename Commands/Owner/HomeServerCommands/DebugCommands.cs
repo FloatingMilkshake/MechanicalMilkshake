@@ -81,7 +81,7 @@ public class DebugCommands : ApplicationCommandModule
 
             embed.AddField("Bot Owners", botOwnerList);
             embed.AddField("Authorized Users",
-                $"These users are authorized to use owner-level commands.\n{authUsersList}");
+                $"These users are authorized to use owner-level commands.{authUsersList}");
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
         }
