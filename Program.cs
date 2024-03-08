@@ -222,6 +222,14 @@ public class Program
         {
             // Register CommandsNext commands
             commands.RegisterCommands<ServerSpecificFeatures.MessageCommands>();
+            
+            // Register slash commands
+            if (Discord.Guilds.ContainsKey(984903591816990730))
+                slash.RegisterCommands<ServerSpecificFeatures.RoleCommands>(984903591816990730);
+            // & in home server when debugging
+#if DEBUG
+            slash.RegisterCommands<ServerSpecificFeatures.RoleCommands>(HomeServer.Id);
+#endif
         }
 
         await Discord.ConnectAsync();

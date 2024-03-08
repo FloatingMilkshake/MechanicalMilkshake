@@ -83,6 +83,88 @@ public partial class ServerSpecificFeatures
             }
         }
     }
+    
+    public class RoleCommands : ApplicationCommandModule
+     {
+         [SlashCommand("rolename", "Change the name of someone's role.")]
+         public static async Task RoleName(InteractionContext ctx,
+             [Option("name", "The new name.")] string name,
+             [Option("user", "The user whose role name to change.")] DiscordUser user = default)
+         {
+             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                 new DiscordInteractionResponseBuilder());
+
+             if (ctx.Guild.Id != 984903591816990730)
+             {
+                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                     .WithContent("This command is not available in this server."));
+                 return;
+             }
+
+             if (user == default) user = ctx.User;
+             DiscordMember member;
+             try
+             {
+                 member = await ctx.Guild.GetMemberAsync(user.Id);
+             }
+             catch
+             {
+                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that user!"));
+                 return;
+             }
+
+             List<DiscordRole> roles = new();
+             if (member.Roles.Any())
+             {
+                 roles.AddRange(member.Roles.OrderBy(role => role.Position).Reverse());
+             }
+             else
+             {
+                 var response = ctx.User == user ? "You don't have any roles." : "That user doesn't have any roles.";
+                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
+                 return;
+             }
+
+             if (roles.Count == 1 && roles.First().Id is 984903591833796659 or 984903591816990739 or 984936907874136094)
+             {
+                 var response = ctx.User == user
+                     ? "You don't have a role that can be renamed!"
+                     : "That user doesn't have a role that can be renamed!";
+                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
+                 return;
+             }
+
+             var roleToModify = roles.FirstOrDefault(role =>
+                 role.Id is not (984903591833796659 or 984903591816990739 or 984936907874136094));
+
+             if (roleToModify == default)
+             {
+                 var response = ctx.User == user
+                     ? "You don't have a role that can be renamed!"
+                     : "That user doesn't have a role that can be renamed!";
+                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                     .WithContent(response));
+                 return;
+             }
+
+             try
+             {
+                 await roleToModify.ModifyAsync(role => role.Name = name);
+             }
+             catch (UnauthorizedException)
+             {
+                 await ctx.FollowUpAsync(
+                     new DiscordFollowupMessageBuilder().WithContent("I don't have permission to rename that role!"));
+                 return;
+             }
+             
+             var finalResponse = ctx.User == user
+                 ? $"Your role has been renamed to **{name}**."
+                 : $"{member.Mention}'s role has been renamed to **{name}**.";
+             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(finalResponse));
+         }
+     }
+
 
     private class TargetServerAttribute(ulong targetGuild) : CheckBaseAttribute
     {
