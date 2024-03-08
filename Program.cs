@@ -183,6 +183,15 @@ public class Program
 
         foreach (var type in slashCommandClasses)
             slash.RegisterCommands(type, HomeServer.Id);
+        
+        if (ConfigJson.Base.UseServerSpecificFeatures)
+        {
+            // Register CommandsNext commands
+            commands.RegisterCommands<ServerSpecificFeatures.MessageCommands>();
+            
+            // Register server-specific feature slash commands in home server when debugging
+            slash.RegisterCommands<ServerSpecificFeatures.RoleCommands>(HomeServer.Id);
+        }
 
         Discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging");
 
@@ -213,24 +222,13 @@ public class Program
                 // ignore
             }
         }
-            
+
+        // Register server-specific feature slash commands
+        slash.RegisterCommands<ServerSpecificFeatures.RoleCommands>(984903591816990730);
+        slash.RegisterCommands<ServerSpecificFeatures.RoleCommands>(HomeServer.Id);
 
         Discord.Logger.LogInformation(BotEventId, "Slash commands registered globally");
 #endif
-
-        if (ConfigJson.Base.UseServerSpecificFeatures)
-        {
-            // Register CommandsNext commands
-            commands.RegisterCommands<ServerSpecificFeatures.MessageCommands>();
-            
-            // Register slash commands
-            if (Discord.Guilds.ContainsKey(984903591816990730))
-                slash.RegisterCommands<ServerSpecificFeatures.RoleCommands>(984903591816990730);
-            // & in home server when debugging
-#if DEBUG
-            slash.RegisterCommands<ServerSpecificFeatures.RoleCommands>(HomeServer.Id);
-#endif
-        }
 
         await Discord.ConnectAsync();
 
