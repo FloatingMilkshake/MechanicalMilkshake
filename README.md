@@ -49,6 +49,7 @@ First, you must have Docker installed. If you do not have it installed already, 
 - Clone the repo
 - Copy `config.example.json` to `config.json`
 - In `config.json`, provide values for at least `botToken`, `homeChannel` and `homeServerId`. Other values are optional, but some functionality may not work without them (the bot should tell you what's missing though if you try to use a feature that requires a value you didn't set). If you're not sure about a value, see [the wiki page on config.json](https://github.com/FloatingMilkshake/MechanicalMilkshake/wiki/Configuration#configjson) or feel free to contact me!
+- In `docker-compose.yml`, comment out or adjust the [bind mount](https://github.com/FloatingMilkshake/MechanicalMilkshake/blob/main/docker-compose.yml#L17-L20) for `id_ed25519` if necessary (for example, if you will not be utilizing the package update check feature of the bot, or if you do not use an SSH key for this or use one in a different format)
 - Run `docker-compose up -d`
 
 (If you see an error about `docker-compose` not being recognized as a command, try removing the hyphen (so `docker compose up -d`). If you're still having issues, you may need to [install Docker Compose](https://docs.docker.com/compose/install/) separately.)
