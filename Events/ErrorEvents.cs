@@ -9,8 +9,7 @@ public class ErrorEvents
             case SlashExecutionChecksFailedException { FailedChecks: not null } execChecksFailedEx
                 when execChecksFailedEx.FailedChecks.OfType<SlashRequireGuildAttribute>().Any():
                 var noDmResponse = "This command cannot be used in DMs. Please use it in a server." +
-                                   " Contact the bot owner if you need help or think I messed up" +
-                                   $" (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).";
+                                   $" Need help? Contact a bot owner (see {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list).";
                 try
                 {
                     await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
@@ -26,8 +25,8 @@ public class ErrorEvents
             case SlashExecutionChecksFailedException:
                 var cmdFailedResponse = $"Hmm, it looks like one of the checks for this command failed." +
                                         $" Make sure you and I both have the permissions required to use it," +
-                                        $" and that you're using it properly. Contact the bot owner if you need help or" +
-                                        $" think I messed up (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).";
+                                        $" and that you're using it properly. Need help? Contact a bot owner" +
+                                        $" (see {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list).";
                 try
                 {
                     await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
@@ -74,9 +73,17 @@ public class ErrorEvents
                 
                 // For other commands, send the embed to the bot's home channel, and respond with a friendlier message
 
-                var friendlyResponse = "It looks like this command is having issues! Sorry for the inconvenience."
-                   + " Bot owners have been alerted. Try again in a few minutes, or DM a bot owner if this"
-                   + $" keeps happening. See {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list of owners.";
+                var friendlyResponse = "It looks like this command is having issues!"
+                   + " Try again in a few minutes, or DM a bot owner if this keeps happening."
+                   + $" See {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list of owners.";
+                
+                // If command invoker is a bot owner, make the message more detailed
+                if (Program.Discord.CurrentApplication.Owners.Any(owner => owner.Id == e.Context.User.Id))
+                {
+                    friendlyResponse =
+                        $"This command threw a(n) `{exception.GetType()}` exception. \"{exception.Message}\""
+                        + $"\n\nHere's the stack trace:\n```{exception.StackTrace}```";
+                }
 
                 // Try to respond to the interaction
                 var failedToRespond = false;
@@ -132,7 +139,10 @@ public class ErrorEvents
                     return;
                 case ChecksFailedException:
                     await e.Context.RespondAsync(
-                        $"Hmm, it looks like one of the checks for this command failed. Make sure you and I both have the permissions required to use it, and that you're using it properly. Contact the bot owner if you need help or think I messed up (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!).");
+                        "Hmm, it looks like one of the checks for this command failed. " +
+                        "Make sure you and I both have the permissions required to use it, " +
+                        "and that you're using it properly. Need help? Contact a bot owner " +
+                        $"(see {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list).");
                     return;
             }
 
@@ -150,8 +160,7 @@ public class ErrorEvents
 
             // System.ArgumentException
             if (ex.GetType().ToString() == "System.ArgumentException")
-                embed.AddField("What's that mean?", "This usually means that you used the command incorrectly.\n" +
-                                                    $"Please run `help {e.Command!.QualifiedName}` for information about what you need to provide for the `{e.Command!.QualifiedName}` command.");
+                embed.AddField("What's that mean?", "This usually means that you used the command incorrectly. Please try again.");
 
             // Check if bot has perms to send error response and send if so
             if (e.Context.Channel
