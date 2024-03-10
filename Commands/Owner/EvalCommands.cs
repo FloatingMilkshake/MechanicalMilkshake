@@ -26,10 +26,24 @@ public class EvalCommands : ApplicationCommandModule
                 return;
             }
 
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(await RunCommand(command)));
+        var cmdResponse = await RunCommand(command);
+        string response;
+        
+        if (cmdResponse.Output.Length > 1947)
+        {
+            var hasteUploadResult = await HastebinHelpers.UploadToHastebinAsync(cmdResponse.Output);
+            response = $"Finished with exit code `{cmdResponse.ExitCode}`!" +
+                   $" The result was too long to post here, so it was uploaded to Hastebin here: {hasteUploadResult}";
+        }
+        else
+        {
+            response = $"Finished with exit code `{cmdResponse.ExitCode}`! Output: ```\n{HideSensitiveInfo(cmdResponse.Output)}```";
+        }
+        
+        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
     }
 
-    public static async Task<string> RunCommand(string command, bool useHastebin = true)
+    public static async Task<ShellCommandResponse> RunCommand(string command)
     {
         var osDescription = RuntimeInformation.OSDescription;
         string fileName;
@@ -47,7 +61,7 @@ public class EvalCommands : ApplicationCommandModule
             fileName = Environment.GetEnvironmentVariable("SHELL");
             if (!File.Exists(fileName)) fileName = "/bin/sh";
 
-            args = $"-c \"{escapedArgs} 2>&1\"";
+            args = $"-c \"{escapedArgs}\"";
         }
 
         Process proc = new()
@@ -67,15 +81,7 @@ public class EvalCommands : ApplicationCommandModule
         var result = await proc.StandardOutput.ReadToEndAsync();
         await proc.WaitForExitAsync();
 
-        if (useHastebin && result.Length > 1947)
-        {
-            var hasteUploadResult = await HastebinHelpers.UploadToHastebinAsync(result);
-
-            return $"Finished with exit code `{proc.ExitCode}`!" +
-                   $" The result was too long to post here, so it was uploaded to Hastebin here: {hasteUploadResult}";
-        }
-
-        return $"Finished with exit code `{proc.ExitCode}`! Output: ```\n{HideSensitiveInfo(result)}```";
+        return new ShellCommandResponse(proc.ExitCode, HideSensitiveInfo(result));
     }
 
     // The idea for this command, and a lot of the code, is taken from DSharpPlus/DSharpPlus.Test. Reference linked below.

@@ -20,11 +20,11 @@ public class PackageUpdateChecks
                 "[PackageUpdateCheck] Checking for updates on host '{Host}'.\"", host);
 
             var cmdResult =
-                await EvalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"", false);
+                await EvalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
 
-            if (string.IsNullOrWhiteSpace(cmdResult)) continue;
+            if (string.IsNullOrWhiteSpace(cmdResult.Output)) continue;
 
-            if (cmdResult.Contains(" can be upgraded"))
+            if (cmdResult.Output.Contains(" can be upgraded"))
             {
                 // Get hostname of machine
                 Regex hostnamePattern = new(@"[A-Za-z0-9-]+\@([A-Za-z0-9-]+)");
@@ -33,7 +33,7 @@ public class PackageUpdateChecks
                 
                 // Get number of packages that can be upgraded
                 Regex numPackageUpdatesPattern = new(@"([0-9]+) packages can be upgraded");
-                var numPackageUpdatesMatch = numPackageUpdatesPattern.Match(cmdResult);
+                var numPackageUpdatesMatch = numPackageUpdatesPattern.Match(cmdResult.Output);
                 var numPackageUpdates = numPackageUpdatesMatch.Groups[1].Value;
 
                 updatesAvailableResponse +=
@@ -41,7 +41,7 @@ public class PackageUpdateChecks
                 updatesAvailable = true;
             }
 
-            if (cmdResult.Contains("System restart required"))
+            if (cmdResult.Output.Contains("System restart required"))
             {
                 updatesAvailableResponse += "*";
                 restartRequired = true;
