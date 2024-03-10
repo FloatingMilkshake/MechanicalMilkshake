@@ -2,14 +2,14 @@
 
 public class PackageUpdateChecks
 {
-    public static async Task<(int numhostsChecked, int totalNumHosts)> PackageUpdateCheck()
+    public static async Task<(int numhostsChecked, int totalNumHosts, string checkResult)>
+        PackageUpdateCheck(bool isPeriodicCheck)
     {
         var numHostsChecked = 0;
         var totalNumHosts = Program.ConfigJson.Base.SshHosts.Length;
-        if (totalNumHosts == 0) return (0, 0);
+        if (totalNumHosts == 0) return (0, 0, "");
         
         var updatesAvailableResponse = "";
-        var restartRequiredResponse = "";
 
         var updatesAvailable = false;
         var restartRequired = false;
@@ -68,10 +68,10 @@ public class PackageUpdateChecks
                 Program.Discord.CurrentApplication.Owners.Aggregate("",
                     (current, user) => current + user.Mention + " ");
 
-            var response = updatesAvailableResponse + restartRequiredResponse;
-            await Program.HomeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{response}");
+            var response = updatesAvailableResponse;
+            if (isPeriodicCheck) await Program.HomeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{response}");
         }
 
-        return (numHostsChecked, totalNumHosts);
+        return (numHostsChecked, totalNumHosts, updatesAvailableResponse);
     }
 }

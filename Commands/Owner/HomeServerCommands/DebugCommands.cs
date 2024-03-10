@@ -150,13 +150,14 @@ public class DebugCommands : ApplicationCommandModule
             double dbPing = default;
             int numHostsChecked = default;
             int totalNumHosts = default;
+            string checkResult = default;
 
             switch (checksToRun)
             {
                 case "all":
                     (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime) =
                         await ReminderChecks.CheckRemindersAsync();
-                    (numHostsChecked, totalNumHosts) = await PackageUpdateChecks.PackageUpdateCheck();
+                    (numHostsChecked, totalNumHosts, checkResult) = await PackageUpdateChecks.PackageUpdateCheck(false);
                     dbPing = await DatabaseChecks.CheckDatabaseConnectionAsync();
                     break;
                 case "reminders":
@@ -164,7 +165,7 @@ public class DebugCommands : ApplicationCommandModule
                         await ReminderChecks.CheckRemindersAsync();
                     break;
                 case "packageUpdates":
-                    (numHostsChecked, totalNumHosts) = await PackageUpdateChecks.PackageUpdateCheck();
+                    (numHostsChecked, totalNumHosts, checkResult) = await PackageUpdateChecks.PackageUpdateCheck(false);
                     break;
                 case "databaseConnection":
                     dbPing = await DatabaseChecks.CheckDatabaseConnectionAsync();
@@ -174,7 +175,7 @@ public class DebugCommands : ApplicationCommandModule
             // templates for check result messages
             
             // reminders
-            var reminderCheckResultMessage = $"Reminders: "
+            var reminderCheckResultMessage = $"**Reminders:** "
                                         + $"Before: `{numRemindersBefore}`; "
                                         + $"After: `{numRemindersAfter}`; "
                                         + $"Sent: `{numRemindersSent}`; "
@@ -182,12 +183,20 @@ public class DebugCommands : ApplicationCommandModule
                                         + $"Null Time: `{numRemindersWithNullTime}`\n";
             
             // package updates
-            var packageUpdateCheckResultMessage = numHostsChecked == 0
+            var packageUpdateCheckResultMessage = "**Package Updates:** " + (numHostsChecked == 0
                 ? "No hosts to check for package updates.\n"
-                : $"Checked `{numHostsChecked}`/`{totalNumHosts}` hosts for package updates.\n";
+                : $"Checked `{numHostsChecked}`/`{totalNumHosts}` hosts for package updates.\n");
+            if (numHostsChecked != 0 && checkResult is not null)
+            {
+                if (packageUpdateCheckResultMessage.EndsWith('\n'))
+                    packageUpdateCheckResultMessage = packageUpdateCheckResultMessage[..^1] + " ";
+                packageUpdateCheckResultMessage += $"{checkResult.Replace("\n", "\n> ")}";
+                if (packageUpdateCheckResultMessage.EndsWith("\n> "))
+                    packageUpdateCheckResultMessage = packageUpdateCheckResultMessage[..^3];
+            }
             
             // database ping
-            var dbPingResultMessage = $"Database ping: {(double.IsNaN(dbPing) ? "Unreachable!" : $"`{dbPing}ms`")}";
+            var dbPingResultMessage = $"**Database ping:** {(double.IsNaN(dbPing) ? "Unreachable!" : $"`{dbPing}ms`")}";
             
             // set up response msg content
             // include relevant check results (see variables)

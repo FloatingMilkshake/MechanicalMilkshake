@@ -270,7 +270,7 @@ public class Program
         {
             while (true)
             {
-                await PackageUpdateChecks.PackageUpdateCheck();
+                await PackageUpdateChecks.PackageUpdateCheck(true);
                 await Task.Delay(259200000); // 3 days
             }
             // ReSharper disable once FunctionNeverReturns
