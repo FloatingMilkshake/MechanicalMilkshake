@@ -135,8 +135,8 @@ public class DebugCommands : ApplicationCommandModule
             [Option("checks", "The checks that should be run.")]
             [Choice("All", "all")]
             [Choice("Reminders", "reminders")]
-            [Choice("Package Updates", "packageUpdates")]
             [Choice("Database Connection", "databaseConnection")]
+            [Choice("Package Updates", "packageUpdates")]
             string checksToRun)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
@@ -147,10 +147,10 @@ public class DebugCommands : ApplicationCommandModule
             int numRemindersSent = default;
             int numRemindersFailed = default;
             int numRemindersWithNullTime = default;
-            double dbPing = default;
             int numHostsChecked = default;
             int totalNumHosts = default;
             string checkResult = default;
+            double dbPing = default;
 
             switch (checksToRun)
             {
@@ -164,11 +164,11 @@ public class DebugCommands : ApplicationCommandModule
                     (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime) =
                         await ReminderChecks.CheckRemindersAsync();
                     break;
-                case "packageUpdates":
-                    (numHostsChecked, totalNumHosts, checkResult) = await PackageUpdateChecks.PackageUpdateCheck(false);
-                    break;
                 case "databaseConnection":
                     dbPing = await DatabaseChecks.CheckDatabaseConnectionAsync();
+                    break;
+                case "packageUpdates":
+                    (numHostsChecked, totalNumHosts, checkResult) = await PackageUpdateChecks.PackageUpdateCheck(false);
                     break;
             }
             
@@ -180,7 +180,10 @@ public class DebugCommands : ApplicationCommandModule
                                         + $"After: `{numRemindersAfter}`; "
                                         + $"Sent: `{numRemindersSent}`; "
                                         + $"Failed: `{numRemindersFailed}`; "
-                                        + $"Null Time: `{numRemindersWithNullTime}`\n";
+                                        + $"Null Time: `{numRemindersWithNullTime}`";
+            
+            // database ping
+            var dbPingResultMessage = $"**Database ping:** {(double.IsNaN(dbPing) ? "Unreachable!" : $"`{dbPing}ms`")}";
             
             // package updates
             var packageUpdateCheckResultMessage = "**Package Updates:** " + (totalNumHosts == 0
@@ -193,12 +196,7 @@ public class DebugCommands : ApplicationCommandModule
                 packageUpdateCheckResultMessage += $"{checkResult.Replace("\n", "\n> ")}";
                 if (packageUpdateCheckResultMessage.EndsWith("\n> "))
                     packageUpdateCheckResultMessage = packageUpdateCheckResultMessage[..^3];
-                
-                packageUpdateCheckResultMessage += "\n";
             }
-            
-            // database ping
-            var dbPingResultMessage = $"**Database ping:** {(double.IsNaN(dbPing) ? "Unreachable!" : $"`{dbPing}ms`")}";
             
             // set up response msg content
             // include relevant check results (see variables)
@@ -206,16 +204,16 @@ public class DebugCommands : ApplicationCommandModule
             switch (checksToRun)
             {
                 case "all":
-                    response += reminderCheckResultMessage + packageUpdateCheckResultMessage + dbPingResultMessage;
+                    response += $"{reminderCheckResultMessage}\n{dbPingResultMessage}\n{packageUpdateCheckResultMessage}";
                     break;
                 case "reminders":
                     response += reminderCheckResultMessage;
                     break;
-                case "packageUpdates":
-                    response += packageUpdateCheckResultMessage;
-                    break;
                 case "databaseConnection":
                     response += dbPingResultMessage;
+                    break;
+                case "packageUpdates":
+                    response += packageUpdateCheckResultMessage;
                     break;
             }
             
