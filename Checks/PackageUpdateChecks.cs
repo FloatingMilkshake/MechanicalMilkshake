@@ -17,10 +17,20 @@ public class PackageUpdateChecks
         foreach (var host in Program.ConfigJson.Base.SshHosts)
         {
             Program.Discord.Logger.LogDebug(Program.BotEventId,
-                "[PackageUpdateCheck] Checking for updates on host '{Host}'.\"", host);
+                "[PackageUpdateCheck] Checking for updates on host '{Host}'.", host);
 
             var cmdResult =
                 await EvalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
+
+            Program.Discord.Logger.LogDebug(Program.BotEventId,
+                "[PackageUpdateCheck] Finished checking for updates on host '{Host}' with code {ExitCode}.",
+                host, cmdResult.ExitCode);
+            if (!string.IsNullOrWhiteSpace(cmdResult.Output))
+                Program.Discord.Logger.LogDebug(Program.BotEventId,
+                    "[PackageUpdateCheck] Output:\n{Output}", cmdResult.Output);
+            if (!string.IsNullOrWhiteSpace(cmdResult.Error))
+                Program.Discord.Logger.LogDebug(Program.BotEventId,
+                    "[PackageUpdateCheck] Error:\n{Error}", cmdResult.Error);
 
             if (string.IsNullOrWhiteSpace(cmdResult.Output)) continue;
 
