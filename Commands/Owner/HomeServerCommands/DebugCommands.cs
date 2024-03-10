@@ -193,6 +193,8 @@ public class DebugCommands : ApplicationCommandModule
                 packageUpdateCheckResultMessage += $"{checkResult.Replace("\n", "\n> ")}";
                 if (packageUpdateCheckResultMessage.EndsWith("\n> "))
                     packageUpdateCheckResultMessage = packageUpdateCheckResultMessage[..^3];
+                
+                packageUpdateCheckResultMessage += "\n";
             }
             
             // database ping

@@ -14,13 +14,22 @@ public class PackageUpdateChecks
         var updatesAvailable = false;
         var restartRequired = false;
 
-        foreach (var host in Program.ConfigJson.Base.SshHosts)
+        foreach (var rawHost in Program.ConfigJson.Base.SshHosts)
         {
+            // Get port from host if provided; otherwise, use SSH default of 22
+            var host = rawHost;
+            var port = "22";
+            if (rawHost.Contains(':'))
+            {
+                host = rawHost.Split(':')[0];
+                port = rawHost.Split(':')[1];
+            }
+            
             Program.Discord.Logger.LogDebug(Program.BotEventId,
                 "[PackageUpdateCheck] Checking for updates on host '{Host}'.", host);
 
             var cmdResult =
-                await EvalCommands.RunCommand($"ssh {host} \"cat /var/run/reboot-required ; sudo apt update\"");
+                await EvalCommands.RunCommand($"ssh {host} -p {port} \"cat /var/run/reboot-required ; sudo apt update\"");
 
             Program.Discord.Logger.LogDebug(Program.BotEventId,
                 "[PackageUpdateCheck] Finished checking for updates on host '{Host}' with code {ExitCode}.",
