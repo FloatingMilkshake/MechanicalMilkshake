@@ -183,7 +183,7 @@ public class DebugCommands : ApplicationCommandModule
                                         + $"Null Time: `{numRemindersWithNullTime}`\n";
             
             // package updates
-            var packageUpdateCheckResultMessage = "**Package Updates:** " + (numHostsChecked == 0
+            var packageUpdateCheckResultMessage = "**Package Updates:** " + (totalNumHosts == 0
                 ? "No hosts to check for package updates.\n"
                 : $"Checked `{numHostsChecked}`/`{totalNumHosts}` hosts for package updates.\n");
             if (numHostsChecked != 0 && checkResult is not null)
