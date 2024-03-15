@@ -13,6 +13,9 @@ public class KeywordTrackingHelpers
         if (message.Channel.IsPrivate)
             return;
 
+        await Task.Delay(30000);
+        var messagesAfter30Sec = await message.Channel.GetMessagesAfterAsync(message.Id);
+
         var fields = await Program.Db.HashGetAllAsync("keywords");
 
         foreach (var field in fields)
@@ -72,22 +75,19 @@ public class KeywordTrackingHelpers
             
             // If user is seemingly present and we should assume presence, ignore
             if (fieldValue.AssumePresence)
-                if ((await message.Channel.GetMessagesBeforeAsync(message.Id, 1)).Count > 0)
-                    if ((await message.Channel.GetMessagesBeforeAsync(message.Id, 1))[0].Author.Id == fieldValue.UserId)
-                        continue;
+            {
+                var msgBefore = (await message.Channel.GetMessagesBeforeAsync(message.Id, 1))[0];
+                if (msgBefore != default && msgBefore.Author.Id == fieldValue.UserId) continue;
+            }
 
             // If keyword is limited to a guild and this is not that guild, ignore
             if (fieldValue.GuildId != default && fieldValue.GuildId != message.Channel.Guild.Id)
                 continue;
 
             // Wait 30 seconds in case the user sends a message; if they do, ignore
-            await Task.Delay(30000);
-            var messagesAfter30Sec = await message.Channel.GetMessagesAfterAsync(message.Id);
+            //var messagesAfter30Sec = await message.Channel.GetMessagesAfterAsync(message.Id);
             if (messagesAfter30Sec.Any(x => x.Author.Id == fieldValue.UserId))
                 continue;
-
-            var messages = await message.Channel.GetMessagesAfterAsync(message.Id);
-            if (messages.Any(m => m.Author.Id == fieldValue.UserId)) continue;
 
             // Don't DM the user if their keyword was mentioned in a channel they do not have permissions to view.
             // If we don't do this we may leak private channels, which - even if the user might want to - I don't want to be doing.
