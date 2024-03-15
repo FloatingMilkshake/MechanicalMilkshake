@@ -264,6 +264,6 @@ public class ReminderChecks
         var id = msgId == default ? "[loading...]" : $"`{msgId}`";
 
         embed.AddField("Need to delay this reminder?",
-            $"Use {SlashCmdMentionHelpers.GetSlashCmdMention("reminder", "pushback")}and set `message` to {id}.");
+            $"Use {SlashCmdMentionHelpers.GetSlashCmdMention("reminder", "pushback")} and set `message` to {id}.");
     }
 }
