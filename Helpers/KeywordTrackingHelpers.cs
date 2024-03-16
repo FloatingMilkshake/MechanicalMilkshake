@@ -13,8 +13,14 @@ public class KeywordTrackingHelpers
         if (message.Channel.IsPrivate)
             return;
 
-        await Task.Delay(30000);
-        var messagesAfter30Sec = await message.Channel.GetMessagesAfterAsync(message.Id);
+        // Wait 30 seconds in case the user sends a message; if they do, ignore
+        // Do not fetch messages if we are in dbots #ultimate-shitposting, it causes too many ratelimits
+        IReadOnlyList<DiscordMessage> messagesAfter30Sec = default;
+        if (message.Channel.Id != 119222314964353025)
+        {
+            await Task.Delay(30000);
+            messagesAfter30Sec = await message.Channel.GetMessagesAfterAsync(message.Id);
+        }
 
         var fields = await Program.Db.HashGetAllAsync("keywords");
 
@@ -84,8 +90,7 @@ public class KeywordTrackingHelpers
             if (fieldValue.GuildId != default && fieldValue.GuildId != message.Channel.Guild.Id)
                 continue;
 
-            // Wait 30 seconds in case the user sends a message; if they do, ignore
-            //var messagesAfter30Sec = await message.Channel.GetMessagesAfterAsync(message.Id);
+            // After waiting 30 seconds, if the user has sent a message, ignore
             if (messagesAfter30Sec.Any(x => x.Author.Id == fieldValue.UserId))
                 continue;
 
