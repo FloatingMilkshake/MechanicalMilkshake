@@ -1,6 +1,4 @@
-﻿using Microsoft.VisualBasic;
-
-namespace MechanicalMilkshake.Commands.ContextMenuCommands;
+﻿namespace MechanicalMilkshake.Commands.ContextMenuCommands;
 
 public class Reminder : ApplicationCommandModule
 {
