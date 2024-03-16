@@ -16,7 +16,9 @@ public class KeywordTrackingHelpers
         var fields = await Program.Db.HashGetAllAsync("keywords");
         
         // Get message before current to check for assumed presence
-        var msgBefore = (await message.Channel.GetMessagesBeforeAsync(message.Id, 1))[0];
+        var msgsBefore = await message.Channel.GetMessagesBeforeAsync(message.Id, 1);
+        DiscordMessage msgBefore = default;
+        if (msgsBefore.Count > 0) msgBefore = msgsBefore[0];
         
         // Try to get member; if they are not in the guild, skip
         DiscordMember member;
@@ -75,9 +77,8 @@ public class KeywordTrackingHelpers
             
             // If user is seemingly present and we should assume presence, ignore
             if (fieldValue.AssumePresence)
-            {
-                if (msgBefore != default && msgBefore.Author.Id == fieldValue.UserId) continue;
-            }
+                if (msgBefore != default && msgBefore.Author.Id == fieldValue.UserId)
+                    continue;
 
             // If keyword is limited to a guild and this is not that guild, ignore
             if (fieldValue.GuildId != default && fieldValue.GuildId != message.Channel.Guild.Id)
