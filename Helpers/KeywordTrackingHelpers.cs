@@ -14,24 +14,27 @@ public class KeywordTrackingHelpers
             return;
 
         var fields = await Program.Db.HashGetAllAsync("keywords");
+        
+        // Get message before current to check for assumed presence
+        var msgBefore = (await message.Channel.GetMessagesBeforeAsync(message.Id, 1))[0];
+        
+        // Try to get member; if they are not in the guild, skip
+        DiscordMember member;
+        try
+        {
+            member = await message.Channel.Guild.GetMemberAsync(message.Author.Id);
+        }
+        catch
+        {
+            // User is not in guild. Skip.
+            return;
+        }
 
         foreach (var field in fields)
         {
             // Checks
 
             var fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
-            
-            // Try to get member; if they are not in the guild, skip
-            DiscordMember member;
-            try
-            {
-                member = await message.Channel.Guild.GetMemberAsync(fieldValue.UserId);
-            }
-            catch
-            {
-                // User is not in guild. Skip.
-                continue;
-            }
 
             // If keyword is set to only match whole word, use regex to check
             if (fieldValue!.MatchWholeWord)
@@ -73,7 +76,6 @@ public class KeywordTrackingHelpers
             // If user is seemingly present and we should assume presence, ignore
             if (fieldValue.AssumePresence)
             {
-                var msgBefore = (await message.Channel.GetMessagesBeforeAsync(message.Id, 1))[0];
                 if (msgBefore != default && msgBefore.Author.Id == fieldValue.UserId) continue;
             }
 
