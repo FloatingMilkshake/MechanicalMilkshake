@@ -17,9 +17,9 @@ public class InteractionEvents
         try
         {
             // Ignore home server, excluded servers, and authorized users
-            if (context.Guild.Id == Program.HomeServer.Id ||
+            if (context.Guild is not null && (context.Guild.Id == Program.HomeServer.Id ||
                 Program.ConfigJson.Logs.SlashCommands.CmdLogExcludedGuilds.Contains(context.Guild.Id.ToString()) ||
-                Program.ConfigJson.Base.AuthorizedUsers.Contains(context.User.Id.ToString()))
+                Program.ConfigJson.Base.AuthorizedUsers.Contains(context.User.Id.ToString())))
                 return;
 
             // Increment count
