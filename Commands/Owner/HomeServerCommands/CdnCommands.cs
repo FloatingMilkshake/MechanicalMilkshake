@@ -166,9 +166,9 @@ public partial class CdnCommands : ApplicationCommandModule
             }
         }
 
-        [SlashCommand("preview", "Preview an image stored on Amazon S3-compatible cloud storage.")]
+        [SlashCommand("check", "Check whether a file exists in your S3 bucket. Uses the S3 API to avoid caching.")]
         public static async Task CdnPreview(InteractionContext ctx,
-            [Option("name", "The name (or link) of the file to preview.")]
+            [Option("name", "The name (or link) of the file to check.")]
             string name)
         {
             if (Program.DisabledCommands.Contains("cdn"))
@@ -177,48 +177,34 @@ public partial class CdnCommands : ApplicationCommandModule
                 return;
             }
             
-            // Credit to @Erisa for this line of regex. https://github.com/Erisa/Cliptok/blob/a80e700/Constants/RegexConstants.cs#L8
-            var urlRx = UrlPattern();
+            if (name.Contains(Program.ConfigJson.S3.CdnBaseUrl))
+                name = name.Replace(Program.ConfigJson.S3.CdnBaseUrl, "").Trim('/');
 
-            if (urlRx.IsMatch(name) && !name.Contains(Program.ConfigJson.S3.CdnBaseUrl))
+            try
+            {
+                await Program.Minio.GetObjectAsync(new GetObjectArgs().WithBucket(Program.ConfigJson.S3.Bucket)
+                    .WithObject(name).WithFile(name));
+            }
+            catch (ObjectNotFoundException)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent(
-                        "I can only preview images on the configured CDN!" +
-                        " Please be sure the domain you are providing matches the one set in the configuration file" +
-                        " under `s3` > `cdnBaseUrl`."));
+                    new DiscordInteractionResponseBuilder().WithContent("That file doesn't exist!"));
                 return;
             }
-
-            if (!name.Contains('.'))
+            catch (Exception ex)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
-                        "Hmm, it doesn't look like you included a file extension. Be sure to include the proper file" +
-                        " extension so I can find the image you're looking for."));
-                return;
-            }
-
-            HttpRequestMessage request = new(HttpMethod.Get, $"{Program.ConfigJson.S3.CdnBaseUrl}/{name}");
-            var response = await Program.HttpClient.SendAsync(request);
-            if (!response.IsSuccessStatusCode)
-            {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent(
-                        "Hmm, it looks like that file doesn't exist! If you're sure it does, perhaps you got the" +
-                        " extension wrong."));
+                        $"I ran into an error trying to check for that file! {ex.GetType()}: {ex.Message}"));
                 return;
             }
 
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder().WithContent(
-                    $"{Program.ConfigJson.S3.CdnBaseUrl}/{name}"));
+                new DiscordInteractionResponseBuilder().WithContent("That file exists!"));
         }
 
         [GeneratedRegex(@"[^/\\&\?#]+\.\w*(?=([\?&#].*$|$))")]
         private static partial Regex FileNamePattern();
-        [GeneratedRegex("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]")]
-        private static partial Regex UrlPattern();
     }
 
     // This code is taken from https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197,
