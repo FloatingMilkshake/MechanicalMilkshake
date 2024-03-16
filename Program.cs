@@ -213,14 +213,7 @@ public class Program
         foreach (var type in ownerSlashCommandClasses)
         {
             slash.RegisterCommands(type, HomeServer.Id);
-            try
-            {
-                slash.RegisterCommands(type, 1007457740655968327);
-            }
-            catch
-            {
-                // ignore
-            }
+            slash.RegisterCommands(type, 1007457740655968327);
         }
 
         // Register server-specific feature slash commands
