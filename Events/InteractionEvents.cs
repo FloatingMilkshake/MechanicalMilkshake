@@ -31,11 +31,14 @@ public class InteractionEvents
             // Log to log channel if configured
             if (Program.ConfigJson.Logs.SlashCommands.LogChannel is not null)
             {
+                var description = context.Channel.IsPrivate
+                    ? $"{context.User.Username} (`{context.User.Id}`) used {SlashCmdMentionHelpers.GetSlashCmdMention(context.CommandName)} in DMs."
+                    : $"{context.User.Username} (`{context.User.Id}`) used {SlashCmdMentionHelpers.GetSlashCmdMention(context.CommandName)} in `{context.Channel.Name}` (`{context.Channel.Id}`) in \"{context.Guild.Name}\" (`{context.Guild.Id}`).";
+                
                 var embed = new DiscordEmbedBuilder()
                     .WithColor(Program.BotColor)
                     .WithAuthor(context.User.Username, null, context.User.AvatarUrl)
-                    .WithDescription(
-                        $"{context.User.Username} (`{context.User.Id}`) used {SlashCmdMentionHelpers.GetSlashCmdMention(context.CommandName)} in `{context.Channel.Name}` (`{context.Channel.Id}`) in \"{context.Guild.Name}\" (`{context.Guild.Id}`)!")
+                    .WithDescription(description)
                     .WithTimestamp(DateTime.Now);
 
                 try
