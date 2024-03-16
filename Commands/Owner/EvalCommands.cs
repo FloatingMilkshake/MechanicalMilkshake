@@ -105,7 +105,8 @@ public class EvalCommands : ApplicationCommandModule
             var scriptOptions = ScriptOptions.Default;
             scriptOptions = scriptOptions.WithImports("System", "System.Collections.Generic", "System.Linq",
                 "System.Text", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.SlashCommands",
-                "DSharpPlus.Interactivity", "DSharpPlus.Entities", "Microsoft.Extensions.Logging");
+                "DSharpPlus.Interactivity", "DSharpPlus.Entities", "Microsoft.Extensions.Logging",
+                Assembly.GetExecutingAssembly().GetName().Name);
             scriptOptions = scriptOptions.WithReferences(AppDomain.CurrentDomain.GetAssemblies()
                 .Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
 
