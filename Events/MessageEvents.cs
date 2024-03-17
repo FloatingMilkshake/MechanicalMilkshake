@@ -15,9 +15,12 @@ public partial class MessageEvents
             {
                 await ThrowMessageException(ex, e.Message, true);
             }
-            
-            // Add message to cache
-            Program.LastMessageCache[e.Channel.Id] = e.Message;
+
+            if (!e.Channel.IsPrivate)
+            {
+                // Add message to cache
+                Program.LastMessageCache[e.Channel.Id] = e.Message;
+            }
         });
         return Task.CompletedTask;
     }
@@ -31,12 +34,13 @@ public partial class MessageEvents
             try
             {
                 await KeywordTrackingHelpers.KeywordCheck(e.Message);
-                
-                // Add message to cache
-                Program.LastMessageCache[e.Channel.Id] = e.Message;
 
                 if (!e.Channel.IsPrivate)
-                    return;
+                {
+                    // Add message to cache
+                    Program.LastMessageCache[e.Channel.Id] = e.Message;
+                    return;   
+                }
 
                 if (e.Author.IsCurrent)
                     return;
