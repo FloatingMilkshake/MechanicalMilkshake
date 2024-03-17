@@ -16,9 +16,17 @@ public class KeywordTrackingHelpers
         var fields = await Program.Db.HashGetAllAsync("keywords");
         
         // Get message before current to check for assumed presence
-        var msgsBefore = await message.Channel.GetMessagesBeforeAsync(message.Id, 1);
+        // Attempt to get message from cache before fetching from Discord to avoid potential API spam
         DiscordMessage msgBefore = default;
-        if (msgsBefore.Count > 0) msgBefore = msgsBefore[0];
+        if (Program.LastMessageCache.TryGetValue(message.Channel.Id, out var value))
+        {
+            msgBefore = value;   
+        }
+        else
+        {
+            var msgsBefore = await message.Channel.GetMessagesBeforeAsync(message.Id, 1);
+            if (msgsBefore.Count > 0) msgBefore = msgsBefore[0];   
+        }
         
         // Try to get member; if they are not in the guild, skip
         DiscordMember member;
