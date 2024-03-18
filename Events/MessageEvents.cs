@@ -63,8 +63,8 @@ public partial class MessageEvents
 
                         DiscordGuild mutualServer = default;
                         foreach (var guild in client.Guilds)
-                            if (guild.Value.Members.Any(m =>
-                                    $"{UserInfoHelpers.GetFullUsername(m.Value)}" == usernameMatch))
+                            if ((await guild.Value.GetAllMembersAsync()).Any(m =>
+                                    $"{UserInfoHelpers.GetFullUsername(m)}" == usernameMatch))
                             {
                                 mutualServer = await client.GetGuildAsync(guild.Value.Id);
                                 break;
@@ -247,7 +247,7 @@ public partial class MessageEvents
                         {
                             var guild = await client.GetGuildAsync(guildPair.Key);
 
-                            if (!guild.Members.ContainsKey(owner.Id)) continue;
+                            if (!(await guild.GetAllMembersAsync()).Contains(owner)) continue;
                             var ownerMember = await guild.GetMemberAsync(owner.Id);
 
                             DiscordEmbedBuilder embed = new()
@@ -279,7 +279,7 @@ public partial class MessageEvents
                             {
                                 var server = await client.GetGuildAsync(guildId.Key);
 
-                                if (server.Members.ContainsKey(e.Author.Id)) mutualServers += $"- `{server}`\n";
+                                if ((await server.GetAllMembersAsync()).Contains(e.Author)) mutualServers += $"- `{server}`\n";
                             }
 
                             DiscordMessageBuilder messageBuilder = new();
