@@ -50,52 +50,11 @@ public partial class MessageEvents
                         !e.Message.ReferencedMessage.Embeds[0].Title.Contains("DM received"))
                             return;
 
-                    var usernamePattern = UsernamePattern();
                     var idPattern = IdPattern();
                     DiscordChannel targetChannel = default;
                     DiscordUser targetUser = default;
-                    DiscordMember targetMember;
 
-                    if (usernamePattern.IsMatch(e.Message.Content))
-                    {
-                        var usernameMatch = usernamePattern.Match(e.Message.Content).ToString()
-                            .Replace("sendto ", "").Trim();
-
-                        DiscordGuild mutualServer = default;
-                        foreach (var guild in client.Guilds)
-                            if ((await guild.Value.GetAllMembersAsync()).Any(m =>
-                                    $"{UserInfoHelpers.GetFullUsername(m)}" == usernameMatch))
-                            {
-                                mutualServer = await client.GetGuildAsync(guild.Value.Id);
-                                break;
-                            }
-
-                        if (mutualServer == default)
-                        {
-                            await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                                .WithContent(
-                                    "I tried to DM that user, but I don't have any mutual servers with them so Discord wouldn't let me send it. Sorry!")
-                                .WithReply(e.Message.Id));
-                            return;
-                        }
-
-                        try
-                        {
-                            targetMember = mutualServer.Members.FirstOrDefault(m =>
-                                $"{UserInfoHelpers.GetFullUsername(m.Value)}" == usernameMatch).Value;
-                        }
-                        catch (Exception ex)
-                        {
-                            await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                                .WithContent(
-                                    $"I tried to DM that user, but I don't have any mutual servers with them so Discord wouldn't let me send it. Sorry!\n```\n{ex.GetType()}: {ex.Message}\n```")
-                                .WithReply(e.Message.Id));
-                            return;
-                        }
-
-                        targetChannel = await targetMember.CreateDmChannelAsync();
-                    }
-                    else if (idPattern.IsMatch(e.Message.Content))
+                    if (idPattern.IsMatch(e.Message.Content))
                     {
                         try
                         {
@@ -125,7 +84,7 @@ public partial class MessageEvents
                     {
                         await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
                             .WithContent(
-                                "Hmm, I couldn't find an ID or username in your message, so I don't know who to send it to! Please include a user ID, channel ID, or username.")
+                                "Hmm, I couldn't find an ID in your message, so I don't know who to send it to! Please include a user ID or channel ID.")
                             .WithReply(e.Message.Id));
                         return;
                     }
@@ -137,11 +96,12 @@ public partial class MessageEvents
                         {
                             var server = await client.GetGuildAsync(guildId.Key);
 
-                            if (!server.Members.ContainsKey(targetUser!.Id)) continue;
+                            if (!(await server.GetAllMembersAsync()).Contains(targetUser)) continue;
                             mutualServer = await client.GetGuildAsync(server.Id);
                             break;
                         }
 
+                        DiscordMember targetMember;
                         try
                         {
                             targetMember = await mutualServer!.GetMemberAsync(targetUser!.Id);
@@ -159,7 +119,19 @@ public partial class MessageEvents
                     }
 
                     var contentPattern = ContentPattern();
-                    var content = contentPattern.Matches(e.Message.Content)[0].Groups[1].Value;
+                    string content;
+                    try
+                    {
+                        content = contentPattern.Matches(e.Message.Content)[0].Groups[1].Value;
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                            .WithContent(
+                                "I couldn't parse the content in your message! Make sure you provided content after the user or channel ID, and be sure you used the right order (`sendto <id> <content>`)!")
+                            .WithReply(e.Message.Id));
+                        return;
+                    }
 
                     if (e.Message.Attachments.Any())
                         content = e.Message.Attachments.Aggregate(content,
@@ -358,9 +330,7 @@ public partial class MessageEvents
 
         await Program.HomeChannel.SendMessageAsync(embed);
     }
-
-    [GeneratedRegex(".*#[0-9]{4}")]
-    private static partial Regex UsernamePattern();
+    
     [GeneratedRegex("[0-9]{5,}")]
     private static partial Regex IdPattern();
     [GeneratedRegex(".*[0-9]+ (.*)")]
