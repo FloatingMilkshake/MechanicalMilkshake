@@ -15,12 +15,6 @@ public partial class MessageEvents
             {
                 await ThrowMessageException(ex, e.Message, true);
             }
-
-            if (!e.Channel.IsPrivate)
-            {
-                // Add message to cache
-                Program.LastMessageCache[e.Channel.Id] = e.Message;
-            }
         });
         return Task.CompletedTask;
     }
