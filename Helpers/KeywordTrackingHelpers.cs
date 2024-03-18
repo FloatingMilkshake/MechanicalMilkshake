@@ -20,7 +20,8 @@ public class KeywordTrackingHelpers
         DiscordMessage msgBefore = default;
         if (Program.LastMessageCache.TryGetValue(message.Channel.Id, out var value))
         {
-            msgBefore = value;   
+            if (value.Id == message.Channel.LastMessageId)
+                msgBefore = value;
         }
         else
         {
