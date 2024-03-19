@@ -306,6 +306,20 @@ public partial class MessageEvents
         return Task.CompletedTask;
     }
 
+    public static Task MessageDeleted(DiscordClient client, MessageDeleteEventArgs e)
+    {
+        Task.Run(async () =>
+        {
+            // If message is in cache, remove
+            if (Program.LastMessageCache.TryGetValue(e.Channel.Id, out var value) && value.Id == e.Message.Id)
+                Program.LastMessageCache.Remove(e.Channel.Id);
+        
+            // Add most recent message from channel to cache
+            Program.LastMessageCache[e.Channel.Id] = (await e.Channel.GetMessagesAsync(1))[0];
+        });
+        return Task.CompletedTask;
+    }
+
     private static async Task ThrowMessageException(Exception ex, DiscordMessage message, bool isEdit)
     {
         // Ignore some HTTP errors
