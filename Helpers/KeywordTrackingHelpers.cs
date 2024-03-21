@@ -17,18 +17,25 @@ public class KeywordTrackingHelpers
         
         // Get message before current to check for assumed presence
         // Attempt to get message from cache before fetching from Discord to avoid potential API spam
-        DiscordMessage msgBefore = default;
+        (ulong messageId, ulong authorId) msgBefore = default;
+        var msgFoundInCache = false;
         if (Program.LastMessageCache.TryGetValue(message.Channel.Id, out var value))
         {
-            if (value.Id == message.Channel.LastMessageId)
-                msgBefore = value;
+            var messageId = value.messageId;
+            var authorId = value.authorId;
+            if (messageId == message.Channel.LastMessageId)
+            {
+                msgBefore = (messageId, authorId);
+                msgFoundInCache = true;
+            }
         }
-        else
+
+        if (!msgFoundInCache)
         {
             var msgsBefore = await message.Channel.GetMessagesBeforeAsync(message.Id, 1);
-            if (msgsBefore.Count > 0) msgBefore = msgsBefore[0];   
+            if (msgsBefore.Count > 0) msgBefore = (msgsBefore[0].Id, msgsBefore[0].Author.Id);
         }
-        
+
         // Try to get member; if they are not in the guild, skip
         DiscordMember member;
         try
@@ -86,7 +93,7 @@ public class KeywordTrackingHelpers
             
             // If user is seemingly present and we should assume presence, ignore
             if (fieldValue.AssumePresence)
-                if (msgBefore != default && msgBefore.Author.Id == fieldValue.UserId)
+                if (msgBefore != default && msgBefore.authorId == fieldValue.UserId)
                     continue;
 
             // If keyword is limited to a guild and this is not that guild, ignore
