@@ -1,28 +1,7 @@
 # MechanicalMilkshake
-A multipurpose Discord bot, written in C# with [DSharpPlus](https://github.com/DSharpPlus/DSharpPlus)! (It also happens to be my first bot! Things have progressed quite a bit since I started!)
+A multipurpose Discord bot.
 
 Note that I'm not developing this bot with any particular features in mind (for example, moderation tools). Also, some features of this bot are somewhat specific and might not be useful to you, but I add them because they're useful to me or others. Feel free to suggest a feature if you want something the bot doesn't already have! If it's not super complicated, I'm happy to add whatever features you might want.
-
-## Credits
-I think providing credit is important, especially for a project like this that holds a lot of value to me. So I've decided to put the credits at the top of this readme. Here they are.
-
-### Dependencies
-This bot depends on a few projects and services to provide the features that it has. They are listed below!
-- [DSharpPlus](https://github.com/DSharpPlus/DSharpPlus/)
-- [Redis](https://redis.io/)
-- [WolframAlpha](https://products.wolframalpha.com/api/)
-- [Minio](https://github.com/minio/minio-dotnet/)
-- [HumanDateParser](https://github.com/jacksonrakena/human-date-parser/)
-- [HTTP Cats API](https://http.cat/)
-- [Random Useless Facts API](https://uselessfacts.jsph.pl/)
-- [The Cat API](https://thecatapi.com/)
-- [Dog CEO's Dog API](https://dog.ceo/dog-api/)
-
-
-### Special Thanks
-Without these people I wouldn't be where I am today, and this project wouldn't be here.
-- [Erisa](https://erisa.uk/) for the help and the answers to all my questions - especially when I was first starting out with this. You've played a huge role in helping me learn more about this and I really, really appreciate it. Thank you so much. ♥
-- [auravoid](https://auravoid.dev/) for the feedback, contributions, and ideas; and for helping to further my interest in technology over the years (and for basically being my personal QA tester :P). Thank you!
 
 ## How can I add the bot to my server?
 
@@ -65,3 +44,22 @@ This is the way to go if you intend on working on development. Note that you wil
 
 ## Contributing
 I'm not the best at this, so feel free to open an issue or PR if you notice anything that seems wrong or if you have a suggestion! I'm all ears. However, please note that I have some [Contribution Guidelines](CONTRIBUTING.md).
+
+## Credits
+
+### Dependencies
+This bot depends on a few projects and services to provide the features that it has. They are listed below!
+- [DSharpPlus](https://github.com/DSharpPlus/DSharpPlus/)
+- [Redis](https://redis.io/)
+- [WolframAlpha](https://products.wolframalpha.com/api/)
+- [Minio](https://github.com/minio/minio-dotnet/)
+- [HumanDateParser](https://github.com/jacksonrakena/human-date-parser/)
+- [HTTP Cats API](https://http.cat/)
+- [Random Useless Facts API](https://uselessfacts.jsph.pl/)
+- [The Cat API](https://thecatapi.com/)
+- [Dog CEO's Dog API](https://dog.ceo/dog-api/)
+
+### Special Thanks
+Without these people I wouldn't be where I am today, and this project wouldn't be here.
+- [Erisa](https://erisa.uk/) for the help and the answers to all my questions - especially when I was first starting out with this. You've played a huge role in helping me learn more about this and I really, really appreciate it. Thank you so much. ♥
+- [auravoid](https://auravoid.dev/) for the feedback, contributions, and ideas; and for helping to further my interest in technology over the years (and for basically being my personal QA tester :P). Thank you!
