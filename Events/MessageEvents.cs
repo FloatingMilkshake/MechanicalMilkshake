@@ -32,8 +32,8 @@ public partial class MessageEvents
                 if (!e.Channel.IsPrivate)
                 {
                     // Add message to cache
-                    Program.LastMessageCache[e.Channel.Id] = (e.Message.Id, e.Message.Author.Id);
-                    return;   
+                    Program.MessageCache.AddMessage(new CachedMessage(e.Message.Channel.Id, e.Message.Id, e.Message.Author.Id));
+                    return;
                 }
 
                 if (e.Author.IsCurrent)
@@ -299,7 +299,7 @@ public partial class MessageEvents
             }
             catch (Exception ex)
             {
-                Program.LastMessageCache[e.Channel.Id] = (e.Message.Id, e.Message.Author.Id);
+                Program.MessageCache.AddMessage(new CachedMessage(e.Message.Channel.Id, e.Message.Id, e.Message.Author.Id));
                 await ThrowMessageException(ex, e.Message, false);
             }
         });
@@ -311,12 +311,12 @@ public partial class MessageEvents
         Task.Run(async () =>
         {
             // If message is in cache, remove
-            if (Program.LastMessageCache.TryGetValue(e.Channel.Id, out var value) && value.messageId == e.Message.Id)
-                Program.LastMessageCache.Remove(e.Channel.Id);
+            if (Program.MessageCache.TryGetMessage(e.Message.Id, out var cachedMessage) && cachedMessage.MessageId == e.Message.Id)
+                Program.MessageCache.RemoveMessage(cachedMessage.MessageId);
         
             // Add most recent message from channel to cache
             var msg = (await e.Channel.GetMessagesAsync(1))[0];
-            Program.LastMessageCache[e.Channel.Id] = (msg.Id, msg.Author.Id);
+            Program.MessageCache.AddMessage(new CachedMessage(msg.Channel.Id, msg.Id, msg.Author.Id));
         });
         return Task.CompletedTask;
     }

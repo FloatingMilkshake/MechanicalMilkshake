@@ -19,10 +19,10 @@ public class KeywordTrackingHelpers
         // Attempt to get message from cache before fetching from Discord to avoid potential API spam
         (ulong messageId, ulong authorId) msgBefore = default;
         var msgFoundInCache = false;
-        if (Program.LastMessageCache.TryGetValue(message.Channel.Id, out var value))
+        if (Program.MessageCache.TryGetMessageByChannel(message.Channel.Id, out var cachedMessage))
         {
-            var messageId = value.messageId;
-            var authorId = value.authorId;
+            var messageId = cachedMessage.MessageId;
+            var authorId = cachedMessage.AuthorId;
             if (messageId == message.Channel.LastMessageId)
             {
                 msgBefore = (messageId, authorId);

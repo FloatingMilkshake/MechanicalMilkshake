@@ -23,7 +23,7 @@ public class Program
 #endif
     public static readonly IDatabase Db = Redis.GetDatabase();
     public static bool RedisExceptionsSuppressed;
-    public static Dictionary<ulong, (ulong messageId, ulong authorId)> LastMessageCache = new(); // key is channel ID
+    public static readonly MessageCache MessageCache = new();
 
     public static readonly Dictionary<string, ulong> UserFlagEmoji = new()
     {

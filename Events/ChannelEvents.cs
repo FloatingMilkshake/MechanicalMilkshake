@@ -7,7 +7,7 @@ public class ChannelEvents
         Task.Run(async () =>
         {
             // If channel has a message in cache, remove
-            Program.LastMessageCache.Remove(e.Channel.Id);
+            Program.MessageCache.RemoveChannel(e.Channel.Id);
         });
         return Task.CompletedTask;
     }
