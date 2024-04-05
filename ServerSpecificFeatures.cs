@@ -35,20 +35,95 @@ public partial class ServerSpecificFeatures
                 }
             }
 
-            if (e.Guild == Program.HomeServer && e.Message.Author.Id == 1031968180974927903 &&
-                (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1))[0].Content
-                .Contains("caption"))
+            if (e.Guild.Id == 799644062973427743)
             {
-                var chan = await Program.Discord.GetChannelAsync(1048242806486999092);
-                if (string.IsNullOrWhiteSpace(e.Message.Content))
-                    await chan.SendMessageAsync(e.Message.Attachments[0].Url);
-                else if (e.Message.Content.Contains("http"))
-                    await chan.SendMessageAsync(e.Message.Content);
+                // &caption -> #captions
+                if (e.Message.Author.Id == 1031968180974927903 &&
+                    (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1))[0].Content
+                    .Contains("caption"))
+                {
+                    var chan = await Program.Discord.GetChannelAsync(1048242806486999092);
+                    if (string.IsNullOrWhiteSpace(e.Message.Content))
+                        await chan.SendMessageAsync(e.Message.Attachments[0].Url);
+                    else if (e.Message.Content.Contains("http"))
+                        await chan.SendMessageAsync(e.Message.Content);
+                }
+                
+                // parse Windows Insiders RSS feed
+                if (e.Message.Author.Id == 944784076735414342 && e.Message.Channel.Id == 1050133013796769833)
+                {
+                    // ignore no-content messages
+                    if (e.Message.Content is null) return;
+                    
+                    // try to match content with Insider URL pattern
+                    var insiderUrlPattern = InsiderUrlPattern();
+                    
+                    // ignore non-matching messages
+                    if (!insiderUrlPattern.IsMatch(e.Message.Content)) return;
+                    
+                    var insiderUrlMatch = insiderUrlPattern.Match(e.Message.Content);
+                    var windowsVersion = $"Windows {insiderUrlMatch.Groups[1].Value}";
+                    var buildNumber1 = insiderUrlMatch.Groups[2].Value;
+                    var buildNumber2 = insiderUrlMatch.Groups[3].Value;
+                    var channel1 = insiderUrlMatch.Groups[4].Value;
+                    var channel2 = insiderUrlMatch.Groups[5].Value;
+                    
+                    // format channel names correctly
+                    // canary -> Canary Channel
+                    // dev -> Dev Channel
+                    // beta -> Beta Channel
+                    // release-preview -> Release Preview Channel
+                    
+                    channel1 = channel1 switch
+                    {
+                        "canary" => "Canary Channel",
+                        "dev" => "Dev Channel",
+                        "beta" => "Beta Channel",
+                        "release-preview" => "Release Preview Channel",
+                        _ => string.Empty
+                    };
+                    
+                    channel2 = channel2 switch
+                    {
+                        "canary" => "Canary Channel",
+                        "dev" => "Dev Channel",
+                        "beta" => "Beta Channel",
+                        "release-preview" => "Release Preview Channel",
+                        _ => string.Empty
+                    };
+                    
+                    // assemble /announcebuild command
+                    // format is: /announcebuild windows_version:WINDOWS_VERSION build_number:BUILD_NUMBER blog_link:BLOG_LINK insider_role1:FIRST_ROLE insider_role2:SECOND_ROLE
+                    // insider_role2 is optional
+                    // if two build numbers are present, pick the higher one
+                    // if a build number contains a hyphen, replace it with a dot (ex. 22635-3430 -> 22635.3430)
+
+                    var buildNumber = buildNumber2 == string.Empty
+                        ? buildNumber1
+                        : string.Compare(buildNumber1, buildNumber2, StringComparison.Ordinal) > 0
+                            ? buildNumber1
+                            : buildNumber2;
+                    buildNumber = buildNumber.Replace('-', '.');
+                    
+                    var blogLink = insiderUrlMatch.ToString();
+                    
+                    var command = $"/announcebuild windows_version:{windowsVersion} build_number:{buildNumber} blog_link:{blogLink} insider_role1:{channel1}";
+                    if (channel2 != string.Empty) command += $" insider_role2:{channel2}";
+                    
+                    // send command to channel
+                    var msg = await e.Message.Channel.SendMessageAsync(command);
+                    
+                    // suppress embed
+                    await Task.Delay(500);
+                    await msg.ModifyEmbedSuppressionAsync(true);
+                }
             }
         }
 
         [GeneratedRegex("(.*)?<@!?([0-9]+)>(.*)")]
         private static partial Regex MentionPattern();
+        [GeneratedRegex(@"https.*windows-(\d+).*?build[s]?-(?:(\d+(?:-\d+)?)(?:-and-(\d+-\d+)?)*).+?(?:(canary|dev|beta|release-preview)(?:-and-(canary|dev|beta|release-preview))*)?-channel[s]?.*\/")]
+        private static partial Regex InsiderUrlPattern();
     }
 
     public class MessageCommands : BaseCommandModule
