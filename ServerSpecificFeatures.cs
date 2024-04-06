@@ -122,7 +122,7 @@ public partial class ServerSpecificFeatures
 
         [GeneratedRegex("(.*)?<@!?([0-9]+)>(.*)")]
         private static partial Regex MentionPattern();
-        [GeneratedRegex(@"https.*windows-(\d+).*?build[s]?-(?:(\d+(?:-\d+)?)(?:-and-(\d+-\d+)?)*).+?(?:(canary|dev|beta|release-preview)(?:-and-(canary|dev|beta|release-preview))*)?-channel[s]?.*\/")]
+        [GeneratedRegex(@"https.*windows-(\d+).*?build[s]?-(?:(\d+(?:-\d+)?)(?:-and-(\d+-\d+)?)*)(?:.+?(?:(canary|dev|beta|release-preview)(?:-and-(canary|dev|beta|release-preview))*)?-channel[s]?.*)?\/")]
         private static partial Regex InsiderUrlPattern();
     }
 
