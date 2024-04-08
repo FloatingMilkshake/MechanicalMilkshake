@@ -1,4 +1,4 @@
-namespace MechanicalMilkshake.Refs;
+namespace MechanicalMilkshake.Entities.MessageCaching;
 
 public class MessageCache
 {

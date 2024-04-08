@@ -34,7 +34,7 @@ public class Reminder : ApplicationCommandModule
             while (rem.Name == reminderId)
                 reminderId = random.Next(1000, 9999);
         
-        var reminder = new Refs.Reminder
+        var reminder = new Entities.Reminder
         {
             UserId = ctx.User.Id,
             ChannelId = ctx.Channel.Id,

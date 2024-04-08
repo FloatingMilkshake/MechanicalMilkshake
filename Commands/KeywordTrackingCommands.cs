@@ -35,7 +35,7 @@ public partial class KeywordTrackingCommands : ApplicationCommandModule
             var fields = await Program.Db.HashGetAllAsync("keywords");
             foreach (var field in fields)
             {
-                var fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+                var fieldValue = JsonConvert.DeserializeObject<TrackedKeyword>(field.Value);
 
                 // If the keyword is already being tracked, delete the current entry
                 // This way we don't end up with duplicate entries for keywords
@@ -179,7 +179,7 @@ public partial class KeywordTrackingCommands : ApplicationCommandModule
                 }
             }
 
-            KeywordConfig keywordConfig = new()
+            TrackedKeyword trackedKeyword = new()
             {
                 Keyword = keyword,
                 UserId = ctx.User.Id,
@@ -194,7 +194,7 @@ public partial class KeywordTrackingCommands : ApplicationCommandModule
             };
 
             await Program.Db.HashSetAsync("keywords", ctx.InteractionId,
-                JsonConvert.SerializeObject(keywordConfig));
+                JsonConvert.SerializeObject(trackedKeyword));
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                 .WithContent("Done!").AsEphemeral());
         }
@@ -207,7 +207,7 @@ public partial class KeywordTrackingCommands : ApplicationCommandModule
 
             var data = await Program.Db.HashGetAllAsync("keywords");
 
-            var response = data.Select(field => JsonConvert.DeserializeObject<KeywordConfig>(field.Value))
+            var response = data.Select(field => JsonConvert.DeserializeObject<TrackedKeyword>(field.Value))
                 .Where(fieldValue => fieldValue!.UserId == ctx.User.Id).Aggregate("",
                     (current, fieldValue) => current + $"- {fieldValue.Keyword.Truncate(45)}\n");
 
@@ -243,7 +243,7 @@ public partial class KeywordTrackingCommands : ApplicationCommandModule
 
             var keywords = await Program.Db.HashGetAllAsync("keywords");
 
-            var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<KeywordConfig>(field.Value))
+            var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<TrackedKeyword>(field.Value))
                 .Where(keyword => keyword!.UserId == ctx.User.Id).ToList();
 
             if (userKeywords.Count == 0)
@@ -260,7 +260,7 @@ public partial class KeywordTrackingCommands : ApplicationCommandModule
             }
 
             var options = (from field in keywords
-                select JsonConvert.DeserializeObject<KeywordConfig>(field.Value)
+                select JsonConvert.DeserializeObject<TrackedKeyword>(field.Value)
                 into keyword
                 where keyword!.UserId == ctx.User.Id
                 select new DiscordSelectComponentOption(keyword.Keyword.Truncate(100), keyword.Id.ToString())).ToList();
@@ -280,7 +280,7 @@ public partial class KeywordTrackingCommands : ApplicationCommandModule
 
             var keywords = await Program.Db.HashGetAllAsync("keywords");
 
-            var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<KeywordConfig>(field.Value))
+            var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<TrackedKeyword>(field.Value))
                 .Where(keyword => keyword!.UserId == ctx.User.Id).ToList();
 
             if (userKeywords.Count == 0)
@@ -296,7 +296,7 @@ public partial class KeywordTrackingCommands : ApplicationCommandModule
             }
 
             var options = (from field in keywords
-                select JsonConvert.DeserializeObject<KeywordConfig>(field.Value)
+                select JsonConvert.DeserializeObject<TrackedKeyword>(field.Value)
                 into keyword
                 where keyword!.UserId == ctx.User.Id
                 select new DiscordSelectComponentOption(keyword.Keyword.Truncate(100), keyword.Id.ToString())).ToList();

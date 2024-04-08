@@ -52,7 +52,7 @@ public class KeywordTrackingHelpers
         {
             // Checks
 
-            var fieldValue = JsonConvert.DeserializeObject<KeywordConfig>(field.Value);
+            var fieldValue = JsonConvert.DeserializeObject<TrackedKeyword>(field.Value);
 
             // If keyword is set to only match whole word, use regex to check
             if (fieldValue!.MatchWholeWord)

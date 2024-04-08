@@ -1,4 +1,4 @@
-﻿namespace MechanicalMilkshake.Refs;
+﻿namespace MechanicalMilkshake.Entities.EvalCommands;
 
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global

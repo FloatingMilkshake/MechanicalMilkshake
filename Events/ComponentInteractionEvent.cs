@@ -327,10 +327,10 @@ public partial class ComponentInteractionEvent
 
                 var serializedKeyword = await Program.Db.HashGetAsync("keywords", e.Values.FirstOrDefault());
 
-                KeywordConfig keyword;
+                TrackedKeyword keyword;
                 try
                 {
-                    keyword = JsonConvert.DeserializeObject<KeywordConfig>(serializedKeyword);
+                    keyword = JsonConvert.DeserializeObject<TrackedKeyword>(serializedKeyword);
                 }
                 catch
                 {
@@ -353,10 +353,10 @@ public partial class ComponentInteractionEvent
 
                 var serializedKeyword = await Program.Db.HashGetAsync("keywords", e.Values.FirstOrDefault());
 
-                KeywordConfig keyword;
+                TrackedKeyword keyword;
                 try
                 {
-                    keyword = JsonConvert.DeserializeObject<KeywordConfig>(serializedKeyword);
+                    keyword = JsonConvert.DeserializeObject<TrackedKeyword>(serializedKeyword);
                 }
                 catch
                 {
@@ -383,7 +383,7 @@ public partial class ComponentInteractionEvent
 
                 var keywords = await Program.Db.HashGetAllAsync("keywords");
 
-                var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<KeywordConfig>(field.Value))
+                var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<TrackedKeyword>(field.Value))
                     .Where(keyword => keyword!.UserId == e.User.Id).ToList();
 
                 if (userKeywords.Count == 0)
@@ -414,7 +414,7 @@ public partial class ComponentInteractionEvent
 
                 var keywords = await Program.Db.HashGetAllAsync("keywords");
 
-                var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<KeywordConfig>(field.Value))
+                var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<TrackedKeyword>(field.Value))
                     .Where(keyword => keyword!.UserId == e.User.Id).ToList();
 
                 foreach (var keyword in userKeywords) await Program.Db.HashDeleteAsync("keywords", keyword.Id);
@@ -434,10 +434,10 @@ public partial class ComponentInteractionEvent
 
                     var keywords = await Program.Db.HashGetAllAsync("keywords");
                     var keywordFound = false;
-                    KeywordConfig keyword = default;
+                    TrackedKeyword keyword = default;
                     foreach (var item in keywords)
                     {
-                        keyword = JsonConvert.DeserializeObject<KeywordConfig>(item.Value);
+                        keyword = JsonConvert.DeserializeObject<TrackedKeyword>(item.Value);
                         if (keyword!.Keyword != keywordToDelete) continue;
                         keywordFound = true;
                         break;
@@ -586,7 +586,7 @@ public partial class ComponentInteractionEvent
         }
     }
 
-    private static async Task<DiscordEmbedBuilder> GenerateKeywordDetailsEmbed(KeywordConfig keyword)
+    private static async Task<DiscordEmbedBuilder> GenerateKeywordDetailsEmbed(TrackedKeyword keyword)
     {
         var ignoredUserMentions = "\n";
         foreach (var userToIgnore in keyword!.UserIgnoreList)

@@ -1,4 +1,4 @@
-﻿namespace MechanicalMilkshake.Refs;
+﻿namespace MechanicalMilkshake.Entities;
 
 public class Reminder
 {

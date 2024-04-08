@@ -1,6 +1,6 @@
-﻿namespace MechanicalMilkshake.Refs;
+﻿namespace MechanicalMilkshake.Entities;
 
-public class KeywordConfig
+public class TrackedKeyword
 {
     [JsonProperty("keyword")] public string Keyword { get; set; }
 
