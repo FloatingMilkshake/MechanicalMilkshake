@@ -245,9 +245,7 @@ public partial class ComponentInteractionEvent
                     EventGlobals globals = new(Program.Discord, ctx);
 
                     var scriptOptions = ScriptOptions.Default;
-                    scriptOptions = scriptOptions.WithImports("System", "System.Collections.Generic", "System.Linq",
-                        "System.Text", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.SlashCommands",
-                        "DSharpPlus.Interactivity", "Microsoft.Extensions.Logging");
+                    scriptOptions = scriptOptions.WithImports(EvalCommands.EvalImports);
                     scriptOptions = scriptOptions.WithReferences(AppDomain.CurrentDomain.GetAssemblies()
                         .Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
 
@@ -257,14 +255,13 @@ public partial class ComponentInteractionEvent
 
                     if (result is null)
                     {
-                        await ctx.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent("null"));
+                        await ctx.DeleteOriginalResponseAsync();
                     }
                     else
                     {
                         if (result.ReturnValue is null)
                         {
-                            await ctx.CreateFollowupMessageAsync(
-                                new DiscordFollowupMessageBuilder().WithContent("null"));
+                            await ctx.DeleteOriginalResponseAsync();
                         }
                         else
                         {

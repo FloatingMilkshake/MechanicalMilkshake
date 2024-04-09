@@ -4,6 +4,10 @@
 public class EvalCommands : ApplicationCommandModule
 {
     private static readonly List<string> RestrictedTerms = ["poweroff", "shutdown", "reboot", "halt"];
+    public static readonly string[] EvalImports = ["System", "System.Collections.Generic", "System.Linq",
+        "System.Text", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.SlashCommands",
+        "DSharpPlus.Interactivity", "DSharpPlus.Entities", "Microsoft.Extensions.Logging",
+        Assembly.GetExecutingAssembly().GetName().Name];
 
     // The idea for this command, and a lot of the code, is taken from Erisa's Lykos. References are linked below.
     // https://github.com/Erisa/Lykos/blob/5f9c17c/src/Modules/Owner.cs#L116-L144
@@ -113,10 +117,7 @@ public class EvalCommands : ApplicationCommandModule
             Globals globals = new(Program.Discord, ctx);
 
             var scriptOptions = ScriptOptions.Default;
-            scriptOptions = scriptOptions.WithImports("System", "System.Collections.Generic", "System.Linq",
-                "System.Text", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.SlashCommands",
-                "DSharpPlus.Interactivity", "DSharpPlus.Entities", "Microsoft.Extensions.Logging",
-                Assembly.GetExecutingAssembly().GetName().Name);
+            scriptOptions = scriptOptions.WithImports(EvalImports);
             scriptOptions = scriptOptions.WithReferences(AppDomain.CurrentDomain.GetAssemblies()
                 .Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location)));
 
