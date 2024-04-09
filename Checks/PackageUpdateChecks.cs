@@ -1,6 +1,4 @@
-﻿using Microsoft.VisualBasic.CompilerServices;
-
-namespace MechanicalMilkshake.Checks;
+﻿namespace MechanicalMilkshake.Checks;
 
 public class PackageUpdateChecks
 {
