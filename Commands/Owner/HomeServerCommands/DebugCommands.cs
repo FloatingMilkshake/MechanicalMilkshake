@@ -157,7 +157,7 @@ public class DebugCommands : ApplicationCommandModule
                 case "all":
                     (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime) =
                         await ReminderChecks.CheckRemindersAsync();
-                    (numHostsChecked, totalNumHosts, checkResult) = await PackageUpdateChecks.PackageUpdateCheck(false);
+                    (numHostsChecked, totalNumHosts, checkResult) = await PackageUpdateChecks.PackageUpdateCheck();
                     dbPing = await DatabaseChecks.CheckDatabaseConnectionAsync();
                     break;
                 case "reminders":
@@ -168,7 +168,7 @@ public class DebugCommands : ApplicationCommandModule
                     dbPing = await DatabaseChecks.CheckDatabaseConnectionAsync();
                     break;
                 case "packageUpdates":
-                    (numHostsChecked, totalNumHosts, checkResult) = await PackageUpdateChecks.PackageUpdateCheck(false);
+                    (numHostsChecked, totalNumHosts, checkResult) = await PackageUpdateChecks.PackageUpdateCheck();
                     break;
             }
             
@@ -188,15 +188,9 @@ public class DebugCommands : ApplicationCommandModule
             // package updates
             var packageUpdateCheckResultMessage = "**Package Updates:** " + (totalNumHosts == 0
                 ? "No hosts to check for package updates.\n"
-                : $"Checked `{numHostsChecked}`/`{totalNumHosts}` hosts for package updates.\n");
+                : $"Checked `{numHostsChecked}`/`{totalNumHosts}` hosts for package updates.\n> ");
             if (numHostsChecked != 0 && checkResult is not null)
-            {
-                if (packageUpdateCheckResultMessage.EndsWith('\n'))
-                    packageUpdateCheckResultMessage = packageUpdateCheckResultMessage[..^1] + " ";
                 packageUpdateCheckResultMessage += $"{checkResult.Replace("\n", "\n> ")}";
-                if (packageUpdateCheckResultMessage.EndsWith("\n> "))
-                    packageUpdateCheckResultMessage = packageUpdateCheckResultMessage[..^3];
-            }
             
             // set up response msg content
             // include relevant check results (see variables)
