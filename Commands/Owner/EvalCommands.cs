@@ -26,6 +26,16 @@ public class EvalCommands : ApplicationCommandModule
                 return;
             }
 
+        // hardcode protection for SSH on my instance of the bot
+        if (Program.Discord.CurrentUser.Id == 863140071980924958
+            && ctx.User.Id != 455432936339144705
+            && command.Contains("ssh"))
+        {
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You can't do that."));
+            return;
+        }
+
+
         var cmdResponse = await RunCommand(command);
         string response;
         
