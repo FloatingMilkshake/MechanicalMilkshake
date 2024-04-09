@@ -269,7 +269,8 @@ public class Program
                 var (_, _, checkResult) = await PackageUpdateChecks.PackageUpdateCheck();
                 var ownerMention =
                     Discord.CurrentApplication.Owners.Aggregate("", (current, user) => current + user.Mention + " ");
-                await HomeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{checkResult}");
+                if (checkResult != "")
+                    await HomeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{checkResult}");
                 
                 await Task.Delay(259200000); // 3 days
             }
