@@ -50,7 +50,7 @@ public partial class ServerSpecificFeatures
                 }
                 
                 // parse Windows Insiders RSS feed
-                if (e.Message.Author.Id == 944784076735414342 && e.Message.Channel.Id == 1050133013796769833)
+                if (e.Message.Author.Id == 944784076735414342 && e.Message.Channel.Id == 1227636018375819296)
                 {
                     // ignore no-content messages
                     if (e.Message.Content is null) return;
