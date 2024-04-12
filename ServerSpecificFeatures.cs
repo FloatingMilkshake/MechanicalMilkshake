@@ -114,7 +114,7 @@ public partial class ServerSpecificFeatures
                     var msg = await e.Message.Channel.SendMessageAsync(command);
                     
                     // suppress embed
-                    await Task.Delay(500);
+                    await Task.Delay(1000);
                     await msg.ModifyEmbedSuppressionAsync(true);
                 }
             }
