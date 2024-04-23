@@ -276,6 +276,9 @@ public class Program
         
         // Custom status update
         await Task.Run(async () => ActivityTasks.ExecuteAsync());
+        
+        // DBots stats update
+        await Task.Run(async () => DBotsTasks.ExecuteAsync());
 
         // Wait indefinitely, let tasks continue running in async threads
         await Task.Delay(Timeout.InfiniteTimeSpan);

@@ -13,6 +13,8 @@ public class ConfigJson
     [JsonProperty("cloudflare")] public CloudflareConfig Cloudflare { get; private set; }
 
     [JsonProperty("logs")] public LogConfig Logs { get; private set; }
+    
+    [JsonProperty("dbots")] public DBotsConfig DBots { get; private set; }
 }
 
 public class BaseConfig
@@ -89,4 +91,11 @@ public class LogConfig
         [JsonProperty("logChannel")] public string LogChannel { get; set; }
         [JsonProperty("cmdLogExcludedGuilds")] public string[] CmdLogExcludedGuilds { get; set; }
     }
+}
+
+public class DBotsConfig
+{
+    [JsonProperty("doStatsPosting")] public bool DoStatsPosting { get; private set; }
+    [JsonProperty("apiToken")] public string ApiToken { get; private set; }
+    [JsonProperty("apiEndpoint")] public string ApiEndpoint { get; private set; }
 }

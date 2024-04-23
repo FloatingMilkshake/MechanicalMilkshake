@@ -58,5 +58,11 @@
       ]
     },
     "guilds": ""
+  },
+  
+  "dbots": {
+    "doStatsPosting": false,
+    "apiToken": "",
+    "apiEndpoint": ""
   }
 }
