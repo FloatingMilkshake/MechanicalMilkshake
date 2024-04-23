@@ -1,8 +1,23 @@
-﻿namespace MechanicalMilkshake.Checks;
+namespace MechanicalMilkshake.Tasks;
 
-public class PackageUpdateChecks
+public class PackageUpdateTasks
 {
-    public static async Task<(int numhostsChecked, int totalNumHosts, string checkResult)> PackageUpdateCheck()
+    public static async Task ExecuteAsync()
+    {
+        while (true)
+        {
+            var (_, _, checkResult) = await CheckPackageUpdatesAsync();
+            var ownerMention =
+                Program.Discord.CurrentApplication.Owners.Aggregate("", (current, user) => current + user.Mention + " ");
+            if (checkResult != "")
+                await Program.HomeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{checkResult}");
+                
+            await Task.Delay(TimeSpan.FromDays(3));
+        }
+        // ReSharper disable once FunctionNeverReturns
+    }
+    
+    public static async Task<(int numhostsChecked, int totalNumHosts, string checkResult)> CheckPackageUpdatesAsync()
     {
         var numHostsChecked = 0;
         var totalNumHosts = Program.ConfigJson.Base.SshHosts.Length;

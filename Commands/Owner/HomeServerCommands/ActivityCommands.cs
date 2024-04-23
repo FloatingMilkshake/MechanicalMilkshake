@@ -162,7 +162,7 @@ public class ActivityCommands : ApplicationCommandModule
                 return;
             }
 
-            await CustomStatusHelpers.SetCustomStatus();
+            await ActivityTasks.SetActivityAsync();
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("Activity randomized!"));
         }
@@ -268,7 +268,7 @@ public class ActivityCommands : ApplicationCommandModule
             await Program.Db.StringSetAsync("customStatusDisabled", "false");
 
             // Randomize activity
-            await CustomStatusHelpers.SetCustomStatus();
+            await ActivityTasks.SetActivityAsync();
 
             await ctx.FollowUpAsync(
                 new DiscordFollowupMessageBuilder().WithContent("Custom status messages enabled."));

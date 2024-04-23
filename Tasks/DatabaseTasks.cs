@@ -1,7 +1,17 @@
-namespace MechanicalMilkshake.Checks;
+namespace MechanicalMilkshake.Tasks;
 
-public class DatabaseChecks
+public class DatabaseTasks
 {
+    public static async Task ExecuteAsync()
+    {
+        while (true)
+        {
+            await CheckDatabaseConnectionAsync();
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+        // ReSharper disable once FunctionNeverReturns
+    }
+    
     public static async Task<double> CheckDatabaseConnectionAsync()
     {
         var dbPing = double.NaN;

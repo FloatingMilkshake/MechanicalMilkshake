@@ -12,7 +12,7 @@ public class Ping : ApplicationCommandModule
         var msg = await ctx.Interaction.GetOriginalResponseAsync();
         var interactionLatency = Math.Round((timeNow - msg.CreationTimestamp.UtcDateTime).TotalMilliseconds);
 
-        var dbPing = await DatabaseChecks.CheckDatabaseConnectionAsync();
+        var dbPing = await DatabaseTasks.CheckDatabaseConnectionAsync();
         
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(
             $"Pong!\n"

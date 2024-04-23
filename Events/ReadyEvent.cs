@@ -10,7 +10,7 @@ public class ReadyEvent
 
             await Program.HomeChannel.SendMessageAsync(await DebugInfoHelpers.GenerateDebugInfoEmbed(true));
 
-            await CustomStatusHelpers.SetCustomStatus();
+            await ActivityTasks.SetActivityAsync();
         });
     }
 }

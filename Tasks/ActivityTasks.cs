@@ -1,8 +1,18 @@
-﻿namespace MechanicalMilkshake.Helpers;
+namespace MechanicalMilkshake.Tasks;
 
-public class CustomStatusHelpers
+public class ActivityTasks
 {
-    public static async Task SetCustomStatus()
+    public static async Task ExecuteAsync()
+    {
+        while (true)
+        {
+            await Task.Delay(TimeSpan.FromHours(1));
+            await SetActivityAsync();
+        }
+        // ReSharper disable once FunctionNeverReturns
+    }
+    
+    public static async Task SetActivityAsync()
     {
         try
         {

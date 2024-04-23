@@ -156,19 +156,19 @@ public class DebugCommands : ApplicationCommandModule
             {
                 case "all":
                     (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime) =
-                        await ReminderChecks.CheckRemindersAsync();
-                    (numHostsChecked, totalNumHosts, checkResult) = await PackageUpdateChecks.PackageUpdateCheck();
-                    dbPing = await DatabaseChecks.CheckDatabaseConnectionAsync();
+                        await ReminderTasks.CheckRemindersAsync();
+                    (numHostsChecked, totalNumHosts, checkResult) = await PackageUpdateTasks.CheckPackageUpdatesAsync();
+                    dbPing = await DatabaseTasks.CheckDatabaseConnectionAsync();
                     break;
                 case "reminders":
                     (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime) =
-                        await ReminderChecks.CheckRemindersAsync();
+                        await ReminderTasks.CheckRemindersAsync();
                     break;
                 case "databaseConnection":
-                    dbPing = await DatabaseChecks.CheckDatabaseConnectionAsync();
+                    dbPing = await DatabaseTasks.CheckDatabaseConnectionAsync();
                     break;
                 case "packageUpdates":
-                    (numHostsChecked, totalNumHosts, checkResult) = await PackageUpdateChecks.PackageUpdateCheck();
+                    (numHostsChecked, totalNumHosts, checkResult) = await PackageUpdateTasks.CheckPackageUpdatesAsync();
                     break;
             }
             

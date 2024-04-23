@@ -1,7 +1,17 @@
-﻿namespace MechanicalMilkshake.Checks;
+namespace MechanicalMilkshake.Tasks;
 
-public class ReminderChecks
+public class ReminderTasks
 {
+    public static async Task ExecuteAsync()
+    {
+        while (true)
+        {
+            await CheckRemindersAsync();
+            await Task.Delay(TimeSpan.FromSeconds(10));
+        }
+        // ReSharper disable once FunctionNeverReturns
+    }
+    
     public static async Task<(int numRemindersBefore,int numRemindersAfter, int numRemindersSent, int numRemindersFailed, int numRemindersWithNullTime)> CheckRemindersAsync()
     {
         // keep some tallies to report back for manual checks
@@ -60,7 +70,7 @@ public class ReminderChecks
             embed.AddField("Context", context);
 
             // add pushback field
-            AddReminderPushbackEmbedField(embed);
+            ReminderHelpers.AddReminderPushbackEmbedField(embed);
             
             // GET USER
 
@@ -121,7 +131,7 @@ public class ReminderChecks
 
                     // update pushback field to include message id
                     embed.RemoveFieldAt(1);
-                    AddReminderPushbackEmbedField(embed, msg.Id);
+                    ReminderHelpers.AddReminderPushbackEmbedField(embed, msg.Id);
                     await msg.ModifyAsync(msg.Content, embed.Build());
 
                     // delete reminder from db
@@ -162,7 +172,7 @@ public class ReminderChecks
                         // Couldn't DM user or send an alert in the channel the reminder was set in!
                         // Log error and delete reminder to prevent error spam
 
-                        await LogReminderError(Program.HomeChannel, ex);
+                        await ReminderHelpers.LogReminderErrorAsync(Program.HomeChannel, ex);
 
                         await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
                         
@@ -188,7 +198,7 @@ public class ReminderChecks
 
                 // update pushback field to include message id
                 embed.RemoveFieldAt(1);
-                AddReminderPushbackEmbedField(embed, msg.Id);
+                ReminderHelpers.AddReminderPushbackEmbedField(embed, msg.Id);
                 await msg.ModifyAsync(msg.Content, embed.Build());
 
                 // delete reminder from db
@@ -211,7 +221,7 @@ public class ReminderChecks
 
                     // update pushback field to include message id
                     embed.RemoveFieldAt(1);
-                    AddReminderPushbackEmbedField(embed, msg.Id);
+                    ReminderHelpers.AddReminderPushbackEmbedField(embed, msg.Id);
                     await msg.ModifyAsync(msg.Content, embed.Build());
 
                     // delete reminder from db
@@ -224,7 +234,7 @@ public class ReminderChecks
                 {
                     // Couldn't DM user! Log error and delete reminder to prevent error spam
 
-                    await LogReminderError(Program.HomeChannel, ex);
+                    await ReminderHelpers.LogReminderErrorAsync(Program.HomeChannel, ex);
 
                     await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
                     
@@ -239,31 +249,5 @@ public class ReminderChecks
         var numRemindersAfter = reminders.Length;
         
         return (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime);
-    }
-
-    private static async Task LogReminderError(DiscordChannel logChannel, Exception ex)
-    {
-        DiscordEmbedBuilder errorEmbed = new()
-        {
-            Color = DiscordColor.Red,
-            Title = "An exception occurred when checking reminders",
-            Description =
-                $"`{ex.GetType()}` occurred when checking for overdue reminders."
-        };
-        errorEmbed.AddField("Message", $"{ex.Message}");
-        errorEmbed.AddField("Stack Trace", $"```\n{ex.StackTrace}\n```");
-
-        Console.WriteLine(
-            $"{ex.GetType()} occurred when checking reminders: {ex.Message}\n{ex.StackTrace}");
-
-        await logChannel.SendMessageAsync(errorEmbed);
-    }
-
-    private static void AddReminderPushbackEmbedField(DiscordEmbedBuilder embed, ulong msgId = default)
-    {
-        var id = msgId == default ? "[loading...]" : $"`{msgId}`";
-
-        embed.AddField("Need to delay this reminder?",
-            $"Use {SlashCmdMentionHelpers.GetSlashCmdMention("reminder", "pushback")} and set `message` to {id}.");
     }
 }

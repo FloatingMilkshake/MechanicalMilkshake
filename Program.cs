@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake;
+﻿using System.Threading;
+
+namespace MechanicalMilkshake;
 
 public class Program
 {
@@ -256,53 +258,27 @@ public class Program
         await EvalCommands.RunCommand("cat /app/id_ed25519 > ~/.ssh/id_ed25519 && chmod 700 ~/.ssh/id_ed25519");
 #endif
 
-        // Run checks
+        // Run tasks
 
         // Delay to give bot time to connect
-        await Task.Delay(1000);
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        
+        // Start checks
+        
+        // Package update check
+        await Task.Run(async () => PackageUpdateTasks.ExecuteAsync());
+        
+        // Reminder check
+        await Task.Run(async () => ReminderTasks.ExecuteAsync());
+        
+        // Database connection check
+        await Task.Run(async () => DatabaseTasks.ExecuteAsync());
+        
+        // Custom status update
+        await Task.Run(async () => ActivityTasks.ExecuteAsync());
 
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-        Task.Run(async () =>
-        {
-            while (true)
-            {
-                var (_, _, checkResult) = await PackageUpdateChecks.PackageUpdateCheck();
-                var ownerMention =
-                    Discord.CurrentApplication.Owners.Aggregate("", (current, user) => current + user.Mention + " ");
-                if (checkResult != "")
-                    await HomeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{checkResult}");
-                
-                await Task.Delay(259200000); // 3 days
-            }
-            // ReSharper disable once FunctionNeverReturns
-        });
-
-        Task.Run(async () =>
-        {
-            while (true)
-            {
-                await ReminderChecks.CheckRemindersAsync();
-                await Task.Delay(10000); // 10 seconds
-            }
-            // ReSharper disable once FunctionNeverReturns
-        });
-
-        Task.Run(async () =>
-        {
-            while (true)
-            {
-                await DatabaseChecks.CheckDatabaseConnectionAsync();
-                await Task.Delay(5000); // 5 seconds
-            }
-            // ReSharper disable once FunctionNeverReturns
-        });
-
-        while (true)
-        {
-            await Task.Delay(3600000); // 1 hour
-            await CustomStatusHelpers.SetCustomStatus();
-        }
-        // ReSharper disable once FunctionNeverReturns
+        // Wait indefinitely, let tasks continue running in async threads
+        await Task.Delay(Timeout.InfiniteTimeSpan);
     }
 }
 
