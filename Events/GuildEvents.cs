@@ -54,6 +54,9 @@ public class GuildEvents
 
         embed.AddField("Server", $"{guild.Name}\n(`{guild.Id}`)", true);
         embed.AddField("Members", guild.MemberCount.ToString(), true);
+        
+        // Only send owner info on join; will fail to fetch on leave
+        if (!isJoin) return;
 
         DiscordEmbedBuilder userInfoEmbed;
         try
