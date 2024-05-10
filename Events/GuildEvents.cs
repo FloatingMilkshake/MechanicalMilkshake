@@ -54,9 +54,6 @@ public class GuildEvents
 
         embed.AddField("Server", $"{guild.Name}\n(`{guild.Id}`)", true);
         embed.AddField("Members", guild.MemberCount.ToString(), true);
-        
-        // Only send owner info on join; will fail to fetch on leave
-        if (!isJoin) return;
 
         DiscordEmbedBuilder userInfoEmbed;
         try
@@ -74,7 +71,12 @@ public class GuildEvents
                 .AddField("Exception", $"{ex.GetType()}: {ex.Message}");
         }
 
-        await chan.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(embed).AddEmbed(userInfoEmbed));
+        var msg = new DiscordMessageBuilder().AddEmbed(embed);
+
+        // Only send owner info on join; will fail to fetch on leave
+        if (isJoin) msg.AddEmbed(userInfoEmbed);
+        
+        await chan.SendMessageAsync(msg);
     }
 
     private static async Task<bool> GetFeedbackChannel()
