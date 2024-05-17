@@ -248,8 +248,21 @@ public partial class Clear : ApplicationCommandModule
                     + " I won't do anything.").AsEphemeral());
                     break;
                 }
-                await ctx.Channel.DeleteMessagesAsync(messagesToClear,
-                    $"[Clear by {UserInfoHelpers.GetFullUsername(ctx.User)}]");
+
+                try
+                {
+                    await ctx.Channel.DeleteMessagesAsync(messagesToClear,
+                        $"[Clear by {UserInfoHelpers.GetFullUsername(ctx.User)}]");
+                }
+                catch (UnauthorizedException)
+                {
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                        .WithContent("I don't have permission to delete messages in this channel! Make sure I have the `Manage Messages` permission.")
+                        .AsEphemeral());
+                    return;
+                }
+                // not catching other exceptions because they are handled by generic slash error handler, but this one deserves a clear message
+                
                 if (skipped)
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                         .WithContent(

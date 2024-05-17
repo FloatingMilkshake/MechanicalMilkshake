@@ -305,9 +305,20 @@ public partial class ComponentInteractionEvent
                         new DiscordInteractionResponseBuilder().AsEphemeral());
 
                     var messages = messagesToClear.GetValueOrDefault(e.Message.Id);
-
-                    await e.Channel.DeleteMessagesAsync(messages,
-                        $"[Clear by {UserInfoHelpers.GetFullUsername(e.User)}]");
+                    
+                    try
+                    {
+                        await e.Channel.DeleteMessagesAsync(messages,
+                            $"[Clear by {UserInfoHelpers.GetFullUsername(e.User)}]");
+                    }
+                    catch (UnauthorizedException)
+                    {
+                        await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
+                            .WithContent("I don't have permission to delete messages in this channel! Make sure I have the `Manage Messages` permission.")
+                            .AsEphemeral());
+                        return;
+                    }
+                    // not catching other exceptions because they are handled by generic slash error handler, but this one deserves a clear message
 
                     messagesToClear.Remove(e.Message.Id);
 
