@@ -7,8 +7,8 @@ public class UserInfoHelpers
     {
         var registeredAt = $"{IdHelpers.GetCreationTimestamp(member.Id, true)}";
 
-        var t = member.JoinedAt - new DateTime(1970, 1, 1);
-        var joinedAtTimestamp = (int)t.TotalSeconds;
+        var joinDateTimeOffset = (DateTimeOffset)member.JoinedAt.DateTime;
+        var joinedAtTimestamp = joinDateTimeOffset.ToUnixTimeMilliseconds();
 
         List<string> notablePerms = [];
         if (member.IsOwner)
