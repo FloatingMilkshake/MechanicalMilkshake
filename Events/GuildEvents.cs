@@ -42,6 +42,15 @@ public class GuildEvents
         await SendGuildEventLogEmbed(_guildLogChannel, e.Guild, false);
     }
 
+    public static async Task GuildMemberUpdated(DiscordClient client, GuildMemberUpdateEventArgs e)
+    {
+        // Handle server-specific things in ServerSpecificFeatures.cs
+        if (Program.ConfigJson.Base.UseServerSpecificFeatures)
+            await ServerSpecificFeatures.Events.GuildMemberUpdated(client, e);
+        
+        // [put non-server-specific things here]
+    }
+
     private static async Task SendGuildEventLogEmbed(DiscordChannel chan, DiscordGuild guild, bool isJoin)
     {
         DiscordEmbedBuilder embed = new()
@@ -82,7 +91,7 @@ public class GuildEvents
     private static async Task<bool> GetFeedbackChannel()
     {
         var success = false;
-        
+
         try
         {
             var chanId = Convert.ToUInt64(Program.ConfigJson.Logs.Guilds);

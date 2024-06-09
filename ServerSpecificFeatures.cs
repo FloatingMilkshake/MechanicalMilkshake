@@ -97,6 +97,31 @@ public partial class ServerSpecificFeatures
         private static partial Regex InsiderUrlPattern();
     }
 
+    public class Events
+    {
+        public static async Task GuildMemberUpdated(DiscordClient client, GuildMemberUpdateEventArgs e)
+        {
+            if (e.Member.Id == 455432936339144705)
+            {
+                // get new avatar
+                var newAvatarUrl = $"https://cdn.discordapp.com/avatars/{e.Member.Id}/{e.AvatarHashAfter}.png?size=4096";
+                
+                // upload to cdn
+                
+                MemoryStream memStream = new(await Program.HttpClient.GetByteArrayAsync(newAvatarUrl));
+                
+                var args = new PutObjectArgs()
+                    .WithBucket("cdn")
+                    .WithObject("avatar_TEST.png")
+                    .WithStreamData(memStream)
+                    .WithObjectSize(memStream.Length)
+                    .WithContentType("image/png");
+
+                await Program.Minio.PutObjectAsync(args);
+            }
+        }
+    }
+
     public class MessageCommands : BaseCommandModule
     {
         // Per-server commands go here. Use the [TargetServer(serverId)] attribute to restrict a command to a specific guild.

@@ -246,6 +246,7 @@ public class Program
         Discord.ComponentInteractionCreated += ComponentInteractionEvent.ComponentInteractionCreated;
         Discord.GuildCreated += GuildEvents.GuildCreated;
         Discord.GuildDeleted += GuildEvents.GuildDeleted;
+        Discord.GuildMemberUpdated += GuildEvents.GuildMemberUpdated;
         commands.CommandErrored += ErrorEvents.CommandsNextService_CommandErrored;
         slash.SlashCommandErrored += ErrorEvents.SlashCommandErrored;
         slash.SlashCommandExecuted += InteractionEvents.SlashCommandExecuted;
