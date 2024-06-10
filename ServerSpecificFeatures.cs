@@ -112,7 +112,7 @@ public partial class ServerSpecificFeatures
                 
                 var args = new PutObjectArgs()
                     .WithBucket("cdn")
-                    .WithObject("avatar_TEST.png")
+                    .WithObject("avatar.png")
                     .WithStreamData(memStream)
                     .WithObjectSize(memStream.Length)
                     .WithContentType("image/png");
