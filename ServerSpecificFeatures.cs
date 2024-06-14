@@ -89,6 +89,58 @@ public partial class ServerSpecificFeatures
                     await msg.ModifyEmbedSuppressionAsync(true);
                 }
             }
+            
+#if DEBUG
+            if (e.Guild.Id == 799644062973427743) // my testing server
+            {
+                await PatchTuesdayAnnouncementCheck(e, 455432936339144705, 882446411130601472);
+            }
+#else
+            if (e.Guild.Id == 438781053675634713) // not my testing server
+            {
+                await PatchTuesdayAnnouncementCheck(e, 696333378990899301, 1251028070488477716);
+            }
+#endif
+        }
+
+        private static async Task PatchTuesdayAnnouncementCheck(MessageCreateEventArgs e, ulong authorId, ulong channelId)
+        {
+            // Patch Tuesday automatic message generation
+
+            if (e.Message.Author.Id != authorId || e.Channel.Id != channelId)
+                return;
+            
+            // List of roles to ping with message
+            var usersToPing = new List<ulong>
+            {
+                228574821590499329,
+                455432936339144705
+            };
+            
+            // Get message before current message; if authors do not match or message is not a Cumulative Updates post, ignore
+            var previousMessage = (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1))[0];
+            if (previousMessage.Author.Id != e.Message.Author.Id || !previousMessage.Content.Contains("Cumulative Updates"))
+                return;
+            
+            // Get URLs from both messages
+            var insiderRedditUrlPattern = new Regex(@"https:\/\/.*reddit.com\/r\/Windows[0-9]{1,}.*cumulative_updates.*");
+            var thisUrl = insiderRedditUrlPattern.Match(e.Message.Content).Value;
+            var previousUrl = insiderRedditUrlPattern.Match(previousMessage.Content).Value;
+            
+            // Figure out which URL is Windows 10 and which is Windows 11
+            var windows10Url = thisUrl.Contains("Windows10") ? thisUrl : previousUrl;
+            var windows11Url = thisUrl.Contains("Windows11") ? thisUrl : previousUrl;
+            
+            // Assemble message
+            var msg = "";
+
+            foreach (var user in usersToPing)
+                msg += $"<@{user}> ";
+            
+            msg += $"```\nIt's @Patch Tuesday! Update discussion threads & changelist links are here: {windows10Url} (Windows 10) and {windows11Url} (Windows 11)\n```";
+            
+            // Send message
+            await e.Message.Channel.SendMessageAsync(msg);
         }
 
         [GeneratedRegex("(.*)?<@!?([0-9]+)>(.*)")]
