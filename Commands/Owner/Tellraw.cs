@@ -2,12 +2,12 @@
 
 public class Tellraw : ApplicationCommandModule
 {
-    [SlashCommand("tellraw", "[Authorized users only] Speak through the bot!")]
+    [SlashCommand("tellraw", "???")]
     [SlashRequireAuth]
     public static async Task TellrawCommand(InteractionContext ctx,
-        [Option("message", "The message to have the bot send.")] [MaximumLength(2000)]
+        [Option("message", "!!!")] [MaximumLength(2000)]
         string message,
-        [Option("channel", "The channel to send the message in.")]
+        [Option("channel", "~>")]
         DiscordChannel channel = null)
     {
         var targetChannel = channel ?? ctx.Channel;
@@ -20,18 +20,18 @@ public class Tellraw : ApplicationCommandModule
         catch (UnauthorizedException)
         {
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-                .WithContent("I don't have permission to send messages in that channel!").AsEphemeral());
+                .WithContent("not allowed!").AsEphemeral());
             return;
         }
         catch (Exception ex)
         {
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-                .WithContent($"I couldn't send that message!\n> {ex.GetType()}: {ex.Message}").AsEphemeral());
+                .WithContent($"failed!\n> {ex.GetType()}: {ex.Message}").AsEphemeral());
             return;
         }
 
         await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-            .WithContent($"I sent your message to {targetChannel.Mention}.").AsEphemeral());
+            .WithContent($"OK.").AsEphemeral());
 
         foreach (var owner in Program.Discord.CurrentApplication.Owners)
         {
