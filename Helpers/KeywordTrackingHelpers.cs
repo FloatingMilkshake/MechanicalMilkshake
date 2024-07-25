@@ -13,6 +13,9 @@ public class KeywordTrackingHelpers
         if (message.Channel.IsPrivate)
             return;
 
+        if (isEdit && message.CreationTimestamp == message.EditedTimestamp)
+            return;
+
         var fields = await Program.Db.HashGetAllAsync("keywords");
         
         // Get message before current to check for assumed presence
