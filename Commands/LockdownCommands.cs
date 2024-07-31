@@ -17,17 +17,31 @@ public class LockdownCommands : ApplicationCommandModule
             
             // Add initial overwrites for failsafes (bot & user who called /lockdown), deny everyone else Send Messages
 
-            //var invokerExistingAllowedOverwrites =
+            var invokerExistingAllowedOverwrites = existingOverwrites.FirstOrDefault(o => o.Id == ctx.Member.Id);
+            if (invokerExistingAllowedOverwrites is null)
+            {
+                await ctx.Channel.AddOverwriteAsync(ctx.Member, Permissions.SendMessages, Permissions.None,
+                    "Failsafe for lockdown");
+            }
+            else
+            {
+                await ctx.Channel.AddOverwriteAsync(ctx.Member,
+                    invokerExistingAllowedOverwrites.Allowed | Permissions.SendMessages,
+                    invokerExistingAllowedOverwrites.Denied, "Failsafe for lockdown");
+            }
 
-
-            await ctx.Channel.AddOverwriteAsync(ctx.Member,
-                existingOverwrites.FirstOrDefault(o => o.Id == ctx.Member.Id)!.Allowed | Permissions.SendMessages,
-                Permissions.None,
-                "Failsafe for lockdown");
-
-            await ctx.Channel.AddOverwriteAsync(await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id),
-                existingOverwrites.FirstOrDefault(o => o.Id == Program.Discord.CurrentUser.Id)!.Allowed |
-                Permissions.SendMessages, Permissions.None, "Failsafe for lockdown");
+            var botAllowedOverwrites = existingOverwrites.FirstOrDefault(o => o.Id == Program.Discord.CurrentUser.Id);
+            if (botAllowedOverwrites is null)
+            {
+                await ctx.Channel.AddOverwriteAsync(await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id),
+                    Permissions.SendMessages, Permissions.None, "Failsafe for lockdown");
+            }
+            else
+            {
+                await ctx.Channel.AddOverwriteAsync(await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id),
+                    botAllowedOverwrites.Allowed | Permissions.SendMessages, botAllowedOverwrites.Denied,
+                    "Failsafe for lockdown");
+            }
             
             await ctx.Channel.AddOverwriteAsync(ctx.Guild.EveryoneRole, Permissions.None, Permissions.SendMessages,
                 "Lockdown");
