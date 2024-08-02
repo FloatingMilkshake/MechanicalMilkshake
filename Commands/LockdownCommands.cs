@@ -87,7 +87,10 @@ public class LockdownCommands : ApplicationCommandModule
 
             try
             {
-                if (ctx.Channel.PermissionOverwrites.ToArray().Length < 2) // 1 is the default @everyone overwrite
+                // Checking <2 because there will always be 1 overwrite for @everyone permissions
+                if (ctx.Channel.PermissionOverwrites.ToArray().Length < 2
+                    || ctx.Channel.PermissionOverwrites.Any(o => o.Id == ctx.Guild.EveryoneRole.Id &&
+                        !o.Denied.HasPermission(Permissions.SendMessages)))
                 {
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                         .WithContent("This channel is not locked!").AsEphemeral());
@@ -97,11 +100,10 @@ public class LockdownCommands : ApplicationCommandModule
                 foreach (var permission in ctx.Channel.PermissionOverwrites.ToArray())
                     if (permission.Type == OverwriteType.Role)
                     {
-                        // Don't touch roles that aren't @everyone or don't have a deny overwrite for Send Messages
-                        if (await permission.GetRoleAsync() != ctx.Guild.EveryoneRole ||
-                            !permission.Denied.HasPermission(Permissions.SendMessages)) continue;
+                        // Don't touch roles that aren't @everyone
+                        if (await permission.GetRoleAsync() != ctx.Guild.EveryoneRole) continue;
 
-                        // Construct new @everyone overwrite; keep it the same but deny Send Messages
+                        // Construct new @everyone overwrite; keep it the same but remove denial for Send Messages
                         DiscordOverwriteBuilder newOverwrite = new(ctx.Guild.EveryoneRole)
                         {
                             Allowed = permission.Allowed,
@@ -113,6 +115,7 @@ public class LockdownCommands : ApplicationCommandModule
                     }
                     else
                     {
+                        // Filter to user overrides that have Send Messages allowed (failsafes) so we can remove
                         if (!permission.Allowed.HasPermission(Permissions.SendMessages)) continue;
 
                         // Remove failsafe Send Message overrides
@@ -121,9 +124,13 @@ public class LockdownCommands : ApplicationCommandModule
                             Allowed = (Permissions)(permission.Allowed - Permissions.SendMessages),
                             Denied = permission.Denied
                         };
-
-                        await ctx.Channel.AddOverwriteAsync(await permission.GetMemberAsync(), newOverwrite.Allowed,
-                            newOverwrite.Denied, "Lockdown cleared");
+                        
+                        // Check new permission set; if it's totally empty, just drop the override
+                        if (newOverwrite.Allowed == Permissions.None && newOverwrite.Denied == Permissions.None)
+                            await ctx.Channel.DeleteOverwriteAsync(await permission.GetMemberAsync(), "Lockdown cleared");
+                        else
+                            await ctx.Channel.AddOverwriteAsync(await permission.GetMemberAsync(), newOverwrite.Allowed,
+                                newOverwrite.Denied, "Lockdown cleared");
                     }
             }
             catch (UnauthorizedException)
