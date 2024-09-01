@@ -35,8 +35,12 @@ public class KeywordTrackingHelpers
 
         if (!msgFoundInCache)
         {
-            var msgsBefore = await message.Channel.GetMessagesBeforeAsync(message.Id, 1);
-            if (msgsBefore.Count > 0) msgBefore = (msgsBefore[0].Id, msgsBefore[0].Author.Id);
+            // Avoid fetching messages from channels that are known to be spammy / cause ratelimits
+            if (!Program.ConfigJson.Ids.RatelimitCautionChannels.Contains(message.Channel.Id.ToString()))
+            {
+                var msgsBefore = await message.Channel.GetMessagesBeforeAsync(message.Id, 1);
+                if (msgsBefore.Count > 0) msgBefore = (msgsBefore[0].Id, msgsBefore[0].Author.Id);
+            }
         }
 
         // Try to get member; if they are not in the guild, skip

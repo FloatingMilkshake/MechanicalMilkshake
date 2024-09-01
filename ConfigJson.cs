@@ -39,6 +39,8 @@ public class BaseConfig
 public class IdsConfig
 {
     [JsonProperty("feedbackChannel")] public string FeedbackChannel { get; private set; }
+    
+    [JsonProperty("ratelimitCautionChannels")] public List<string> RatelimitCautionChannels { get; private set; }
 }
 
 public class WorkerLinksConfig

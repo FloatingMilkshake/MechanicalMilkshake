@@ -22,7 +22,8 @@
   },
   
   "ids": {
-    "feedbackChannel": ""
+    "feedbackChannel": "",
+    "ratelimitCautionChannels": []
   },
 
   "workerLinks": {
