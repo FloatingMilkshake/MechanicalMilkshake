@@ -30,16 +30,8 @@ public partial class RandomCommands : ApplicationCommandModule
         public static async Task RandomFact(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-
-            var fact = await Program.HttpClient.GetStringAsync("https://uselessfacts.jsph.pl/random.md?language=en");
-
-            if (fact.Contains("http"))
-            {
-                fact = fact.Replace(")", ">)");
-                fact = fact.Replace("http", "<http");
-            }
-
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(fact));
+            var fact = JsonConvert.DeserializeObject<JObject>(await Program.HttpClient.GetStringAsync("https://uselessfacts.jsph.pl/random.md?language=en"));
+            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(fact["text"].ToString()));
         }
 
         [SlashCommand("cat", "Get a random cat picture from the internet.")]
