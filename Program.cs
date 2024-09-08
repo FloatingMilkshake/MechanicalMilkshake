@@ -176,6 +176,11 @@ public class Program
 
             DisabledCommands.Add("feedback");
         }
+        
+        if (ConfigJson.Base.UptimeKumaHeartbeatUrl is null or "")
+        {
+            Discord.Logger.LogWarning(BotEventId, "Uptime Kuma heartbeats disabled due to missing push URL.");
+        }
 
         // Register slash commands as guild commands in home server when
         // running in development mode
@@ -250,6 +255,7 @@ public class Program
         Discord.GuildCreated += GuildEvents.GuildCreated;
         Discord.GuildDeleted += GuildEvents.GuildDeleted;
         Discord.GuildMemberUpdated += GuildEvents.GuildMemberUpdated;
+        Discord.Heartbeated += HeartbeatEvent.Heartbeated;
         commands.CommandErrored += ErrorEvents.CommandsNextService_CommandErrored;
         slash.SlashCommandErrored += ErrorEvents.SlashCommandErrored;
         slash.SlashCommandExecuted += InteractionEvents.SlashCommandExecuted;

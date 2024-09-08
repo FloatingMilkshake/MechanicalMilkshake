@@ -3,22 +3,18 @@
     "botToken": "",
     "homeChannel": "",
     "homeServer": "",
-    
     "hastebinUrl": "",
-    
     "wolframAlphaAppId": "",
-
     "authorizedUsers": [
       "",
       ""
     ],
-
     "sshHosts": [
       "",
       ""
     ],
-
-    "useServerSpecificFeatures": false
+    "useServerSpecificFeatures": false,
+    "uptimeKumaHeartbeatUrl": ""
   },
   
   "ids": {
