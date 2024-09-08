@@ -224,6 +224,9 @@ public class Program
         slash.RegisterCommands<ServerSpecificFeatures.RoleCommands>(HomeServer.Id);
 
         Discord.Logger.LogInformation(BotEventId, "Slash commands registered globally");
+        
+        // and CommandsNext commands
+        commands.RegisterCommands<ServerSpecificFeatures.MessageCommands>();
 #endif
 
         await Discord.ConnectAsync();

@@ -192,8 +192,17 @@ public partial class ServerSpecificFeatures
             
             try
             {
-                var chan = await Program.Discord.GetChannelAsync(892978015309557870);
-                var msg = await chan.GetMessageAsync(1085253151155830895);
+                // ReSharper disable JoinDeclarationAndInitializer
+                DiscordChannel chan;
+                DiscordMessage msg;
+                // ReSharper restore JoinDeclarationAndInitializer
+                #if DEBUG
+                chan = await Program.Discord.GetChannelAsync(893654247709741088);
+                msg = await chan.GetMessageAsync(1282187612844589168);
+                #else
+                chan = await Program.Discord.GetChannelAsync(892978015309557870);
+                msg = await chan.GetMessageAsync(1085253151155830895);
+                #endif
                 
                 var phrases = msg.Content.Split("\n");
 
