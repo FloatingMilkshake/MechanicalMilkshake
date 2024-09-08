@@ -13,10 +13,12 @@ public class HeartbeatEvent
                 Program.Discord.Logger.LogDebug(Program.BotEventId, "Successfully sent Uptime Kuma heartbeat with ping {ping}ms", e.Ping);
             else
                 Program.Discord.Logger.LogWarning(Program.BotEventId, "Uptime Kuma heartbeat failed with status code {statusCode}", heartbeatResponse.StatusCode);
+            Program.LastUptimeKumaHeartbeatStatus = heartbeatResponse.StatusCode.ToString();
         }
         catch (Exception ex)
         {
             Program.Discord.Logger.LogWarning(Program.BotEventId, "Uptime Kuma heartbeat failed: {exType}: {exMessage}\n{stackTrace}", ex.GetType(), ex.Message, ex.StackTrace);
+            Program.LastUptimeKumaHeartbeatStatus = "exception thrown";
         }
     }
 }
