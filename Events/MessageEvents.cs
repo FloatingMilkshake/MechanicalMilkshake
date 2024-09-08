@@ -321,7 +321,7 @@ public partial class MessageEvents
         return Task.CompletedTask;
     }
 
-    private static async Task ThrowMessageException(Exception ex, DiscordMessage message, bool isEdit)
+    public static async Task ThrowMessageException(Exception ex, DiscordMessage message, bool isEdit)
     {
         // Ignore some HTTP errors
         if (ex is HttpRequestException && ex.Message.Contains("Resource temporarily unavailable")) return;
