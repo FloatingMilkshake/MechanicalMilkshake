@@ -36,7 +36,7 @@ public class KeywordTrackingHelpers
         if (!msgFoundInCache)
         {
             // Avoid fetching messages from channels that are known to be spammy / cause ratelimits
-            if (!Program.ConfigJson.Ids.RatelimitCautionChannels.Contains(message.Channel.Id.ToString()))
+            if (Program.ConfigJson.Ids.RatelimitCautionChannels is not null && !Program.ConfigJson.Ids.RatelimitCautionChannels.Contains(message.Channel.Id.ToString()))
             {
                 var msgsBefore = await message.Channel.GetMessagesBeforeAsync(message.Id, 1);
                 if (msgsBefore.Count > 0) msgBefore = (msgsBefore[0].Id, msgsBefore[0].Author.Id);
