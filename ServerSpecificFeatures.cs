@@ -101,6 +101,12 @@ public partial class ServerSpecificFeatures
                 await PatchTuesdayAnnouncementCheck(e, 696333378990899301, 1251028070488477716);
             }
 #endif
+            
+            if (e.Guild.Id == 1203128266559328286)
+            {
+                if (e.Message.Content is not null && !e.Message.Author.IsBot && e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase))
+                    await e.Message.RespondAsync("open");
+            }
         }
 
         private static async Task PatchTuesdayAnnouncementCheck(MessageCreateEventArgs e, ulong authorId, ulong channelId)
