@@ -102,13 +102,61 @@ public partial class ServerSpecificFeatures
             }
 #endif
             
-            if (e.Guild.Id == 1203128266559328286)
+            // Redis "shutCooldowns" hash:
+            // Key user ID
+            // Value whether user has attempted to use the command during cooldown
+            // Vaolue is used so that on user's first attempt during cooldown, we can respond to indicate the cooldown;
+            // but on subsequent attempts we should not respond to avoid ratelimits as that would defeat the purpose of the cooldown
+
+            if (e.Guild.Id == 1203128266559328286 || e.Guild.Id == Program.HomeServer.Id)
             {
-                if (e.Message.Content is not null && !e.Message.Author.IsBot)
-                    if (e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase))
-                        await e.Message.RespondAsync("open");
-                    else if (e.Message.Content.Equals("open", StringComparison.OrdinalIgnoreCase))
-                        await e.Message.RespondAsync("shut");
+                if (e.Message.Content is not null && !e.Message.Author.IsBot && (e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase) || e.Message.Content.Equals("open", StringComparison.OrdinalIgnoreCase)))
+                {
+                    var userId = e.Message.Author.Id;
+                    var userShutCooldownSerialized = await Program.Db.HashGetAsync("shutCooldowns", userId.ToString());
+                    KeyValuePair<DateTime, bool> userShutCooldown;
+                    if (userShutCooldownSerialized.HasValue)
+                    {
+                        try
+                        {
+                            userShutCooldown = JsonConvert.DeserializeObject<KeyValuePair<DateTime, bool>>(userShutCooldownSerialized);
+                        }
+                        catch (Exception ex)
+                        {
+                            Program.Discord.Logger.LogWarning("Failed to read shut cooldown from db for user {user}! {exType}: {exMessage}\n{exStackTrace}", userId, ex.GetType(), ex.Message, ex.StackTrace);
+                            userShutCooldown = new();
+                        }
+                        
+                        var userCooldownTime = userShutCooldown.Key;
+                        if (userCooldownTime > DateTime.Now && !userShutCooldown.Value) // user on cooldown & has not attempted
+                        {
+                            var cooldownRemainingTime = Math.Round((userCooldownTime - DateTime.Now).TotalSeconds);
+                            if (cooldownRemainingTime == 0) cooldownRemainingTime = 1;
+                            await e.Message.RespondAsync($"You're going too fast! Try again in {cooldownRemainingTime} second{(cooldownRemainingTime > 1 ? "s" : "")}.");
+                            userShutCooldown = new(userShutCooldown.Key, true);
+                        }
+                        else if (userCooldownTime < DateTime.Now)
+                        {
+                            userShutCooldown = new KeyValuePair<DateTime, bool>(DateTime.Now.AddSeconds(5), false);
+                        
+                            if (e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase))
+                                await e.Message.RespondAsync("open");
+                            else if (e.Message.Content.Equals("open", StringComparison.OrdinalIgnoreCase))
+                                await e.Message.RespondAsync("shut");
+                        }
+                    }
+                    else
+                    {
+                        if (e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase))
+                            await e.Message.RespondAsync("open");
+                        else if (e.Message.Content.Equals("open", StringComparison.OrdinalIgnoreCase))
+                            await e.Message.RespondAsync("shut");
+                        
+                        userShutCooldown = new(DateTime.Now.AddSeconds(5), false);
+                    }
+                    
+                    await Program.Db.HashSetAsync("shutCooldowns", userId.ToString(), JsonConvert.SerializeObject(userShutCooldown));
+                }
             }
         }
 
