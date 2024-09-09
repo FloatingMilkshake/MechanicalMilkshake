@@ -104,8 +104,11 @@ public partial class ServerSpecificFeatures
             
             if (e.Guild.Id == 1203128266559328286)
             {
-                if (e.Message.Content is not null && !e.Message.Author.IsBot && e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase))
-                    await e.Message.RespondAsync("open");
+                if (e.Message.Content is not null && !e.Message.Author.IsBot)
+                    if (e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase))
+                        await e.Message.RespondAsync("open");
+                    else if (e.Message.Content.Equals("open", StringComparison.OrdinalIgnoreCase))
+                        await e.Message.RespondAsync("shut");
             }
         }
 
