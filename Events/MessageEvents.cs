@@ -352,8 +352,8 @@ public partial class MessageEvents
         };
         embed.AddField("Message", $"{ex.Message}");
 
-        Console.WriteLine(
-            $"{ex.GetType()} occurred when processing a message {(isEdit ? "edit" : "create")} event: {ex.Message}\n{ex.StackTrace}");
+        Program.Discord.Logger.LogError(Program.BotEventId, "An exception occurred when processing a message {eventType} event!"
+            + "\n{exType}: {exMessage}\n{exStackTrace}", isEdit ? "edit" : "create", ex.GetType(), ex.Message, ex.StackTrace);
 
         await Program.HomeChannel.SendMessageAsync(embed);
     }

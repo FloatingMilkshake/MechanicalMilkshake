@@ -14,8 +14,8 @@ public class ReminderHelpers
         errorEmbed.AddField("Message", $"{ex.Message}");
         errorEmbed.AddField("Stack Trace", $"```\n{ex.StackTrace}\n```");
 
-        Console.WriteLine(
-            $"{ex.GetType()} occurred when checking reminders: {ex.Message}\n{ex.StackTrace}");
+        Program.Discord.Logger.LogError(Program.BotEventId, "An exception occurred when checking reminders!"
+            + "\n{exType}: {exMessage}\n{exStackTrace}", ex.GetType(), ex.Message, ex.StackTrace);
 
         await logChannel.SendMessageAsync(errorEmbed);
     }

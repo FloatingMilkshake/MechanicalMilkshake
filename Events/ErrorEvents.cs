@@ -155,8 +155,8 @@ public class ErrorEvents
             };
             embed.AddField("Message", ex.Message);
 
-            Console.WriteLine(
-                $"{ex.GetType()} occurred when {UserInfoHelpers.GetFullUsername(e.Context.User)} used {e.Command!.QualifiedName}: {ex.Message}\n{ex.StackTrace}");
+            Program.Discord.Logger.LogError(Program.BotEventId, "An exception occurred when processing a CommandsNext command!"
+                + "\n{exType} occurred when {username} used {commandName}: {exMessage}\n{exStackTrace}", ex.GetType(), UserInfoHelpers.GetFullUsername(e.Context.User), e.Command!.QualifiedName, ex.Message, ex.StackTrace);
 
             // System.ArgumentException
             if (ex.GetType().ToString() == "System.ArgumentException")
