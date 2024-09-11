@@ -28,6 +28,12 @@ public partial class CdnCommands : ApplicationCommandModule
                     new DiscordFollowupMessageBuilder().WithContent("You must provide a link or file to upload!"));
                 return;
             }
+            
+            if (name.Contains(' '))
+            {
+                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    "The name of the file cannot contain spaces! Please try again."));
+            }
 
             if (file is not null) link = file.Url;
 
@@ -53,6 +59,16 @@ public partial class CdnCommands : ApplicationCommandModule
                 // From here on out we can be sure that 'fileNameAndExtension' is in the format 'example.png'.
 
                 var extension = Path.GetExtension(fileNameAndExtension);
+                
+                // The user might have included an extension in their desired filename. We should remove it.
+                // We should not just match `extension` because the user may have provided a different one!
+                // Let's use regex instead.
+                var fileExtensionPattern = FileExtensionPattern();
+                var userExtension = fileExtensionPattern.Match(name).Value;
+                if (userExtension != "")
+                {
+                    name = name.Replace(userExtension, "");
+                }
 
                 const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -205,6 +221,9 @@ public partial class CdnCommands : ApplicationCommandModule
 
         [GeneratedRegex(@"[^/\\&\?#]+\.\w*(?=([\?&#].*$|$))")]
         private static partial Regex FileNamePattern();
+        
+        [GeneratedRegex(@"\.\w*(?=([\?&#].*$|$))")]
+        private static partial Regex FileExtensionPattern();
     }
 
     // This code is taken from https://github.com/Sankra/cloudflare-cache-purger/blob/master/main.csx#L197,
