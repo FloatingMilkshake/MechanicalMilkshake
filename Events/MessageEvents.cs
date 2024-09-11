@@ -92,12 +92,10 @@ public partial class MessageEvents
                     if (targetChannel == default)
                     {
                         DiscordGuild mutualServer = default;
-                        foreach (var guildId in client.Guilds)
+                        foreach (var cachedGuild in client.Guilds.Values)
                         {
-                            var server = await client.GetGuildAsync(guildId.Key);
-
-                            if (!(await server.GetAllMembersAsync()).Contains(targetUser)) continue;
-                            mutualServer = await client.GetGuildAsync(server.Id);
+                            if (!cachedGuild.Members.Values.Contains(targetUser)) continue;
+                            mutualServer = await client.GetGuildAsync(cachedGuild.Id);
                             break;
                         }
 
@@ -214,13 +212,15 @@ public partial class MessageEvents
                 {
                     try
                     {
+                        List<DiscordGuild> mutualServers = new();
+                        
                         foreach (var owner in client.CurrentApplication.Owners)
-                        foreach (var guildPair in client.Guilds)
+                        foreach (var guild in client.Guilds.Values)
                         {
-                            var guild = await client.GetGuildAsync(guildPair.Key);
-
-                            if (!(await guild.GetAllMembersAsync()).Contains(owner)) continue;
+                            if (!guild.Members.Values.Contains(owner)) continue;
                             var ownerMember = await guild.GetMemberAsync(owner.Id);
+                            
+                            mutualServers.Add(guild);
 
                             DiscordEmbedBuilder embed = new()
                             {
@@ -245,13 +245,10 @@ public partial class MessageEvents
                                 embed.AddField("Attachments", attachmentUrls, true);
                             }
 
-                            var mutualServers = "";
-
-                            foreach (var guildId in client.Guilds)
+                            var mutualServersResponseList = "";
+                            foreach (var server in mutualServers)
                             {
-                                var server = await client.GetGuildAsync(guildId.Key);
-
-                                if ((await server.GetAllMembersAsync()).Contains(e.Author)) mutualServers += $"- `{server}`\n";
+                                mutualServersResponseList += $"- `{server}`\n";
                             }
 
                             DiscordMessageBuilder messageBuilder = new();
@@ -281,7 +278,7 @@ public partial class MessageEvents
                                 messageBuilder.AddComponents(button);
                             }
 
-                            embed.AddField("Mutual Servers", mutualServers);
+                            embed.AddField("Mutual Servers", mutualServersResponseList);
 
                             messageBuilder = messageBuilder.AddEmbed(embed.Build());
 
