@@ -172,14 +172,29 @@ public partial class MessageEvents
                     var userIdField = e.Message.ReferencedMessage.Embeds[0].Fields.First(f => f.Name == "User ID");
                     var userId = Convert.ToUInt64(userIdField.Value.Replace("`", ""));
 
-                    var mutualServersField = e.Message.ReferencedMessage.Embeds[0].Fields
-                        .First(f => f.Name is "Cached Mutual Servers" or "Mutual Servers");
+                    DiscordGuild mutualServer = default;
+                    foreach (var cachedGuild in client.Guilds.Values)
+                    {
+                        if (cachedGuild.Members.Values.All(x => x.Id != userId)) continue;
+                        mutualServer = await client.GetGuildAsync(cachedGuild.Id);
+                        break;
+                    }
 
-                    var mutualIdPattern = MutualServerIdPattern();
-                    var firstMutualId = Convert.ToUInt64(mutualIdPattern.Match(mutualServersField.Value).Groups[1].Value);
+                    DiscordMember targetMember;
+                    try
+                    {
+                        targetMember = await mutualServer!.GetMemberAsync(userId);
+                    }
+                    catch (Exception ex)
+                    {
+                        await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                            .WithContent(
+                                $"I tried to DM that user, but I don't have any mutual servers with them so Discord wouldn't let me send it. Sorry!\n```\n{ex.GetType()}: {ex.Message}\n```")
+                            .WithReply(e.Message.Id));
+                        return;
+                    }
 
-                    var mutualServer = await client.GetGuildAsync(firstMutualId);
-                    var member = await mutualServer.GetMemberAsync(userId);
+                    var targetChannel = await targetMember.CreateDmChannelAsync();
 
                     var messageIdField =
                         e.Message.ReferencedMessage.Embeds[0].Fields.First(f => f.Name == "Message ID");
@@ -202,7 +217,7 @@ public partial class MessageEvents
                     var replyBuilder =
                         new DiscordMessageBuilder().WithContent(messageToSend).WithReply(messageId);
 
-                    var reply = await member.SendMessageAsync(replyBuilder);
+                    var reply = await targetChannel.SendMessageAsync(replyBuilder);
 
                     var messageBuilder = new DiscordMessageBuilder()
                         .WithContent($"Sent! (`{reply.Id}` in `{reply.Channel.Id}`)").WithReply(e.Message.Id);
