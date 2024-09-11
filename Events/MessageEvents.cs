@@ -173,7 +173,7 @@ public partial class MessageEvents
                     var userId = Convert.ToUInt64(userIdField.Value.Replace("`", ""));
 
                     var mutualServersField = e.Message.ReferencedMessage.Embeds[0].Fields
-                        .First(f => f.Name == "Mutual Servers");
+                        .First(f => f.Name is "Cached Mutual Servers" or "Mutual Servers");
 
                     var mutualIdPattern = MutualServerIdPattern();
                     var firstMutualId = Convert.ToUInt64(mutualIdPattern.Match(mutualServersField.Value).Groups[1].Value);
@@ -278,7 +278,7 @@ public partial class MessageEvents
                                 messageBuilder.AddComponents(button);
                             }
 
-                            embed.AddField("Mutual Servers", mutualServersResponseList);
+                            embed.AddField("Cached Mutual Servers", mutualServersResponseList);
 
                             messageBuilder = messageBuilder.AddEmbed(embed.Build());
 
