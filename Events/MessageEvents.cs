@@ -345,7 +345,7 @@ public partial class MessageEvents
     
     [GeneratedRegex("[0-9]{5,}")]
     private static partial Regex IdPattern();
-    [GeneratedRegex(".*[0-9]+ (.*)")]
+    [GeneratedRegex(".*[0-9]+ ((?:.|\\n)+)")]
     private static partial Regex ContentPattern();
     [GeneratedRegex("Guild ([0-9]+);.*$")]
     private static partial Regex MutualServerIdPattern();
