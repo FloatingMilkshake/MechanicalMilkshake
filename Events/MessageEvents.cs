@@ -23,10 +23,10 @@ public partial class MessageEvents
     {
         Task.Run(async () =>
         {
-            if (Program.ConfigJson.Base.UseServerSpecificFeatures) await ServerSpecificFeatures.Checks.MessageCreateChecks(e);
-
             try
             {
+                if (Program.ConfigJson.Base.UseServerSpecificFeatures) await ServerSpecificFeatures.Checks.MessageCreateChecks(e);
+                
                 await KeywordTrackingHelpers.KeywordCheck(e.Message);
 
                 if (!e.Channel.IsPrivate)

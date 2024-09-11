@@ -6,6 +6,8 @@ public partial class ServerSpecificFeatures
     {
         public static async Task MessageCreateChecks(MessageCreateEventArgs e)
         {
+            if (e.Channel.IsPrivate) return;
+            
             if (e.Guild.Id == 799644062973427743)
             {
                 // &caption -> #captions
