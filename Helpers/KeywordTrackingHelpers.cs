@@ -17,9 +17,32 @@ public class KeywordTrackingHelpers
             return;
 
         var fields = await Program.Db.HashGetAllAsync("keywords");
+        var keywordsList = fields.Select(x => JsonConvert.DeserializeObject<TrackedKeyword>(x.Value)).ToList();
+        
+        // Stop! Before we make ANY API calls, does this message even contain any keywords?
+        if (!keywordsList.Any(x => message.Content.Contains(x.Keyword)))
+            return;
+        
+        // It does*. For any matched keywords, is the target user in the guild?
+        // *this is a broad check, we check again more specifically later (respecting other keyword properties)
+        foreach (var matchedKeyword in keywordsList.Where(x => message.Content.Contains(x.Keyword)))
+        {
+            try
+            {
+                await message.Channel.Guild.GetMemberAsync(matchedKeyword.UserId);
+            }
+            catch
+            {
+                // User is not in guild. Skip.
+                return;
+            }
+        }
+        
+        // Yes. Continue with other checks.
         
         // Get message before current to check for assumed presence
         // Attempt to get message from cache before fetching from Discord to avoid potential API spam
+        // todo: can we do this later, but without spamming the API (like repeatedly checking the same message for different keywords in the foreach loop below)?
         (ulong messageId, ulong authorId) msgBefore = default;
         var msgFoundInCache = false;
         if (Program.MessageCache.TryGetMessageByChannel(message.Channel.Id, out var cachedMessage))
@@ -48,18 +71,6 @@ public class KeywordTrackingHelpers
             // Checks
 
             var fieldValue = JsonConvert.DeserializeObject<TrackedKeyword>(field.Value);
-            
-            // Try to get member; if they are not in the guild, skip
-            DiscordMember member;
-            try
-            {
-                member = await message.Channel.Guild.GetMemberAsync(fieldValue.UserId);
-            }
-            catch
-            {
-                // User is not in guild. Skip.
-                return;
-            }
 
             // If keyword is set to only match whole word, use regex to check
             if (fieldValue!.MatchWholeWord)
@@ -109,6 +120,7 @@ public class KeywordTrackingHelpers
 
             // Don't DM the user if their keyword was mentioned in a channel they do not have permissions to view.
             // If we don't do this we may leak private channels, which - even if the user might want to - I don't want to be doing.
+            var member = await message.Channel.Guild.GetMemberAsync(fieldValue.UserId); // need to fetch member to check permissions
             if (!message.Channel.PermissionsFor(member).HasPermission(Permissions.AccessChannels))
                 break;
 
