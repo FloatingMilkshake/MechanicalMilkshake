@@ -43,23 +43,23 @@ public class KeywordTrackingHelpers
             }
         }
 
-        // Try to get member; if they are not in the guild, skip
-        DiscordMember member;
-        try
-        {
-            member = await message.Channel.Guild.GetMemberAsync(message.Author.Id);
-        }
-        catch
-        {
-            // User is not in guild. Skip.
-            return;
-        }
-
         foreach (var field in fields)
         {
             // Checks
 
             var fieldValue = JsonConvert.DeserializeObject<TrackedKeyword>(field.Value);
+            
+            // Try to get member; if they are not in the guild, skip
+            DiscordMember member;
+            try
+            {
+                member = await message.Channel.Guild.GetMemberAsync(fieldValue.UserId);
+            }
+            catch
+            {
+                // User is not in guild. Skip.
+                return;
+            }
 
             // If keyword is set to only match whole word, use regex to check
             if (fieldValue!.MatchWholeWord)
