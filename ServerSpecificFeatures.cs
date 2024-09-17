@@ -126,7 +126,8 @@ public partial class ServerSpecificFeatures
                     ShutBotsAllowed = false;
                 }
                 
-                if (e.Message.Content is not null && (e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase) || e.Message.Content.Equals("open", StringComparison.OrdinalIgnoreCase)))
+                if (e.Message.Content is not null && (e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase) || e.Message.Content.Equals("open", StringComparison.OrdinalIgnoreCase)
+                    || e.Message.Content.Equals("**shut**", StringComparison.OrdinalIgnoreCase) || e.Message.Content.Equals("**open**", StringComparison.OrdinalIgnoreCase)))
                 {
                     if (e.Message.Author.IsBot)
                         if (!ShutBotsAllowed || e.Message.Author.Id == Program.Discord.CurrentApplication.Id) return;
@@ -158,17 +159,21 @@ public partial class ServerSpecificFeatures
                         {
                             userShutCooldown = new KeyValuePair<DateTime, bool>(DateTime.Now.AddSeconds(5), false);
                         
-                            if (e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase))
+                            if (e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase)
+                                    || e.Message.Content.Equals("**shut**", StringComparison.OrdinalIgnoreCase))
                                 await e.Message.RespondAsync("open");
-                            else if (e.Message.Content.Equals("open", StringComparison.OrdinalIgnoreCase))
+                            else if (e.Message.Content.Equals("open", StringComparison.OrdinalIgnoreCase)
+                                     || e.Message.Content.Equals("**open**", StringComparison.OrdinalIgnoreCase))
                                 await e.Message.RespondAsync("shut");
                         }
                     }
                     else
                     {
-                        if (e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase))
+                        if (e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase)
+                                || e.Message.Content.Equals("**shut**", StringComparison.OrdinalIgnoreCase))
                             await e.Message.RespondAsync("open");
-                        else if (e.Message.Content.Equals("open", StringComparison.OrdinalIgnoreCase))
+                        else if (e.Message.Content.Equals("open", StringComparison.OrdinalIgnoreCase) 
+                                 || e.Message.Content.Equals("**open**", StringComparison.OrdinalIgnoreCase))
                             await e.Message.RespondAsync("shut");
                         
                         userShutCooldown = new(DateTime.Now.AddSeconds(5), false);
