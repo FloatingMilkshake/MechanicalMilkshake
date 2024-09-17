@@ -61,5 +61,16 @@
     "doStatsPosting": false,
     "apiToken": "",
     "apiEndpoint": ""
+  },
+
+  "wakeOnLan": {
+    "ipAddress": "",
+    "macAddress": "",
+    "port": 9
+  },
+  
+  "err": {
+    "sshUsername": "",
+    "sshHost": ""
   }
 }
