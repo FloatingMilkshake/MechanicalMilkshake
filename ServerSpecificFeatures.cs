@@ -4,6 +4,8 @@ public partial class ServerSpecificFeatures
 {
     public partial class Checks
     {
+        public static bool ShutBotsAllowed;
+        
         public static async Task MessageCreateChecks(MessageCreateEventArgs e)
         {
             if (e.Channel.IsPrivate) return;
@@ -107,13 +109,28 @@ public partial class ServerSpecificFeatures
             // Redis "shutCooldowns" hash:
             // Key user ID
             // Value whether user has attempted to use the command during cooldown
-            // Vaolue is used so that on user's first attempt during cooldown, we can respond to indicate the cooldown;
+            // Value is used so that on user's first attempt during cooldown, we can respond to indicate the cooldown;
             // but on subsequent attempts we should not respond to avoid ratelimits as that would defeat the purpose of the cooldown
 
             if (e.Guild.Id == 1203128266559328286 || e.Guild.Id == Program.HomeServer.Id)
             {
-                if (e.Message.Content is not null && !e.Message.Author.IsBot && (e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase) || e.Message.Content.Equals("open", StringComparison.OrdinalIgnoreCase)))
+                if (e.Message.Content == "shutok" && e.Message.Author.Id == 455432936339144705)
                 {
+                    await e.Message.RespondAsync("ok");
+                    ShutBotsAllowed = true;
+                }
+                
+                if (e.Message.Content == "shutstop" && e.Message.Author.Id == 455432936339144705)
+                {
+                    await e.Message.RespondAsync("ok");
+                    ShutBotsAllowed = false;
+                }
+                
+                if (e.Message.Content is not null && (e.Message.Content.Equals("shut", StringComparison.OrdinalIgnoreCase) || e.Message.Content.Equals("open", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (e.Message.Author.IsBot)
+                        if (!ShutBotsAllowed || e.Message.Author.Id == Program.Discord.CurrentApplication.Id) return;
+                    
                     var userId = e.Message.Author.Id;
                     var userShutCooldownSerialized = await Program.Db.HashGetAsync("shutCooldowns", userId.ToString());
                     KeyValuePair<DateTime, bool> userShutCooldown;
