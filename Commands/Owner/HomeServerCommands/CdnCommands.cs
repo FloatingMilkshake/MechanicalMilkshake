@@ -14,7 +14,7 @@ public partial class CdnCommands : ApplicationCommandModule
             [Option("file", "A direct file to upload. This will override a link if both are provided!")]
             DiscordAttachment file = null)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             if (Program.DisabledCommands.Contains("cdn"))
             {
@@ -114,7 +114,7 @@ public partial class CdnCommands : ApplicationCommandModule
             [Option("file", "The file to delete.")]
             string fileToDelete)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             if (Program.DisabledCommands.Contains("cdn"))
             {
@@ -203,19 +203,19 @@ public partial class CdnCommands : ApplicationCommandModule
             }
             catch (ObjectNotFoundException)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                await ctx.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent("That file doesn't exist!"));
                 return;
             }
             catch (Exception ex)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                await ctx.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
                         $"I ran into an error trying to check for that file! {ex.GetType()}: {ex.Message}"));
                 return;
             }
 
-            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().WithContent("That file exists!"));
         }
 

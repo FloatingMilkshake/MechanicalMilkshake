@@ -1,9 +1,11 @@
-﻿namespace MechanicalMilkshake.Commands.ContextMenuCommands;
+﻿using System.Data;
+
+namespace MechanicalMilkshake.Commands.ContextMenuCommands;
 
 public class Reminder : ApplicationCommandModule
 {
 
-    [ContextMenu(ApplicationCommandType.MessageContextMenu, "Remind Me About This")]
+    [ContextMenu(DiscordApplicationCommandType.MessageContextMenu, "Remind Me About This")]
     public static async Task ContextReminder(ContextMenuContext ctx)
     {
         await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(

@@ -20,7 +20,7 @@ public class EvalCommands : ApplicationCommandModule
         if (!Program.ConfigJson.Base.AuthorizedUsers.Contains(ctx.User.Id.ToString()))
             throw new SlashExecutionChecksFailedException();
 
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+        await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
             new DiscordInteractionResponseBuilder());
 
         if (RestrictedTerms.Any(command.Contains))
@@ -103,7 +103,7 @@ public class EvalCommands : ApplicationCommandModule
     [SlashCommand("eval", "[Authorized users only] Evaluate C# code!")]
     public static async Task Eval(InteractionContext ctx, [Option("code", "The code to evaluate.")] string code)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+        await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
             new DiscordInteractionResponseBuilder());
 
         if (RestrictedTerms.Any(code.Contains))

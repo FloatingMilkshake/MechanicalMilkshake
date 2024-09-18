@@ -8,7 +8,7 @@ public class Ping : ApplicationCommandModule
         await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Ping!"));
         var timeNow = DateTime.UtcNow;
 
-        var websocketPing = ctx.Client.Ping;
+        var websocketPing = ctx.Client.GetConnectionLatency(ctx.Guild.Id);
         var msg = await ctx.Interaction.GetOriginalResponseAsync();
         var interactionLatency = Math.Round((timeNow - msg.CreationTimestamp.UtcDateTime).TotalMilliseconds);
 

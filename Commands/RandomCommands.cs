@@ -29,7 +29,7 @@ public partial class RandomCommands : ApplicationCommandModule
         [SlashCommand("fact", "Get a random fact.")]
         public static async Task RandomFact(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
             var fact = JsonConvert.DeserializeObject<JObject>(await Program.HttpClient.GetStringAsync("https://uselessfacts.jsph.pl/random.md?language=en"));
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(fact["text"].ToString()));
         }
@@ -37,7 +37,7 @@ public partial class RandomCommands : ApplicationCommandModule
         [SlashCommand("cat", "Get a random cat picture from the internet.")]
         public static async Task RandomCat(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
             var data = await Program.HttpClient.GetStringAsync("https://api.thecatapi.com/v1/images/search");
             var pattern = CatApiUrlPattern();
             var cat = pattern.Match(data);
@@ -48,7 +48,7 @@ public partial class RandomCommands : ApplicationCommandModule
         [SlashCommand("dog", "Get a random dog picture from the internet.")]
         public static async Task RandomDog(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
             var data = await Program.HttpClient.GetStringAsync("https://dog.ceo/api/breeds/image/random");
             var pattern = DogApiUrlPattern();
             var dogMatch = pattern.Match(data);

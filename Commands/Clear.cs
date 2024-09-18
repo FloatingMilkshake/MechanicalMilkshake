@@ -6,7 +6,7 @@ public partial class Clear : ApplicationCommandModule
     public static readonly Dictionary<ulong, List<DiscordMessage>> MessagesToClear = new();
 
     [SlashCommand("clear", "Delete many messages from the current channel.", false)]
-    [SlashCommandPermissions(Permissions.ManageMessages)]
+    [SlashCommandPermissions(DiscordPermissions.ManageMessages)]
     public static async Task ClearCommand(InteractionContext ctx,
         [Option("count",
             "The number of messages to consider for deletion. Required if you don't use the 'up_to' argument.")]
@@ -33,7 +33,7 @@ public partial class Clear : ApplicationCommandModule
         bool dryRun = false
     )
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+        await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
             new DiscordInteractionResponseBuilder().AsEphemeral());
 
         var discordLinkRx = DiscordLinkPattern();
@@ -86,7 +86,7 @@ public partial class Clear : ApplicationCommandModule
         List<DiscordMessage> messagesToClear = [];
         if (upTo == "")
         {
-            var messages = await ctx.Channel.GetMessagesAsync((int)count);
+            var messages = await ctx.Channel.GetMessagesAsync((int)count).ToListAsync();
             messagesToClear = messages.ToList();
         }
         else
@@ -119,12 +119,12 @@ public partial class Clear : ApplicationCommandModule
             var message = await ctx.Channel.GetMessageAsync(messageId);
 
             // List of messages to delete, up to (not including) the one we just got.
-            var firstMsg = (await ctx.Channel.GetMessagesAfterAsync(message.Id, 1))[0];
+            var firstMsg = (await ctx.Channel.GetMessagesAfterAsync(message.Id, 1).ToListAsync())[0];
             var firstMsgId = firstMsg.Id;
             messagesToClear.Add(firstMsg);
             while (true)
             {
-                var newMessages = (await ctx.Channel.GetMessagesAfterAsync(firstMsgId)).ToList();
+                var newMessages = await ctx.Channel.GetMessagesAfterAsync(firstMsgId).ToListAsync();
                 messagesToClear.AddRange(newMessages);
                 firstMsgId = newMessages.First().Id;
                 if (newMessages.Count < 100)
@@ -229,7 +229,7 @@ public partial class Clear : ApplicationCommandModule
             case >= 50:
             {
                 DiscordButtonComponent confirmButton =
-                    new(ButtonStyle.Danger, "clear-confirm-callback", "Delete Messages", disabled: dryRun);
+                    new(DiscordButtonStyle.Danger, "clear-confirm-callback", "Delete Messages", disabled: dryRun);
                 var confirmationMessage = await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(dryRun ? $"You would be about to delete {messagesToClear.Count} messages, but since "
                                             + "you used `dry_run = True`, I won't do anything."

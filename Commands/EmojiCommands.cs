@@ -7,7 +7,7 @@ public partial class EmojiCommands : ApplicationCommandModule
     private static readonly Regex EmojiRegex = EmojiPattern();
 
     [SlashCommandGroup("emoji", "Commands for working with emoji.")]
-    [SlashCommandPermissions(Permissions.ManageEmojis)]
+    [SlashCommandPermissions(DiscordPermissions.ManageEmojis)]
     public class Emoji
     {
         [SlashCommand("get", "Get all emoji from a server. The bot must be in the server for this to work.")]
@@ -16,7 +16,7 @@ public partial class EmojiCommands : ApplicationCommandModule
             [Option("zip", "Whether to include a zip file containing all of the emoji. Defaults to True.")] bool zip = true)
         {
             // Defer interaction response
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             // Validate guild ID
             if (server.Any(character => !char.IsNumber(character)))
@@ -151,7 +151,7 @@ public partial class EmojiCommands : ApplicationCommandModule
         [SlashCommand("enlarge", "Enlarge an emoji! Only works for custom emoji.")]
         public static async Task EnlargeEmoji(InteractionContext ctx, [Option("emoji", "The emoji to enlarge.")] string emoji)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             if (!EmojiRegex.IsMatch(emoji))
             {

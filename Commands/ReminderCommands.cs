@@ -14,7 +14,7 @@ public partial class ReminderCommands : ApplicationCommandModule
             [Option("private", "Whether to keep this reminder private. It will be sent in DMs.")]
             bool isPrivate = false)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral(isPrivate));
 
             DateTime? reminderTime;
@@ -119,7 +119,7 @@ public partial class ReminderCommands : ApplicationCommandModule
         [SlashCommand("list", "List your reminders.")]
         public static async Task ListReminders(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
             var reminders = await Program.Db.HashGetAllAsync("reminders");
@@ -230,7 +230,7 @@ public partial class ReminderCommands : ApplicationCommandModule
         [SlashCommand("delete", "Delete a reminder using its unique ID.")]
         public static async Task DeleteReminder(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
             var options = new List<DiscordSelectComponentOption>();
@@ -279,7 +279,7 @@ public partial class ReminderCommands : ApplicationCommandModule
             [MaximumLength(1000)]
             string text = null)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
             var idRegex = IdPattern();
@@ -375,7 +375,7 @@ public partial class ReminderCommands : ApplicationCommandModule
             [Option("private", "Whether to keep this reminder private. It will be sent in DMs.")]
             bool isPrivate = false)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral(isPrivate));
 
             DiscordMessage message;
@@ -507,7 +507,7 @@ public partial class ReminderCommands : ApplicationCommandModule
         [SlashCommand("show", "Show the details for a reminder.")]
         public static async Task ReminderShow(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
             var options = new List<DiscordSelectComponentOption>();

@@ -26,7 +26,7 @@ public partial class KeywordTrackingCommands : ApplicationCommandModule
                 "Whether to only notify you if the keyword is mentioned in this server. Defaults to True.")]
             bool currentGuildOnly = true)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
             if (currentGuildOnly && guildIgnoreList is not null &&
@@ -221,7 +221,7 @@ public partial class KeywordTrackingCommands : ApplicationCommandModule
                 "Whether to only notify you if the keyword is mentioned in this server.")]
             bool? currentGuildOnly = null)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
             
             var allKeywordsRawData = await Program.Db.HashGetAllAsync("keywords");
@@ -417,7 +417,7 @@ public partial class KeywordTrackingCommands : ApplicationCommandModule
         [SlashCommand("list", "List tracked keywords.")]
         public static async Task TrackList(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
             var data = await Program.Db.HashGetAllAsync("keywords");
@@ -454,7 +454,7 @@ public partial class KeywordTrackingCommands : ApplicationCommandModule
         public static async Task TrackDetails(InteractionContext ctx,
             [Autocomplete(typeof(TrackingAutocompleteProvider)), Option("keyword", "The keyword or phrase to show details for.")] string keyword)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
             var keywords = await Program.Db.HashGetAllAsync("keywords");
@@ -492,7 +492,7 @@ public partial class KeywordTrackingCommands : ApplicationCommandModule
         public static async Task TrackRemove(InteractionContext ctx,
             [Autocomplete(typeof(TrackingAutocompleteProvider)), Option("keyword", "The keyword or phrase to untrack.")] string keyword)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
             var keywords = await Program.Db.HashGetAllAsync("keywords");
@@ -525,7 +525,7 @@ public partial class KeywordTrackingCommands : ApplicationCommandModule
                 .WithTitle("Are you sure you want to remove this keyword?").WithColor(DiscordColor.Red)
                 .WithDescription(keywordData!.Keyword);
 
-            DiscordButtonComponent confirmButton = new(ButtonStyle.Danger, "track-remove-confirm-button", "Remove");
+            DiscordButtonComponent confirmButton = new(DiscordButtonStyle.Danger, "track-remove-confirm-button", "Remove");
 
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AddComponents(confirmButton).AsEphemeral());
         }

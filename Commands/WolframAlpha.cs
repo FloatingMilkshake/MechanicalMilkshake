@@ -14,7 +14,7 @@ public class WolframAlpha : ApplicationCommandModule
         [Choice("Image", "image")]
         string responseType = "text")
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
         if (Program.DisabledCommands.Contains("cdn"))
         {

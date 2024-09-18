@@ -5,7 +5,7 @@ public class AboutCommands : ApplicationCommandModule
     [SlashCommand("about", "View information about me!")]
     public static async Task About(InteractionContext ctx)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
         // Set this to an empty string to disable the Privacy Policy notice in /about, or change it to your own
         // Privacy Policy URL if you have one.
@@ -62,7 +62,7 @@ public class AboutCommands : ApplicationCommandModule
     public static async Task CommitInfo(InteractionContext ctx,
         [Option("extended", "Whether to show extended info. Defaults to False.")] bool extended = false)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
         if (extended) {
             await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(
@@ -83,7 +83,7 @@ public class AboutCommands : ApplicationCommandModule
     [SlashCommand("uptime", "Check my uptime!")]
         public static async Task Uptime(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             DiscordEmbedBuilder embed = new()
             {

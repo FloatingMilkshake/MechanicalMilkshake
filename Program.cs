@@ -1,7 +1,16 @@
-﻿using System.Net;
-using System.Threading;
+﻿using DSharpPlus.Net.Gateway;
 
 namespace MechanicalMilkshake;
+
+public class GatewayController : IGatewayController
+{
+    public async Task HeartbeatedAsync(IGatewayClient client) { }
+
+    public async Task ZombiedAsync(IGatewayClient _) { }
+    public async Task ReconnectRequestedAsync(IGatewayClient _) { }
+    public async Task ReconnectFailedAsync(IGatewayClient _) { }
+    public async Task SessionInvalidatedAsync(IGatewayClient _) { }
+}
 
 public class Program
 {
@@ -26,7 +35,7 @@ public class Program
 #endif
     public static readonly IDatabase Db = Redis.GetDatabase();
     public static bool RedisExceptionsSuppressed;
-    public static readonly MessageCache MessageCache = new();
+    public static readonly MechanicalMilkshake.Entities.MessageCaching.MessageCache MessageCache = new();
     public static string LastUptimeKumaHeartbeatStatus = "N/A";
 
     public static readonly Dictionary<string, ulong> UserFlagEmoji = new()
@@ -82,23 +91,112 @@ public class Program
         }
 
         // Configure Discord client and interactivity
-        Discord = new DiscordClient(new DiscordConfiguration
+        //Discord = new DiscordClient(new DiscordConfiguration
+        //{
+        //    Token = ConfigJson.Base.BotToken,
+        //    TokenType = TokenType.Bot,
+        //    Intents = DiscordIntents.AllUnprivileged | DiscordIntents.GuildMessages | DiscordIntents.GuildMembers
+        //        | DiscordIntents.MessageContents | DiscordIntents.GuildPresences,
+        //    LogUnknownEvents = false,
+//#if DEBUG
+        //    MinimumLogLevel = LogLevel.Debug
+//#else
+        //    MinimumLogLevel = LogLevel.Information
+//#endif
+        //});
+        //Discord.UseInteractivity(new InteractivityConfiguration
+        //{
+        //    PollBehaviour = PollBehaviour.KeepEmojis,
+        //    Timeout = TimeSpan.FromSeconds(30)
+        //});
+        
+        var clientBuilder = DiscordClientBuilder.CreateDefault(ConfigJson.Base.BotToken, DiscordIntents.All);
+        clientBuilder.ConfigureLogging(loggingBuilder =>
         {
-            Token = ConfigJson.Base.BotToken,
-            TokenType = TokenType.Bot,
-            Intents = DiscordIntents.AllUnprivileged | DiscordIntents.GuildMessages | DiscordIntents.GuildMembers
-                | DiscordIntents.MessageContents | DiscordIntents.GuildPresences,
-            LogUnknownEvents = false,
 #if DEBUG
-            MinimumLogLevel = LogLevel.Debug
+            loggingBuilder.SetMinimumLevel(LogLevel.Debug);
 #else
-            MinimumLogLevel = LogLevel.Information
+            loggingBuilder.SetMinimumLevel(LogLevel.Information);
 #endif
         });
-        Discord.UseInteractivity(new InteractivityConfiguration
+        clientBuilder.ConfigureExtraFeatures(config =>
         {
-            PollBehaviour = PollBehaviour.KeepEmojis,
-            Timeout = TimeSpan.FromSeconds(30)
+            config.LogUnknownEvents = false;
+            config.LogUnknownAuditlogs = false;
+        });
+        clientBuilder.ConfigureEventHandlers(builder => 
+            builder.HandleSessionCreated(ReadyEvent.OnReady)
+                    .HandleMessageCreated(MessageEvents.MessageCreated)
+                    .HandleMessageUpdated(MessageEvents.MessageUpdated)
+                    .HandleMessageDeleted(MessageEvents.MessageDeleted)
+                    .HandleChannelDeleted(ChannelEvents.ChannelDeleted)
+                    .HandleComponentInteractionCreated(ComponentInteractionEvent.ComponentInteractionCreated)
+                    .HandleGuildCreated(GuildEvents.GuildCreated)
+                    .HandleGuildDeleted(GuildEvents.GuildDeleted)
+                    .HandleGuildMemberUpdated(GuildEvents.GuildMemberUpdated)
+        );
+        var slash = clientBuilder.UseSlashCommands(slashConfig =>
+        {
+            slashConfig.SlashCommandErrored += ErrorEvents.SlashCommandErrored;
+            slashConfig.SlashCommandExecuted += InteractionEvents.SlashCommandExecuted;
+            slashConfig.ContextMenuExecuted += InteractionEvents.ContextMenuExecuted;
+            
+#if DEBUG
+            // Register slash commands as guild commands in home server when
+            // running in development mode
+            
+            var slashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
+                t.IsClass && t.Namespace is not null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
+                !t.IsNested);
+
+            foreach (var type in slashCommandClasses)
+                slashConfig.RegisterCommands(type, HomeServer.Id);
+            
+            if (ConfigJson.Base.UseServerSpecificFeatures)
+            {
+                // Register server-specific feature slash commands in home server when debugging
+                slashConfig.RegisterCommands<ServerSpecificFeatures.RoleCommands>(HomeServer.Id);
+            }
+
+            Discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging");
+#else
+        // Register slash commands globally for 'production' bot
+
+        var globalSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
+            t.IsClass && t.Namespace is not null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
+            !t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") && !t.IsNested);
+
+        foreach (var type in globalSlashCommandClasses)
+            slash.RegisterCommands(type);
+
+
+        var ownerSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
+            t.IsClass && t.Namespace is not null &&
+            t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") &&
+            !t.IsNested);
+
+        foreach (var type in ownerSlashCommandClasses)
+        {
+            slash.RegisterCommands(type, HomeServer.Id);
+            slash.RegisterCommands(type, 1007457740655968327);
+        }
+
+        slash.RegisterCommands<ServerSpecificFeatures.RoleCommands>(984903591816990730);
+        slash.RegisterCommands<ServerSpecificFeatures.RoleCommands>(HomeServer.Id);
+
+        Discord.Logger.LogInformation(BotEventId, "Slash commands registered globally");
+#endif
+        });
+        var commands = clientBuilder.UseCommandsNext(cnConfig =>
+        {
+            cnConfig.CommandErrored += ErrorEvents.CommandsNextService_CommandErrored;
+            
+            cnConfig.RegisterCommands<ServerSpecificFeatures.MessageCommands>();
+        },
+        new CommandsNextConfiguration
+        {
+            StringPrefixes = Prefixes,
+            EnableDefaultHelp = false
         });
 
         // Set home channel & guild for later reference
@@ -119,15 +217,6 @@ public class Program
 
         HomeChannel = await Discord.GetChannelAsync(homeChanId);
         HomeServer = await Discord.GetGuildAsync(homeServerId);
-
-        // Set up slash commands and CommandsNext
-        var slash = Discord.UseSlashCommands();
-
-        var commands = Discord.UseCommandsNext(new CommandsNextConfiguration
-        {
-            StringPrefixes = Prefixes,
-            EnableDefaultHelp = false
-        });
 
         // Set up Minio (used for some Owner commands)
         if (ConfigJson.S3.Bucket == "" || ConfigJson.S3.CdnBaseUrl == "" || ConfigJson.S3.Endpoint == "" ||
@@ -194,58 +283,6 @@ public class Program
             Discord.Logger.LogWarning(BotEventId, "Uptime Kuma heartbeats disabled due to missing push URL.");
         }
 
-        // Register slash commands as guild commands in home server when
-        // running in development mode
-#if DEBUG
-        var slashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-            t.IsClass && t.Namespace is not null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
-            !t.IsNested);
-
-        foreach (var type in slashCommandClasses)
-            slash.RegisterCommands(type, HomeServer.Id);
-        
-        if (ConfigJson.Base.UseServerSpecificFeatures)
-        {
-            // Register CommandsNext commands
-            commands.RegisterCommands<ServerSpecificFeatures.MessageCommands>();
-            
-            // Register server-specific feature slash commands in home server when debugging
-            slash.RegisterCommands<ServerSpecificFeatures.RoleCommands>(HomeServer.Id);
-        }
-
-        Discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging");
-
-        // Register slash commands globally for 'production' bot
-#else
-        var globalSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-            t.IsClass && t.Namespace is not null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
-            !t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") && !t.IsNested);
-
-        foreach (var type in globalSlashCommandClasses)
-            slash.RegisterCommands(type);
-
-
-        var ownerSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-            t.IsClass && t.Namespace is not null &&
-            t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") &&
-            !t.IsNested);
-
-        foreach (var type in ownerSlashCommandClasses)
-        {
-            slash.RegisterCommands(type, HomeServer.Id);
-            slash.RegisterCommands(type, 1007457740655968327);
-        }
-
-        // Register server-specific feature slash commands
-        slash.RegisterCommands<ServerSpecificFeatures.RoleCommands>(984903591816990730);
-        slash.RegisterCommands<ServerSpecificFeatures.RoleCommands>(HomeServer.Id);
-
-        Discord.Logger.LogInformation(BotEventId, "Slash commands registered globally");
-        
-        // and CommandsNext commands
-        commands.RegisterCommands<ServerSpecificFeatures.MessageCommands>();
-#endif
-
         await Discord.ConnectAsync();
 
         // Store registered application commands for later reference
@@ -256,22 +293,6 @@ public class Program
 #else
         ApplicationCommands = (List<DiscordApplicationCommand>)await Discord.GetGlobalApplicationCommandsAsync();
 #endif
-
-        // Events
-        Discord.Ready += ReadyEvent.OnReady;
-        Discord.MessageCreated += MessageEvents.MessageCreated;
-        Discord.MessageUpdated += MessageEvents.MessageUpdated;
-        Discord.MessageDeleted += MessageEvents.MessageDeleted;
-        Discord.ChannelDeleted += ChannelEvents.ChannelDeleted;
-        Discord.ComponentInteractionCreated += ComponentInteractionEvent.ComponentInteractionCreated;
-        Discord.GuildCreated += GuildEvents.GuildCreated;
-        Discord.GuildDeleted += GuildEvents.GuildDeleted;
-        Discord.GuildMemberUpdated += GuildEvents.GuildMemberUpdated;
-        Discord.Heartbeated += HeartbeatEvent.Heartbeated;
-        commands.CommandErrored += ErrorEvents.CommandsNextService_CommandErrored;
-        slash.SlashCommandErrored += ErrorEvents.SlashCommandErrored;
-        slash.SlashCommandExecuted += InteractionEvents.SlashCommandExecuted;
-        slash.ContextMenuExecuted += InteractionEvents.ContextMenuExecuted;
 
         /* Fix SSH key permissions at bot startup.
         I wanted to be able to do this somewhere else, but for now it seems
@@ -303,7 +324,7 @@ public class Program
         await Task.Run(async () => DBotsTasks.ExecuteAsync());
 
         // Wait indefinitely, let tasks continue running in async threads
-        await Task.Delay(Timeout.InfiniteTimeSpan);
+        await Task.Delay(System.Threading.Timeout.InfiniteTimeSpan);
     }
 }
 

@@ -7,7 +7,7 @@ public partial class Markdown : ApplicationCommandModule
         [Option("message", "The message you want to expose the formatting of. Accepts message IDs and links.")]
         string messageToExpose)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
         DiscordMessage message;
         if (DiscordUrlPattern().IsMatch(messageToExpose))

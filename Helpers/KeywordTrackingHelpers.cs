@@ -61,7 +61,7 @@ public class KeywordTrackingHelpers
             // Avoid fetching messages from channels that are known to be spammy / cause ratelimits
             if (Program.ConfigJson.Ids.RatelimitCautionChannels is not null && !Program.ConfigJson.Ids.RatelimitCautionChannels.Contains(message.Channel.Id.ToString()))
             {
-                var msgsBefore = await message.Channel.GetMessagesBeforeAsync(message.Id, 1);
+                var msgsBefore = await message.Channel.GetMessagesBeforeAsync(message.Id, 1).ToListAsync();
                 if (msgsBefore.Count > 0) msgBefore = (msgsBefore[0].Id, msgsBefore[0].Author.Id);
             }
         }
@@ -121,7 +121,7 @@ public class KeywordTrackingHelpers
             // Don't DM the user if their keyword was mentioned in a channel they do not have permissions to view.
             // If we don't do this we may leak private channels, which - even if the user might want to - I don't want to be doing.
             var member = await message.Channel.Guild.GetMemberAsync(fieldValue.UserId); // need to fetch member to check permissions
-            if (!message.Channel.PermissionsFor(member).HasPermission(Permissions.AccessChannels))
+            if (!message.Channel.PermissionsFor(member).HasPermission(DiscordPermissions.AccessChannels))
                 break;
 
             if (fieldValue.MatchWholeWord)

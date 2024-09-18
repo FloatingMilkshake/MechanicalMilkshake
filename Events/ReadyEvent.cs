@@ -2,7 +2,7 @@
 
 public class ReadyEvent
 {
-    public static async Task OnReady(DiscordClient client, ReadyEventArgs e)
+    public static async Task OnReady(DiscordClient client, SessionCreatedEventArgs e)
     {
         await Task.Run(async () =>
         {

@@ -4,13 +4,13 @@
 public class LockdownCommands : ApplicationCommandModule
 {
     [SlashCommandGroup("lockdown", "Lock or unlock a channel.", false)]
-    [SlashCommandPermissions(Permissions.ModerateMembers)]
+    [SlashCommandPermissions(DiscordPermissions.ModerateMembers)]
     public class Lockdown
     {
         [SlashCommand("lock", "Lock a channel to prevent members from sending messages.")]
         public static async Task Lock(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
             var existingOverwrites = ctx.Channel.PermissionOverwrites.ToArray();
@@ -22,39 +22,39 @@ public class LockdownCommands : ApplicationCommandModule
                 // Add initial overwrites for failsafes (bot & user who called /lockdown), deny everyone else Send Messages
                 if (invokerExistingAllowedOverwrites is null)
                 {
-                    await ctx.Channel.AddOverwriteAsync(ctx.Member, Permissions.SendMessages, Permissions.None,
+                    await ctx.Channel.AddOverwriteAsync(ctx.Member, DiscordPermissions.SendMessages, DiscordPermissions.None,
                         "Failsafe for lockdown");
                 }
                 else
                 {
                     await ctx.Channel.AddOverwriteAsync(ctx.Member,
-                        invokerExistingAllowedOverwrites.Allowed | Permissions.SendMessages,
+                        invokerExistingAllowedOverwrites.Allowed | DiscordPermissions.SendMessages,
                         invokerExistingAllowedOverwrites.Denied, "Failsafe for lockdown");
                 }
 
                 if (botAllowedOverwrites is null)
                 {
                     await ctx.Channel.AddOverwriteAsync(await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id),
-                        Permissions.SendMessages, Permissions.None, "Failsafe for lockdown");
+                        DiscordPermissions.SendMessages, DiscordPermissions.None, "Failsafe for lockdown");
                 }
                 else
                 {
                     await ctx.Channel.AddOverwriteAsync(await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id),
-                        botAllowedOverwrites.Allowed | Permissions.SendMessages, botAllowedOverwrites.Denied,
+                        botAllowedOverwrites.Allowed | DiscordPermissions.SendMessages, botAllowedOverwrites.Denied,
                         "Failsafe for lockdown");
                 }
 
-                await ctx.Channel.AddOverwriteAsync(ctx.Guild.EveryoneRole, Permissions.None, Permissions.SendMessages,
+                await ctx.Channel.AddOverwriteAsync(ctx.Guild.EveryoneRole, DiscordPermissions.None, DiscordPermissions.SendMessages,
                     "Lockdown");
 
                 // Restore overwrites that may have been present before the lockdown
 
                 foreach (var overwrite in existingOverwrites)
-                    if (overwrite.Type == OverwriteType.Role)
+                    if (overwrite.Type == DiscordOverwriteType.Role)
                     {
                         if (await overwrite.GetRoleAsync() == ctx.Guild.EveryoneRole)
                             await ctx.Channel.AddOverwriteAsync(await overwrite.GetRoleAsync(), overwrite.Allowed,
-                                Permissions.SendMessages | overwrite.Denied,
+                                DiscordPermissions.SendMessages | overwrite.Denied,
                                 "Restoring previous overrides for lockdown");
                         else
                             await ctx.Channel.AddOverwriteAsync(await overwrite.GetRoleAsync(), overwrite.Allowed,
@@ -82,7 +82,7 @@ public class LockdownCommands : ApplicationCommandModule
         [SlashCommand("unlock", "Unlock a locked channel to allow members to send messages again.")]
         public static async Task Unlock(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
             try
@@ -90,7 +90,7 @@ public class LockdownCommands : ApplicationCommandModule
                 // Checking <2 because there will always be 1 overwrite for @everyone permissions
                 if (ctx.Channel.PermissionOverwrites.ToArray().Length < 2
                     || ctx.Channel.PermissionOverwrites.Any(o => o.Id == ctx.Guild.EveryoneRole.Id &&
-                        !o.Denied.HasPermission(Permissions.SendMessages)))
+                        !o.Denied.HasPermission(DiscordPermissions.SendMessages)))
                 {
                     await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
                         .WithContent("This channel is not locked!").AsEphemeral());
@@ -98,7 +98,7 @@ public class LockdownCommands : ApplicationCommandModule
                 }
                 
                 foreach (var permission in ctx.Channel.PermissionOverwrites.ToArray())
-                    if (permission.Type == OverwriteType.Role)
+                    if (permission.Type == DiscordOverwriteType.Role)
                     {
                         // Don't touch roles that aren't @everyone
                         if (await permission.GetRoleAsync() != ctx.Guild.EveryoneRole) continue;
@@ -107,7 +107,7 @@ public class LockdownCommands : ApplicationCommandModule
                         DiscordOverwriteBuilder newOverwrite = new(ctx.Guild.EveryoneRole)
                         {
                             Allowed = permission.Allowed,
-                            Denied = (Permissions)(permission.Denied - Permissions.SendMessages)
+                            Denied = (DiscordPermissions)(permission.Denied - DiscordPermissions.SendMessages)
                         };
 
                         await ctx.Channel.AddOverwriteAsync(ctx.Guild.EveryoneRole, newOverwrite.Allowed,
@@ -116,17 +116,17 @@ public class LockdownCommands : ApplicationCommandModule
                     else
                     {
                         // Filter to user overrides that have Send Messages allowed (failsafes) so we can remove
-                        if (!permission.Allowed.HasPermission(Permissions.SendMessages)) continue;
+                        if (!permission.Allowed.HasPermission(DiscordPermissions.SendMessages)) continue;
 
                         // Remove failsafe Send Message overrides
                         DiscordOverwriteBuilder newOverwrite = new(await permission.GetMemberAsync())
                         {
-                            Allowed = (Permissions)(permission.Allowed - Permissions.SendMessages),
+                            Allowed = (DiscordPermissions)(permission.Allowed - DiscordPermissions.SendMessages),
                             Denied = permission.Denied
                         };
                         
                         // Check new permission set; if it's totally empty, just drop the override
-                        if (newOverwrite.Allowed == Permissions.None && newOverwrite.Denied == Permissions.None)
+                        if (newOverwrite.Allowed == DiscordPermissions.None && newOverwrite.Denied == DiscordPermissions.None)
                             await ctx.Channel.DeleteOverwriteAsync(await permission.GetMemberAsync(), "Lockdown cleared");
                         else
                             await ctx.Channel.AddOverwriteAsync(await permission.GetMemberAsync(), newOverwrite.Allowed,

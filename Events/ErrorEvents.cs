@@ -12,7 +12,7 @@ public class ErrorEvents
                                    $" Need help? Contact a bot owner (see {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list).";
                 try
                 {
-                    await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    await e.Context.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder().WithContent(noDmResponse).AsEphemeral());
                 }
                 catch
@@ -29,7 +29,7 @@ public class ErrorEvents
                                         $" (see {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list).";
                 try
                 {
-                    await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    await e.Context.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder().WithContent(cmdFailedResponse).AsEphemeral());
                 }
                 catch
@@ -165,7 +165,7 @@ public class ErrorEvents
             // Check if bot has perms to send error response and send if so
             if (e.Context.Channel
                 .PermissionsFor(await e.Context.Guild.GetMemberAsync(e.Context.Client.CurrentUser.Id))
-                .HasPermission(Permissions.SendMessages))
+                .HasPermission(DiscordPermissions.SendMessages))
                 await e.Context.RespondAsync(embed.Build()).ConfigureAwait(false);
         }
     }

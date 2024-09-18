@@ -9,7 +9,7 @@ public class ServerInfo : ApplicationCommandModule
             "The ID of the server to look up. Defaults to the current server if you're not using this in DMs.")]
         string guildId = default)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
         
         DiscordGuild guild;
         
@@ -52,11 +52,11 @@ public class ServerInfo : ApplicationCommandModule
 
         var createdAt = $"{IdHelpers.GetCreationTimestamp(guild.Id, true)}";
 
-        var categoryCount = guild.Channels.Count(channel => channel.Value.Type == ChannelType.Category);
+        var categoryCount = guild.Channels.Count(channel => channel.Value.Type == DiscordChannelType.Category);
 
         var embed = new DiscordEmbedBuilder()
             .WithColor(Program.BotColor)
-            .AddField("Server Owner", $"{UserInfoHelpers.GetFullUsername(guild.Owner)}")
+            .AddField("Server Owner", $"{UserInfoHelpers.GetFullUsername(await guild.GetGuildOwnerAsync())}")
             .AddField("Description", $"{description}")
             .AddField("Created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)")
             .AddField("Channels", $"{guild.Channels.Count - categoryCount}", true)
@@ -73,7 +73,7 @@ public class ServerInfo : ApplicationCommandModule
 
         await ctx.FollowUpAsync(response);
 
-        var members = await guild.GetAllMembersAsync();
+        var members = await guild.GetAllMembersAsync().ToListAsync();
         var botCount = members.Count(member => member.IsBot);
         var humanCount = guild.MemberCount - botCount;
 

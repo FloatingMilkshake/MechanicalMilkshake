@@ -2,14 +2,14 @@
 
 public class Avatar : ApplicationCommandModule
 {
-    [ContextMenu(ApplicationCommandType.UserContextMenu, "Avatar")]
+    [ContextMenu(DiscordApplicationCommandType.UserContextMenu, "Avatar")]
     public static async Task ContextAvatar(ContextMenuContext ctx)
     {
         // Buttons shown to user to select which avatar to get if the target user has a server avatar set
         DiscordButtonComponent serverAvatarButton =
-            new(ButtonStyle.Primary, "server-avatar-ctx-cmd-button", "Server Avatar");
+            new(DiscordButtonStyle.Primary, "server-avatar-ctx-cmd-button", "Server Avatar");
         DiscordButtonComponent userAvatarButton =
-            new(ButtonStyle.Primary, "user-avatar-ctx-cmd-button", "User Avatar");
+            new(DiscordButtonStyle.Primary, "user-avatar-ctx-cmd-button", "User Avatar");
 
         DiscordMember member = default;
         try

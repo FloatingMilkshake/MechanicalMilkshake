@@ -9,9 +9,9 @@ public class Avatar : ApplicationCommandModule
         DiscordUser user = null)
     {
         DiscordButtonComponent serverAvatarButton =
-            new(ButtonStyle.Primary, "server-avatar-ctx-cmd-button", "Server Avatar");
+            new(DiscordButtonStyle.Primary, "server-avatar-ctx-cmd-button", "Server Avatar");
         DiscordButtonComponent userAvatarButton =
-            new(ButtonStyle.Primary, "user-avatar-ctx-cmd-button", "User Avatar");
+            new(DiscordButtonStyle.Primary, "user-avatar-ctx-cmd-button", "User Avatar");
 
         user ??= ctx.User;
 

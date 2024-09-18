@@ -15,7 +15,7 @@ public class HttpApiCommands : ApplicationCommandModule
         [Option("code", "The code to get the http.cat image for.")] [Minimum(100)] [Maximum(599)]
         long? code = null)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(GetHttpImage(code, true)));
     }
@@ -25,7 +25,7 @@ public class HttpApiCommands : ApplicationCommandModule
         [Option("code", "The code to get the http.dog image for.")] [Minimum(100)] [Maximum(599)]
         long? code = null)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
         await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(GetHttpImage(code, false)));
     }

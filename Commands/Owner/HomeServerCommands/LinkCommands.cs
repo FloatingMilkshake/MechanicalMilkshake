@@ -12,7 +12,7 @@ public class LinkCommands : ApplicationCommandModule
             [Option("url", "The URL the short link should point to.")]
             string url)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder());
         
             if (Program.DisabledCommands.Contains("wl"))
@@ -87,7 +87,7 @@ public class LinkCommands : ApplicationCommandModule
             [Option("link", "The key or URL of the short link to delete.")]
             string url)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
             
             if (Program.DisabledCommands.Contains("wl"))
             {
@@ -229,14 +229,13 @@ public class LinkCommands : ApplicationCommandModule
             
             try
             {
-                var pages = Program.Discord.GetInteractivity()
-                    .GeneratePagesInEmbed(kvListResponse, SplitType.Line, embed).ToList();
+                var pages = InteractivityExtension.GeneratePagesInEmbed(kvListResponse, SplitType.Line, embed).ToList();
 
-                var leftSkip = new DiscordButtonComponent(ButtonStyle.Primary, "leftskip", "<<<");
-                var left = new DiscordButtonComponent(ButtonStyle.Primary, "left", "<");
-                var right = new DiscordButtonComponent(ButtonStyle.Primary, "right", ">");
-                var rightSkip = new DiscordButtonComponent(ButtonStyle.Primary, "rightskip", ">>>");
-                var stop = new DiscordButtonComponent(ButtonStyle.Danger, "stop", "Stop");
+                var leftSkip = new DiscordButtonComponent(DiscordButtonStyle.Primary, "leftskip", "<<<");
+                var left = new DiscordButtonComponent(DiscordButtonStyle.Primary, "left", "<");
+                var right = new DiscordButtonComponent(DiscordButtonStyle.Primary, "right", ">");
+                var rightSkip = new DiscordButtonComponent(DiscordButtonStyle.Primary, "rightskip", ">>>");
+                var stop = new DiscordButtonComponent(DiscordButtonStyle.Danger, "stop", "Stop");
 
                 if (pages.Count > 1)
                     await ctx.Interaction.SendPaginatedResponseAsync(false, ctx.User, pages,

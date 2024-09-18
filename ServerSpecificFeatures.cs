@@ -6,7 +6,7 @@ public partial class ServerSpecificFeatures
     {
         public static bool ShutBotsAllowed;
         
-        public static async Task MessageCreateChecks(MessageCreateEventArgs e)
+        public static async Task MessageCreateChecks(MessageCreatedEventArgs e)
         {
             if (e.Channel.IsPrivate) return;
             
@@ -14,7 +14,7 @@ public partial class ServerSpecificFeatures
             {
                 // &caption -> #captions
                 if (e.Message.Author.Id == 1031968180974927903 &&
-                    (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1))[0].Content
+                    (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1).ToListAsync())[0].Content
                     .Contains("caption"))
                 {
                     var chan = await Program.Discord.GetChannelAsync(1048242806486999092);
@@ -185,7 +185,7 @@ public partial class ServerSpecificFeatures
             }
         }
 
-        private static async Task PatchTuesdayAnnouncementCheck(MessageCreateEventArgs e, ulong authorId, ulong channelId)
+        private static async Task PatchTuesdayAnnouncementCheck(MessageCreatedEventArgs e, ulong authorId, ulong channelId)
         {
             // Patch Tuesday automatic message generation
 
@@ -200,7 +200,7 @@ public partial class ServerSpecificFeatures
             };
             
             // Get message before current message; if authors do not match or message is not a Cumulative Updates post, ignore
-            var previousMessage = (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1))[0];
+            var previousMessage = (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1).ToListAsync())[0];
             if (previousMessage.Author.Id != e.Message.Author.Id || !previousMessage.Content.Contains("Cumulative Updates"))
                 return;
             
@@ -233,7 +233,7 @@ public partial class ServerSpecificFeatures
 
     public class Events
     {
-        public static async Task GuildMemberUpdated(DiscordClient client, GuildMemberUpdateEventArgs e)
+        public static async Task GuildMemberUpdated(DiscordClient client, GuildMemberUpdatedEventArgs e)
         {
             if (e.Member.Id == 455432936339144705)
             {
@@ -305,7 +305,7 @@ public partial class ServerSpecificFeatures
              [Option("name", "The new name.")] string name,
              [Option("user", "The user whose role name to change.")] DiscordUser user = default)
          {
-             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+             await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                  new DiscordInteractionResponseBuilder());
 
              if (ctx.Guild.Id != 984903591816990730)

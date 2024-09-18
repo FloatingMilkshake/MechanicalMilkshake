@@ -4,7 +4,7 @@
 public class TimeoutCommands : ApplicationCommandModule
 {
     [SlashCommandGroup("timeout", "Set or clear a timeout for a user.", false)]
-    [SlashCommandPermissions(Permissions.ModerateMembers)]
+    [SlashCommandPermissions(DiscordPermissions.ModerateMembers)]
     public class TimeoutCmds
     {
         [SlashCommand("set", "Time out a member.")]
@@ -17,7 +17,7 @@ public class TimeoutCommands : ApplicationCommandModule
             [Option("reason", "The reason for the timeout.")]
             string reason = "No reason provided.")
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder().AsEphemeral());
 
             DiscordMember member;
@@ -93,7 +93,7 @@ public class TimeoutCommands : ApplicationCommandModule
             [Option("member", "The member whose timeout to clear.")]
             DiscordUser user)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                 new DiscordInteractionResponseBuilder());
 
             DiscordMember member;

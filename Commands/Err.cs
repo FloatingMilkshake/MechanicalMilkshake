@@ -10,7 +10,7 @@ public class Err : ApplicationCommandModule
         // So SSH it is (+ wake on lan in case the Windows machine is sleeping).
         // I'm sorry lol
         
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
         
         if (Program.DisabledCommands.Contains("err"))
         {

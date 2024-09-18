@@ -17,7 +17,7 @@ public class ActivityCommands : ApplicationCommandModule
             [Option("message", "The message to show after the status type.")] [MaximumLength(128)]
             string message)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             await Program.Db.HashSetAsync("customStatusList", message, type);
 
@@ -28,7 +28,7 @@ public class ActivityCommands : ApplicationCommandModule
         [SlashCommand("list", "List the custom status messages that the bot cycles through.")]
         public static async Task ListActivity(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             // Get list of custom statuses; if empty, show error & return
             var dbList = await Program.Db.HashGetAllAsync("customStatusList");
@@ -57,7 +57,7 @@ public class ActivityCommands : ApplicationCommandModule
             [Option("id", "The ID number of the status to set. You can get this with /activity list.")]
             long id)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             // Get custom statuses, loop through them, and set the one at the matching index
             var dbList = await Program.Db.HashGetAllAsync("customStatusList");
@@ -82,7 +82,7 @@ public class ActivityCommands : ApplicationCommandModule
                 // Replace keywords like {activity} or {serverCount} with the respective values
                 activity = await ReplaceActivityKeywords(activity);
 
-                await Program.Discord.UpdateStatusAsync(activity, UserStatus.Online);
+                await Program.Discord.UpdateStatusAsync(activity, DiscordUserStatus.Online);
                 await ctx.FollowUpAsync(
                     new DiscordFollowupMessageBuilder().WithContent("Activity updated successfully!"));
                 break;
@@ -94,7 +94,7 @@ public class ActivityCommands : ApplicationCommandModule
             [Option("id", "The ID number of the status to remove. You can get this with /activity list.")]
             long id)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             var dbList = await Program.Db.HashGetAllAsync("customStatusList");
 
@@ -130,7 +130,7 @@ public class ActivityCommands : ApplicationCommandModule
         [SlashCommand("randomize", "Choose a random custom status message from the list.")]
         public static async Task RandomizeActivity(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             DiscordActivity storedActivity;
             try
@@ -152,7 +152,7 @@ public class ActivityCommands : ApplicationCommandModule
             if (!string.IsNullOrWhiteSpace(storedActivity.Name))
             {
                 await Program.Discord.UpdateStatusAsync(storedActivity,
-                    JsonConvert.DeserializeObject<UserStatus>(
+                    JsonConvert.DeserializeObject<DiscordUserStatus>(
                         await Program.Db.HashGetAsync("customStatus", "userStatus")));
 
                 await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
@@ -185,7 +185,7 @@ public class ActivityCommands : ApplicationCommandModule
             [Option("message", "The message to show after the status type.")] [MaximumLength(128)]
             string message = null)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             var customStatusDisabled = await Program.Db.StringGetAsync("customStatusDisabled");
             if (customStatusDisabled == "true")
@@ -202,25 +202,25 @@ public class ActivityCommands : ApplicationCommandModule
                 activity.ActivityType = default;
 
             // Determine activity type
-            if (activity.ActivityType != ActivityType.Streaming)
+            if (activity.ActivityType != DiscordActivityType.Streaming)
                 activity.ActivityType = type?.ToLower() switch
                 {
-                    "playing" => ActivityType.Playing,
-                    "watching" => ActivityType.Watching,
-                    "competing" => ActivityType.Competing,
-                    "listening" => ActivityType.ListeningTo,
+                    "playing" => DiscordActivityType.Playing,
+                    "watching" => DiscordActivityType.Watching,
+                    "competing" => DiscordActivityType.Competing,
+                    "listening" => DiscordActivityType.ListeningTo,
                     _ => default
                 };
 
             // Determine status type
             var userStatus = status.ToLower() switch
             {
-                "online" => UserStatus.Online,
-                "idle" => UserStatus.Idle,
-                "dnd" => UserStatus.DoNotDisturb,
-                "offline" => UserStatus.Invisible,
-                "invisible" => UserStatus.Invisible,
-                _ => UserStatus.Online
+                "online" => DiscordUserStatus.Online,
+                "idle" => DiscordUserStatus.Idle,
+                "dnd" => DiscordUserStatus.DoNotDisturb,
+                "offline" => DiscordUserStatus.Invisible,
+                "invisible" => DiscordUserStatus.Invisible,
+                _ => DiscordUserStatus.Online
             };
 
             // Store activity in db
@@ -246,10 +246,10 @@ public class ActivityCommands : ApplicationCommandModule
         [SlashCommand("disable", "Clear the bot's status and stop it from cycling through the list.")]
         public static async Task DisableActivity(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             // Clear activity
-            await Program.Discord.UpdateStatusAsync(new DiscordActivity(), UserStatus.Online);
+            await Program.Discord.UpdateStatusAsync(new DiscordActivity(), DiscordUserStatus.Online);
 
             // Set disabled flag so that activity is not set on schedule or with commands until re-enabled
             await Program.Db.StringSetAsync("customStatusDisabled", "true");
@@ -262,7 +262,7 @@ public class ActivityCommands : ApplicationCommandModule
             "Allow the bot to cycle through its list of custom status messages or use one set with /activity set.")]
         public static async Task EnableActivity(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             // Clear disabled flag so that activity can be set on schedule or with commands
             await Program.Db.StringSetAsync("customStatusDisabled", "false");
@@ -286,22 +286,22 @@ public class ActivityCommands : ApplicationCommandModule
             switch (customStatusListItem.Value.ToString().ToLower())
             {
                 case "playing":
-                    activity.ActivityType = ActivityType.Playing;
+                    activity.ActivityType = DiscordActivityType.Playing;
                     break;
                 case "watching":
-                    activity.ActivityType = ActivityType.Watching;
+                    activity.ActivityType = DiscordActivityType.Watching;
                     break;
                 case "listening":
-                    activity.ActivityType = ActivityType.ListeningTo;
+                    activity.ActivityType = DiscordActivityType.ListeningTo;
                     break;
                 case "listening to":
-                    activity.ActivityType = ActivityType.ListeningTo;
+                    activity.ActivityType = DiscordActivityType.ListeningTo;
                     break;
                 case "competing":
-                    activity.ActivityType = ActivityType.Competing;
+                    activity.ActivityType = DiscordActivityType.Competing;
                     break;
                 case "competing in":
-                    activity.ActivityType = ActivityType.Competing;
+                    activity.ActivityType = DiscordActivityType.Competing;
                     break;
                 case "streaming":
                     return (false, activity); // activity is unaltered as streaming is not supported currently

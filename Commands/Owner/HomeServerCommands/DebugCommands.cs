@@ -20,8 +20,8 @@ public class DebugCommands : ApplicationCommandModule
         [SlashCommand("shutdown", "Shut down the bot.")]
         public static async Task Shutdown(InteractionContext ctx)
         {
-            DiscordButtonComponent shutdownButton = new(ButtonStyle.Danger, "shutdown-button", "Shut Down");
-            DiscordButtonComponent cancelButton = new(ButtonStyle.Primary, "shutdown-cancel-button", "Cancel");
+            DiscordButtonComponent shutdownButton = new(DiscordButtonStyle.Danger, "shutdown-button", "Shut Down");
+            DiscordButtonComponent cancelButton = new(DiscordButtonStyle.Primary, "shutdown-cancel-button", "Cancel");
 
             await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
                 .WithContent("Are you sure you want to shut down the bot? This action cannot be undone.")
@@ -58,7 +58,7 @@ public class DebugCommands : ApplicationCommandModule
         [SlashCommand("owners", "Show the bot's owners.")]
         public static async Task Owners(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             DiscordEmbedBuilder embed = new()
             {
@@ -89,7 +89,7 @@ public class DebugCommands : ApplicationCommandModule
         [SlashCommand("guilds", "Show the guilds that the bot is in.")]
         public static async Task Guilds(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             DiscordEmbedBuilder embed = new()
             {
@@ -109,7 +109,7 @@ public class DebugCommands : ApplicationCommandModule
             [Option("date", "The date (or time) for HumanDateParser to parse.")]
             string date)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             DiscordEmbedBuilder embed = new()
             {
@@ -139,7 +139,7 @@ public class DebugCommands : ApplicationCommandModule
             [Choice("Package Updates", "packageUpdates")]
             string checksToRun)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             // declare variables for check results
             int numRemindersBefore = default;
@@ -218,7 +218,7 @@ public class DebugCommands : ApplicationCommandModule
         [SlashCommand("usage", "Show which commands are used the most.")]
         public static async Task Usage(InteractionContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource);
 
             var cmdCounts = (from cmd in await Program.Db.HashGetAllAsync("commandCounts")
                 select new KeyValuePair<string, int>(cmd.Name, int.Parse(cmd.Value))).ToList();

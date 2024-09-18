@@ -4,7 +4,7 @@
 public class Nickname : ApplicationCommandModule
 {
     [SlashCommand("nickname", "Changes my nickname.", false)]
-    [SlashCommandPermissions(Permissions.ManageNicknames)]
+    [SlashCommandPermissions(DiscordPermissions.ManageNicknames)]
     public static async Task NicknameCommand(InteractionContext ctx,
         [Option("nickname", "What to change my nickname to. Leave this blank to clear it.")] [MaximumLength(32)]
         string nickname = null)
