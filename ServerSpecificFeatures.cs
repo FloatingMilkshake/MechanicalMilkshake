@@ -130,7 +130,7 @@ public partial class ServerSpecificFeatures
                     || e.Message.Content.Equals("**shut**", StringComparison.OrdinalIgnoreCase) || e.Message.Content.Equals("**open**", StringComparison.OrdinalIgnoreCase)))
                 {
                     if (e.Message.Author.IsBot)
-                        if (!ShutBotsAllowed || e.Message.Author.Id == Program.Discord.CurrentApplication.Id || e.Channel.Id != 1285684652543185047) return;
+                        if (!ShutBotsAllowed || e.Message.Author.Id == Program.Discord.CurrentApplication.Id || e.Channel.Id != 1285684652543185047) return; // testing uwubot? use 1285760935310655568 for channel id
                     
                     var userId = e.Message.Author.Id;
                     var userShutCooldownSerialized = await Program.Db.HashGetAsync("shutCooldowns", userId.ToString());
@@ -175,7 +175,7 @@ public partial class ServerSpecificFeatures
                                  || e.Message.Content.Equals("**open**", StringComparison.OrdinalIgnoreCase))
                             await e.Message.RespondAsync("shut");
                         
-                        if (e.Message.Author.Id != 1264728368847523850)
+                        if (e.Message.Author.Id != 1264728368847523850) // testing uwubot? use 1285760461047861298
                             userShutCooldown = new(DateTime.Now.AddSeconds(5), false);
                     }
                     
