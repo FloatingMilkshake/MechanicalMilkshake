@@ -130,11 +130,11 @@ public partial class ServerSpecificFeatures
                     || e.Message.Content.Equals("**shut**", StringComparison.OrdinalIgnoreCase) || e.Message.Content.Equals("**open**", StringComparison.OrdinalIgnoreCase)))
                 {
                     if (e.Message.Author.IsBot)
-                        if (!ShutBotsAllowed || e.Message.Author.Id == Program.Discord.CurrentApplication.Id) return;
+                        if (!ShutBotsAllowed || e.Message.Author.Id == Program.Discord.CurrentApplication.Id || e.Channel.Id != 1285684652543185047) return;
                     
                     var userId = e.Message.Author.Id;
                     var userShutCooldownSerialized = await Program.Db.HashGetAsync("shutCooldowns", userId.ToString());
-                    KeyValuePair<DateTime, bool> userShutCooldown;
+                    KeyValuePair<DateTime, bool> userShutCooldown = new();
                     if (userShutCooldownSerialized.HasValue)
                     {
                         try
@@ -144,7 +144,6 @@ public partial class ServerSpecificFeatures
                         catch (Exception ex)
                         {
                             Program.Discord.Logger.LogWarning("Failed to read shut cooldown from db for user {user}! {exType}: {exMessage}\n{exStackTrace}", userId, ex.GetType(), ex.Message, ex.StackTrace);
-                            userShutCooldown = new();
                         }
                         
                         var userCooldownTime = userShutCooldown.Key;
@@ -176,10 +175,12 @@ public partial class ServerSpecificFeatures
                                  || e.Message.Content.Equals("**open**", StringComparison.OrdinalIgnoreCase))
                             await e.Message.RespondAsync("shut");
                         
-                        userShutCooldown = new(DateTime.Now.AddSeconds(5), false);
+                        if (e.Message.Author.Id != 1264728368847523850)
+                            userShutCooldown = new(DateTime.Now.AddSeconds(5), false);
                     }
                     
-                    await Program.Db.HashSetAsync("shutCooldowns", userId.ToString(), JsonConvert.SerializeObject(userShutCooldown));
+                    if (userShutCooldown.Key == DateTime.MinValue && userShutCooldown.Value == false)
+                        await Program.Db.HashSetAsync("shutCooldowns", userId.ToString(), JsonConvert.SerializeObject(userShutCooldown));
                 }
             }
         }
