@@ -3,7 +3,6 @@
 public class UserInfo : ApplicationCommandModule
 {
     [SlashCommand("userinfo", "Returns information about the provided server member.")]
-    [SlashRequireGuild]
     public static async Task UserInfoCommand(InteractionContext ctx,
         [Option("user", "The user to look up information for. Defaults to yourself.")]
         DiscordUser user = null)
@@ -14,8 +13,15 @@ public class UserInfo : ApplicationCommandModule
 
         try
         {
-            var member = await ctx.Guild.GetMemberAsync(user.Id);
-            userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(member);
+            if (ctx.Guild is not null)
+            {
+                var member = await ctx.Guild.GetMemberAsync(user.Id);
+                userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(member);
+            }
+            else
+            {
+                userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(user);
+            }
         }
         catch (NotFoundException)
         {
