@@ -1,7 +1,9 @@
 # MechanicalMilkshake
 A multipurpose Discord bot.
 
-Note that I'm not developing this bot with any particular features in mind (for example, moderation tools). Also, some features of this bot are somewhat specific and might not be useful to you, but I add them because they're useful to me or others. Feel free to suggest a feature if you want something the bot doesn't already have! If it's not super complicated, I'm happy to add whatever features you might want.
+There are two things you should note:
+1. I'm not developing this bot with any particular features in mind (for example, moderation tools). That said, feel free to suggest a feature if you want something the bot doesn't already have! If it's not super complicated, I'm happy to add whatever features you might want.
+2. I use this bot a lot for private tasks, so it may have some functionality that may not work properly or at all for you. I try to keep this within /ServerSpecificFeatures.cs, but sometimes that isn't feasible. Generally, you should be able to set `useServerSpecificFeatures` to `false` in config.json to keep this stuff out of your way.
 
 ## How can I add the bot to my server?
 
