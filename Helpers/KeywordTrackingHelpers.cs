@@ -25,7 +25,7 @@ public class KeywordTrackingHelpers
         
         // It does*. For any matched keywords, is the target user in the guild?
         // *this is a broad check, we check again more specifically later (respecting other keyword properties)
-        foreach (var matchedKeyword in keywordsList.Where(x => message.Content.Contains(x.Keyword)))
+        foreach (var matchedKeyword in keywordsList.Where(x => message.Content.Contains(x.Keyword, StringComparison.OrdinalIgnoreCase)))
         {
             try
             {
@@ -120,8 +120,18 @@ public class KeywordTrackingHelpers
 
             // Don't DM the user if their keyword was mentioned in a channel they do not have permissions to view.
             // If we don't do this we may leak private channels, which - even if the user might want to - I don't want to be doing.
-            var member = await message.Channel.Guild.GetMemberAsync(fieldValue.UserId); // need to fetch member to check permissions
-            if (!message.Channel.PermissionsFor(member).HasPermission(Permissions.AccessChannels))
+            DiscordMember member = default;
+            try
+            {
+                member = await message.Channel.Guild.GetMemberAsync(fieldValue.UserId); // need to fetch member to check permissions
+            }
+            catch (NotFoundException)
+            {
+                // Member is not in server. We cannot check permissions, and it would be silly to continue anyway. Stop here.
+                return;
+            }
+            
+            if (!message.Channel.PermissionsFor(member).HasPermission(Permissions.AccessChannels) || !message.Channel.PermissionsFor(member).HasPermission(Permissions.ReadMessageHistory))
                 break;
 
             if (fieldValue.MatchWholeWord)
