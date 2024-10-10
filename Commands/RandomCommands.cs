@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake.Commands;
+﻿using System.Net;
+
+namespace MechanicalMilkshake.Commands;
 
 public partial class RandomCommands : ApplicationCommandModule
 {
@@ -38,7 +40,20 @@ public partial class RandomCommands : ApplicationCommandModule
         public static async Task RandomCat(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-            var data = await Program.HttpClient.GetStringAsync("https://api.thecatapi.com/v1/images/search");
+            string data;
+            try
+            {
+                data = await Program.HttpClient.GetStringAsync("https://api.thecatapi.com/v1/images/search");
+            }
+            catch (HttpRequestException ex)
+            {
+                if (ex.StatusCode is HttpStatusCode.TooManyRequests)
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You're going too fast! Try again in a few seconds."));
+                else
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Something went wrong! The Cat API returned status code {ex.StatusCode}. Try again in a bit, or contact a bot owner if this persists."));
+
+                return;
+            }
             var pattern = CatApiUrlPattern();
             var cat = pattern.Match(data);
 
@@ -49,7 +64,20 @@ public partial class RandomCommands : ApplicationCommandModule
         public static async Task RandomDog(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
-            var data = await Program.HttpClient.GetStringAsync("https://dog.ceo/api/breeds/image/random");
+            string data;
+            try
+            {
+                data = await Program.HttpClient.GetStringAsync("https://dog.ceo/api/breeds/image/random");
+            }
+            catch (HttpRequestException ex)
+            {
+                if (ex.StatusCode is HttpStatusCode.TooManyRequests)
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You're going too fast! Try again in a few seconds."));
+                else
+                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"Something went wrong! The Dog API returned status code {ex.StatusCode}. Try again in a bit, or contact a bot owner if this persists."));
+                
+                return;
+            }
             var pattern = DogApiUrlPattern();
             var dogMatch = pattern.Match(data);
 
