@@ -262,9 +262,9 @@ public partial class ServerSpecificFeatures
 
         [Command("poop")]
         [Description("immaturity is key")]
-        [Aliases("shit")]
+        [Aliases("shit", "defecate")]
         [TargetServer(799644062973427743)]
-        public async Task Poop(CommandContext ctx)
+        public async Task Poop(CommandContext ctx, [RemainingText] string much = "")
         {
             if (ctx.Channel.IsPrivate)
             {
@@ -283,7 +283,7 @@ public partial class ServerSpecificFeatures
                 msg = await chan.GetMessageAsync(1282187612844589168);
                 #else
                 chan = await Program.Discord.GetChannelAsync(892978015309557870);
-                msg = await chan.GetMessageAsync(1085253151155830895);
+                msg = much == "MUCH" ? await chan.GetMessageAsync(1294869494648279071) : await chan.GetMessageAsync(1085253151155830895);
                 #endif
                 
                 var phrases = msg.Content.Split("\n");
