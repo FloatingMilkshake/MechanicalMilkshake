@@ -1,21 +1,21 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class ServerInfo : ApplicationCommandModule
+public class ServerInfo
 {
-    [SlashCommand("serverinfo", "Look up information about a server.")]
-    [SlashRequireGuild]
-    public static async Task ServerInfoCommand(InteractionContext ctx,
-        [Option("server",
-            "The ID of the server to look up. Defaults to the current server if you're not using this in DMs.")]
+    [Command("serverinfo")]
+    [Description("Look up information about a server.")]
+    [RequireGuild]
+    public static async Task ServerInfoCommand(SlashCommandContext ctx,
+        [Parameter("server"), Description("The ID of the server to look up. Defaults to the current server if you're not using this in DMs.")]
         string guildId = default)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.DeferResponseAsync();
         
         DiscordGuild guild;
         
         if (ctx.Channel.IsPrivate && guildId == default)
         {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("You can't use this command in DMs without specifying a server ID! Please try again."));
             return;
         }
@@ -32,14 +32,14 @@ public class ServerInfo : ApplicationCommandModule
             }
             catch (Exception ex) when (ex is UnauthorizedException or NotFoundException)
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         "Sorry, I can't read the details for that server because I'm not in it or it doesn't exist!"));
                 return;
             }
             catch (FormatException)
             {
-                await ctx.FollowUpAsync(
+                await ctx.FollowupAsync(
                     new DiscordFollowupMessageBuilder().WithContent(
                         "That doesn't look like a valid server ID! Please try again."));
                 return;
@@ -52,11 +52,11 @@ public class ServerInfo : ApplicationCommandModule
 
         var createdAt = $"{IdHelpers.GetCreationTimestamp(guild.Id, true)}";
 
-        var categoryCount = guild.Channels.Count(channel => channel.Value.Type == ChannelType.Category);
+        var categoryCount = guild.Channels.Count(channel => channel.Value.Type == DiscordChannelType.Category);
 
         var embed = new DiscordEmbedBuilder()
             .WithColor(Program.BotColor)
-            .AddField("Server Owner", $"{UserInfoHelpers.GetFullUsername(guild.Owner)}")
+            .AddField("Server Owner", $"{UserInfoHelpers.GetFullUsername(await guild.GetGuildOwnerAsync())}")
             .AddField("Description", $"{description}")
             .AddField("Created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)")
             .AddField("Channels", $"{guild.Channels.Count - categoryCount}", true)
@@ -71,9 +71,9 @@ public class ServerInfo : ApplicationCommandModule
         var response = new DiscordFollowupMessageBuilder()
             .WithContent($"Server Info for **{guild.Name}**").AddEmbed(embed);
 
-        await ctx.FollowUpAsync(response);
+        await ctx.FollowupAsync(response);
 
-        var members = await guild.GetAllMembersAsync();
+        var members = await guild.GetAllMembersAsync().ToListAsync();
         var botCount = members.Count(member => member.IsBot);
         var humanCount = guild.MemberCount - botCount;
 

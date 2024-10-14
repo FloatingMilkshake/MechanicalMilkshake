@@ -1,10 +1,11 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class UserInfo : ApplicationCommandModule
+public class UserInfo
 {
-    [SlashCommand("userinfo", "Returns information about the provided server member.")]
-    public static async Task UserInfoCommand(InteractionContext ctx,
-        [Option("user", "The user to look up information for. Defaults to yourself.")]
+    [Command("userinfo")]
+    [Description("Returns information about the provided server member.")]
+    public static async Task UserInfoCommand(SlashCommandContext ctx,
+        [Parameter("user"), Description("The user to look up information for. Defaults to yourself.")]
         DiscordUser user = null)
     {
         DiscordEmbed userInfoEmbed;
@@ -28,7 +29,7 @@ public class UserInfo : ApplicationCommandModule
             userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(user);
         }
 
-        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
             .WithContent($"User Info for **{UserInfoHelpers.GetFullUsername(user)}**").AddEmbed(userInfoEmbed));
     }
 }

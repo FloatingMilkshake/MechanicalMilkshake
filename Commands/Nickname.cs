@@ -1,12 +1,13 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-[SlashRequireGuild]
-public class Nickname : ApplicationCommandModule
+[RequireGuild]
+public class Nickname
 {
-    [SlashCommand("nickname", "Changes my nickname.", false)]
-    [SlashCommandPermissions(Permissions.ManageNicknames)]
-    public static async Task NicknameCommand(InteractionContext ctx,
-        [Option("nickname", "What to change my nickname to. Leave this blank to clear it.")] [MaximumLength(32)]
+    [Command("nickname")]
+    [Description("Changes my nickname.")]
+    [RequirePermissions(DiscordPermissions.ChangeNickname, DiscordPermissions.ManageNicknames)]
+    public static async Task NicknameCommand(SlashCommandContext ctx,
+        [Parameter("nickname"), Description("What to change my nickname to. Leave this blank to clear it.")] [MinMaxLength(maxLength: 32)]
         string nickname = null)
     {
         var bot = await ctx.Guild.GetMemberAsync(ctx.Client.CurrentUser.Id);
@@ -17,11 +18,11 @@ public class Nickname : ApplicationCommandModule
         });
 
         if (nickname is not null)
-            await ctx.CreateResponseAsync(
+            await ctx.RespondAsync(
                 new DiscordInteractionResponseBuilder().WithContent(
                     $"Nickname changed to **{nickname}** successfully!"));
         else
-            await ctx.CreateResponseAsync(
+            await ctx.RespondAsync(
                 new DiscordInteractionResponseBuilder().WithContent("Nickname cleared successfully!"));
     }
 }

@@ -6,7 +6,7 @@ public class GuildEvents
     public static readonly List<ulong> UnavailableGuilds = [];
     private static DiscordChannel _guildLogChannel;
     
-    public static async Task GuildCreated(DiscordClient client, GuildCreateEventArgs e)
+    public static async Task GuildCreated(DiscordClient client, GuildCreatedEventArgs e)
     {
         // Fail silently if log channel ID missing or invalid
         if (Program.ConfigJson.Logs.Guilds == "") return;
@@ -14,11 +14,12 @@ public class GuildEvents
         
         if (UnavailableGuilds.Contains(e.Guild.Id))
         {
+            var owner = await e.Guild.GetGuildOwnerAsync();
             var embed = new DiscordEmbedBuilder().WithColor(Program.BotColor).WithTitle("Guild no longer unavailable")
                 .WithDescription(
                     $"The guild {e.Guild.Name} (`{e.Guild.Id}`) was previously unavailable, but is now available again.")
                 .AddField("Members", e.Guild.MemberCount.ToString(), true).AddField("Owner",
-                    $"{UserInfoHelpers.GetFullUsername(e.Guild.Owner)} (`{e.Guild.Owner.Id}`)", true);
+                    $"{UserInfoHelpers.GetFullUsername(owner)} (`{owner.Id}`)", true);
 
             await _guildLogChannel.SendMessageAsync(embed);
             return;
@@ -27,7 +28,7 @@ public class GuildEvents
         await SendGuildEventLogEmbed(_guildLogChannel, e.Guild, true);
     }
 
-    public static async Task GuildDeleted(DiscordClient client, GuildDeleteEventArgs e)
+    public static async Task GuildDeleted(DiscordClient client, GuildDeletedEventArgs e)
     {
         // Fail silently if log channel ID missing or invalid
         if (Program.ConfigJson.Logs.Guilds == "") return;
@@ -42,13 +43,19 @@ public class GuildEvents
         await SendGuildEventLogEmbed(_guildLogChannel, e.Guild, false);
     }
 
-    public static async Task GuildMemberUpdated(DiscordClient client, GuildMemberUpdateEventArgs e)
+    public static async Task GuildMemberUpdated(DiscordClient client, GuildMemberUpdatedEventArgs e)
     {
         // Handle server-specific things in ServerSpecificFeatures.cs
         if (Program.ConfigJson.Base.UseServerSpecificFeatures)
             await ServerSpecificFeatures.Events.GuildMemberUpdated(client, e);
         
         // [put non-server-specific things here]
+    }
+    
+    public static Task GuildDownloadCompleted(DiscordClient _, GuildDownloadCompletedEventArgs __)
+    {
+        Program.GuildDownloadCompleted = true;
+        return Task.CompletedTask;
     }
 
     private static async Task SendGuildEventLogEmbed(DiscordChannel chan, DiscordGuild guild, bool isJoin)
@@ -67,11 +74,11 @@ public class GuildEvents
         DiscordEmbedBuilder userInfoEmbed;
         try
         {
-            userInfoEmbed =
-                new DiscordEmbedBuilder(await UserInfoHelpers.GenerateUserInfoEmbed((DiscordUser)guild.Owner));
+            var owner = await guild.GetGuildOwnerAsync();
+            userInfoEmbed = new DiscordEmbedBuilder(await UserInfoHelpers.GenerateUserInfoEmbed(owner));
             userInfoEmbed.WithColor(Program.BotColor);
             userInfoEmbed.WithTitle("User Info for Server Owner");
-            userInfoEmbed.WithDescription($"{UserInfoHelpers.GetFullUsername(guild.Owner)}");
+            userInfoEmbed.WithDescription($"{UserInfoHelpers.GetFullUsername(owner)}");
         }
         catch (Exception ex)
         {

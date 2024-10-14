@@ -1,11 +1,12 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class AboutCommands : ApplicationCommandModule
+public class AboutCommands
 {
-    [SlashCommand("about", "View information about me!")]
-    public static async Task About(InteractionContext ctx)
+    [Command("about")]
+    [Description("View information about me!")]
+    public static async Task About(SlashCommandContext ctx)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.DeferResponseAsync();
 
         // Set this to an empty string to disable the Privacy Policy notice in /about, or change it to your own
         // Privacy Policy URL if you have one.
@@ -13,7 +14,7 @@ public class AboutCommands : ApplicationCommandModule
 
         // Set this to an empty string to disable the Support Server notice in /about, or change it your own
         // Support Server invite if you have one.
-        const string supportServerInvite = "https://floatingmilkshake.link/bot/support";
+        const string supportServerInvite = "https://milkshake.wtf/bot/support";
 
         // Create embed
         // Description
@@ -55,18 +56,18 @@ public class AboutCommands : ApplicationCommandModule
         + "\n- DM the bot itself (DMs are forwarded to owners!)"
         + "\n- DM a bot owner (see above for a list!)");
 
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+        await ctx.FollowupAsync(embed);
     }
 
-    [SlashCommand("version", "Show my version information.")]
-    public static async Task CommitInfo(InteractionContext ctx,
-        [Option("extended", "Whether to show extended info. Defaults to False.")] bool extended = false)
+    [Command("version")]
+    [Description("Show my version information.")]
+    public static async Task CommitInfo(SlashCommandContext ctx,
+        [Parameter("extended"), Description("Whether to show extended info. Defaults to False.")] bool extended = false)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.DeferResponseAsync();
 
         if (extended) {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(
-                await DebugInfoHelpers.GenerateDebugInfoEmbed(false)));
+            await ctx.FollowupAsync(await DebugInfoHelpers.GenerateDebugInfoEmbed(false));
             return;
         }
 
@@ -74,16 +75,17 @@ public class AboutCommands : ApplicationCommandModule
         var commitMessage = await FileHelpers.ReadFileAsync("CommitMessage.txt", "dev");
         var commitUrl = await FileHelpers.ReadFileAsync("RemoteUrl.txt");
 
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
+        await ctx.FollowupAsync(new DiscordEmbedBuilder()
             .WithColor(Program.BotColor)
             .AddField("Version", commitHash == "dev" ? "`dev`" : $"[`{commitHash}`]({commitUrl}): {commitMessage}")
-            .AddField("Last updated on", DebugInfoHelpers.GetDebugInfo().CommitTimestamp)));
+            .AddField("Last updated on", DebugInfoHelpers.GetDebugInfo().CommitTimestamp));
     }
 
-    [SlashCommand("uptime", "Check my uptime!")]
-        public static async Task Uptime(InteractionContext ctx)
+    [Command("uptime")]
+    [Description("Check my uptime!")]
+        public static async Task Uptime(SlashCommandContext ctx)
         {
-            await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+            await ctx.DeferResponseAsync();
 
             DiscordEmbedBuilder embed = new()
             {
@@ -99,6 +101,6 @@ public class AboutCommands : ApplicationCommandModule
             embed.AddField("Process started at", $"<t:{startUnixTime}:F> (<t:{startUnixTime}:R>)");
             embed.AddField("Last connected to Discord at", $"<t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)");
 
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+            await ctx.FollowupAsync(embed);
         }
 }

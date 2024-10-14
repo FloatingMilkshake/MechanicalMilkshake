@@ -1,12 +1,13 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class CharacterCount : ApplicationCommandModule
+public class CharacterCount
 {
-    [SlashCommand("charactercount", "Counts the characters in a message.")]
-    public static async Task CharacterCountCommand(InteractionContext ctx,
-        [Option("message", "The message to count the characters of.")]
+    [Command("charactercount")]
+    [Description("Counts the characters in a message.")]
+    public static async Task CharacterCountCommand(SlashCommandContext ctx,
+        [Parameter("message"), Description("The message to count the characters of.")]
         string chars)
     {
-        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(chars.Length.ToString()));
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent(chars.Length.ToString()));
     }
 }

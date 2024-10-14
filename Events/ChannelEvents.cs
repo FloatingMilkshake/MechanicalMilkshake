@@ -2,7 +2,7 @@ namespace MechanicalMilkshake.Events;
 
 public class ChannelEvents
 {
-    public static Task ChannelDeleted(DiscordClient client, ChannelDeleteEventArgs e)
+    public static Task ChannelDeleted(DiscordClient client, ChannelDeletedEventArgs e)
     {
         Task.Run(async () =>
         {

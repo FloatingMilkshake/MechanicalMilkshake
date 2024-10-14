@@ -3,7 +3,7 @@
 public partial class MessageEvents
 {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-    public static Task MessageUpdated(DiscordClient _, MessageUpdateEventArgs e)
+    public static Task MessageUpdated(DiscordClient _, MessageUpdatedEventArgs e)
     {
         Task.Run(async () =>
         {
@@ -19,7 +19,7 @@ public partial class MessageEvents
         return Task.CompletedTask;
     }
 
-    public static Task MessageCreated(DiscordClient client, MessageCreateEventArgs e)
+    public static Task MessageCreated(DiscordClient client, MessageCreatedEventArgs e)
     {
         Task.Run(async () =>
         {
@@ -162,7 +162,7 @@ public partial class MessageEvents
                 {
                     // If these conditions are true, a bot owner has replied to a forwarded message. Now we need to forward that reply.
 
-                    if (e.Message.Content.Contains("sendto"))
+                    if (e.Message.Content.StartsWith("sendto"))
                     {
                         await e.Message.RespondAsync(
                             "Did you mean to reply, or to use `sendto`? Please only do one at a time.");
@@ -272,7 +272,7 @@ public partial class MessageEvents
                             if (e.Message.ReferencedMessage is not null)
                             {
                                 isReply = "Yes";
-                                DiscordButtonComponent button = new(ButtonStyle.Primary,
+                                DiscordButtonComponent button = new(DiscordButtonStyle.Primary,
                                     "view-dm-reply-info", "View Reply Info");
                                 messageBuilder = messageBuilder.AddComponents(button);
                             }
@@ -280,7 +280,7 @@ public partial class MessageEvents
                             embed.AddField("Is Reply", isReply);
 
                             var messages =
-                                await e.Channel.GetMessagesBeforeAsync(e.Message.Id);
+                                await e.Channel.GetMessagesBeforeAsync(e.Message.Id).ToListAsync();
                             var contextExists = false;
                             foreach (var msg in messages)
                                 if (msg.Content is not null)
@@ -288,7 +288,7 @@ public partial class MessageEvents
 
                             if (contextExists)
                             {
-                                DiscordButtonComponent button = new(ButtonStyle.Primary, "view-dm-context",
+                                DiscordButtonComponent button = new(DiscordButtonStyle.Primary, "view-dm-context",
                                     "View Context");
                                 messageBuilder.AddComponents(button);
                             }
@@ -318,7 +318,7 @@ public partial class MessageEvents
         return Task.CompletedTask;
     }
 
-    public static Task MessageDeleted(DiscordClient client, MessageDeleteEventArgs e)
+    public static Task MessageDeleted(DiscordClient client, MessageDeletedEventArgs e)
     {
         Task.Run(async () =>
         {
@@ -327,7 +327,7 @@ public partial class MessageEvents
                 Program.MessageCache.RemoveMessage(cachedMessage.MessageId);
         
             // Add most recent message from channel to cache
-            var msg = (await e.Channel.GetMessagesAsync(1))[0];
+            var msg = (await e.Channel.GetMessagesAsync(1).ToListAsync())[0];
             Program.MessageCache.AddMessage(new CachedMessage(msg.Channel.Id, msg.Id, msg.Author.Id));
         });
         return Task.CompletedTask;

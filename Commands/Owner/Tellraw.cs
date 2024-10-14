@@ -1,13 +1,14 @@
 ﻿namespace MechanicalMilkshake.Commands.Owner;
 
-public class Tellraw : ApplicationCommandModule
+public class Tellraw
 {
-    [SlashCommand("tellraw", "???")]
-    [SlashRequireAuth]
-    public static async Task TellrawCommand(InteractionContext ctx,
-        [Option("message", "!!!")] [MaximumLength(2000)]
+    [Command("tellraw")]
+    [Description("???")]
+    [RequireAuth]
+    public static async Task TellrawCommand(SlashCommandContext ctx,
+        [Parameter("message"), Description("!!!")] [MinMaxLength(maxLength: 2000)]
         string message,
-        [Option("channel", "~>")]
+        [Parameter("channel"), Description("~>")]
         DiscordChannel channel = null)
     {
         var targetChannel = channel ?? ctx.Channel;
@@ -19,18 +20,18 @@ public class Tellraw : ApplicationCommandModule
         }
         catch (UnauthorizedException)
         {
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+            await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent("not allowed!").AsEphemeral());
             return;
         }
         catch (Exception ex)
         {
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+            await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent($"failed!\n> {ex.GetType()}: {ex.Message}").AsEphemeral());
             return;
         }
 
-        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
             .WithContent($"OK.").AsEphemeral());
 
         foreach (var owner in Program.Discord.CurrentApplication.Owners)

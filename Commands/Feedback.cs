@@ -1,10 +1,13 @@
-﻿namespace MechanicalMilkshake.Commands;
+﻿using DSharpPlus.Commands.ArgumentModifiers;
 
-public class Feedback : ApplicationCommandModule
+namespace MechanicalMilkshake.Commands;
+
+public class Feedback
 {
-    [SlashCommand("feedback", "Have feedback about the bot? Submit it here!")]
-    public static async Task FeedbackCommand(InteractionContext ctx,
-        [Option("message", "Your feedback message.")] [MaximumLength(4000)]
+    [Command("feedback")]
+    [Description("Have feedback about the bot? Submit it here!")]
+    public static async Task FeedbackCommand(SlashCommandContext ctx,
+        [Parameter("message"), Description("Your feedback message.")] [MinMaxLength(maxLength: 4000)]
         string feedbackMsg)
     {
         if (Program.DisabledCommands.Contains("feedback"))
@@ -18,13 +21,13 @@ public class Feedback : ApplicationCommandModule
         {
             var aboutCmd = SlashCmdMentionHelpers.GetSlashCmdMention("about");
             
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
+            await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent(
                 $"The feedback channel ID set in `config.json` is invalid! Please contact the bot owner;" +
                 $" you can find who this is and how to contact them in {aboutCmd}.").AsEphemeral());
             return;
         }
         
-        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
         {
             Title = "Thank you!", Color = Program.BotColor,
             Description = $"Your feedback has been recorded. You can view it below.\n> {feedbackMsg}"

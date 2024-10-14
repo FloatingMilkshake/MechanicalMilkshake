@@ -1,25 +1,25 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-[SlashRequireGuild]
-public class BanCommands : ApplicationCommandModule
+[RequireGuild]
+public class BanCommands
 {
-    [SlashCommand("ban", "Ban a user. They will not be able to rejoin unless unbanned.", false)]
-    [SlashCommandPermissions(Permissions.BanMembers)]
-    public static async Task BanCommand(InteractionContext ctx,
-        [Option("user", "The user to ban.")] DiscordUser userToBan,
-        [Option("reason", "The reason for the ban.")] [MaximumLength(1500)]
+    [Command("ban")]
+    [Description("Ban a user. They will not be able to rejoin unless unbanned.")]
+    [RequirePermissions(DiscordPermissions.BanMembers)]
+    public static async Task BanCommand(SlashCommandContext ctx,
+        [Parameter("user"), Description("The user to ban.")] DiscordUser userToBan,
+        [Parameter("reason"), Description("The reason for the ban.")] [MinMaxLength(maxLength: 1500)]
         string reason = "No reason provided.")
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
-            new DiscordInteractionResponseBuilder().AsEphemeral());
+        await ctx.DeferResponseAsync(true);
 
         try
         {
-            await ctx.Guild.BanMemberAsync(userToBan.Id, 0, reason);
+            await ctx.Guild.BanMemberAsync(userToBan.Id, TimeSpan.Zero, reason);
         }
         catch (UnauthorizedException)
         {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
                     $"Something went wrong. You or I may not be allowed to ban **{UserInfoHelpers.GetFullUsername(userToBan)}**! Please check the role hierarchy and permissions.")
                 .AsEphemeral());
@@ -27,24 +27,24 @@ public class BanCommands : ApplicationCommandModule
         }
         catch (Exception e)
         {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                     $"Hmm, something went wrong while trying to ban that user!\n\nThis was Discord's response:\n> {e.Message}")
                 .AsEphemeral());
             return;
         }
 
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent("User banned successfully.").AsEphemeral());
         await ctx.Channel.SendMessageAsync($"{userToBan.Mention} has been banned: **{reason}**");
     }
 
-    [SlashCommand("unban", "Unban a user.", false)]
-    [SlashCommandPermissions(Permissions.BanMembers)]
-    public static async Task UnbanCommand(InteractionContext ctx,
-        [Option("user", "The user to unban.")] DiscordUser userToUnban)
+    [Command("unban")]
+    [Description("Unban a user.")]
+    [RequirePermissions(DiscordPermissions.BanMembers)]
+    public static async Task UnbanCommand(SlashCommandContext ctx,
+        [Parameter("user"), Description("The user to unban.")] DiscordUser userToUnban)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
-            new DiscordInteractionResponseBuilder().AsEphemeral());
+        await ctx.DeferResponseAsync(true);
 
         try
         {
@@ -52,7 +52,7 @@ public class BanCommands : ApplicationCommandModule
         }
         catch (UnauthorizedException)
         {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
                     $"Something went wrong. You or I may not be allowed to unban **{UserInfoHelpers.GetFullUsername(userToUnban)}**! Please check the role hierarchy and permissions.")
                 .AsEphemeral());
@@ -60,13 +60,13 @@ public class BanCommands : ApplicationCommandModule
         }
         catch (Exception e)
         {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                     $"Hmm, something went wrong while trying to unban that user!\n\nThis was Discord's response:\n> {e.Message}\n\nIf you'd like to contact the bot owner about this, include this debug info:\n```{e}\n```")
                 .AsEphemeral());
             return;
         }
 
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent("User unbanned successfully.").AsEphemeral());
         await ctx.Channel.SendMessageAsync(
             $"Successfully unbanned **{UserInfoHelpers.GetFullUsername(userToUnban)}**!");

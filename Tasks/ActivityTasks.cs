@@ -23,7 +23,7 @@ public class ActivityTasks
                 await Program.Db.HashSetAsync("customStatus", "activity",
                     JsonConvert.SerializeObject(new DiscordActivity()));
                 await Program.Db.HashSetAsync("customStatus", "userStatus",
-                    JsonConvert.SerializeObject(UserStatus.Online));
+                    JsonConvert.SerializeObject(DiscordUserStatus.Online));
             }
 
             currentStatus = await Program.Db.HashGetAsync("customStatus", "activity");
@@ -34,11 +34,11 @@ public class ActivityTasks
             {
                 // Custom status disabled! Do not set one. Clear if set.
                 DiscordActivity emptyActivity = new();
-                await Program.Discord.UpdateStatusAsync(emptyActivity, UserStatus.Online);
+                await Program.Discord.UpdateStatusAsync(emptyActivity, DiscordUserStatus.Online);
                 return;
             }
 
-            if (currentActivity!.Name is null && currentActivity!.ActivityType is 0)
+            if (string.IsNullOrWhiteSpace(currentActivity!.Name))
             {
                 // No custom status set. Pick random from list.
                 Random random = new();
@@ -48,12 +48,12 @@ public class ActivityTasks
                 if (customStatusList.Length == 0)
                 {
                     DiscordActivity emptyActivity = new();
-                    await Program.Discord.UpdateStatusAsync(emptyActivity, UserStatus.Online);
+                    await Program.Discord.UpdateStatusAsync(emptyActivity, DiscordUserStatus.Online);
                     return;
                 }
 
                 var chosenStatus = random.Next(0, customStatusList.Length);
-                if (Program.Discord.CurrentUser.Presence.Activity.Name is not null)
+                if (!string.IsNullOrWhiteSpace(Program.Discord.CurrentUser.Presence.Activity.Name))
                     if (customStatusList.Length != 1)
                         while (customStatusList[chosenStatus].Name.ToString() ==
                                Program.Discord.CurrentUser.Presence.Activity.Name)
@@ -74,7 +74,7 @@ public class ActivityTasks
                     {
                         if (customStatusList.Length == 1)
                         {
-                            await Program.Discord.UpdateStatusAsync(new DiscordActivity(), UserStatus.Online);
+                            await Program.Discord.UpdateStatusAsync(new DiscordActivity(), DiscordUserStatus.Online);
                             return;
                         }
 
@@ -101,28 +101,28 @@ public class ActivityTasks
                 {
                     Name = activityName
                 };
-                const UserStatus userStatus = UserStatus.Online;
+                const DiscordUserStatus userStatus = DiscordUserStatus.Online;
 
                 string targetActivityType = customStatusList[chosenStatus].Value;
                 switch (targetActivityType.ToLower())
                 {
                     case "playing":
-                        activity.ActivityType = ActivityType.Playing;
+                        activity.ActivityType = DiscordActivityType.Playing;
                         break;
                     case "watching":
-                        activity.ActivityType = ActivityType.Watching;
+                        activity.ActivityType = DiscordActivityType.Watching;
                         break;
                     case "listening":
-                        activity.ActivityType = ActivityType.ListeningTo;
+                        activity.ActivityType = DiscordActivityType.ListeningTo;
                         break;
                     case "listening to":
-                        activity.ActivityType = ActivityType.ListeningTo;
+                        activity.ActivityType = DiscordActivityType.ListeningTo;
                         break;
                     case "competing":
-                        activity.ActivityType = ActivityType.Competing;
+                        activity.ActivityType = DiscordActivityType.Competing;
                         break;
                     case "competing in":
-                        activity.ActivityType = ActivityType.Competing;
+                        activity.ActivityType = DiscordActivityType.Competing;
                         break;
                     case "streaming":
                         DiscordEmbedBuilder streamingErrorEmbed = new()
@@ -165,7 +165,7 @@ public class ActivityTasks
                     JsonConvert.DeserializeObject<DiscordActivity>(
                         await Program.Db.HashGetAsync("customStatus", "activity"));
                 var userStatus =
-                    JsonConvert.DeserializeObject<UserStatus>(
+                    JsonConvert.DeserializeObject<DiscordUserStatus>(
                         await Program.Db.HashGetAsync("customStatus", "userStatus"));
                 await Program.Discord.UpdateStatusAsync(activity, userStatus);
             }

@@ -3,7 +3,7 @@
 public partial class ComponentInteractionEvent
 {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-    public static async Task ComponentInteractionCreated(DiscordClient s, ComponentInteractionCreateEventArgs e)
+    public static async Task ComponentInteractionCreated(DiscordClient s, ComponentInteractionCreatedEventArgs e)
     {
         switch (e.Id)
         {
@@ -11,14 +11,14 @@ public partial class ComponentInteractionEvent
                 when Program.ConfigJson.Base.AuthorizedUsers.Contains(e.User.Id.ToString()):
             {
                 DiscordButtonComponent restartButton =
-                    new(ButtonStyle.Danger, "slash-fail-restart-button", "Restart", true);
+                    new(DiscordButtonStyle.Danger, "slash-fail-restart-button", "Restart", true);
 
                 try
                 {
                     var dockerCheckFile = await File.ReadAllTextAsync("/proc/self/cgroup");
                     if (string.IsNullOrWhiteSpace(dockerCheckFile))
                     {
-                        await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
+                        await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage,
                             new DiscordInteractionResponseBuilder()
                                 .WithContent(
                                     "The bot may not be running under Docker and as such cannot be restarted this way! Please restart the bot manually.")
@@ -29,7 +29,7 @@ public partial class ComponentInteractionEvent
                 catch
                 {
                     // /proc/self/cgroup could not be found, which means the bot is not running in Docker.
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
+                    await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage,
                         new DiscordInteractionResponseBuilder()
                             .WithContent(
                                 "The bot may not be running under Docker and as such cannot be restarted this way! Please restart the bot manually.")
@@ -37,7 +37,7 @@ public partial class ComponentInteractionEvent
                     return;
                 }
 
-                e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
+                e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage,
                     new DiscordInteractionResponseBuilder().WithContent("Restarting!")
                         .AddComponents(restartButton));
                 Environment.Exit(1);
@@ -45,7 +45,7 @@ public partial class ComponentInteractionEvent
             }
             case "slash-fail-restart-button":
             {
-                e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder()
                         .WithContent($"{e.User.Mention}, you are not authorized to perform this action!")
                         .AsEphemeral());
@@ -55,17 +55,17 @@ public partial class ComponentInteractionEvent
             {
                 if (e.User.Id != e.Message.Interaction.User.Id)
                 {
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder().WithContent(
                             "Only the person that used this command can respond to it!").AsEphemeral());
                     return;
                 }
                 
                 DiscordButtonComponent shutdownButton =
-                    new(ButtonStyle.Danger, "shutdown-button", "Shut Down", true);
+                    new(DiscordButtonStyle.Danger, "shutdown-button", "Shut Down", true);
                 DiscordButtonComponent cancelButton =
-                    new(ButtonStyle.Primary, "shutdown-cancel-button", "Cancel", true);
-                e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
+                    new(DiscordButtonStyle.Primary, "shutdown-cancel-button", "Cancel", true);
+                e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage,
                     new DiscordInteractionResponseBuilder()
                         .WithContent("Warning: The bot is now shutting down. This action cannot be undone.")
                         .AddComponents(shutdownButton, cancelButton));
@@ -78,7 +78,7 @@ public partial class ComponentInteractionEvent
             }
             case "shutdown-button":
             {
-                e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder()
                         .WithContent($"{e.User.Mention}, you are not authorized to perform this action!")
                         .AsEphemeral());
@@ -88,24 +88,24 @@ public partial class ComponentInteractionEvent
             {
                 if (e.User.Id != e.Message.Interaction.User.Id)
                 {
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder().WithContent(
                             "Only the person that used this command can respond to it!").AsEphemeral());
                     return;
                 }
                 
                 DiscordButtonComponent shutdownButton =
-                    new(ButtonStyle.Danger, "shutdown-button", "Shut Down", true);
+                    new(DiscordButtonStyle.Danger, "shutdown-button", "Shut Down", true);
                 DiscordButtonComponent cancelButton =
-                    new(ButtonStyle.Primary, "shutdown-cancel-button", "Cancel", true);
-                e.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
+                    new(DiscordButtonStyle.Primary, "shutdown-cancel-button", "Cancel", true);
+                e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage,
                     new DiscordInteractionResponseBuilder().WithContent("Shutdown canceled.")
                         .AddComponents(shutdownButton, cancelButton));
                 break;
             }
             case "shutdown-cancel-button":
             {
-                e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder()
                         .WithContent($"{e.User.Mention}, you are not authorized to perform this action!")
                         .AsEphemeral());
@@ -135,7 +135,7 @@ public partial class ComponentInteractionEvent
                 embed.AddField("Target User ID", $"`{message.ReferencedMessage.Author.Id}`", true);
                 embed.AddField("Target User Mention", $"{message.ReferencedMessage.Author.Mention}", true);
 
-                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().AddEmbed(embed.Build()).AsEphemeral());
                 break;
             }
@@ -155,7 +155,7 @@ public partial class ComponentInteractionEvent
                 ulong contextId = default;
                 DiscordUser contextAuthor = default;
                 DiscordMessage contextMsg = default;
-                foreach (var msg in await channel.GetMessagesBeforeAsync(messageId, 1))
+                foreach (var msg in await channel.GetMessagesBeforeAsync(messageId, 1).ToListAsync())
                 {
                     contextContent = msg.Content;
                     contextId = msg.Id;
@@ -182,7 +182,7 @@ public partial class ComponentInteractionEvent
                     embed.AddField("Target User Mention", $"{contextAuthor.Mention}", true);
                 }
 
-                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().AddEmbed(embed.Build()).AsEphemeral());
                 break;
             }
@@ -199,7 +199,7 @@ public partial class ComponentInteractionEvent
                 }
                 catch
                 {
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder()
                             .WithContent(
                                 "Hmm. It doesn't look like that user is in the server, so they don't have a server avatar.")
@@ -209,7 +209,7 @@ public partial class ComponentInteractionEvent
 
                 if (targetMember.GuildAvatarUrl is null)
                 {
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder()
                             .WithContent(
                                 $"{targetUser.Mention} doesn't have a Server Avatar set! Try using the User Avatar button to get their avatar.")
@@ -217,7 +217,7 @@ public partial class ComponentInteractionEvent
                     return;
                 }
 
-                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder()
                         .WithContent($"{targetMember.GuildAvatarUrl.Replace("size=1024", "size=4096")}")
                         .AsEphemeral());
@@ -229,14 +229,14 @@ public partial class ComponentInteractionEvent
                 var targetUserId = Convert.ToUInt64(idPattern.Match(e.Message.Content).ToString());
                 var targetUser = await s.GetUserAsync(targetUserId);
 
-                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder()
                         .WithContent($"{targetUser.AvatarUrl.Replace("size=1024", "size=4096")}").AsEphemeral());
                 break;
             }
             case "code-quick-shortcut":
             {
-                await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().AsEphemeral());
 
                 var ctx = e.Interaction;
@@ -294,14 +294,14 @@ public partial class ComponentInteractionEvent
 
                     if (!messagesToClear.ContainsKey(e.Message.Id))
                     {
-                        await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                        await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                             new DiscordInteractionResponseBuilder()
                                 .WithContent("These messages have already been deleted!")
                                 .AsEphemeral());
                         return;
                     }
 
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                    await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder().AsEphemeral());
 
                     var messages = messagesToClear.GetValueOrDefault(e.Message.Id);
@@ -332,7 +332,7 @@ public partial class ComponentInteractionEvent
             {
                 Task.Run(async () =>
                 {
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
+                    await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder().AsEphemeral());
 
                     var keywordToDelete = e.Message.Embeds[0].Description;
@@ -364,12 +364,10 @@ public partial class ComponentInteractionEvent
 
                         await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
                             .WithContent("Keyword removed.").AsEphemeral());
-
-                        DiscordMessageBuilder message = new()
-                        {
-                            Embed = e.Message.Embeds[0]
-                        };
-                        message.AddComponents(new DiscordButtonComponent(ButtonStyle.Danger,
+                        
+                        DiscordMessageBuilder message = new();
+                        message.AddEmbed(e.Message.Embeds[0]);
+                        message.AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Danger,
                             "track-remove-confirm-button",
                             "Remove", true));
                     }
@@ -393,7 +391,7 @@ public partial class ComponentInteractionEvent
                 }
                 catch
                 {
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder()
                             .WithContent(
                                 "That reminder was already deleted!")
@@ -415,7 +413,7 @@ public partial class ComponentInteractionEvent
 
                 await Program.Db.HashDeleteAsync("reminders", e.Values[0]);
 
-                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder()
                         .WithContent("Reminder deleted successfully.").AsEphemeral());
                 break;
@@ -431,7 +429,7 @@ public partial class ComponentInteractionEvent
                 }
                 catch
                 {
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder()
                             .WithContent(
                                 "That reminder doesn't exist! Perhaps it was deleted before you chose it from the list?")
@@ -473,7 +471,7 @@ public partial class ComponentInteractionEvent
                     embed.WithFooter(
                         "This reminder will not be sent automatically.");
 
-                await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().AddEmbed(embed).AsEphemeral());
                 break;
             }
@@ -484,7 +482,7 @@ public partial class ComponentInteractionEvent
             case "stop":
                 break; // avoid getting in the way when pagination is used
             default:
-                e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
                         $"Unknown interaction ID `{e.Id}`! Contact the bot developer for assistance.").AsEphemeral());
                 break;

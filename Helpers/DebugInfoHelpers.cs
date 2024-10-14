@@ -43,6 +43,11 @@ public class DebugInfoHelpers
     // If provided a DebugInfo object, use that...
     private static Task<DiscordEmbed> GenerateDebugInfoEmbed(DebugInfo debugInfo, bool isOnReadyEvent)
     {
+        // Check whether GuildDownloadCompleted has been fired yet
+        // If not, wait until it has
+        while (!Program.GuildDownloadCompleted)
+            Task.Delay(1000).Wait();
+        
         DiscordEmbedBuilder embed = new()
         {
             Title = isOnReadyEvent ? "Connected!" : "",

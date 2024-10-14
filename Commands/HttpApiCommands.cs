@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class HttpApiCommands : ApplicationCommandModule
+public class HttpApiCommands
 {
     private static readonly List<int> HttpCodes =
     [
@@ -10,27 +10,29 @@ public class HttpApiCommands : ApplicationCommandModule
         521, 522, 523, 525, 599
     ];
 
-    [SlashCommand("httpcat", "Get an http.cat image!")]
-    public static async Task HttpCatCommand(InteractionContext ctx,
-        [Option("code", "The code to get the http.cat image for.")] [Minimum(100)] [Maximum(599)]
-        long? code = null)
+    [Command("httpcat")]
+    [Description("Get an http.cat image!")]
+    public static async Task HttpCatCommand(SlashCommandContext ctx,
+        [Parameter("code"), Description("The code to get the http.cat image for.")] [MinMaxValue(100, 599)]
+        int? code = null)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.DeferResponseAsync();
 
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(GetHttpImage(code, true)));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(GetHttpImage(code, true)));
     }
 
-    [SlashCommand("httpdog", "Get an http.dog image!")]
-    public static async Task HttpDogCommand(InteractionContext ctx,
-        [Option("code", "The code to get the http.dog image for.")] [Minimum(100)] [Maximum(599)]
-        long? code = null)
+    [Command("httpdog")]
+    [Description("Get an http.dog image!")]
+    public static async Task HttpDogCommand(SlashCommandContext ctx,
+        [Parameter("code"), Description("The code to get the http.dog image for.")] [MinMaxValue(100, 599)]
+        int? code = null)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.DeferResponseAsync();
 
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(GetHttpImage(code, false)));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(GetHttpImage(code, false)));
     }
 
-    private static string GetHttpImage(long? code, bool isCat)
+    private static string GetHttpImage(int? code, bool isCat)
     {
         var tld = isCat ? "cat" : "dog";
 
@@ -49,7 +51,7 @@ public class HttpApiCommands : ApplicationCommandModule
         }
         else
         {
-            if (!HttpCodes.Contains((int)code))
+            if (!HttpCodes.Contains(code.Value))
                 return
                     $"Either that's not a valid HTTP status code, or it's not supported by http.{tld}! Try another one.";
 
@@ -58,7 +60,7 @@ public class HttpApiCommands : ApplicationCommandModule
             if (httpResponse.IsSuccessStatusCode)
                 return $"https://http.{tld}/{code}.jpg";
 
-            return "I ran into an error trying to get a random HTTP cat image!" +
+            return $"I ran into an error trying to get a random HTTP {tld} image!" +
                    $"Request returned code `{(int)httpResponse.StatusCode}: {httpResponse.ReasonPhrase}` for HTTP code {code}.";
         }
     }

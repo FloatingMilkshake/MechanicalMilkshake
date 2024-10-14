@@ -1,32 +1,29 @@
 ﻿namespace MechanicalMilkshake.Commands.Owner;
 
-[SlashRequireAuth]
-public class EvalCommands : ApplicationCommandModule
+[RequireAuth]
+public class EvalCommands
 {
     private static readonly List<string> RestrictedTerms = ["poweroff", "shutdown", "reboot", "halt"];
     public static readonly string[] EvalImports = ["System", "System.Collections.Generic", "System.Linq",
-        "System.Text", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.SlashCommands",
+        "System.Text", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.Commands",
         "DSharpPlus.Interactivity", "DSharpPlus.Entities", "Microsoft.Extensions.Logging",
         Assembly.GetExecutingAssembly().GetName().Name];
 
     // The idea for this command, and a lot of the code, is taken from Erisa's Lykos. References are linked below.
     // https://github.com/Erisa/Lykos/blob/5f9c17c/src/Modules/Owner.cs#L116-L144
     // https://github.com/Erisa/Lykos/blob/822e9c5/src/Modules/Helpers.cs#L36-L82
-    [SlashCommand("runcommand", "[Authorized users only] Run a shell command on the machine the bot's running on!")]
-    public static async Task RunCommand(InteractionContext ctx,
-        [Option("command", "The command to run, including any arguments.")]
+    [Command("runcommand")]
+    [Description("[Authorized users only] Run a shell command on the machine the bot's running on!")]
+    public static async Task RunCommand(SlashCommandContext ctx,
+        [Parameter("command"), Description("The command to run, including any arguments.")]
         string command)
     {
-        if (!Program.ConfigJson.Base.AuthorizedUsers.Contains(ctx.User.Id.ToString()))
-            throw new SlashExecutionChecksFailedException();
-
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
-            new DiscordInteractionResponseBuilder());
+        await ctx.DeferResponseAsync();
 
         if (RestrictedTerms.Any(command.Contains))
             if (!Program.Discord.CurrentApplication.Owners.Contains(ctx.User))
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You can't do that."));
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("You can't do that."));
                 return;
             }
 
@@ -35,7 +32,7 @@ public class EvalCommands : ApplicationCommandModule
             && ctx.User.Id != 455432936339144705
             && command.Contains("ssh"))
         {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You can't do that."));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("You can't do that."));
             return;
         }
 
@@ -54,7 +51,7 @@ public class EvalCommands : ApplicationCommandModule
             response = $"Finished with exit code `{cmdResponse.ExitCode}`! Output: ```\n{HideSensitiveInfo(cmdResponse.Output)}```";
         }
         
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(response));
     }
 
     public static async Task<ShellCommandResponse> RunCommand(string command)
@@ -100,15 +97,15 @@ public class EvalCommands : ApplicationCommandModule
 
     // The idea for this command, and a lot of the code, is taken from DSharpPlus/DSharpPlus.Test. Reference linked below.
     // https://github.com/DSharpPlus/DSharpPlus/blob/3a50fb3/DSharpPlus.Test/TestBotEvalCommands.cs
-    [SlashCommand("eval", "[Authorized users only] Evaluate C# code!")]
-    public static async Task Eval(InteractionContext ctx, [Option("code", "The code to evaluate.")] string code)
+    [Command("eval")]
+    [Description("[Authorized users only] Evaluate C# code!")]
+    public static async Task Eval(SlashCommandContext ctx, [Parameter("code"), Description("The code to evaluate.")] string code)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
-            new DiscordInteractionResponseBuilder());
+        await ctx.DeferResponseAsync();
 
         if (RestrictedTerms.Any(code.Contains))
         {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("You can't do that."));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("You can't do that."));
             return;
         }
 
@@ -127,14 +124,14 @@ public class EvalCommands : ApplicationCommandModule
 
             if (result?.ReturnValue is null)
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("null"));
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("null"));
             }
             else
             {
                 if (string.IsNullOrWhiteSpace(result.ReturnValue.ToString()))
                 {
                     // Isn't null, so it has to be whitespace
-                    await ctx.FollowUpAsync(
+                    await ctx.FollowupAsync(
                         new DiscordFollowupMessageBuilder().WithContent($"\"{result.ReturnValue}\""));
                     return;
                 }
@@ -144,20 +141,20 @@ public class EvalCommands : ApplicationCommandModule
                 {
                     var hasteUploadResult = await HastebinHelpers.UploadToHastebinAsync(result.ReturnValue.ToString());
 
-                    await ctx.FollowUpAsync(
+                    await ctx.FollowupAsync(
                         new DiscordFollowupMessageBuilder().WithContent(
                             $"The result was too long to post here, so it was uploaded to Hastebin here: {hasteUploadResult}"));
                     return;
                 }
                 
                 // Respond in channel if content length within Discord character limit
-                await ctx.FollowUpAsync(
+                await ctx.FollowupAsync(
                     new DiscordFollowupMessageBuilder().WithContent(HideSensitiveInfo(result.ReturnValue.ToString())));
             }
         }
         catch (Exception e)
         {
-            await ctx.FollowUpAsync(
+            await ctx.FollowupAsync(
                 new DiscordFollowupMessageBuilder().WithContent(e.GetType() + ": " + e.Message));
         }
     }

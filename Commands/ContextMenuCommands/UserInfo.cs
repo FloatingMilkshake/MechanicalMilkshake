@@ -1,26 +1,35 @@
 ﻿namespace MechanicalMilkshake.Commands.ContextMenuCommands;
 
-public class UserInfo : ApplicationCommandModule
+public class UserInfo
 {
-    [ContextMenu(ApplicationCommandType.UserContextMenu, "User Info")]
-    public static async Task ContextUserInfo(ContextMenuContext ctx)
+    [Command("User Info")]
+    [AllowedProcessors(typeof(UserCommandProcessor))]
+    [SlashCommandTypes(DiscordApplicationCommandType.UserContextMenu)]
+    public static async Task ContextUserInfo(CommandContext ctx, DiscordUser targetUser)
     {
         DiscordEmbed userInfoEmbed;
 
         try
         {
             // Try to get member and get user info embed with extended information
-            var member = await ctx.Guild.GetMemberAsync(ctx.TargetUser.Id);
-            userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(member);
+            if (ctx.Guild is not null)
+            {
+                var member = await ctx.Guild.GetMemberAsync(targetUser.Id);
+                userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(member);   
+            }
+            else
+            {
+                userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(targetUser);
+            }
         }
         catch (NotFoundException)
         {
             // Member cannot be fetched (so is probably not in the guild); get user info embed with basic information
-            userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(ctx.TargetUser);
+            userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(targetUser);
         }
 
-        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder()
-            .WithContent($"User Info for **{UserInfoHelpers.GetFullUsername(ctx.TargetUser)}**")
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+            .WithContent($"User Info for **{UserInfoHelpers.GetFullUsername(targetUser)}**")
             .AddEmbed(userInfoEmbed).AsEphemeral());
     }
 }

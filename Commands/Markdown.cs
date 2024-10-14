@@ -1,13 +1,14 @@
 namespace MechanicalMilkshake.Commands;
 
-public partial class Markdown : ApplicationCommandModule
+public partial class Markdown
 {
-    [SlashCommand("markdown", "Expose the Markdown formatting behind a message!")]
-    public static async Task MarkdownCommand(InteractionContext ctx,
-        [Option("message", "The message you want to expose the formatting of. Accepts message IDs and links.")]
+    [Command("markdown")]
+    [Description("Expose the Markdown formatting behind a message!")]
+    public static async Task MarkdownCommand(SlashCommandContext ctx,
+        [Parameter("message"), Description("The message you want to expose the formatting of. Accepts message IDs and links.")]
         string messageToExpose)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.DeferResponseAsync();
 
         DiscordMessage message;
         if (DiscordUrlPattern().IsMatch(messageToExpose))
@@ -29,7 +30,7 @@ public partial class Markdown : ApplicationCommandModule
             }
             catch
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                     "I wasn't able to find that message! Make sure I have permission to see the channel it's in."));
                 return;
             }
@@ -45,7 +46,7 @@ public partial class Markdown : ApplicationCommandModule
             }
             catch
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                     "I wasn't able to read that message! Make sure I have permission to access it."));
                 return;
             }
@@ -54,7 +55,7 @@ public partial class Markdown : ApplicationCommandModule
         {
             if (messageToExpose.Length < 17)
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                     "Hmm, that doesn't look like a valid message ID or link."));
                 return;
             }
@@ -66,7 +67,7 @@ public partial class Markdown : ApplicationCommandModule
             }
             catch
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                     "Hmm, that doesn't look like a valid message ID or link. I wasn't able to get the Markdown data from it."));
                 return;
             }
@@ -77,7 +78,7 @@ public partial class Markdown : ApplicationCommandModule
             }
             catch
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                     "I wasn't able to read that message! Make sure I have permission to access it."));
                 return;
             }
@@ -123,7 +124,7 @@ public partial class Markdown : ApplicationCommandModule
 
         if (response.Embeds.Count == 0)
         {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                 "That message doesn't have any text content! I can only parse the Markdown data from messages with content."));
             return;
         }
@@ -132,12 +133,12 @@ public partial class Markdown : ApplicationCommandModule
         if (response.Embeds.Sum(e =>
                 e.Description.Length + e.Title.Length + e.Fields.Sum(f => f.Name.Length + f.Value.Length)) > 6000)
         {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                 "That message is too long! I can only parse the Markdown data from messages shorter than 6000 characters."));
             return;
         }
 
-        await ctx.FollowUpAsync(response);
+        await ctx.FollowupAsync(response);
     }
 
     [GeneratedRegex(@".*.discord.com\/channels\/([\d+]*\/)+[\d+]*")]

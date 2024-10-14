@@ -5,7 +5,7 @@
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 public class Globals
 {
-    public Globals(DiscordClient client, InteractionContext ctx)
+    public Globals(DiscordClient client, SlashCommandContext ctx)
     {
         Context = ctx;
         Client = client;
@@ -21,5 +21,5 @@ public class Globals
     public DiscordGuild Guild { get; set; }
     public DiscordUser User { get; set; }
     public DiscordMember Member { get; set; }
-    public InteractionContext Context { get; set; }
+    public SlashCommandContext Context { get; set; }
 }

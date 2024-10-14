@@ -15,31 +15,31 @@ public class UserInfoHelpers
         {
             notablePerms.Add("Server Owner");
         }
-        else if (member.Permissions.HasPermission(Permissions.Administrator))
+        else if (member.Permissions.HasPermission(DiscordPermissions.Administrator))
         {
             notablePerms.Add("Administrator");
         }
         else
         {
-            if (member.Permissions.HasPermission(Permissions.ManageChannels))
+            if (member.Permissions.HasPermission(DiscordPermissions.ManageChannels))
                 notablePerms.Add("Manage Channels");
-            if (member.Permissions.HasPermission(Permissions.ManageEmojis))
+            if (member.Permissions.HasPermission(DiscordPermissions.ManageEmojis))
                 notablePerms.Add("Manage Emojis and Stickers");
-            if (member.Permissions.HasPermission(Permissions.ManageEvents))
+            if (member.Permissions.HasPermission(DiscordPermissions.ManageEvents))
                 notablePerms.Add("Manage Events");
-            if (member.Permissions.HasPermission(Permissions.ManageGuild))
+            if (member.Permissions.HasPermission(DiscordPermissions.ManageGuild))
                 notablePerms.Add("Manage Server");
-            if (member.Permissions.HasPermission(Permissions.ManageMessages))
+            if (member.Permissions.HasPermission(DiscordPermissions.ManageMessages))
                 notablePerms.Add("Manage Messages");
-            if (member.Permissions.HasPermission(Permissions.ManageNicknames))
+            if (member.Permissions.HasPermission(DiscordPermissions.ManageNicknames))
                 notablePerms.Add("Manage Nicknames");
-            if (member.Permissions.HasPermission(Permissions.ManageRoles))
+            if (member.Permissions.HasPermission(DiscordPermissions.ManageRoles))
                 notablePerms.Add("Manage Roles");
-            if (member.Permissions.HasPermission(Permissions.ManageThreads))
+            if (member.Permissions.HasPermission(DiscordPermissions.ManageThreads))
                 notablePerms.Add(member.Guild.Features.Contains("COMMUNITY")
                     ? "Manage Threads and Posts"
                     : "Manage Threads");
-            if (member.Permissions.HasPermission(Permissions.ManageWebhooks))
+            if (member.Permissions.HasPermission(DiscordPermissions.ManageWebhooks))
                 notablePerms.Add("Manage Webhooks");
         }
 
@@ -74,11 +74,10 @@ public class UserInfoHelpers
             .AddField("User Mention", member.Mention, true)
             .WithFooter($"User ID: {member.Id}");
 
-        // todo: make this work with global Display Name (pomelo) when D#+ supports it
-        //if (member.DisplayName is not null)
-        //    extendedUserInfoEmbed.AddField("Display Name", member.DisplayName, true);
+        if (member.GlobalName is not null)
+            extendedUserInfoEmbed.AddField("Display Name", member.GlobalName, true);
         
-        if (member.Nickname is not null)
+        if (!string.IsNullOrWhiteSpace(member.Nickname))
             extendedUserInfoEmbed.AddField("Nickname", member.Nickname, true);
 
         extendedUserInfoEmbed.AddField("Account registered on", $"<t:{registeredAt}:F> (<t:{registeredAt}:R>)");
@@ -114,7 +113,7 @@ public class UserInfoHelpers
             .WithThumbnail($"{user.AvatarUrl}")
             .WithColor(Program.BotColor)
             .AddField("ID", $"{user.Id}")
-            //.AddField("Display Name", $"{user.DisplayName}") // todo: make this work with global Display Name (pomelo) when D#+ supports it
+            .AddField("Display Name", $"{user.GlobalName}")
             .AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
 
         var userBadges = GetBadges(user);
@@ -141,50 +140,50 @@ public class UserInfoHelpers
 
         if (user.Flags is null) return "";
 
-        if (user.Flags.Value.HasFlag(UserFlags.VerifiedBotDeveloper))
+        if (user.Flags.Value.HasFlag(DiscordUserFlags.VerifiedBotDeveloper))
             badges +=
                 $"<:earlyVerifiedBotDeveloper:{Program.UserFlagEmoji.GetValueOrDefault("earlyVerifiedBotDeveloper")}> Early Verified Bot Developer\n";
 
-        if (user.Flags.Value.HasFlag(UserFlags.DiscordEmployee))
+        if (user.Flags.Value.HasFlag(DiscordUserFlags.DiscordEmployee))
             badges += $"<:discordStaff:{Program.UserFlagEmoji.GetValueOrDefault("discordStaff")}> Discord Staff\n";
 
-        if (user.Flags.Value.HasFlag(UserFlags.HouseBalance))
+        if (user.Flags.Value.HasFlag(DiscordUserFlags.HouseBalance))
             badges +=
                 $"<:hypesquadBalance:{Program.UserFlagEmoji.GetValueOrDefault("hypesquadBalance")}> HypeSquad Balance\n";
 
-        if (user.Flags.Value.HasFlag(UserFlags.HouseBravery))
+        if (user.Flags.Value.HasFlag(DiscordUserFlags.HouseBravery))
             badges +=
                 $"<:hypesquadBravery:{Program.UserFlagEmoji.GetValueOrDefault("hypesquadBravery")}> HypeSquad Bravery\n";
 
-        if (user.Flags.Value.HasFlag(UserFlags.HouseBrilliance))
+        if (user.Flags.Value.HasFlag(DiscordUserFlags.HouseBrilliance))
             badges +=
                 $"<:hypesquadBrilliance:{Program.UserFlagEmoji.GetValueOrDefault("hypesquadBrilliance")}> HypeSquad Brilliance\n";
 
-        if (user.Flags.Value.HasFlag(UserFlags.HypeSquadEvents))
+        if (user.Flags.Value.HasFlag(DiscordUserFlags.HypeSquadEvents))
             badges +=
                 $"<:hypesquadEvents:{Program.UserFlagEmoji.GetValueOrDefault("hypesquadEvents")}> HypeSquad Events\n";
 
-        if (user.Flags.Value.HasFlag(UserFlags.BugHunterLevelOne))
+        if (user.Flags.Value.HasFlag(DiscordUserFlags.BugHunterLevelOne))
             badges +=
                 $"<:bugHunterLevelOne:{Program.UserFlagEmoji.GetValueOrDefault("bugHunterLevelOne")}> Bug Hunter Level One\n";
 
-        if (user.Flags.Value.HasFlag(UserFlags.BugHunterLevelTwo))
+        if (user.Flags.Value.HasFlag(DiscordUserFlags.BugHunterLevelTwo))
             badges +=
                 $"<:bugHunterLevelTwo:{Program.UserFlagEmoji.GetValueOrDefault("bugHunterLevelTwo")}> Bug Hunter Level Two\n";
 
-        if (user.Flags.Value.HasFlag(UserFlags.DiscordCertifiedModerator))
+        if (user.Flags.Value.HasFlag(DiscordUserFlags.DiscordCertifiedModerator))
             badges +=
                 $"<:certifiedModerator:{Program.UserFlagEmoji.GetValueOrDefault("certifiedModerator")}> Discord Certified Moderator\n";
 
-        if (user.Flags.Value.HasFlag(UserFlags.DiscordPartner))
+        if (user.Flags.Value.HasFlag(DiscordUserFlags.DiscordPartner))
             badges +=
                 $"<:partneredServerOwner:{Program.UserFlagEmoji.GetValueOrDefault("partneredServerOwner")}> Partnered Server Owner\n";
 
-        if (user.Flags.Value.HasFlag(UserFlags.VerifiedBot))
+        if (user.Flags.Value.HasFlag(DiscordUserFlags.VerifiedBot))
             badges +=
                 $"<:verifiedBot1:{Program.UserFlagEmoji.GetValueOrDefault("verifiedBot1")}><:verifiedBot2:{Program.UserFlagEmoji.GetValueOrDefault("verifiedBot2")}> Verified Bot\n";
 
-        if (user.Flags.Value.HasFlag(UserFlags.EarlySupporter))
+        if (user.Flags.Value.HasFlag(DiscordUserFlags.EarlySupporter))
             badges +=
                 $"<:earlySupporter:{Program.UserFlagEmoji.GetValueOrDefault("earlySupporter")}> Early Supporter\n";
 

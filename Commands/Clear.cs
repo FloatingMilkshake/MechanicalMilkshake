@@ -1,40 +1,39 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-[SlashRequireGuild]
-public partial class Clear : ApplicationCommandModule
+[RequireGuild]
+public partial class Clear
 {
     public static readonly Dictionary<ulong, List<DiscordMessage>> MessagesToClear = new();
 
-    [SlashCommand("clear", "Delete many messages from the current channel.", false)]
-    [SlashCommandPermissions(Permissions.ManageMessages)]
-    public static async Task ClearCommand(InteractionContext ctx,
-        [Option("count",
-            "The number of messages to consider for deletion. Required if you don't use the 'up_to' argument.")]
+    [Command("clear")]
+    [Description("Delete many messages from the current channel.")]
+    [RequirePermissions(DiscordPermissions.ManageMessages)]
+    public static async Task ClearCommand(SlashCommandContext ctx,
+        [Parameter("count"), Description("The number of messages to consider for deletion. Required if you don't use the 'up_to' argument.")]
         long count = 0,
-        [Option("up_to", "Optionally delete messages up to (not including) this one. Accepts IDs and links.")]
+        [Parameter("up_to"), Description("Optionally delete messages up to (not including) this one. Accepts IDs and links.")]
         string upTo = "",
-        [Option("user", "Optionally filter the deletion to a specific user.")]
+        [Parameter("user"), Description("Optionally filter the deletion to a specific user.")]
         DiscordUser user = default,
-        [Option("ignore_me", "Optionally filter the deletion to only messages not sent by you.")]
+        [Parameter("ignore_me"), Description("Optionally filter the deletion to only messages not sent by you.")]
         bool ignoreMe = false,
-        [Option("match", "Optionally filter the deletion to only messages containing certain text.")]
+        [Parameter("match"), Description("Optionally filter the deletion to only messages containing certain text.")]
         string match = "",
-        [Option("include_embeds", "Optionally include embed content when searching for matches.")]
+        [Parameter("include_embeds"), Description("Optionally include embed content when searching for matches.")]
         bool includeEmbeds = false,
-        [Option("bots_only", "Optionally filter the deletion to only bots.")]
+        [Parameter("bots_only"), Description("Optionally filter the deletion to only bots.")]
         bool botsOnly = false,
-        [Option("humans_only", "Optionally filter the deletion to only humans.")]
+        [Parameter("humans_only"), Description("Optionally filter the deletion to only humans.")]
         bool humansOnly = false,
-        [Option("attachments_only", "Optionally filter the deletion to only messages with attachments.")]
+        [Parameter("attachments_only"), Description("Optionally filter the deletion to only messages with attachments.")]
         bool attachmentsOnly = false,
-        [Option("links_only", "Optionally filter the deletion to only messages containing links.")]
+        [Parameter("links_only"), Description("Optionally filter the deletion to only messages containing links.")]
         bool linksOnly = false,
-        [Option("dry_run", "Optionally show the number of messages that would be deleted, without actually deleting them.")]
+        [Parameter("dry_run"), Description("Optionally show the number of messages that would be deleted, without actually deleting them.")]
         bool dryRun = false
     )
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource,
-            new DiscordInteractionResponseBuilder().AsEphemeral());
+        await ctx.DeferResponseAsync(true);
 
         var discordLinkRx = DiscordLinkPattern();
 
@@ -47,25 +46,25 @@ public partial class Clear : ApplicationCommandModule
             case 0 when upTo == "" && user == default && ignoreMe == false && match == "" && includeEmbeds == false &&
                         botsOnly == false && humansOnly == false && attachmentsOnly == false && linksOnly == false &&
                         dryRun == false:
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("You must provide at least one argument! I need to know which messages to delete.")
                     .AsEphemeral());
                 return;
             case 0 when upTo == "":
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         "I need to know how many messages to delete! Please provide a value for `count` or `up_to`.")
                     .AsEphemeral());
                 return;
             // If count is too low or too high, refuse the request
             case < 0:
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         "I can't delete a negative number of messages! Try setting `count` to a positive number.")
                     .AsEphemeral());
                 return;
             case >= 1000:
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         "Deleting that many messages poses a risk of something disastrous happening, so I'm refusing your request, sorry.")
                     .AsEphemeral());
@@ -76,7 +75,7 @@ public partial class Clear : ApplicationCommandModule
 
         if (upTo != "" && count != 0)
         {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
                     "You can't provide both a count of messages and a message to delete up to! Please only provide one of the two arguments.")
                 .AsEphemeral());
@@ -86,7 +85,7 @@ public partial class Clear : ApplicationCommandModule
         List<DiscordMessage> messagesToClear = [];
         if (upTo == "")
         {
-            var messages = await ctx.Channel.GetMessagesAsync((int)count);
+            var messages = await ctx.Channel.GetMessagesAsync((int)count).ToListAsync();
             messagesToClear = messages.ToList();
         }
         else
@@ -96,7 +95,7 @@ public partial class Clear : ApplicationCommandModule
             {
                 if (!ulong.TryParse(upTo, out messageId))
                 {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                         "That doesn't look like a valid message ID or link! Please try again."));
                     return;
                 }
@@ -108,7 +107,7 @@ public partial class Clear : ApplicationCommandModule
                     || !ulong.TryParse(discordLinkRx.Match(upTo).Groups[3].Value, out messageId)
                 )
                 {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                         .WithContent("Please provide a valid link to a message in this channel!")
                         .AsEphemeral());
                     return;
@@ -119,12 +118,12 @@ public partial class Clear : ApplicationCommandModule
             var message = await ctx.Channel.GetMessageAsync(messageId);
 
             // List of messages to delete, up to (not including) the one we just got.
-            var firstMsg = (await ctx.Channel.GetMessagesAfterAsync(message.Id, 1))[0];
+            var firstMsg = (await ctx.Channel.GetMessagesAfterAsync(message.Id, 1).ToListAsync())[0];
             var firstMsgId = firstMsg.Id;
             messagesToClear.Add(firstMsg);
             while (true)
             {
-                var newMessages = (await ctx.Channel.GetMessagesAfterAsync(firstMsgId)).ToList();
+                var newMessages = await ctx.Channel.GetMessagesAfterAsync(firstMsgId).ToListAsync();
                 messagesToClear.AddRange(newMessages);
                 firstMsgId = newMessages.First().Id;
                 if (newMessages.Count < 100)
@@ -169,7 +168,7 @@ public partial class Clear : ApplicationCommandModule
         {
             if (humansOnly)
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         "You can't use `bots_only` and `humans_only` together! Pick one or the other please.")
                     .AsEphemeral());
@@ -190,7 +189,7 @@ public partial class Clear : ApplicationCommandModule
         {
             if (linksOnly)
             {
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         "You can't use `images_only` and `links_only` together! Pick one or the other please.")
                     .AsEphemeral());
@@ -220,7 +219,7 @@ public partial class Clear : ApplicationCommandModule
         switch (messagesToClear.Count)
         {
             case 0 when skipped:
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("All of the messages to delete are older than 2 weeks, so I can't delete them!")
                     .AsEphemeral());
                 return;
@@ -229,8 +228,8 @@ public partial class Clear : ApplicationCommandModule
             case >= 50:
             {
                 DiscordButtonComponent confirmButton =
-                    new(ButtonStyle.Danger, "clear-confirm-callback", "Delete Messages", disabled: dryRun);
-                var confirmationMessage = await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    new(DiscordButtonStyle.Danger, "clear-confirm-callback", "Delete Messages", disabled: dryRun);
+                var confirmationMessage = await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(dryRun ? $"You would be about to delete {messagesToClear.Count} messages, but since "
                                             + "you used `dry_run = True`, I won't do anything."
                                         : $"You're about to delete {messagesToClear.Count} messages. Are you sure?")
@@ -243,7 +242,7 @@ public partial class Clear : ApplicationCommandModule
             {
                 if (dryRun)
                 {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent($"You would be about to"
+                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"You would be about to"
                     + $" delete {messagesToClear.Count} messages, but since you used `dry_run = True`,"
                     + " I won't do anything.").AsEphemeral());
                     break;
@@ -256,7 +255,7 @@ public partial class Clear : ApplicationCommandModule
                 }
                 catch (UnauthorizedException)
                 {
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                         .WithContent("I don't have permission to delete messages in this channel! Make sure I have the `Manage Messages` permission.")
                         .AsEphemeral());
                     return;
@@ -264,18 +263,18 @@ public partial class Clear : ApplicationCommandModule
                 // not catching other exceptions because they are handled by generic slash error handler, but this one deserves a clear message
                 
                 if (skipped)
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                         .WithContent(
                             $"Cleared **{messagesToClear.Count}** messages from {ctx.Channel.Mention}!\nSome messages were not deleted because they are older than 2 weeks.")
                         .AsEphemeral());
                 else
-                    await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder()
+                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                         .WithContent($"Cleared **{messagesToClear.Count}** messages from {ctx.Channel.Mention}!")
                         .AsEphemeral());
                 break;
             }
             default:
-                await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                     "There were no messages that matched all of the arguments you provided! Nothing to do."));
                 break;
         }

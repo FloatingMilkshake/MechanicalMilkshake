@@ -8,14 +8,14 @@ public class CommandHandlerHelpers
     /// </summary>
     /// <param name="ctx">Interaction context used to respond to the interaction.</param>
     /// <param name="isFollowUp">Whether to follow-up to the interaction (as opposed to creating a new interaction response).</param>
-    public static async Task FailOnMissingInfo(InteractionContext ctx, bool isFollowUp)
+    public static async Task FailOnMissingInfo(SlashCommandContext ctx, bool isFollowUp)
     {
         const string failureMsg =
             "This command is disabled! Please make sure you have provided values for all of the necessary keys in the config file.";
 
         if (isFollowUp)
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(failureMsg));
+            await ctx.FollowupAsync(failureMsg);
         else
-            await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(failureMsg));
+            await ctx.RespondAsync(failureMsg);
     }
 }

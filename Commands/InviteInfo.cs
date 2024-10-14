@@ -1,13 +1,14 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public partial class InviteInfo : ApplicationCommandModule
+public partial class InviteInfo
 {
-    [SlashCommand("inviteinfo", "Return information about a Discord invite.")]
-    public static async Task InviteInfoCommand(InteractionContext ctx,
-        [Option("invite", "The invite to return information about. Accepts an invite link or code.")]
+    [Command("inviteinfo")]
+    [Description("Return information about a Discord invite.")]
+    public static async Task InviteInfoCommand(SlashCommandContext ctx,
+        [Parameter("invite"), Description("The invite to return information about. Accepts an invite link or code.")]
         string targetInvite)
     {
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.DeferResponseAsync();
 
         if (targetInvite.Contains(".gg")) // discord.gg link
             targetInvite = DiscordDotGgLinkPattern().Replace(targetInvite, "");
@@ -22,7 +23,7 @@ public partial class InviteInfo : ApplicationCommandModule
         }
         catch
         {
-            await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent("That's not a valid invite!"));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("That's not a valid invite!"));
             return;
         }
 
@@ -51,11 +52,11 @@ public partial class InviteInfo : ApplicationCommandModule
 
         var verifLevelDesc = invite.Guild.VerificationLevel switch
         {
-            VerificationLevel.None => "None - unrestricted access to the server",
-            VerificationLevel.Low => "Low - members must have a verified email address on their Discord account",
-            VerificationLevel.Medium => "Medium - members must be registered on Discord for longer than 5 minutes",
-            VerificationLevel.High => "High - members must be a member of the server for longer than 10 minutes",
-            VerificationLevel.Highest => "Highest - members must have a verified phone number on their Discord account",
+            DiscordVerificationLevel.None => "None - unrestricted access to the server",
+            DiscordVerificationLevel.Low => "Low - members must have a verified email address on their Discord account",
+            DiscordVerificationLevel.Medium => "Medium - members must be registered on Discord for longer than 5 minutes",
+            DiscordVerificationLevel.High => "High - members must be a member of the server for longer than 10 minutes",
+            DiscordVerificationLevel.Highest => "Highest - members must have a verified phone number on their Discord account",
             _ => "unknown"
         };
         embed.AddField("Verification Level", verifLevelDesc);
@@ -71,7 +72,7 @@ public partial class InviteInfo : ApplicationCommandModule
 
         embed.WithThumbnail(invite.Guild.IconUrl);
 
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
     }
 
     [GeneratedRegex(".*.gg/")]

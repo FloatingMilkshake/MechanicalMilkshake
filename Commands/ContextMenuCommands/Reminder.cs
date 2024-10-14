@@ -1,15 +1,16 @@
 ﻿namespace MechanicalMilkshake.Commands.ContextMenuCommands;
 
-public class Reminder : ApplicationCommandModule
+public class Reminder
 {
 
-    [ContextMenu(ApplicationCommandType.MessageContextMenu, "Remind Me About This")]
-    public static async Task ContextReminder(ContextMenuContext ctx)
+    [Command("Remind Me About This")]
+    [AllowedProcessors(typeof(MessageCommandProcessor))]
+    [SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu)]
+    public static async Task ContextReminder(CommandContext ctx, DiscordMessage targetMessage)
     {
-        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent(
-            $"OK {ctx.User.Mention}, I can remind you about [that message](<{ctx.TargetMessage.JumpLink}>). When would you like to be reminded?"));
+        await ctx.RespondAsync($"OK {ctx.User.Mention}, I can remind you about [that message](<{targetMessage.JumpLink}>). When would you like to be reminded?");
         
-        var msg = await ctx.Interaction.GetOriginalResponseAsync();
+        var msg = await ctx.GetResponseAsync();
 
         var nextMsg = await msg.Channel.GetNextMessageAsync(m => m.Author.Id == ctx.User.Id);
 
@@ -38,7 +39,7 @@ public class Reminder : ApplicationCommandModule
         {
             UserId = ctx.User.Id,
             ChannelId = ctx.Channel.Id,
-            MessageId = ctx.TargetMessage.Id,
+            MessageId = targetMessage.Id,
             SetTime = DateTime.Now,
             ReminderTime = time,
             ReminderId = reminderId,
@@ -51,6 +52,6 @@ public class Reminder : ApplicationCommandModule
         
         // Respond
         var unixTime = ((DateTimeOffset)time).ToUnixTimeSeconds();
-        await nextMsg.Result.RespondAsync($"Alright, I will remind you about [that message](<{ctx.TargetMessage.JumpLink}>) on <t:{unixTime}:F> (<t:{unixTime}:R>).");
+        await nextMsg.Result.RespondAsync($"Alright, I will remind you about [that message](<{targetMessage.JumpLink}>) on <t:{unixTime}:F> (<t:{unixTime}:R>).");
     }
 }

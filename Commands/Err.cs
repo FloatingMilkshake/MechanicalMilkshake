@@ -1,24 +1,22 @@
 namespace MechanicalMilkshake.Commands;
 
-public class Err : ApplicationCommandModule
+public class Err
 {
-    [SlashCommand("err", "Look up a Microsoft error code with the Microsoft Error Lookup Tool.")]
-    public static async Task ErrCmd(InteractionContext ctx, [Option("code", "The error code to look up, in any format.")] string code)
+    [Command("err")]
+    [Description("Look up a Microsoft error code with the Microsoft Error Lookup Tool.")]
+    public static async Task ErrCmd(SlashCommandContext ctx, [Parameter("code"), Description("The error code to look up, in any format.")] string code)
     {
         // I know this is cursed, I don't really care.
         // I run the bot on Linux and don't want to use Wine to run the tool.
         // So SSH it is (+ wake on lan in case the Windows machine is sleeping).
         // I'm sorry lol
         
-        await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
+        await ctx.DeferResponseAsync();
         
         if (Program.DisabledCommands.Contains("err"))
         {
-            if (Program.DisabledCommands.Contains("cdn"))
-            {
-                await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
-                return;
-            }
+            await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
+            return;
         }
         
         // Shoot a wake on LAN packet to the Windows machine to ensure it is awake
@@ -51,6 +49,23 @@ public class Err : ApplicationCommandModule
             _ => "Something went wrong! Please try again."
         };
         
-        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(response));
+        var outMsg = new DiscordMessageBuilder();
+        if (response.Length < 2000)
+        {
+            outMsg.Content = response;
+        }
+        else
+        {
+            if (response.Length > 4000)
+            {
+                outMsg.WithContent($"The details are too long to send here, so they have been uploaded to Hastebin instead: {await HastebinHelpers.UploadToHastebinAsync(response)}");
+            }
+            else
+            {
+                outMsg.AddEmbed(new DiscordEmbedBuilder().WithDescription(response));
+            }
+        }
+        
+        await ctx.FollowupAsync(outMsg);
     }
 }

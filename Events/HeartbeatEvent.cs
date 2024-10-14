@@ -1,16 +1,18 @@
-﻿namespace MechanicalMilkshake.Events;
+﻿using DSharpPlus.Net.Gateway;
+
+namespace MechanicalMilkshake.Events;
 
 public class HeartbeatEvent
 {
-    public static async Task Heartbeated(DiscordClient client, HeartbeatEventArgs e)
+    public static async Task Heartbeated(IGatewayClient client)
     {
         if (Program.ConfigJson.Base.UptimeKumaHeartbeatUrl is null or "") return;
         
         try
         {
-            var heartbeatResponse = await Program.HttpClient.GetAsync($"{Program.ConfigJson.Base.UptimeKumaHeartbeatUrl}{e.Ping}");
+            var heartbeatResponse = await Program.HttpClient.GetAsync($"{Program.ConfigJson.Base.UptimeKumaHeartbeatUrl}{client.Ping}");
             if (heartbeatResponse.IsSuccessStatusCode)
-                Program.Discord.Logger.LogDebug(Program.BotEventId, "Successfully sent Uptime Kuma heartbeat with ping {ping}ms", e.Ping);
+                Program.Discord.Logger.LogDebug(Program.BotEventId, "Successfully sent Uptime Kuma heartbeat with ping {ping}ms", client.Ping);
             else
                 Program.Discord.Logger.LogWarning(Program.BotEventId, "Uptime Kuma heartbeat failed with status code {statusCode}", heartbeatResponse.StatusCode);
             Program.LastUptimeKumaHeartbeatStatus = heartbeatResponse.StatusCode.ToString();

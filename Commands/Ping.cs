@@ -1,14 +1,19 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class Ping : ApplicationCommandModule
+public class Ping
 {
-    [SlashCommand("ping", "Pong!")]
-    public static async Task PingCommand(InteractionContext ctx)
+    [Command("ping")]
+    [Description("Pong!")]
+    public static async Task PingCommand(SlashCommandContext ctx)
     {
-        await ctx.CreateResponseAsync(new DiscordInteractionResponseBuilder().WithContent("Ping!"));
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent("Ping!"));
         var timeNow = DateTime.UtcNow;
 
-        var websocketPing = ctx.Client.Ping;
+        var websocketPing = ctx.Client.GetConnectionLatency(
+            ctx.Channel.IsPrivate
+                ? ctx.Guild!.Id
+                : Program.HomeServer.Id
+            ).TotalMilliseconds;
         var msg = await ctx.Interaction.GetOriginalResponseAsync();
         var interactionLatency = Math.Round((timeNow - msg.CreationTimestamp.UtcDateTime).TotalMilliseconds);
 
