@@ -10,7 +10,7 @@ public partial class ReminderCommands : ApplicationCommandModule
             [Option("time", "When do you want to be reminded?")]
             string time,
             [Option("text", "What should the reminder say?")] [MaximumLength(1000)]
-            string text,
+            string text = "",
             [Option("private", "Whether to keep this reminder private. It will be sent in DMs.")]
             bool isPrivate = false)
         {
