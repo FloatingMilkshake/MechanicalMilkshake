@@ -131,6 +131,9 @@ public class Program
             // Error handling
             extension.CommandErrored += ErrorEvents.CommandErrored;
             
+            // Logging
+            extension.CommandExecuted += Events.InteractionEvents.CommandExecuted;
+            
             // Interaction commands
 #if DEBUG
             // Register slash commands as guild commands in home server when

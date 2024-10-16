@@ -4,7 +4,7 @@ namespace MechanicalMilkshake.Events;
 
 public class InteractionEvents
 {
-    public static async Task CommandInvoked(CommandsExtension _, CommandExecutedEventArgs e)
+    public static async Task CommandExecuted(CommandsExtension _, CommandExecutedEventArgs e)
     {
         await LogCmdUsage(e.Context);
     }
