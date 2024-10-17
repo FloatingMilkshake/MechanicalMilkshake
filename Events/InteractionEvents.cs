@@ -20,17 +20,17 @@ public class InteractionEvents
                 return;
 
             // Increment count
-            if (await Program.Db.HashExistsAsync("commandCounts", context.Command.Name))
-                await Program.Db.HashIncrementAsync("commandCounts", context.Command.Name);
+            if (await Program.Db.HashExistsAsync("commandCounts", context.Command.FullName))
+                await Program.Db.HashIncrementAsync("commandCounts", context.Command.FullName);
             else
-                await Program.Db.HashSetAsync("commandCounts", context.Command.Name, 1);
+                await Program.Db.HashSetAsync("commandCounts", context.Command.FullName, 1);
 
             // Log to log channel if configured
             if (Program.ConfigJson.Logs.SlashCommands.LogChannel is not null)
             {
                 var description = context.Channel.IsPrivate
-                    ? $"{context.User.Username} (`{context.User.Id}`) used {SlashCmdMentionHelpers.GetSlashCmdMention(context.Command.Name)} in DMs."
-                    : $"{context.User.Username} (`{context.User.Id}`) used {SlashCmdMentionHelpers.GetSlashCmdMention(context.Command.Name)} in `{context.Channel.Name}` (`{context.Channel.Id}`) in \"{context.Guild.Name}\" (`{context.Guild.Id}`).";
+                    ? $"{context.User.Username} (`{context.User.Id}`) used {SlashCmdMentionHelpers.GetSlashCmdMention(context.Command.FullName)} in DMs."
+                    : $"{context.User.Username} (`{context.User.Id}`) used {SlashCmdMentionHelpers.GetSlashCmdMention(context.Command.FullName)} in `{context.Channel.Name}` (`{context.Channel.Id}`) in \"{context.Guild.Name}\" (`{context.Guild.Id}`).";
                 
                 var embed = new DiscordEmbedBuilder()
                     .WithColor(Program.BotColor)
@@ -47,13 +47,13 @@ public class InteractionEvents
                 {
                     Program.Discord.Logger.LogError(Program.BotEventId,
                         "{User} used {Command} in {Guild} but it could not be logged because the log channel cannot be accessed",
-                        context.User.Id, context.Command.Name, context.Guild.Id);
+                        context.User.Id, context.Command.FullName, context.Guild.Id);
                 }
                 catch (FormatException)
                 {
                     Program.Discord.Logger.LogError(Program.BotEventId,
                         "{User} used {Command} in {Guild} but it could not be logged because the log channel ID is invalid",
-                        context.User.Id, context.Command.Name, context.Guild.Id);
+                        context.User.Id, context.Command.FullName, context.Guild.Id);
                 }
             }
         }
@@ -63,7 +63,7 @@ public class InteractionEvents
             {
                 Title = "An exception was thrown when logging a slash command",
                 Description =
-                    $"An exception was thrown when {context.User.Mention} used `/{context.Command.Name}`. Details are below.",
+                    $"An exception was thrown when {context.User.Mention} used `/{context.Command.FullName}`. Details are below.",
                 Color = DiscordColor.Red
             };
             embed.AddField("Exception Details",
