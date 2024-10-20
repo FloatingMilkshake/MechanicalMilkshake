@@ -41,7 +41,7 @@ public class DebugInfoHelpers
     }
 
     // If provided a DebugInfo object, use that...
-    private static Task<DiscordEmbed> GenerateDebugInfoEmbed(DebugInfo debugInfo, bool isOnReadyEvent)
+    private static Task<DiscordEmbed> GenerateDebugInfoEmbed(DebugInfo debugInfo, bool isOnStartup)
     {
         // Check whether GuildDownloadCompleted has been fired yet
         // If not, wait until it has
@@ -50,7 +50,7 @@ public class DebugInfoHelpers
         
         DiscordEmbedBuilder embed = new()
         {
-            Title = isOnReadyEvent ? "Connected!" : "",
+            Title = isOnStartup ? "Connected!" : "",
             Color = Program.BotColor
         };
 
@@ -64,7 +64,7 @@ public class DebugInfoHelpers
         embed.AddField("Library", debugInfo.Library, true);
         embed.AddField("Server Count", Program.Discord.Guilds.Count.ToString(), true);
         embed.AddField("Command Count", Program.ApplicationCommands.Count.ToString(), true);
-        if (isOnReadyEvent) embed.AddField("Time Since Process Start", debugInfo.TimeSinceProcessStart, true);
+        if (isOnStartup) embed.AddField("Time Since Process Start", debugInfo.TimeSinceProcessStart, true);
         embed.AddField("Commit Hash", commitHash, true);
         embed.AddField(debugInfo.CommitTimeDescription, debugInfo.CommitTimestamp, true);
         embed.AddField("Commit Message", debugInfo.CommitMessage);
@@ -73,9 +73,9 @@ public class DebugInfoHelpers
     }
 
     // ...otherwise, get debug info manually
-    public static async Task<DiscordEmbed> GenerateDebugInfoEmbed(bool isOnReadyEvent)
+    public static async Task<DiscordEmbed> GenerateDebugInfoEmbed(bool isOnStartup)
     {
-        return await GenerateDebugInfoEmbed(GetDebugInfo(), isOnReadyEvent);
+        return await GenerateDebugInfoEmbed(GetDebugInfo(), isOnStartup);
     }
 
 

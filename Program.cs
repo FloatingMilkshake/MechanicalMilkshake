@@ -282,6 +282,9 @@ public class Program
 #if !DEBUG
         await EvalCommands.RunCommand("cat /app/id_ed25519 > ~/.ssh/id_ed25519 && chmod 700 ~/.ssh/id_ed25519");
 #endif
+        
+        // Send startup message
+        await Program.HomeChannel.SendMessageAsync(await DebugInfoHelpers.GenerateDebugInfoEmbed(true));
 
         // Run tasks
 

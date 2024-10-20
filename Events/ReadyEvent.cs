@@ -7,9 +7,6 @@ public class ReadyEvent
         await Task.Run(async () =>
         {
             Program.ConnectTime = DateTime.Now;
-
-            await Program.HomeChannel.SendMessageAsync(await DebugInfoHelpers.GenerateDebugInfoEmbed(true));
-
             await ActivityTasks.SetActivityAsync();
         });
     }
