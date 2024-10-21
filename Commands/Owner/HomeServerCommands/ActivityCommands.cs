@@ -59,6 +59,13 @@ public class ActivityCmds
 
         // Get custom statuses, loop through them, and set the one at the matching index
         var dbList = await Program.Db.HashGetAllAsync("customStatusList");
+        
+        if (dbList.Length == 0)
+        {
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("There are no custom status messages in the list!"));
+            return;
+        }
+        
         var index = 1;
         foreach (var item in dbList)
         {
