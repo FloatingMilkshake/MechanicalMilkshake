@@ -116,6 +116,11 @@ public class Program
                     .HandleGuildMemberUpdated(GuildEvents.GuildMemberUpdated)
                     .HandleGuildDownloadCompleted(GuildEvents.GuildDownloadCompleted)
         );
+        clientBuilder.UseInteractivity(new InteractivityConfiguration
+        {
+            PollBehaviour = PollBehaviour.KeepEmojis,
+            Timeout = TimeSpan.FromSeconds(30)
+        });
         clientBuilder.UseCommands((_, extension) =>
         {
             TextCommandProcessor textCommandProcessor = new(new()
