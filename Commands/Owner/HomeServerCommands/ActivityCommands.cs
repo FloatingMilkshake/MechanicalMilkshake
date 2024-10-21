@@ -66,6 +66,12 @@ public class ActivityCmds
             return;
         }
         
+        if (id > dbList.Length || id < 1)
+        {
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("There's no activity with that ID!"));
+            return;
+        }
+        
         var index = 1;
         foreach (var item in dbList)
         {
@@ -74,7 +80,7 @@ public class ActivityCmds
                 index++;
                 continue;
             }
-
+            
             // Try to format stored activity as a DiscordActivity; on failure, show error & return
             var (success, activity) = ParseActivityType(new DiscordActivity { Name = item.Name }, item);
             if (!success)
