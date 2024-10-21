@@ -53,7 +53,8 @@ public class ActivityTasks
                 }
 
                 var chosenStatus = random.Next(0, customStatusList.Length);
-                if (!string.IsNullOrWhiteSpace(Program.Discord.CurrentUser.Presence.Activity.Name))
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                if (Program.Discord.CurrentUser.Presence is not null && !string.IsNullOrWhiteSpace(Program.Discord.CurrentUser.Presence.Activity.Name))
                     if (customStatusList.Length != 1)
                         while (customStatusList[chosenStatus].Name.ToString() ==
                                Program.Discord.CurrentUser.Presence.Activity.Name)
@@ -150,7 +151,8 @@ public class ActivityTasks
                         return;
                 }
 
-                if (string.IsNullOrWhiteSpace(Program.Discord.CurrentUser.Presence.Activity.Name))
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                if (Program.Discord.CurrentUser.Presence is null || string.IsNullOrWhiteSpace(Program.Discord.CurrentUser.Presence.Activity.Name))
                     await Program.Db.StringSetAsync("customStatusLastUpdated", $"{DateTime.Now}");
                 else
                     await Program.Db.StringSetAsync("customStatusLastUpdated",
