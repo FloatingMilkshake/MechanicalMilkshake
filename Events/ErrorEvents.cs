@@ -174,7 +174,7 @@ public class ErrorEvents
         string commandName;
         try
         {
-            commandName = e.Context.Command.Name;
+            commandName = e.Context.Command.FullName;
         }
         catch
         {
