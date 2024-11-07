@@ -112,9 +112,10 @@ public class UserInfoHelpers
         var basicUserInfoEmbed = new DiscordEmbedBuilder()
             .WithThumbnail($"{user.AvatarUrl}")
             .WithColor(Program.BotColor)
-            .AddField("ID", $"{user.Id}")
-            .AddField("Display Name", $"{user.GlobalName}")
-            .AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
+            .AddField("ID", $"{user.Id}");
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        if (user.GlobalName is not null) basicUserInfoEmbed.AddField("DisplayName", user.GlobalName);
+        basicUserInfoEmbed.AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
 
         var userBadges = GetBadges(user);
         if (userBadges != "") basicUserInfoEmbed.AddField("Badges", userBadges);
