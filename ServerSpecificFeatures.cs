@@ -219,7 +219,7 @@ public partial class ServerSpecificFeatures
             foreach (var user in usersToPing)
                 msg += $"<@{user}> ";
             
-            msg += $"```\nIt's @Patch Tuesday! Update discussion threads & changelist links are here: {windows10Url} (Windows 10) and {windows11Url} (Windows 11)\n```";
+            msg += $"```\nIt's <@&445773142233710594>! Update discussion threads & changelist links are here: {windows10Url} (Windows 10) and {windows11Url} (Windows 11)\n```";
             
             // Send message
             await e.Message.Channel.SendMessageAsync(msg);
