@@ -6,13 +6,15 @@ public class PackageUpdateTasks
     {
         while (true)
         {
+            if (Program.ConfigJson.Base.PackageUpdateCheckIntervalDays == 0) return;
+            
             var (_, _, checkResult) = await CheckPackageUpdatesAsync();
             var ownerMention =
                 Program.Discord.CurrentApplication.Owners.Aggregate("", (current, user) => current + user.Mention + " ");
             if (checkResult != "")
                 await Program.HomeChannel.SendMessageAsync($"{ownerMention.Trim()}\n{checkResult}");
                 
-            await Task.Delay(TimeSpan.FromDays(3));
+            await Task.Delay(TimeSpan.FromDays(Program.ConfigJson.Base.PackageUpdateCheckIntervalDays));
         }
         // ReSharper disable once FunctionNeverReturns
     }

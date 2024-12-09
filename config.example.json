@@ -13,6 +13,7 @@
       "",
       ""
     ],
+    "packageUpdateCheckIntervalDays": 0,
     "useServerSpecificFeatures": false,
     "uptimeKumaHeartbeatUrl": ""
   },
