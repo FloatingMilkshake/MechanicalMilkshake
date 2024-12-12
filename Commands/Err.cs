@@ -43,11 +43,7 @@ public class Err
         var cmd = $"ssh -o ConnectTimeout=30 {Program.ConfigJson.Err.SshUsername}@{Program.ConfigJson.Err.SshHost} \"$PSStyle.OutputRendering = \"PlainText\"; C:\\err.exe {code} 2>&1 | Out-String\"";
         var result = await EvalCommands.RunCommand(cmd);
         
-        var response = result.ExitCode switch
-        {
-            0 or 1 => $"```\n{result.Output}\n```",
-            _ => "Something went wrong! Please try again."
-        };
+        var response = GetErrorMessage(ctx.User.Id, result);
         
         var outMsg = new DiscordMessageBuilder();
         if (response.Length < 2000)
@@ -67,5 +63,20 @@ public class Err
         }
         
         await ctx.FollowupAsync(outMsg);
+    }
+    
+    private static string GetErrorMessage(ulong executingUserId, ShellCommandResponse result)
+    {
+        // Success; exit code 1 = msft error lookup tool couldn't find the error code
+        if (result.ExitCode is 0 or 1)
+            return $"```\n{result.Output}\n```";
+
+        // Failure; show more detail to bot owners
+        if (Program.Discord.CurrentApplication.Owners.Any(x => x.Id == executingUserId))
+            return $"Error lookup failed with exit code `{result.ExitCode}`: {(string.IsNullOrWhiteSpace(result.Output) ? "[no output]" : "\n```\n{result.Output}\n```")}";
+        
+        // Failure; show friendly/generic message to other users
+        return "Something went wrong! Please try again.";
+
     }
 }
