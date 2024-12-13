@@ -5,7 +5,7 @@ public class Kick
 {
     [Command("kick")]
     [Description("Kick a user. They can rejoin the server with an invite.")]
-    [RequirePermissions(DiscordPermissions.KickMembers)]
+    [RequirePermissions(DiscordPermission.KickMembers)]
     public static async Task KickCommand(SlashCommandContext ctx,
         [Parameter("user"), Description("The user to kick.")] DiscordUser userToKick,
         [Parameter("reason"), Description("The reason for the kick.")] [MinMaxLength(maxLength: 1500)]

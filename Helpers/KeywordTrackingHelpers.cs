@@ -131,7 +131,7 @@ public class KeywordTrackingHelpers
                 return;
             }
             
-            if (!message.Channel.PermissionsFor(member).HasPermission(DiscordPermissions.AccessChannels) || !message.Channel.PermissionsFor(member).HasPermission(DiscordPermissions.ReadMessageHistory))
+            if (!message.Channel.PermissionsFor(member).HasPermission(DiscordPermission.ViewChannel) || !message.Channel.PermissionsFor(member).HasPermission(DiscordPermission.ReadMessageHistory))
                 break;
 
             if (fieldValue.MatchWholeWord)

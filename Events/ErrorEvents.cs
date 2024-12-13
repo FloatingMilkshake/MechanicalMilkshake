@@ -160,7 +160,7 @@ public class ErrorEvents
             // Check if bot has perms to send error response and send if so
             if (e.Context.Channel
                 .PermissionsFor(await e.Context.Guild.GetMemberAsync(e.Context.Client.CurrentUser.Id))
-                .HasPermission(DiscordPermissions.SendMessages))
+                .HasPermission(DiscordPermission.SendMessages))
                 await e.Context.RespondAsync(embed.Build()).ConfigureAwait(false);
         }
         

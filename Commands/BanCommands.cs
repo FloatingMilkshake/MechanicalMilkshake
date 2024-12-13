@@ -5,7 +5,7 @@ public class BanCommands
 {
     [Command("ban")]
     [Description("Ban a user. They will not be able to rejoin unless unbanned.")]
-    [RequirePermissions(DiscordPermissions.BanMembers)]
+    [RequirePermissions(DiscordPermission.BanMembers)]
     public static async Task BanCommand(SlashCommandContext ctx,
         [Parameter("user"), Description("The user to ban.")] DiscordUser userToBan,
         [Parameter("reason"), Description("The reason for the ban.")] [MinMaxLength(maxLength: 1500)]
@@ -40,7 +40,7 @@ public class BanCommands
 
     [Command("unban")]
     [Description("Unban a user.")]
-    [RequirePermissions(DiscordPermissions.BanMembers)]
+    [RequirePermissions(DiscordPermission.BanMembers)]
     public static async Task UnbanCommand(SlashCommandContext ctx,
         [Parameter("user"), Description("The user to unban.")] DiscordUser userToUnban)
     {

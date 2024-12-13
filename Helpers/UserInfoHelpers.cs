@@ -15,31 +15,31 @@ public class UserInfoHelpers
         {
             notablePerms.Add("Server Owner");
         }
-        else if (member.Permissions.HasPermission(DiscordPermissions.Administrator))
+        else if (member.Permissions.HasPermission(DiscordPermission.Administrator))
         {
             notablePerms.Add("Administrator");
         }
         else
         {
-            if (member.Permissions.HasPermission(DiscordPermissions.ManageChannels))
+            if (member.Permissions.HasPermission(DiscordPermission.ManageChannels))
                 notablePerms.Add("Manage Channels");
-            if (member.Permissions.HasPermission(DiscordPermissions.ManageEmojis))
+            if (member.Permissions.HasPermission(DiscordPermission.ManageGuildExpressions))
                 notablePerms.Add("Manage Emojis and Stickers");
-            if (member.Permissions.HasPermission(DiscordPermissions.ManageEvents))
+            if (member.Permissions.HasPermission(DiscordPermission.ManageEvents))
                 notablePerms.Add("Manage Events");
-            if (member.Permissions.HasPermission(DiscordPermissions.ManageGuild))
+            if (member.Permissions.HasPermission(DiscordPermission.ManageGuild))
                 notablePerms.Add("Manage Server");
-            if (member.Permissions.HasPermission(DiscordPermissions.ManageMessages))
+            if (member.Permissions.HasPermission(DiscordPermission.ManageMessages))
                 notablePerms.Add("Manage Messages");
-            if (member.Permissions.HasPermission(DiscordPermissions.ManageNicknames))
+            if (member.Permissions.HasPermission(DiscordPermission.ManageNicknames))
                 notablePerms.Add("Manage Nicknames");
-            if (member.Permissions.HasPermission(DiscordPermissions.ManageRoles))
+            if (member.Permissions.HasPermission(DiscordPermission.ManageRoles))
                 notablePerms.Add("Manage Roles");
-            if (member.Permissions.HasPermission(DiscordPermissions.ManageThreads))
+            if (member.Permissions.HasPermission(DiscordPermission.ManageThreads))
                 notablePerms.Add(member.Guild.Features.Contains("COMMUNITY")
                     ? "Manage Threads and Posts"
                     : "Manage Threads");
-            if (member.Permissions.HasPermission(DiscordPermissions.ManageWebhooks))
+            if (member.Permissions.HasPermission(DiscordPermission.ManageWebhooks))
                 notablePerms.Add("Manage Webhooks");
         }
 

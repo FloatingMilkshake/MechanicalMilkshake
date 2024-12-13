@@ -2,7 +2,7 @@
 
 [Command("timeout")]
 [Description("Set or clear a timeout for a user.")]
-[RequirePermissions(DiscordPermissions.ModerateMembers)]
+[RequirePermissions(DiscordPermission.ModerateMembers)]
 [RequireGuild]
 public class TimeoutCmds
 {

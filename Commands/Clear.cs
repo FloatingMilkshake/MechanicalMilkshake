@@ -7,7 +7,7 @@ public partial class Clear
 
     [Command("clear")]
     [Description("Delete many messages from the current channel.")]
-    [RequirePermissions(DiscordPermissions.ManageMessages)]
+    [RequirePermissions(DiscordPermission.ManageMessages)]
     public static async Task ClearCommand(SlashCommandContext ctx,
         [Parameter("count"), Description("The number of messages to consider for deletion. Required if you don't use the 'up_to' argument.")]
         long count = 0,

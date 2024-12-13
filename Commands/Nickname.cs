@@ -5,7 +5,7 @@ public class Nickname
 {
     [Command("nickname")]
     [Description("Changes my nickname.")]
-    [RequirePermissions(DiscordPermissions.ChangeNickname, DiscordPermissions.ManageNicknames)]
+    [RequirePermissions(DiscordPermission.ChangeNickname, DiscordPermission.ManageNicknames)]
     public static async Task NicknameCommand(SlashCommandContext ctx,
         [Parameter("nickname"), Description("What to change my nickname to. Leave this blank to clear it.")] [MinMaxLength(maxLength: 32)]
         string nickname = null)
