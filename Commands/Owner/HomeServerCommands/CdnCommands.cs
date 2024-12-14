@@ -6,7 +6,7 @@ public partial class Cdn
 {
     [Command("upload")]
     [Description("Upload a file to Amazon S3-compatible cloud storage.")]
-    public static async Task Upload(SlashCommandContext ctx,
+    public static async Task Upload(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("name"), Description("The name for the uploaded file.")]
         string name = "preserve",
         [Parameter("link"), Description("A link to a file to upload.")]
@@ -111,7 +111,7 @@ public partial class Cdn
 
     [Command("delete")]
     [Description("Delete a file from Amazon S3-compatible cloud storage.")]
-    public static async Task DeleteUpload(SlashCommandContext ctx,
+    public static async Task DeleteUpload(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("file"), Description("The file to delete.")]
         string fileToDelete)
     {
@@ -185,7 +185,7 @@ public partial class Cdn
 
     [Command("check")]
     [Description("Check whether a file exists in your S3 bucket. Uses the S3 API to avoid caching.")]
-    public static async Task CdnPreview(SlashCommandContext ctx,
+    public static async Task CdnPreview(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("name"), Description("The name (or link) of the file to check.")]
         string name)
     {

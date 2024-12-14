@@ -4,7 +4,9 @@ public class CharacterCount
 {
     [Command("charactercount")]
     [Description("Counts the characters in a message.")]
-    public static async Task CharacterCountCommand(SlashCommandContext ctx,
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
+    public static async Task CharacterCountCommand(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("message"), Description("The message to count the characters of.")]
         string chars)
     {

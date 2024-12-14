@@ -6,13 +6,32 @@ public class Reminder
     [Command("Remind Me About This")]
     [AllowedProcessors(typeof(MessageCommandProcessor))]
     [SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu)]
-    public static async Task ContextReminder(CommandContext ctx, DiscordMessage targetMessage)
-    {
-        await ctx.RespondAsync($"OK {ctx.User.Mention}, I can remind you about [that message](<{targetMessage.JumpLink}>). When would you like to be reminded?");
-        
-        var msg = await ctx.GetResponseAsync();
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
 
-        var nextMsg = await msg.Channel.GetNextMessageAsync(m => m.Author.Id == ctx.User.Id);
+    public static async Task ContextReminder(MessageCommandContext ctx, DiscordMessage targetMessage)
+    {
+        DiscordChannel responseChannel;
+        if (ctx.Interaction.Guild is null)
+        {
+            try
+            {
+                responseChannel = (await ctx.User.SendMessageAsync($"OK {ctx.User.Mention}, I can remind you about [that message](<{targetMessage.JumpLink}>). When would you like to be reminded?")).Channel;
+                await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent("Check your DMs!").AsEphemeral());
+            }
+            catch
+            {
+                await ctx.RespondAsync("Sorry, that didn't work! Try using `/reminder set` instead.");
+                return;
+            }
+        }
+        else
+        {
+            await ctx.RespondAsync($"OK {ctx.User.Mention}, I can remind you about [that message](<{targetMessage.JumpLink}>). When would you like to be reminded?");
+            responseChannel = ctx.Channel;
+        }
+        
+        var nextMsg = await responseChannel.GetNextMessageAsync(m => m.Author.Id == ctx.User.Id);
 
         DateTime time;
         try
@@ -44,7 +63,7 @@ public class Reminder
             ReminderTime = time,
             ReminderId = reminderId,
             ReminderText = "You set this reminder on a message with the \"Remind Me About This\" command.",
-            GuildId = ctx.Guild.Id.ToString()
+            GuildId = ctx.Guild is null ? "@me" : ctx.Guild.Id.ToString()
         };
         
         // Save reminder to db

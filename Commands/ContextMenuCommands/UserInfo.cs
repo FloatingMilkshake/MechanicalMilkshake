@@ -5,6 +5,8 @@ public class UserInfo
     [Command("User Info")]
     [AllowedProcessors(typeof(UserCommandProcessor))]
     [SlashCommandTypes(DiscordApplicationCommandType.UserContextMenu)]
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
     public static async Task ContextUserInfo(CommandContext ctx, DiscordUser targetUser)
     {
         DiscordEmbed userInfoEmbed;

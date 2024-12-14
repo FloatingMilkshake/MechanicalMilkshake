@@ -9,6 +9,7 @@ global using DSharpPlus.Commands.Processors.TextCommands.Parsing;
 global using DSharpPlus.Commands.Processors.MessageCommands;
 global using DSharpPlus.Commands.Processors.SlashCommands;
 global using DSharpPlus.Commands.Processors.SlashCommands.ArgumentModifiers;
+global using DSharpPlus.Commands.Processors.SlashCommands.Metadata;
 global using DSharpPlus.Commands.Processors.UserCommands;
 global using DSharpPlus.Commands.Trees;
 global using DSharpPlus.Commands.Trees.Metadata;

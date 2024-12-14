@@ -2,12 +2,14 @@
 
 [Command("track")]
 [Description("Track or untrack keywords.")]
+[InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
+[InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
 public partial class Track
 {
     [Command("add")]
     [Description("Track a new keyword.")]
     [RequireGuild]
-    public static async Task TrackAdd(SlashCommandContext ctx,
+    public static async Task TrackAdd(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("keyword"), Description("The keyword or phrase to track.")]
         string keyword,
         [Parameter("match_whole_word"), Description("Whether you want to match the keyword only when it is a whole word. Defaults to False.")]
@@ -199,7 +201,7 @@ public partial class Track
     
     [Command("edit")]
     [Description("Edit a tracked keyword.")]
-    public static async Task TrackEdit(SlashCommandContext ctx,
+    public static async Task TrackEdit(MechanicalMilkshake.SlashCommandContext ctx,
         [SlashAutoCompleteProvider(typeof(TrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to edit.")]
         string keyword,
         [Parameter("new_keyword"), Description("The new keyword or phrase to use instead.")]
@@ -413,7 +415,7 @@ public partial class Track
 
     [Command("list")]
     [Description("List tracked keywords.")]
-    public static async Task TrackList(SlashCommandContext ctx)
+    public static async Task TrackList(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(true);
 
@@ -449,7 +451,7 @@ public partial class Track
 
     [Command("details")]
     [Description("Show details about a tracked keyword.")]
-    public static async Task TrackDetails(SlashCommandContext ctx,
+    public static async Task TrackDetails(MechanicalMilkshake.SlashCommandContext ctx,
         [SlashAutoCompleteProvider(typeof(TrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to show details for.")] string keyword)
     {
         await ctx.DeferResponseAsync(true);
@@ -487,7 +489,7 @@ public partial class Track
 
     [Command("remove")]
     [Description("Untrack a keyword.")]
-    public static async Task TrackRemove(SlashCommandContext ctx,
+    public static async Task TrackRemove(MechanicalMilkshake.SlashCommandContext ctx,
         [SlashAutoCompleteProvider(typeof(TrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to untrack.")] string keyword)
     {
         await ctx.DeferResponseAsync(true);

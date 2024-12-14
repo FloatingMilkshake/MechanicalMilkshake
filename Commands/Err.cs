@@ -4,7 +4,9 @@ public class Err
 {
     [Command("err")]
     [Description("Look up a Microsoft error code with the Microsoft Error Lookup Tool.")]
-    public static async Task ErrCmd(SlashCommandContext ctx, [Parameter("code"), Description("The error code to look up, in any format.")] string code)
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
+    public static async Task ErrCmd(MechanicalMilkshake.SlashCommandContext ctx, [Parameter("code"), Description("The error code to look up, in any format.")] string code)
     {
         // I know this is cursed, I don't really care.
         // I run the bot on Linux and don't want to use Wine to run the tool.

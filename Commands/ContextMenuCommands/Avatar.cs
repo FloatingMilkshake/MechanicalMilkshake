@@ -5,6 +5,8 @@ public class Avatar
     [Command("Avatar")]
     [AllowedProcessors(typeof(UserCommandProcessor))]
     [SlashCommandTypes(DiscordApplicationCommandType.UserContextMenu)]
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
     public static async Task ContextAvatar(CommandContext ctx, DiscordUser targetUser)
     {
         // Buttons shown to user to select which avatar to get if the target user has a server avatar set

@@ -4,7 +4,9 @@ public class Avatar
 {
     [Command("avatar")]
     [Description("Returns the avatar of the provided user. Defaults to yourself if no user is provided.")]
-    public static async Task AvatarCommand(SlashCommandContext ctx,
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
+    public static async Task AvatarCommand(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("user"), Description("The user whose avatar to get.")]
         DiscordUser user = null)
     {
@@ -33,6 +35,7 @@ public class Avatar
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent(
                     $"You requested the avatar for {user.Mention}. Please choose one of the options below.")
-                .AddComponents(serverAvatarButton, userAvatarButton));
+                .AddComponents(serverAvatarButton, userAvatarButton)
+                .AsEphemeral(ctx.Interaction.Context is not DiscordInteractionContextType.Guild));
     }
 }

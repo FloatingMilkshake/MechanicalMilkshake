@@ -2,16 +2,24 @@
 
 [Command("emoji")]
 [Description("Commands for working with emoji.")]
+[InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+[InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
 public partial class Emoji
 {
     private static readonly Regex EmojiRegex = EmojiPattern();
     
     [Command("get")]
     [Description("Get all emoji from a server. The bot must be in the server for this to work.")]
-    public static async Task GetEmoji(SlashCommandContext ctx,
+    public static async Task GetEmoji(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("server"), Description("The ID of the server to get emoji from.")] string server,
         [Parameter("zip"), Description("Whether to include a zip file containing all of the emoji. Defaults to True.")] bool zip = true)
     {
+        if (ctx.Interaction.Guild is null)
+        {
+            await ctx.RespondAsync("This command can only be used in a server I have been added to! Please add me to this server and try again, or ask a server admin for help.");
+            return;
+        }
+        
         // Defer interaction response
         await ctx.DeferResponseAsync();
 
@@ -147,7 +155,9 @@ public partial class Emoji
 
     [Command("enlarge")]
     [Description("Enlarge an emoji! Only works for custom emoji.")]
-    public static async Task EnlargeEmoji(SlashCommandContext ctx, [Parameter("emoji"), Description("The emoji to enlarge.")] string emoji)
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
+    public static async Task EnlargeEmoji(MechanicalMilkshake.SlashCommandContext ctx, [Parameter("emoji"), Description("The emoji to enlarge.")] string emoji)
     {
         await ctx.DeferResponseAsync();
 

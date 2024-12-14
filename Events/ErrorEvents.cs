@@ -6,7 +6,7 @@ public class ErrorEvents
     {
         switch (e.Context)
         {
-            case SlashCommandContext:
+            case MechanicalMilkshake.SlashCommandContext:
                 await SlashCommandErrored(ext, e);
                 break;
             case TextCommandContext:
@@ -80,7 +80,7 @@ public class ErrorEvents
                                    $" Need help? Contact a bot owner (see {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list).";
                 try
                 {
-                    await e.Context.As<SlashCommandContext>().RespondAsync(noDmResponse, true);
+                    await e.Context.As<MechanicalMilkshake.SlashCommandContext>().RespondAsync(noDmResponse, true);
                 }
                 catch
                 {
@@ -96,7 +96,7 @@ public class ErrorEvents
                                         $" (see {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list).";
                 try
                 {
-                    await e.Context.As<SlashCommandContext>().RespondAsync(cmdFailedResponse, true);
+                    await e.Context.As<MechanicalMilkshake.SlashCommandContext>().RespondAsync(cmdFailedResponse, true);
                 }
                 catch
                 {
@@ -180,7 +180,7 @@ public class ErrorEvents
         {
             try
             {
-                commandName = e.Context.As<SlashCommandContext>().Interaction.Data.Name;
+                commandName = e.Context.As<MechanicalMilkshake.SlashCommandContext>().Interaction.Data.Name;
             }
             catch
             {
@@ -201,7 +201,7 @@ public class ErrorEvents
         if (respond)
         {
             // For /cdn and /link, respond directly to the interaction with the exception embed
-            if (e.Context.Command?.Name is "cdn" or "link" && e.Context is SlashCommandContext)
+            if (e.Context.Command?.Name is "cdn" or "link" && e.Context is MechanicalMilkshake.SlashCommandContext)
             {
                 // Try to respond to the interaction
                 try
@@ -233,7 +233,7 @@ public class ErrorEvents
             }
             
             // We need to respond differently based on the type of command this is.
-            if (e.Context is SlashCommandContext)
+            if (e.Context is MechanicalMilkshake.SlashCommandContext)
             {
                 // Try to respond to the interaction
                 var failedToRespond = false;
@@ -273,7 +273,7 @@ public class ErrorEvents
                 await e.Context.As<TextCommandContext>().Message.RespondAsync(friendlyResponse);
             }
             // else { ??? }
-            // Currently SlashCommandContext and TextCommandContext are the only derived classes of CommandContext
+            // Currently MechanicalMilkshake.SlashCommandContext and TextCommandContext are the only derived classes of CommandContext
         }
         
         // Send the exception embed to the bot's home channel

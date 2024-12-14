@@ -2,11 +2,13 @@
 
 [Command("reminder")]
 [Description("Set, modify and delete reminders.")]
+[InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)] // TODO: this one needs to be tested
+[InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
 public partial class ReminderCmds
 {
     [Command("set")]
     [Description("Set a reminder.")]
-    public static async Task SetReminder(SlashCommandContext ctx,
+    public static async Task SetReminder(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("time"), Description("When do you want to be reminded?")]
         string time,
         [Parameter("text"), Description("What should the reminder say?")] [MinMaxLength(maxLength: 1000)]
@@ -117,7 +119,7 @@ public partial class ReminderCmds
 
     [Command("list")]
     [Description("List your reminders.")]
-    public static async Task ListReminders(SlashCommandContext ctx)
+    public static async Task ListReminders(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(true);
 
@@ -228,7 +230,7 @@ public partial class ReminderCmds
 
     [Command("delete")]
     [Description("Delete a reminder using its unique ID.")]
-    public static async Task DeleteReminder(SlashCommandContext ctx)
+    public static async Task DeleteReminder(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(true);
 
@@ -270,7 +272,7 @@ public partial class ReminderCmds
 
     [Command("modify")]
     [Description("Modify an existing reminder using its unique ID.")]
-    public static async Task ModifyReminder(SlashCommandContext ctx,
+    public static async Task ModifyReminder(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("reminder"), Description("The ID of the reminder to modify. You can get this with /reminder list.")]
         long reminderToModify,
         [Parameter("time"), Description("When do you want to be reminded? Leave this blank if you don't want to change it.")]
@@ -374,7 +376,7 @@ public partial class ReminderCmds
 
     [Command("pushback")]
     [Description("Push back a reminder that just went off.")]
-    public static async Task PushBackReminder(SlashCommandContext ctx,
+    public static async Task PushBackReminder(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("message"), Description("The message for the reminder to push back. Accepts message IDs.")]
         string msgId,
         [Parameter("time"), Description("When do you want to be reminded?")]
@@ -512,7 +514,7 @@ public partial class ReminderCmds
 
     [Command("show")]
     [Description("Show the details for a reminder.")]
-    public static async Task ReminderShow(SlashCommandContext ctx)
+    public static async Task ReminderShow(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(true);
 

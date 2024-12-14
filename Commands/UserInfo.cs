@@ -3,8 +3,10 @@
 public class UserInfo
 {
     [Command("userinfo")]
-    [Description("Returns information about the provided server member.")]
-    public static async Task UserInfoCommand(SlashCommandContext ctx,
+    [Description("Returns information about the provided user.")]
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
+    public static async Task UserInfoCommand(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("user"), Description("The user to look up information for. Defaults to yourself.")]
         DiscordUser user = null)
     {

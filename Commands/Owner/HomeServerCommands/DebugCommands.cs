@@ -7,7 +7,7 @@ public class DebugCmds
 {
     [Command("timecheck")]
     [Description("Return the current time on the machine the bot is running on.")]
-    public static async Task TimeCheck(SlashCommandContext ctx)
+    public static async Task TimeCheck(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
         {
@@ -18,7 +18,7 @@ public class DebugCmds
 
     [Command("shutdown")]
     [Description("Shut down the bot.")]
-    public static async Task Shutdown(SlashCommandContext ctx)
+    public static async Task Shutdown(MechanicalMilkshake.SlashCommandContext ctx)
     {
         DiscordButtonComponent shutdownButton = new(DiscordButtonStyle.Danger, "shutdown-button", "Shut Down");
         DiscordButtonComponent cancelButton = new(DiscordButtonStyle.Primary, "shutdown-cancel-button", "Cancel");
@@ -30,7 +30,7 @@ public class DebugCmds
 
     [Command("restart")]
     [Description("Restart the bot.")]
-    public static async Task Restart(SlashCommandContext ctx)
+    public static async Task Restart(MechanicalMilkshake.SlashCommandContext ctx)
     {
         try
         {
@@ -58,7 +58,7 @@ public class DebugCmds
 
     [Command("owners")]
     [Description("Show the bot's owners.")]
-    public static async Task Owners(SlashCommandContext ctx)
+    public static async Task Owners(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
 
@@ -90,7 +90,7 @@ public class DebugCmds
 
     [Command("guilds")]
     [Description("Show the guilds that the bot is in.")]
-    public static async Task Guilds(SlashCommandContext ctx)
+    public static async Task Guilds(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
 
@@ -108,7 +108,7 @@ public class DebugCmds
 
     [Command("humandateparser")]
     [Description("See what happens when HumanDateParser tries to parse a date.")]
-    public static async Task HumanDateParserCmd(SlashCommandContext ctx,
+    public static async Task HumanDateParserCmd(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("date"), Description("The date (or time) for HumanDateParser to parse.")]
         string date)
     {
@@ -135,7 +135,7 @@ public class DebugCmds
 
     [Command("checks")]
     [Description("Run the bot's timed checks manually.")]
-    public static async Task DebugChecks(SlashCommandContext ctx,
+    public static async Task DebugChecks(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("checks"), Description("The checks that should be run.")]
         [SlashChoiceProvider(typeof(ChecksChoiceProvider))]
         string checksToRun)
@@ -218,7 +218,7 @@ public class DebugCmds
 
     [Command("usage")]
     [Description("Show which commands are used the most.")]
-    public static async Task Usage(SlashCommandContext ctx)
+    public static async Task Usage(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
 
@@ -237,7 +237,7 @@ public class DebugCmds
 
     [Command("throw")]
     [Description("Intentionally throw an exception for debugging.")]
-    public static async Task Error(SlashCommandContext ctx,
+    public static async Task Error(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("exception"), Description("The type of exception to throw.")]
         [SlashChoiceProvider(typeof(TestExceptionChoiceProvider))]
         string exceptionType)

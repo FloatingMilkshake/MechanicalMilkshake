@@ -102,17 +102,8 @@ public class ReminderTasks
                         break;
                     }
 
-                // no mutual server found
-                if (mutualServer == default)
-                {
-                    // mutual server could not be found, so member cannot be fetched.
-                    // reminder can still be sent in channel, but not privately!
-                }
-                else
-                {
-                    // mutual server found; get member
+                if (mutualServer != default)
                     targetMember = await mutualServer.GetMemberAsync(user.Id);
-                }
             }
             
             // SEND REMINDER
@@ -125,7 +116,7 @@ public class ReminderTasks
                 try
                 {
                     // send dm to user
-                    var msg = await targetMember.SendMessageAsync(
+                    var msg = await user.SendMessageAsync(
                         $"<@{reminderData.UserId}>, I have a reminder for you:",
                         embed);
 
@@ -151,7 +142,7 @@ public class ReminderTasks
                     {
                         var reminderChannel = await Program.Discord.GetChannelAsync(reminderData.ChannelId);
                         var msgContent =
-                            $"Hi {targetMember.Mention}! I have a reminder for you. I tried to DM it to you, but either your DMs are off or I am blocked." +
+                            $"Hi {user.Mention}! I have a reminder for you. I tried to DM it to you, but either your DMs are off or I am blocked." +
                             " Please make sure that I can DM you.\n\n**Your reminder will not be sent automatically following this alert.**" +
                             $" You can use the `/reminder` commands to show, modify, or delete it.";
 
@@ -215,7 +206,7 @@ public class ReminderTasks
                     // Try to DM user instead.
 
                     // send dm
-                    var msg = await targetMember.SendMessageAsync(
+                    var msg = await user.SendMessageAsync(
                         $"<@{reminderData.UserId}>, I have a reminder for you:",
                         embed);
 

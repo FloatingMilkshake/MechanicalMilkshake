@@ -4,11 +4,13 @@
 [Description("Lock or unlock a channel.")]
 [RequireGuild]
 [RequirePermissions(DiscordPermission.ManageChannels, DiscordPermission.ModerateMembers)]
+[InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
+[InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
 public class Lockdown
 {
     [Command("lock")]
     [Description("Lock a channel to prevent members from sending messages.")]
-    public static async Task Lock(SlashCommandContext ctx)
+    public static async Task Lock(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(true);
 
@@ -77,7 +79,7 @@ public class Lockdown
 
     [Command("unlock")]
     [Description("Unlock a locked channel to allow members to send messages again.")]
-    public static async Task Unlock(SlashCommandContext ctx)
+    public static async Task Unlock(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(true);
 

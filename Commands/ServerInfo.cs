@@ -4,8 +4,9 @@ public class ServerInfo
 {
     [Command("serverinfo")]
     [Description("Look up information about a server.")]
-    [RequireGuild]
-    public static async Task ServerInfoCommand(SlashCommandContext ctx,
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)] // TODO: test in a guild w/ user-installed i.e. bot is not in guild
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
+    public static async Task ServerInfoCommand(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("server"), Description("The ID of the server to look up. Defaults to the current server if you're not using this in DMs.")]
         string guildId = default)
     {

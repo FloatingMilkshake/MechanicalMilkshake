@@ -2,11 +2,13 @@
 
 [Command("random")]
 [Description("Get a random number, fact, or picture of a dog or cat.")]
+[InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+[InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
 public partial class RandomCmds
 {
     [Command("number")]
     [Description("Generates a random number between two that you specify.")]
-    public static async Task RandomNumber(SlashCommandContext ctx,
+    public static async Task RandomNumber(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("min"), Description("The minimum number to choose between. Defaults to 1.")]
         long min = 1,
         [Parameter("max"), Description("The maximum number to choose between. Defaults to 10.")]
@@ -28,7 +30,7 @@ public partial class RandomCmds
 
     [Command("fact")]
     [Description("Get a random fact.")]
-    public static async Task RandomFact(SlashCommandContext ctx)
+    public static async Task RandomFact(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
         var fact = JsonConvert.DeserializeObject<JObject>(await Program.HttpClient.GetStringAsync("https://uselessfacts.jsph.pl/random.md?language=en"));
@@ -37,7 +39,7 @@ public partial class RandomCmds
 
     [Command("cat")]
     [Description("Get a random cat picture from the internet.")]
-    public static async Task RandomCat(SlashCommandContext ctx)
+    public static async Task RandomCat(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
         string data;
@@ -62,7 +64,7 @@ public partial class RandomCmds
 
     [Command("dog")]
     [Description("Get a random dog picture from the internet.")]
-    public static async Task RandomDog(SlashCommandContext ctx)
+    public static async Task RandomDog(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
         string data;

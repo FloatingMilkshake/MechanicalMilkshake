@@ -26,7 +26,7 @@ public class Program
     public static DiscordGuild HomeServer;
     public static List<DiscordApplicationCommand> ApplicationCommands;
     public static EventId BotEventId { get; } = new(1000, "MechanicalMilkshake");
-#if DEBUG
+#if !DEBUG // TODO: reverse this
     private static readonly ConnectionMultiplexer Redis = ConnectionMultiplexer.Connect("localhost:6379");
 #else
     private static readonly ConnectionMultiplexer Redis = ConnectionMultiplexer.Connect("redis");
@@ -89,7 +89,7 @@ public class Program
             Environment.Exit(1);
         }
         
-        var clientBuilder = DiscordClientBuilder.CreateDefault(ConfigJson.Base.BotToken, DiscordIntents.All);
+        var clientBuilder = DiscordClientBuilder.CreateDefault(ConfigJson.Base.BotToken, DiscordIntents.All.RemoveIntent(DiscordIntents.GuildPresences));
 #if DEBUG
         clientBuilder.SetLogLevel(LogLevel.Debug);
 #else
@@ -171,8 +171,8 @@ public class Program
                 t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") &&
                 !t.IsNested);
             
-            extension.AddCommands(ownerSlashCommandClasses, [HomeServer.Id, 1007457740655968327]);
-            extension.AddCommands<ServerSpecificFeatures.RoleCommands>([HomeServer.Id, 984903591816990730]);
+            extension.AddCommands(ownerSlashCommandClasses, [HomeServer.Id]);
+            extension.AddCommands<ServerSpecificFeatures.RoleCommands>([HomeServer.Id]);
 
             Discord.Logger.LogInformation(BotEventId, "Slash commands registered globally");
 #endif

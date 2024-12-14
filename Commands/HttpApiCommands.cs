@@ -12,7 +12,9 @@ public class HttpApiCommands
 
     [Command("httpcat")]
     [Description("Get an http.cat image!")]
-    public static async Task HttpCatCommand(SlashCommandContext ctx,
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
+    public static async Task HttpCatCommand(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("code"), Description("The code to get the http.cat image for.")] [MinMaxValue(100, 599)]
         int? code = null)
     {
@@ -23,7 +25,9 @@ public class HttpApiCommands
 
     [Command("httpdog")]
     [Description("Get an http.dog image!")]
-    public static async Task HttpDogCommand(SlashCommandContext ctx,
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
+    public static async Task HttpDogCommand(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("code"), Description("The code to get the http.dog image for.")] [MinMaxValue(100, 599)]
         int? code = null)
     {

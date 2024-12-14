@@ -4,7 +4,9 @@ public partial class InviteInfo
 {
     [Command("inviteinfo")]
     [Description("Return information about a Discord invite.")]
-    public static async Task InviteInfoCommand(SlashCommandContext ctx,
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
+    public static async Task InviteInfoCommand(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("invite"), Description("The invite to return information about. Accepts an invite link or code.")]
         string targetInvite)
     {

@@ -6,7 +6,7 @@ public class ActivityCmds
 {
     [Command("add")]
     [Description("Add a custom status message to the list that the bot cycles through, or modify an existing entry.")]
-    public static async Task AddActivity(SlashCommandContext ctx,
+    public static async Task AddActivity(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("type"), Description("The type of status (playing, watching, etc).")]
         [SlashChoiceProvider(typeof(ActivityTypeChoiceProvider))]
         string type,
@@ -23,7 +23,7 @@ public class ActivityCmds
 
     [Command("list")]
     [Description("List the custom status messages that the bot cycles through.")]
-    public static async Task ListActivity(SlashCommandContext ctx)
+    public static async Task ListActivity(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
 
@@ -51,7 +51,7 @@ public class ActivityCmds
 
     [Command("choose")]
     [Description("Choose a custom status message from the list to set now.")]
-    public static async Task ChooseActvity(SlashCommandContext ctx,
+    public static async Task ChooseActvity(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("id"), Description("The ID number of the status to set. You can get this with /activity list.")]
         long id)
     {
@@ -102,7 +102,7 @@ public class ActivityCmds
 
     [Command("remove")]
     [Description("Remove a custom status message from the list that the bot cycles through.")]
-    public static async Task RemoveActivity(SlashCommandContext ctx,
+    public static async Task RemoveActivity(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("id"), Description("The ID number of the status to remove. You can get this with /activity list.")]
         long id)
     {
@@ -141,7 +141,7 @@ public class ActivityCmds
 
     [Command("randomize")]
     [Description("Choose a random custom status message from the list.")]
-    public static async Task RandomizeActivity(SlashCommandContext ctx)
+    public static async Task RandomizeActivity(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
 
@@ -182,7 +182,7 @@ public class ActivityCmds
 
     [Command("set")]
     [Description("Set the bot's activity. This overrides the list of status messages to cycle through.")]
-    private static async Task SetActivity(SlashCommandContext ctx,
+    private static async Task SetActivity(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("status"), Description("The bot's online status.")]
         [SlashChoiceProvider(typeof(OnlineStatusChoiceProvider))]
         string status,
@@ -245,14 +245,14 @@ public class ActivityCmds
 
     [Command("reset")]
     [Description("Reset the bot's activity; it will cycle through the list of custom status messages.")]
-    public static async Task ResetActivity(SlashCommandContext ctx)
+    public static async Task ResetActivity(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await SetActivity(ctx, "online");
     }
 
     [Command("disable")]
     [Description("Clear the bot's status and stop it from cycling through the list.")]
-    public static async Task DisableActivity(SlashCommandContext ctx)
+    public static async Task DisableActivity(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
 
@@ -268,7 +268,7 @@ public class ActivityCmds
 
     [Command("enable")]
     [Description("Allow the bot to cycle through its list of custom status messages or use one set with /activity set.")]
-    public static async Task EnableActivity(SlashCommandContext ctx)
+    public static async Task EnableActivity(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
 

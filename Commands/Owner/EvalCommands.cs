@@ -14,7 +14,10 @@ public class EvalCommands
     // https://github.com/Erisa/Lykos/blob/822e9c5/src/Modules/Helpers.cs#L36-L82
     [Command("runcommand")]
     [Description("[Authorized users only] Run a shell command on the machine the bot's running on!")]
-    public static async Task RunCommand(SlashCommandContext ctx,
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
+
+    public static async Task RunCommand(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("command"), Description("The command to run, including any arguments.")]
         string command)
     {
@@ -99,7 +102,10 @@ public class EvalCommands
     // https://github.com/DSharpPlus/DSharpPlus/blob/3a50fb3/DSharpPlus.Test/TestBotEvalCommands.cs
     [Command("eval")]
     [Description("[Authorized users only] Evaluate C# code!")]
-    public static async Task Eval(SlashCommandContext ctx, [Parameter("code"), Description("The code to evaluate.")] string code)
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
+
+    public static async Task Eval(MechanicalMilkshake.SlashCommandContext ctx, [Parameter("code"), Description("The code to evaluate.")] string code)
     {
         await ctx.DeferResponseAsync();
 

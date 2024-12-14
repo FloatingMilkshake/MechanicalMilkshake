@@ -4,14 +4,16 @@ public class Ping
 {
     [Command("ping")]
     [Description("Pong!")]
-    public static async Task PingCommand(SlashCommandContext ctx)
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
+    public static async Task PingCommand(MechanicalMilkshake.SlashCommandContext ctx)
     {
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent("Ping!"));
         var timeNow = DateTime.UtcNow;
 
         var websocketPing = ctx.Client.GetConnectionLatency(
             ctx.Channel.IsPrivate
-                ? ctx.Guild!.Id
+                ? ctx.Guild?.Id ?? Program.HomeServer.Id
                 : Program.HomeServer.Id
             ).TotalMilliseconds;
         var msg = await ctx.Interaction.GetOriginalResponseAsync();

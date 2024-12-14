@@ -6,7 +6,9 @@ public class Feedback
 {
     [Command("feedback")]
     [Description("Have feedback about the bot? Submit it here!")]
-    public static async Task FeedbackCommand(SlashCommandContext ctx,
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
+    public static async Task FeedbackCommand(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("message"), Description("Your feedback message.")] [MinMaxLength(maxLength: 4000)]
         string feedbackMsg)
     {
@@ -40,7 +42,8 @@ public class Feedback
             Description = feedbackMsg
         };
         embed.AddField("Sent by", $"{UserInfoHelpers.GetFullUsername(ctx.User)} (`{ctx.User.Id}`)");
-        embed.AddField("Sent from", $"\"{ctx.Guild.Name}\" (`{ctx.Guild.Id}`)");
+        if (ctx.Guild is not null)
+            embed.AddField("Sent from", $"\"{ctx.Guild.Name}\" (`{ctx.Guild.Id}`)");
         await feedbackChannel.SendMessageAsync(embed);
     }
 

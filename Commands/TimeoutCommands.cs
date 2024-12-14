@@ -4,11 +4,13 @@
 [Description("Set or clear a timeout for a user.")]
 [RequirePermissions(DiscordPermission.ModerateMembers)]
 [RequireGuild]
+[InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
+[InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
 public class TimeoutCmds
 {
     [Command("set")]
     [Description("Time out a member.")]
-    public static async Task SetTimeout(SlashCommandContext ctx,
+    public static async Task SetTimeout(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("member"), Description("The member to time out.")]
         DiscordUser user,
         [Parameter("duration"), Description("How long the timeout should last. Maximum value is 28 days due to Discord limitations.")]
@@ -88,7 +90,7 @@ public class TimeoutCmds
 
     [Command("clear")]
     [Description("Clear a timeout before it's set to expire.")]
-    public static async Task ClearTimeout(SlashCommandContext ctx,
+    public static async Task ClearTimeout(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("member"), Description("The member whose timeout to clear.")]
         DiscordUser user)
     {

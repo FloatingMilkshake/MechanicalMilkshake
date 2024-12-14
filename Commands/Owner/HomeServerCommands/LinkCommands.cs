@@ -6,7 +6,7 @@ public class LinkCommands
 {
     [Command("set")]
     [Description("Set or update a short link.")]
-    public static async Task SetWorkerLink(SlashCommandContext ctx,
+    public static async Task SetWorkerLink(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("key"), Description("Set a custom key for the short link.")]
         string key,
         [Parameter("url"), Description("The URL the short link should point to.")]
@@ -83,7 +83,7 @@ public class LinkCommands
 
     [Command("delete")]
     [Description("Delete a short link.")]
-    public static async Task DeleteWorkerLink(SlashCommandContext ctx,
+    public static async Task DeleteWorkerLink(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("link"), Description("The key or URL of the short link to delete.")]
         string url)
     {
@@ -145,7 +145,7 @@ public class LinkCommands
 
     [Command("list")]
     [Description("List all short links.")]
-    public static async Task ListWorkerLinks(SlashCommandContext ctx,
+    public static async Task ListWorkerLinks(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("match_keys"), Description("Optionally filter by key.")] string keyFilter = "",
         [Parameter("match_values"), Description("Optionally filter by value.")] string valueFilter = "",
         [Parameter("exact_match"), Description("Whether to match filters exactly. Defaults to false.")] bool exactMatch = false)

@@ -6,7 +6,9 @@ public class BanCommands
     [Command("ban")]
     [Description("Ban a user. They will not be able to rejoin unless unbanned.")]
     [RequirePermissions(DiscordPermission.BanMembers)]
-    public static async Task BanCommand(SlashCommandContext ctx,
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
+    public static async Task BanCommand(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("user"), Description("The user to ban.")] DiscordUser userToBan,
         [Parameter("reason"), Description("The reason for the ban.")] [MinMaxLength(maxLength: 1500)]
         string reason = "No reason provided.")
@@ -41,7 +43,9 @@ public class BanCommands
     [Command("unban")]
     [Description("Unban a user.")]
     [RequirePermissions(DiscordPermission.BanMembers)]
-    public static async Task UnbanCommand(SlashCommandContext ctx,
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
+    public static async Task UnbanCommand(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("user"), Description("The user to unban.")] DiscordUser userToUnban)
     {
         await ctx.DeferResponseAsync(true);
