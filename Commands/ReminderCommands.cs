@@ -174,7 +174,7 @@ public partial class ReminderCmds
             if (guildName != "DMs") reminderLocation += $" <#{reminder.ChannelId}>";
 
             output += $"`{reminder.ReminderId}`:\n"
-                      + $"> {reminderText}\n"
+                      + (string.IsNullOrWhiteSpace(reminderText) ? "" : $"> {reminderText}\n")
                       + (reminder.ReminderTime is null
                           ? reminder.IsPrivate
                               ? $"[Set <t:{setTime}:R>]({reminderLink}). This reminder will not be sent automatically."
