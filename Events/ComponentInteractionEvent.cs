@@ -401,14 +401,22 @@ public partial class ComponentInteractionEvent
 
                 if (!reminder!.IsPrivate)
                 {
-                    var reminderChannel = await Program.Discord.GetChannelAsync(reminder.ChannelId);
-                    
-                    if (reminder.MessageId != default)
+                    try
                     {
-                        var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
-
-                        await reminderMessage.ModifyAsync("This reminder was deleted.");
+                        var reminderChannel = await Program.Discord.GetChannelAsync(reminder.ChannelId);
+                                            
+                        if (reminder.MessageId != default)
+                        {
+                            var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
+    
+                            await reminderMessage.ModifyAsync("This reminder was deleted.");
+                        }
                     }
+                    catch
+                    {
+                        // Not important
+                    }
+                    
                 }
 
                 await Program.Db.HashDeleteAsync("reminders", e.Values[0]);

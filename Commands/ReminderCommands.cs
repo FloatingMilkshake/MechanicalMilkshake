@@ -342,22 +342,29 @@ public partial class ReminderCmds
 
         if (!reminder.IsPrivate && reminder.ReminderTime is not null)
         {
-            var reminderChannel = await Program.Discord.GetChannelAsync(reminder.ChannelId);
-            
-            if (reminder.MessageId != default)
+            try
             {
-                var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
+                var reminderChannel = await Program.Discord.GetChannelAsync(reminder.ChannelId);
+            
+                if (reminder.MessageId != default)
+                {
+                    var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
                 
-                var unixTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
+                    var unixTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
 
-                if (reminderMessage.Content.Contains("pushed back"))
-                    await reminderMessage.ModifyAsync(
-                        $"[Reminder](https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId})" +
-                        $" pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
-                        $"\nReminder ID: `{reminder.ReminderId}`");
-                else
-                    await reminderMessage.ModifyAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
-                                                      $"\nReminder ID: `{reminder.ReminderId}`");
+                    if (reminderMessage.Content.Contains("pushed back"))
+                        await reminderMessage.ModifyAsync(
+                            $"[Reminder](https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId})" +
+                            $" pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
+                            $"\nReminder ID: `{reminder.ReminderId}`");
+                    else
+                        await reminderMessage.ModifyAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
+                                                          $"\nReminder ID: `{reminder.ReminderId}`");
+                }
+            }
+            catch
+            {
+                // Not important
             }
         }
 
