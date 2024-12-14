@@ -26,7 +26,7 @@ public class Program
     public static DiscordGuild HomeServer;
     public static List<DiscordApplicationCommand> ApplicationCommands;
     public static EventId BotEventId { get; } = new(1000, "MechanicalMilkshake");
-#if !DEBUG // TODO: reverse this
+#if DEBUG
     private static readonly ConnectionMultiplexer Redis = ConnectionMultiplexer.Connect("localhost:6379");
 #else
     private static readonly ConnectionMultiplexer Redis = ConnectionMultiplexer.Connect("redis");
