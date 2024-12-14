@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake.Helpers;
+﻿using System.Threading;
+
+namespace MechanicalMilkshake.Helpers;
 
 public class DebugInfoHelpers
 {
@@ -26,6 +28,8 @@ public class DebugInfoHelpers
         var commitMessage = FileHelpers.ReadFile("CommitMessage.txt",
             $"Running in development mode; process started at {Program.ProcessStartTime}");
 
+        while (Program.ConnectTime == default)
+            Thread.Sleep(100);
         var timeSinceProcessStart = (Program.ConnectTime - Convert.ToDateTime(Program.ProcessStartTime)).Humanize();
 
         return new DebugInfo(
