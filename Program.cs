@@ -206,7 +206,7 @@ public class Program
         HomeServer = await Discord.GetGuildAsync(homeServerId);
 
         // Set up Minio (used for some Owner commands)
-        if (ConfigJson.S3.Bucket == "" || ConfigJson.S3.CdnBaseUrl == "" || ConfigJson.S3.Endpoint == "" ||
+        if (ConfigJson.S3 is null || ConfigJson.S3.Bucket == "" || ConfigJson.S3.CdnBaseUrl == "" || ConfigJson.S3.Endpoint == "" ||
             ConfigJson.S3.AccessKey == "" || ConfigJson.S3.SecretKey == "" || ConfigJson.S3.Region == "" ||
             ConfigJson.Cloudflare.UrlPrefix == "" || ConfigJson.Cloudflare.ZoneId == "" ||
             ConfigJson.Cloudflare.Token == "")
@@ -226,7 +226,7 @@ public class Program
                 .WithSSL();
         }
 
-        if (ConfigJson.WorkerLinks.BaseUrl == "" || ConfigJson.WorkerLinks.Secret == "" ||
+        if (ConfigJson.WorkerLinks is null || ConfigJson.WorkerLinks.BaseUrl == "" || ConfigJson.WorkerLinks.Secret == "" ||
             ConfigJson.WorkerLinks.NamespaceId == "" || ConfigJson.WorkerLinks.ApiKey == "" ||
             ConfigJson.WorkerLinks.AccountId == "" || ConfigJson.WorkerLinks.Email == "")
         {
@@ -237,7 +237,7 @@ public class Program
             DisabledCommands.Add("wl");
         }
 
-        if (ConfigJson.Base.WolframAlphaAppId == "")
+        if (ConfigJson.Base is null || ConfigJson.Base.WolframAlphaAppId == "")
         {
             Discord.Logger.LogWarning(BotEventId,
                 // ReSharper disable once LogMessageIsSentenceProblem
@@ -246,7 +246,7 @@ public class Program
             DisabledCommands.Add("wa");
         }
 
-        if (ConfigJson.Ids.FeedbackChannel == "")
+        if (ConfigJson.Ids is null || ConfigJson.Ids.FeedbackChannel == "")
         {
             Discord.Logger.LogWarning(BotEventId,
                 // ReSharper disable once LogMessageIsSentenceProblem
@@ -255,7 +255,7 @@ public class Program
             DisabledCommands.Add("feedback");
         }
         
-        if (ConfigJson.WakeOnLan.MacAddress == "" || ConfigJson.WakeOnLan.IpAddress == "" ||
+        if (ConfigJson.WakeOnLan is null || ConfigJson.WakeOnLan.MacAddress == "" || ConfigJson.WakeOnLan.IpAddress == "" ||
             ConfigJson.WakeOnLan.Port == 0 || ConfigJson.Err.SshUsername == "" || ConfigJson.Err.SshHost == "")
         {
             Discord.Logger.LogWarning(BotEventId,
