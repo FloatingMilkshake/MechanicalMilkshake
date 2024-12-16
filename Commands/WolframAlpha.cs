@@ -16,7 +16,7 @@ public class WolframAlpha
 
         if (Program.DisabledCommands.Contains("wa"))
         {
-            await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
+            await CommandHelpers.FailOnMissingInfo(ctx, true);
             return;
         }
 

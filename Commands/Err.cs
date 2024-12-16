@@ -17,7 +17,7 @@ public class Err
         
         if (Program.DisabledCommands.Contains("err"))
         {
-            await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
+            await CommandHelpers.FailOnMissingInfo(ctx, true);
             return;
         }
         

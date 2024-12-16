@@ -18,7 +18,7 @@ public partial class Cdn
 
         if (Program.DisabledCommands.Contains("cdn"))
         {
-            await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
+            await CommandHelpers.FailOnMissingInfo(ctx, true);
             return;
         }
 
@@ -119,7 +119,7 @@ public partial class Cdn
 
         if (Program.DisabledCommands.Contains("cdn"))
         {
-            await CommandHandlerHelpers.FailOnMissingInfo(ctx, true);
+            await CommandHelpers.FailOnMissingInfo(ctx, true);
             return;
         }
 
@@ -191,7 +191,7 @@ public partial class Cdn
     {
         if (Program.DisabledCommands.Contains("cdn"))
         {
-            await CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
+            await CommandHelpers.FailOnMissingInfo(ctx, false);
             return;
         }
         

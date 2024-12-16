@@ -14,7 +14,7 @@ public class Feedback
     {
         if (Program.DisabledCommands.Contains("feedback"))
         {
-            await CommandHandlerHelpers.FailOnMissingInfo(ctx, false);
+            await CommandHelpers.FailOnMissingInfo(ctx, false);
             return;
         }
 

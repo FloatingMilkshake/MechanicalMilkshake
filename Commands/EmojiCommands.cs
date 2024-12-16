@@ -155,8 +155,6 @@ public partial class Emoji
 
     [Command("enlarge")]
     [Description("Enlarge an emoji! Only works for custom emoji.")]
-    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
-    [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
     public static async Task EnlargeEmoji(MechanicalMilkshake.SlashCommandContext ctx, [Parameter("emoji"), Description("The emoji to enlarge.")] string emoji)
     {
         await ctx.DeferResponseAsync();

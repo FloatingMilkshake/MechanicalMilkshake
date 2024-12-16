@@ -123,6 +123,7 @@ public class Program
         });
         clientBuilder.UseCommands((_, extension) =>
         {
+            // Use custom TextCommandProcessor to set custom prefixes & disable CommandNotFoundExceptions
             TextCommandProcessor textCommandProcessor = new(new()
             {
                 PrefixResolver = new DefaultPrefixResolver(true, Prefixes).ResolvePrefixAsync,
@@ -130,54 +131,18 @@ public class Program
             });
             extension.AddProcessor(textCommandProcessor);
             
-            // Context checks
+            // Register context checks
             extension.AddCheck<RequireAuthCheck>();
             
-            // Error handling
+            // Register error handling
             extension.CommandErrored += ErrorEvents.CommandErrored;
             
-            // Logging
+            // Register logging
             extension.CommandExecuted += Events.InteractionEvents.CommandExecuted;
             
-            // Interaction commands
-#if DEBUG
-            // Register slash commands as guild commands in home server when
-            // running in development mode
+            // Register interaction commands
+            CommandHelpers.RegisterCommands(extension, HomeServer.Id);
             
-            var slashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-                t.IsClass && t.Namespace is not null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
-                !t.IsNested);
-
-            extension.AddCommands(slashCommandClasses, HomeServer.Id);
-            
-            if (ConfigJson.Base.UseServerSpecificFeatures)
-            {
-                // Register server-specific feature slash commands in home server when debugging
-                extension.AddCommands<ServerSpecificFeatures.RoleCommands>(HomeServer.Id);
-            }
-
-            Discord.Logger.LogInformation(BotEventId, "Slash commands registered for debugging");
-#else
-            // Register slash commands globally for 'production' bot
-
-            var globalSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-                t.IsClass && t.Namespace is not null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
-                !t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") && !t.IsNested);
-
-            extension.AddCommands(globalSlashCommandClasses);
-
-            var ownerSlashCommandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-                t.IsClass && t.Namespace is not null &&
-                t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") &&
-                !t.IsNested);
-            
-            extension.AddCommands(ownerSlashCommandClasses, [HomeServer.Id]);
-            extension.AddCommands<ServerSpecificFeatures.RoleCommands>([HomeServer.Id]);
-
-            Discord.Logger.LogInformation(BotEventId, "Slash commands registered globally");
-#endif
-            
-            extension.AddCommands<ServerSpecificFeatures.MessageCommands>();
         }, new CommandsConfiguration
         {
             UseDefaultCommandErrorHandler = false
@@ -272,31 +237,22 @@ public class Program
 
         await Discord.ConnectAsync();
 
-        // Store registered application commands for later reference
-#if DEBUG
-        ApplicationCommands =
-            (List<DiscordApplicationCommand>)await Discord.GetGuildApplicationCommandsAsync(
-                HomeServer.Id);
-#else
-        ApplicationCommands = (List<DiscordApplicationCommand>)await Discord.GetGlobalApplicationCommandsAsync();
-#endif
-
         /* Fix SSH key permissions at bot startup.
         I wanted to be able to do this somewhere else, but for now it seems
         like this is the best way of doing it that I'm aware of, and it works. */
 #if !DEBUG
         await EvalCommands.RunCommand("cat /app/id_ed25519 > ~/.ssh/id_ed25519 && chmod 700 ~/.ssh/id_ed25519");
 #endif
-        
-        // Send startup message
-        await Program.HomeChannel.SendMessageAsync(await DebugInfoHelpers.GenerateDebugInfoEmbed(true));
 
         // Run tasks
 
         // Delay to give bot time to connect
         await Task.Delay(TimeSpan.FromSeconds(1));
         
-        // Start checks
+        // Start tasks
+        
+        // Populate ApplicationCommands
+        await Task.Run(async () => CommandTasks.ExecuteAsync());
         
         // Package update check
         await Task.Run(async () => PackageUpdateTasks.ExecuteAsync());
@@ -312,6 +268,9 @@ public class Program
         
         // DBots stats update
         await Task.Run(async () => DBotsTasks.ExecuteAsync());
+        
+        // Send startup message
+        await Program.HomeChannel.SendMessageAsync(await DebugInfoHelpers.GenerateDebugInfoEmbed(true));
 
         // Wait indefinitely, let tasks continue running in async threads
         await Task.Delay(System.Threading.Timeout.InfiniteTimeSpan);

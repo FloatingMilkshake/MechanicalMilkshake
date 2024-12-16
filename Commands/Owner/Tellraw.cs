@@ -5,6 +5,8 @@ public class Tellraw
     [Command("tellraw")]
     [Description("???")]
     [RequireAuth]
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
+    [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
     public static async Task TellrawCommand(MechanicalMilkshake.SlashCommandContext ctx,
         [Parameter("message"), Description("!!!")] [MinMaxLength(maxLength: 2000)]
         string message,

@@ -45,7 +45,7 @@ public class DebugInfoHelpers
     }
 
     // If provided a DebugInfo object, use that...
-    private static Task<DiscordEmbed> GenerateDebugInfoEmbed(DebugInfo debugInfo, bool isOnStartup)
+    private static async Task<DiscordEmbed> GenerateDebugInfoEmbed(DebugInfo debugInfo, bool isOnStartup)
     {
         // Check whether GuildDownloadCompleted has been fired yet
         // If not, wait until it has
@@ -67,13 +67,14 @@ public class DebugInfoHelpers
         embed.AddField("Platform", debugInfo.Platform, true);
         embed.AddField("Library", debugInfo.Library, true);
         embed.AddField("Server Count", Program.Discord.Guilds.Count.ToString(), true);
+        while (Program.ApplicationCommands is null) await Task.Delay(500);
         embed.AddField("Command Count", Program.ApplicationCommands.Count.ToString(), true);
         if (isOnStartup) embed.AddField("Time Since Process Start", debugInfo.TimeSinceProcessStart, true);
         embed.AddField("Commit Hash", commitHash, true);
         embed.AddField(debugInfo.CommitTimeDescription, debugInfo.CommitTimestamp, true);
         embed.AddField("Commit Message", debugInfo.CommitMessage);
 
-        return Task.FromResult<DiscordEmbed>(embed);
+        return embed;
     }
 
     // ...otherwise, get debug info manually
