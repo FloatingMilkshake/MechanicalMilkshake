@@ -9,17 +9,11 @@ public partial class Emoji
     private static readonly Regex EmojiRegex = EmojiPattern();
     
     [Command("get")]
-    [Description("Get all emoji from a server. The bot must be in the server for this to work.")]
+    [Description("Get all emoji from a server. I must be in the server for this to work.")]
     public static async Task GetEmoji(MechanicalMilkshake.SlashCommandContext ctx,
-        [Parameter("server"), Description("The ID of the server to get emoji from.")] string server,
+        [Parameter("server"), Description("The ID of the server to get emoji from. I must be in the server for this to work!")] string server,
         [Parameter("zip"), Description("Whether to include a zip file containing all of the emoji. Defaults to True.")] bool zip = true)
     {
-        if (ctx.Interaction.Guild is null)
-        {
-            await ctx.RespondAsync("This command can only be used in a server I have been added to! Please add me to this server and try again, or ask a server admin for help.");
-            return;
-        }
-        
         // Defer interaction response
         await ctx.DeferResponseAsync();
 
