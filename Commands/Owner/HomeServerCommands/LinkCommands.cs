@@ -159,7 +159,7 @@ public class LinkCommands
         }
 
         var requestUri =
-            $"https://api.cloudflare.com/client/v4/accounts/{Program.ConfigJson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId}/keys";
+            $"https://api.cloudflare.com/client/v4/accounts/{Program.ConfigJson.Cloudflare.AccountId}/storage/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId}/keys";
         HttpRequestMessage request = new(HttpMethod.Get, requestUri);
 
         request.Headers.Add("X-Auth-Key", Program.ConfigJson.WorkerLinks.ApiKey);
@@ -187,7 +187,7 @@ public class LinkCommands
             }
 
             var valueRequestUri =
-                $"https://api.cloudflare.com/client/v4/accounts/{Program.ConfigJson.WorkerLinks.AccountId}/storage/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId}/values/{key}";
+                $"https://api.cloudflare.com/client/v4/accounts/{Program.ConfigJson.Cloudflare.AccountId}/storage/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId}/values/{key}";
             HttpRequestMessage valueRequest = new(HttpMethod.Get, valueRequestUri);
 
             valueRequest.Headers.Add("X-Auth-Key", Program.ConfigJson.WorkerLinks.ApiKey);
@@ -252,7 +252,7 @@ public class LinkCommands
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                 $"Hmm, I couldn't send the list of links here!" +
                 $" You can see the full list on Cloudflare's website [here](https://dash.cloudflare.com/" +
-                $"{Program.ConfigJson.WorkerLinks.AccountId}/workers/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId})." +
+                $"{Program.ConfigJson.Cloudflare.AccountId}/workers/kv/namespaces/{Program.ConfigJson.WorkerLinks.NamespaceId})." +
                 $" Exception details are below.\n```\n{ex.GetType()}: {ex.Message}\n```"));
         }
     }

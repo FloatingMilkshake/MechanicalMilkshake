@@ -191,15 +191,27 @@ public class Program
                 .WithSSL();
         }
 
-        if (ConfigJson.WorkerLinks is null || ConfigJson.WorkerLinks.BaseUrl == "" || ConfigJson.WorkerLinks.Secret == "" ||
-            ConfigJson.WorkerLinks.NamespaceId == "" || ConfigJson.WorkerLinks.ApiKey == "" ||
-            ConfigJson.WorkerLinks.AccountId == "" || ConfigJson.WorkerLinks.Email == "")
+        if (ConfigJson.WorkerLinks is null || ConfigJson.Cloudflare is null
+            || ConfigJson.WorkerLinks.BaseUrl == "" || ConfigJson.WorkerLinks.Secret == ""
+            || ConfigJson.WorkerLinks.NamespaceId == "" || ConfigJson.WorkerLinks.ApiKey == ""
+            || ConfigJson.Cloudflare.AccountId == "" || ConfigJson.WorkerLinks.Email == "")
         {
             Discord.Logger.LogWarning(BotEventId,
                 // ReSharper disable once LogMessageIsSentenceProblem
                 "Short-link commands disabled due to missing WorkerLinks information.");
 
             DisabledCommands.Add("wl");
+        }
+        
+        if (ConfigJson.Cloudflare is null || ConfigJson.Hastebin is null
+            || ConfigJson.Cloudflare.AccountId == "" || ConfigJson.Hastebin.NamespaceId == ""
+            || ConfigJson.Hastebin.Url == "")
+        {
+            Discord.Logger.LogWarning(BotEventId,
+                // ReSharper disable once LogMessageIsSentenceProblem
+                "Hastebin commands disabled due to missing Cloudflare or Hastebin information.");
+            
+            DisabledCommands.Add("haste");
         }
 
         if (ConfigJson.Base is null || ConfigJson.Base.WolframAlphaAppId == "")

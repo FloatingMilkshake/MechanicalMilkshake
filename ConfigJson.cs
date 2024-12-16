@@ -5,6 +5,8 @@ public class ConfigJson
     [JsonProperty("base")] public BaseConfig Base { get; private set; }
     
     [JsonProperty("ids")] public IdsConfig Ids { get; private set; }
+    
+    [JsonProperty("hastebin")] public HastebinConfig Hastebin { get; private set; }
 
     [JsonProperty("workerLinks")] public WorkerLinksConfig WorkerLinks { get; private set; }
 
@@ -51,6 +53,13 @@ public class IdsConfig
     [JsonProperty("ratelimitCautionChannels")] public List<string> RatelimitCautionChannels { get; private set; }
 }
 
+public class HastebinConfig
+{
+    [JsonProperty("url")] public string Url { get; set; }
+    
+    [JsonProperty("namespaceId")] public string NamespaceId { get; set; }
+}
+
 public class WorkerLinksConfig
 {
     [JsonProperty("baseUrl")] public string BaseUrl { get; set; }
@@ -60,8 +69,6 @@ public class WorkerLinksConfig
     [JsonProperty("namespaceId")] public string NamespaceId { get; set; }
 
     [JsonProperty("apiKey")] public string ApiKey { get; set; }
-
-    [JsonProperty("accountId")] public string AccountId { get; set; }
 
     [JsonProperty("email")] public string Email { get; set; }
 }
@@ -88,6 +95,8 @@ public class CloudflareConfig
     [JsonProperty("zoneId")] public string ZoneId { get; set; }
 
     [JsonProperty("token")] public string Token { get; set; }
+    
+    [JsonProperty("accountId")] public string AccountId { get; set; }
 }
 
 public class LogConfig

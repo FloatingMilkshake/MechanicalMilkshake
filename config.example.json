@@ -22,13 +22,17 @@
     "feedbackChannel": "",
     "ratelimitCautionChannels": []
   },
+  
+  "hastebin": {
+    "url": "",
+    "namespaceId": ""
+  },
 
   "workerLinks": {
     "baseUrl": "",
     "secret": "",
     "namespaceId": "",
     "apiKey": "",
-    "accountId": "",
     "email": ""
   },
 
@@ -44,7 +48,8 @@
   "cloudflare": {
     "urlPrefix": "",
     "zoneId": "",
-    "token": ""
+    "token": "",
+    "accountId": ""
   },
 
   "logs": {
