@@ -144,7 +144,8 @@ public partial class Emoji
 
         // Clean up
         if (file is not null) await file.DisposeAsync();
-        Directory.Delete(tempDir, true);
+        if (!string.IsNullOrWhiteSpace(tempDir))
+            Directory.Delete(tempDir, true);
     }
 
     [Command("enlarge")]
