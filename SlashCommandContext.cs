@@ -31,7 +31,7 @@ public record SlashCommandContext : DSharpPlus.Commands.Processors.SlashCommands
             interactionBuilder.AddMentions(Mentions.None);
         }
 
-        interactionBuilder.AsEphemeral(DetermineResponsePrivacy());
+        interactionBuilder = interactionBuilder.AsEphemeral(DetermineResponsePrivacy(interactionBuilder.IsEphemeral));
 
         if (this.Interaction.ResponseState is DiscordInteractionResponseState.Unacknowledged)
         {
