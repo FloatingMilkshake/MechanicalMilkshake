@@ -114,6 +114,17 @@ public partial class ServerSpecificFeatures
 
             if (e.Guild.Id == 1203128266559328286 || e.Guild.Id == Program.HomeServer.Id)
             {
+                if (e.Message.Author is not null && e.Message.Author.Id == 1264728368847523850 && e.Message.Content == "https://cdn.kioydio.com/ric-funi.jpg")
+                {
+                    var reply = e.Message.ReferencedMessage;
+                    if (reply is not null)
+                    {
+                        var ricRegex = new Regex("\\brice?\\b");
+                        if (!ricRegex.IsMatch(reply.Content))
+                            await e.Message.DeleteAsync();
+                    }
+                }
+                
                 if (e.Message.Content == "shutok" && e.Message.Author.Id == 455432936339144705)
                 {
                     await e.Message.RespondAsync("ok");
