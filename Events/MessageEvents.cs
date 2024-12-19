@@ -36,278 +36,7 @@ public partial class MessageEvents
                     return;
                 }
 
-                if (e.Author.IsCurrent)
-                    return;
-
-                if (client.CurrentApplication.Owners.Contains(e.Author) && e.Message.ReferencedMessage is null)
-                {
-                    if (!e.Message.Content.StartsWith("sendto"))
-                        return;
-
-                    if (e.Message.ReferencedMessage is not null)
-                        if (e.Message.ReferencedMessage.Author != client.CurrentUser ||
-                        e.Message.ReferencedMessage.Embeds.Count < 1 ||
-                        !e.Message.ReferencedMessage.Embeds[0].Title.Contains("DM received"))
-                            return;
-
-                    var idPattern = IdPattern();
-                    DiscordChannel targetChannel = default;
-                    DiscordUser targetUser = default;
-
-                    if (idPattern.IsMatch(e.Message.Content))
-                    {
-                        try
-                        {
-                            targetChannel =
-                                await client.GetChannelAsync(
-                                    Convert.ToUInt64(idPattern.Match(e.Message.Content).ToString()));
-                        }
-                        catch
-                        {
-                            try
-                            {
-                                targetUser =
-                                    await client.GetUserAsync(
-                                        Convert.ToUInt64(idPattern.Match(e.Message.Content).ToString()));
-                            }
-                            catch (Exception ex)
-                            {
-                                await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                                    .WithContent(
-                                        $"Hmm, that doesn't look like a valid ID! Make sure it's a user or channel ID!\n```\n{ex.GetType()}: {ex.Message}\n```")
-                                    .WithReply(e.Message.Id));
-                                return;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                            .WithContent(
-                                "Hmm, I couldn't find an ID in your message, so I don't know who to send it to! Please include a user ID or channel ID.")
-                            .WithReply(e.Message.Id));
-                        return;
-                    }
-
-                    if (targetChannel == default)
-                    {
-                        DiscordGuild mutualServer = default;
-                        foreach (var cachedGuild in client.Guilds.Values)
-                        {
-                            if (!cachedGuild.Members.Values.Contains(targetUser)) continue;
-                            mutualServer = await client.GetGuildAsync(cachedGuild.Id);
-                            break;
-                        }
-
-                        DiscordMember targetMember;
-                        try
-                        {
-                            targetMember = await mutualServer!.GetMemberAsync(targetUser!.Id);
-                        }
-                        catch (Exception ex)
-                        {
-                            await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                                .WithContent(
-                                    $"I tried to DM that user, but I don't have any mutual servers with them so Discord wouldn't let me send it. Sorry!\n```\n{ex.GetType()}: {ex.Message}\n```")
-                                .WithReply(e.Message.Id));
-                            return;
-                        }
-
-                        targetChannel = await targetMember.CreateDmChannelAsync();
-                    }
-
-                    var contentPattern = ContentPattern();
-                    string content;
-                    try
-                    {
-                        content = contentPattern.Matches(e.Message.Content)[0].Groups[1].Value;
-                    }
-                    catch (ArgumentOutOfRangeException)
-                    {
-                        await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                            .WithContent(
-                                "I couldn't parse the content in your message! Make sure you provided content after the user or channel ID, and be sure you used the right order (`sendto <id> <content>`)!")
-                            .WithReply(e.Message.Id));
-                        return;
-                    }
-
-                    if (e.Message.Attachments.Any())
-                        content = e.Message.Attachments.Aggregate(content,
-                            (current, attachment) => current + $"\n{attachment.Url}");
-
-                    DiscordMessage message;
-                    try
-                    {
-                        message = await targetChannel.SendMessageAsync(content);
-                    }
-                    catch (Exception ex)
-                    {
-                        await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                            .WithContent(
-                                $"Hmm, I couldn't send that message!\n```\n{ex.GetType()}: {ex.Message}\n```")
-                            .WithReply(e.Message.Id));
-                        return;
-                    }
-
-                    await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                        .WithContent($"Sent! (`{message.Id}` in `{message.Channel.Id}`)")
-                        .WithReply(e.Message.Id));
-
-                    return;
-                }
-
-                if (client.CurrentApplication.Owners.Contains(e.Author) && e.Message.ReferencedMessage is not null &&
-                    e.Message.ReferencedMessage.Author.IsCurrent && e.Message.ReferencedMessage.Embeds.Count != 0 &&
-                    e.Message.ReferencedMessage.Embeds[0].Title.Contains("DM received from"))
-                {
-                    // If these conditions are true, a bot owner has replied to a forwarded message. Now we need to forward that reply.
-
-                    if (e.Message.Content.StartsWith("sendto"))
-                    {
-                        await e.Message.RespondAsync(
-                            "Did you mean to reply, or to use `sendto`? Please only do one at a time.");
-                        return;
-                    }
-
-                    var userIdField = e.Message.ReferencedMessage.Embeds[0].Fields.First(f => f.Name == "User ID");
-                    var userId = Convert.ToUInt64(userIdField.Value.Replace("`", ""));
-
-                    DiscordGuild mutualServer = default;
-                    foreach (var cachedGuild in client.Guilds.Values)
-                    {
-                        if (cachedGuild.Members.Values.All(x => x.Id != userId)) continue;
-                        mutualServer = await client.GetGuildAsync(cachedGuild.Id);
-                        break;
-                    }
-
-                    DiscordMember targetMember;
-                    try
-                    {
-                        targetMember = await mutualServer!.GetMemberAsync(userId);
-                    }
-                    catch (Exception ex)
-                    {
-                        await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                            .WithContent(
-                                $"I tried to DM that user, but I don't have any mutual servers with them so Discord wouldn't let me send it. Sorry!\n```\n{ex.GetType()}: {ex.Message}\n```")
-                            .WithReply(e.Message.Id));
-                        return;
-                    }
-
-                    var targetChannel = await targetMember.CreateDmChannelAsync();
-
-                    var messageIdField =
-                        e.Message.ReferencedMessage.Embeds[0].Fields.First(f => f.Name == "Message ID");
-                    var messageId = Convert.ToUInt64(messageIdField.Value.Replace("`", ""));
-
-                    var attachmentUrls = "";
-                    string messageToSend;
-                    if (e.Message.Attachments.Count != 0)
-                    {
-                        attachmentUrls = e.Message.Attachments.Aggregate(attachmentUrls,
-                            (current, attachment) => current + $"{attachment.Url}\n");
-
-                        messageToSend = $"{e.Message.Content}\n{attachmentUrls}";
-                    }
-                    else
-                    {
-                        messageToSend = e.Message.Content;
-                    }
-
-                    var replyBuilder =
-                        new DiscordMessageBuilder().WithContent(messageToSend).WithReply(messageId);
-
-                    var reply = await targetChannel.SendMessageAsync(replyBuilder);
-
-                    var messageBuilder = new DiscordMessageBuilder()
-                        .WithContent($"Sent! (`{reply.Id}` in `{reply.Channel.Id}`)").WithReply(e.Message.Id);
-                    await e.Channel.SendMessageAsync(messageBuilder);
-                }
-                else
-                {
-                    try
-                    {
-                        List<DiscordGuild> mutualServers = new();
-                        
-                        foreach (var owner in client.CurrentApplication.Owners)
-                        foreach (var guild in client.Guilds.Values)
-                        {
-                            if (!guild.Members.Values.Contains(owner)) continue;
-                            var ownerMember = await guild.GetMemberAsync(owner.Id);
-                            
-                            mutualServers.Add(guild);
-
-                            DiscordEmbedBuilder embed = new()
-                            {
-                                Color = DiscordColor.Yellow,
-                                Title = $"DM received from {UserInfoHelpers.GetFullUsername(e.Author)}!",
-                                Description = $"{e.Message.Content}",
-                                Timestamp = DateTime.UtcNow
-                            };
-
-                            embed.AddField("User ID", $"`{e.Author.Id}`", true);
-                            embed.AddField("User Mention", $"{e.Author.Mention}", true);
-                            embed.AddField("User Avatar URL", $"[Link]({e.Author.AvatarUrl})", true);
-                            embed.AddField("Channel ID", $"`{e.Channel.Id}`", true);
-                            embed.AddField("Message ID", $"`{e.Message.Id}`", true);
-
-                            var attachmentUrls = "";
-                            if (e.Message.Attachments.Count != 0)
-                            {
-                                attachmentUrls = e.Message.Attachments.Aggregate(attachmentUrls,
-                                    (current, attachment) => current + $"{attachment.Url}\n");
-
-                                embed.AddField("Attachments", attachmentUrls, true);
-                            }
-
-                            var mutualServersResponseList = "";
-                            foreach (var server in mutualServers)
-                            {
-                                mutualServersResponseList += $"- `{server}`\n";
-                            }
-
-                            DiscordMessageBuilder messageBuilder = new();
-
-                            var isReply = "No";
-                            if (e.Message.ReferencedMessage is not null)
-                            {
-                                isReply = "Yes";
-                                DiscordButtonComponent button = new(DiscordButtonStyle.Primary,
-                                    "view-dm-reply-info", "View Reply Info");
-                                messageBuilder = messageBuilder.AddComponents(button);
-                            }
-
-                            embed.AddField("Is Reply", isReply);
-
-                            var messages =
-                                await e.Channel.GetMessagesBeforeAsync(e.Message.Id).ToListAsync();
-                            var contextExists = false;
-                            foreach (var msg in messages)
-                                if (msg.Content is not null)
-                                    contextExists = true;
-
-                            if (contextExists)
-                            {
-                                DiscordButtonComponent button = new(DiscordButtonStyle.Primary, "view-dm-context",
-                                    "View Context");
-                                messageBuilder.AddComponents(button);
-                            }
-
-                            embed.AddField("Cached Mutual Servers", mutualServersResponseList);
-
-                            messageBuilder = messageBuilder.AddEmbed(embed.Build());
-
-                            await ownerMember.SendMessageAsync(messageBuilder);
-                            return;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Program.Discord.Logger.LogError(Program.BotEventId,
-                            "A DM was received, but could not be forwarded!\nException Details: {ex.GetType()}: {ExMessage}\nMessage Content: {MessageContent}",
-                            ex.GetType(), ex.Message, e.Message.Content);
-                    }
-                }
+                await HandleDirectMessageAsync(client, e);
             }
             catch (Exception ex)
             {
@@ -358,10 +87,255 @@ public partial class MessageEvents
         await Program.HomeChannel.SendMessageAsync(embed);
     }
     
+    private static async Task HandleDirectMessageAsync(DiscordClient client, MessageCreatedEventArgs e)
+    {
+        // Ignore self
+        if (e.Author.IsCurrent)
+            return;
+        
+        if (client.CurrentApplication.Owners.Contains(e.Author))
+        {
+            // If this is a message from an owner & it is a reply & the message being replied to has an embed whose title contains "DM received from"...
+            var reply = e.Message.ReferencedMessage;
+            if (reply is not null && reply.Author.IsCurrent
+                && reply.Embeds.Any() && reply.Embeds[0].Title is not null
+                && reply.Embeds[0].Title.Contains("DM received from"))
+            {
+                // This is a reply from an owner, forward
+                
+                // Don't allow both reply and sendto
+                if (e.Message.Content.StartsWith("sendto"))
+                {
+                    await e.Message.RespondAsync(
+                        "Did you mean to reply, or to use `sendto`? Please only do one at a time.");
+                    return;
+                }
+
+                // Get user ID from embed in message being replied to, parse as ulong & fetch user
+                var userIdField = e.Message.ReferencedMessage.Embeds[0].Fields.First(f => f.Name == "User ID");
+                var userId = Convert.ToUInt64(userIdField.Value.Replace("`", ""));
+                var user = await client.GetUserAsync(userId);
+
+                // Get the message ID from the embed in the message being replied to, parse as ulong
+                var messageIdField = e.Message.ReferencedMessage.Embeds[0].Fields.First(f => f.Name == "Message ID");
+                var messageId = Convert.ToUInt64(messageIdField.Value.Replace("`", ""));
+
+                // Add attachment URLs to content for to-be-forwarded msg, if there are any
+                var attachmentUrls = "";
+                string messageToSend;
+                if (e.Message.Attachments.Count != 0)
+                {
+                    attachmentUrls = e.Message.Attachments.Aggregate(attachmentUrls,
+                        (current, attachment) => current + $"{attachment.Url}\n");
+
+                    messageToSend = $"{e.Message.Content}\n{attachmentUrls}";
+                }
+                else
+                {
+                    messageToSend = e.Message.Content;
+                }
+
+                // Put together the message to be sent, as a reply to the message being replied to
+                var replyBuilder = new DiscordMessageBuilder().WithContent(messageToSend).WithReply(messageId);
+
+                // Send the message
+                var msg = await user.SendMessageAsync(replyBuilder);
+
+                // Sent successfully, all done
+                var messageBuilder = new DiscordMessageBuilder().WithContent($"Sent! (`{msg.Id}` in `{msg.Channel.Id}`)").WithReply(e.Message.Id);
+                await e.Channel.SendMessageAsync(messageBuilder);
+            }
+            else if (e.Message.Content.Contains("sendto"))
+            {
+                // Owner using sendto, forward content
+                
+                var idPattern = IdPattern();
+                DiscordChannel targetChannel = default;
+                DiscordUser targetUser = default;
+
+                if (idPattern.IsMatch(e.Message.Content))
+                {
+                    // Message probably contains an ID; try to fetch channel?
+                    try
+                    {
+                        targetChannel = await client.GetChannelAsync(Convert.ToUInt64(idPattern.Match(e.Message.Content).ToString()));
+                    }
+                    catch
+                    {
+                        // Not a channel ID. Try to fetch user?
+                        try
+                        {
+                            targetUser = await client.GetUserAsync(Convert.ToUInt64(idPattern.Match(e.Message.Content).ToString()));
+                        }
+                        catch (Exception ex)
+                        {
+                            // Not a user ID either. Invalid...
+                            await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                                .WithContent($"Hmm, that doesn't look like a valid ID! Make sure it's a user or channel ID!" +
+                                             $"\n```\n{ex.GetType()}: {ex.Message}\n```")
+                                .WithReply(e.Message.Id));
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    // Message didn't match ID regex; there is no ID in it
+                    await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                        .WithContent("Hmm, I couldn't find an ID in your message, so I don't know who to send it to! Please include a user ID or channel ID.")
+                        .WithReply(e.Message.Id));
+                    return;
+                }
+
+                if (targetChannel == default)
+                {
+                    // Failed to fetch a channel with the ID provided. It must be a user ID.
+                    // Try to create a DM channel with the user
+                    targetChannel = await targetUser.CreateDmChannelAsync();
+                }
+
+                var contentPattern = ContentPattern(); // TODO: redo this regexp?
+                string content;
+                try
+                {
+                    // Get content from sendto msg
+                    content = contentPattern.Matches(e.Message.Content)[0].Groups[1].Value;
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    // Failed to get content
+                    await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                        .WithContent("I couldn't parse the content in your message! Make sure you provided content after the user or channel ID, and be sure you used the right order (`sendto <id> <content>`)!")
+                        .WithReply(e.Message.Id));
+                    return;
+                }
+
+                // Add attachment URLs to content for to-be-forwarded msg
+                if (e.Message.Attachments.Any())
+                    content = e.Message.Attachments.Aggregate(content,
+                        (current, attachment) => current + $"\n{attachment.Url}");
+
+                DiscordMessage message;
+                try
+                {
+                    // Try sending DM
+                    message = await targetChannel.SendMessageAsync(content);
+                }
+                catch (Exception ex)
+                {
+                    // Failed to DM
+                    await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                        .WithContent($"Hmm, I couldn't send that message!\n```\n{ex.GetType()}: {ex.Message}\n```")
+                        .WithReply(e.Message.Id));
+                    return;
+                }
+
+                // Sent successfully, all done
+                await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                    .WithContent($"Sent! (`{message.Id}` in `{message.Channel.Id}`)")
+                    .WithReply(e.Message.Id));
+            }
+            // else: DM from owner, but not a reply or sendto; ignore
+        }
+        else
+        {
+            // Message from non-owner, forward
+            
+            // Wrap in try/catch so the error and message can be logged
+            try
+            {
+                // TODO: warning: if there are no owners (if the bot is owned by a team), this will do nothing! Also see issue #33
+                foreach (var owner in client.CurrentApplication.Owners)
+                {
+                    // Construct embed to send to owner
+                    DiscordEmbedBuilder embed = new()
+                    {
+                        Color = DiscordColor.Yellow,
+                        Title = $"DM received from {UserInfoHelpers.GetFullUsername(e.Author)}!",
+                        Description = $"{e.Message.Content}",
+                        Timestamp = DateTime.UtcNow
+                    };
+                    embed.AddField("User ID", $"`{e.Author.Id}`", true);
+                    embed.AddField("User Mention", $"{e.Author.Mention}", true);
+                    embed.AddField("User Avatar URL", $"[Link]({e.Author.AvatarUrl})", true);
+                    embed.AddField("Channel ID", $"`{e.Channel.Id}`", true);
+                    embed.AddField("Message ID", $"`{e.Message.Id}`", true);
+                    var attachmentUrls = "";
+                    if (e.Message.Attachments.Count != 0)
+                    {
+                        attachmentUrls = e.Message.Attachments.Aggregate(attachmentUrls,
+                            (current, attachment) => current + $"{attachment.Url}\n");
+
+                        embed.AddField("Attachments", attachmentUrls, true);
+                    }
+
+                    DiscordMessageBuilder messageBuilder = new();
+
+                    var isReply = "No";
+                    if (e.Message.ReferencedMessage is not null)
+                    {
+                        // If the user's message is a reply, add a button to show the owner reply info
+                        isReply = "Yes";
+                        DiscordButtonComponent button = new(DiscordButtonStyle.Primary,
+                            "view-dm-reply-info", "View Reply Info");
+                        messageBuilder = messageBuilder.AddComponents(button);
+                    }
+
+                    embed.AddField("Is Reply", isReply);
+
+                    // If there are messages before this msg being forwarded, add a button to show the owner some context
+                    var messages =
+                        await e.Channel.GetMessagesBeforeAsync(e.Message.Id).ToListAsync();
+                    var contextExists = false;
+                    foreach (var msg in messages)
+                        if (msg.Content is not null)
+                            contextExists = true;
+                    if (contextExists)
+                    {
+                        DiscordButtonComponent button = new(DiscordButtonStyle.Primary, "view-dm-context",
+                            "View Context");
+                        messageBuilder.AddComponents(button);
+                    }
+
+                    messageBuilder = messageBuilder.AddEmbed(embed.Build());
+
+                    // Send the message to the owner
+                    await owner.SendMessageAsync(messageBuilder);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Some part of the above process failed; the DM was not forwarded. Log to console & home channel if possible
+                Program.Discord.Logger.LogError(Program.BotEventId,
+                    "A DM was received, but could not be forwarded!\nMessage Content: {MessageContent}\nException Details: {ex.GetType()}: {ExMessage}\n{exStackTrace}",
+                    e.Message.Content, ex.GetType(), ex.Message, ex.StackTrace);
+                
+                try
+                {
+                    await Program.HomeChannel.SendMessageAsync(new DiscordEmbedBuilder()
+                    {
+                        Title = "An exception occurred while forwarding a DM",
+                        Color = DiscordColor.Red,
+                        Description = $"An exception was thrown when trying to forward a DM from {e.Message.Author.Mention} (`{e.Message.Author.Id}`) to a bot owner!"
+                    }
+                    .AddField("Message Content", string.IsNullOrWhiteSpace(e.Message.Content) ? "No content" : e.Message.Content)
+                    .AddField("Exception Details", $"```\n{ex.GetType()}: {ex.Message}\n{ex.StackTrace}\n```"));
+                }
+                catch (Exception ex2)
+                {
+                    Program.Discord.Logger.LogError(Program.BotEventId,
+                        "An exception occurred while forwarding a DM, and I was unable to properly log it here!\n{ex2Type}: {ex2Message}\n{ex2StackTrace}",
+                        ex2.GetType(), ex2.Message, ex2.StackTrace);
+                    await Program.HomeChannel.SendMessageAsync("An exception occurred while forwarding a DM, and I was unable to properly log it here! Please check the console for details.");
+                    // If even this throws an exception, I don't care; it's probably a permission error, and all I care enough to do at that point is to log to console anyway
+                }
+            }
+        }
+    }
+    
     [GeneratedRegex("[0-9]{5,}")]
     private static partial Regex IdPattern();
     [GeneratedRegex(".*?[0-9]+((?:.|\n)*)")]
     private static partial Regex ContentPattern();
-    [GeneratedRegex("Guild ([0-9]+);.*$")]
-    private static partial Regex MutualServerIdPattern();
 }
