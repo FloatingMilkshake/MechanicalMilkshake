@@ -120,7 +120,7 @@ public partial class ServerSpecificFeatures
                     if (reply is not null)
                     {
                         var ricRegex = new Regex("\\brice?\\b");
-                        if (!ricRegex.IsMatch(reply.Content))
+                        if (!ricRegex.IsMatch(reply.Content.ToLower()))
                             await e.Message.DeleteAsync();
                     }
                 }
