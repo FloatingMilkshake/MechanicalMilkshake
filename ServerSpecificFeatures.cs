@@ -384,16 +384,16 @@ public partial class ServerSpecificFeatures
          }
      }
     
-    private class TargetServersAttribute(params ulong[] targetGuilds) : ContextCheckAttribute
+    public class TargetServersAttribute(params ulong[] targetServers) : ContextCheckAttribute
     {
-        public ulong[] TargetGuilds { get; } = targetGuilds;
+        public ulong[] TargetServers { get; } = targetServers;
     }
     
-    private class TargetServersContextCheck : IContextCheck
+    public class TargetServersContextCheck : IContextCheck
     {
 #nullable enable
         public ValueTask<string?> ExecuteCheckAsync(TargetServersAttribute attribute, CommandContext ctx) =>
-            ValueTask.FromResult(!ctx.Channel.IsPrivate && ctx.Guild is not null && attribute.TargetGuilds.Contains(ctx.Guild.Id)
+            ValueTask.FromResult(!ctx.Channel.IsPrivate && ctx.Guild is not null && attribute.TargetServers.Contains(ctx.Guild.Id)
             ? null
             : "This command is not available in this server.");
     }
