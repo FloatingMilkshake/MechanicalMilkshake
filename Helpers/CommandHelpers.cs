@@ -54,7 +54,7 @@ public class CommandHelpers
         {
             // Register server-specific feature commands in respective guilds for 'production' bot
             extension.AddCommands<ServerSpecificFeatures.RoleCommands>(homeServerId, 984903591816990730);
-            extension.AddCommands<ServerSpecificFeatures.MessageCommands>(homeServerId);
+            extension.AddCommands<ServerSpecificFeatures.MessageCommands>(homeServerId, 1203128266559328286);
         }
 #endif
     }
