@@ -266,7 +266,7 @@ public partial class ServerSpecificFeatures
         [Command("poop")]
         [Description("immaturity is key")]
         [TextAlias("shit", "defecate")]
-        [TargetServer(799644062973427743)]
+        [TargetServers(799644062973427743, 1203128266559328286)]
         [AllowedProcessors(typeof(TextCommandProcessor))]
         public async Task Poop(CommandContext ctx, [RemainingText] string much = "")
         {
@@ -384,16 +384,16 @@ public partial class ServerSpecificFeatures
          }
      }
     
-    private class TargetServerAttribute(ulong targetGuild) : ContextCheckAttribute
+    private class TargetServersAttribute(params ulong[] targetGuilds) : ContextCheckAttribute
     {
-        public ulong TargetGuild { get; } = targetGuild;
+        public ulong[] TargetGuilds { get; } = targetGuilds;
     }
     
-    private class TargetServerContextCheck : IContextCheck
+    private class TargetServersContextCheck : IContextCheck
     {
 #nullable enable
-        public ValueTask<string?> ExecuteCheckAsync(TargetServerAttribute attribute, CommandContext ctx) =>
-            ValueTask.FromResult(!ctx.Channel.IsPrivate && ctx.Guild is not null && ctx.Guild.Id == attribute.TargetGuild
+        public ValueTask<string?> ExecuteCheckAsync(TargetServersAttribute attribute, CommandContext ctx) =>
+            ValueTask.FromResult(!ctx.Channel.IsPrivate && ctx.Guild is not null && attribute.TargetGuilds.Contains(ctx.Guild.Id)
             ? null
             : "This command is not available in this server.");
     }
