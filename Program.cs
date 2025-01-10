@@ -113,7 +113,6 @@ public class Program
                     .HandleComponentInteractionCreated(ComponentInteractionEvent.ComponentInteractionCreated)
                     .HandleGuildCreated(GuildEvents.GuildCreated)
                     .HandleGuildDeleted(GuildEvents.GuildDeleted)
-                    .HandleGuildMemberUpdated(GuildEvents.GuildMemberUpdated)
                     .HandleGuildDownloadCompleted(GuildEvents.GuildDownloadCompleted)
         );
         clientBuilder.UseInteractivity(new InteractivityConfiguration

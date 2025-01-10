@@ -42,15 +42,6 @@ public class GuildEvents
         
         await SendGuildEventLogEmbed(_guildLogChannel, e.Guild, false);
     }
-
-    public static async Task GuildMemberUpdated(DiscordClient client, GuildMemberUpdatedEventArgs e)
-    {
-        // Handle server-specific things in ServerSpecificFeatures.cs
-        if (Program.ConfigJson.Base.UseServerSpecificFeatures)
-            await ServerSpecificFeatures.Events.GuildMemberUpdated(client, e);
-        
-        // [put non-server-specific things here]
-    }
     
     public static Task GuildDownloadCompleted(DiscordClient _, GuildDownloadCompletedEventArgs __)
     {
