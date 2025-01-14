@@ -32,6 +32,13 @@ public class Reminder
         }
         
         var nextMsg = await responseChannel.GetNextMessageAsync(m => m.Author.Id == ctx.User.Id);
+        
+        if (nextMsg.Result is null)
+        {
+            // Timed out!
+            await responseChannel.SendMessageAsync("You took too long to respond! Please try again.");
+            return;
+        }
 
         DateTime time;
         try
