@@ -10,9 +10,9 @@ public class HeartbeatEvent
         
         try
         {
-            var heartbeatResponse = await Program.HttpClient.GetAsync($"{Program.ConfigJson.Base.UptimeKumaHeartbeatUrl}{client.Ping}");
+            var heartbeatResponse = await Program.HttpClient.GetAsync($"{Program.ConfigJson.Base.UptimeKumaHeartbeatUrl}{client.Ping.TotalMilliseconds}");
             if (heartbeatResponse.IsSuccessStatusCode)
-                Program.Discord.Logger.LogDebug(Program.BotEventId, "Successfully sent Uptime Kuma heartbeat with ping {ping}ms", client.Ping);
+                Program.Discord.Logger.LogDebug(Program.BotEventId, "Successfully sent Uptime Kuma heartbeat with ping {ping}ms", client.Ping.TotalMilliseconds);
             else
                 Program.Discord.Logger.LogWarning(Program.BotEventId, "Uptime Kuma heartbeat failed with status code {statusCode}", heartbeatResponse.StatusCode);
             Program.LastUptimeKumaHeartbeatStatus = heartbeatResponse.StatusCode.ToString();
