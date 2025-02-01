@@ -6,7 +6,7 @@ public class ErrorEvents
     {
         switch (e.Context)
         {
-            case MechanicalMilkshake.SlashCommandContext:
+            case MechanicalMilkshake.SlashCommandContext or DSharpPlus.Commands.Processors.SlashCommands.SlashCommandContext:
                 await SlashCommandErrored(ext, e);
                 break;
             case TextCommandContext:
@@ -96,12 +96,17 @@ public class ErrorEvents
                                         $" (see {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list).";
                 try
                 {
-                    await e.Context.As<MechanicalMilkshake.SlashCommandContext>().RespondAsync(cmdFailedResponse, true);
+                    await e.Context.As<DSharpPlus.Commands.Processors.SlashCommands.SlashCommandContext>().RespondAsync(cmdFailedResponse, true);
                 }
-                catch
+                catch (Exception ex) when (ex is BadRequestException or NotFoundException)
                 {
                     await e.Context.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(cmdFailedResponse)
                         .AsEphemeral());
+                }
+                catch (Exception unexpectedEx)
+                {
+                    // Failed to respond to the user for an unknown reason
+                    await LogError(ext, e, false, unexpectedEx);
                 }
                 
                 return;
@@ -167,7 +172,7 @@ public class ErrorEvents
         await LogError(ext, e, false);
     }
     
-    private static async Task LogError(CommandsExtension ext, CommandErroredEventArgs e, bool respond)
+    private static async Task LogError(CommandsExtension ext, CommandErroredEventArgs e, bool respond, Exception extraException = null)
     {
         var exception = e.Exception;
         
@@ -192,11 +197,17 @@ public class ErrorEvents
         {
             Title = "An exception was thrown when executing a slash command",
             Description =
-                $"An exception was thrown when {e.Context.User.Mention} used `{commandName}`. Details are below.",
+                $"An exception was thrown when {e.Context.User.Mention} used `{commandName}`.",
             Color = DiscordColor.Red
         };
         embed.AddField("Exception Details",
             $"```{exception.GetType()}: {exception.Message}:\n{exception.StackTrace}".Truncate(1020) + "\n```");
+        
+        if (extraException is not null)
+        {
+            embed.Description += " Additionally, an unexpected exception was thrown when attempting to respond to the user.";
+            embed.AddField("Extra Exception", $"```{extraException.GetType()}: {extraException.Message}:\n{extraException.StackTrace}".Truncate(1020) + "\n```");
+        }
 
         if (respond)
         {
