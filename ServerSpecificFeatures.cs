@@ -188,8 +188,11 @@ public partial class ServerSpecificFeatures
         private static async Task PatchTuesdayAnnouncementCheck(MessageCreatedEventArgs e, ulong authorId, ulong channelId)
         {
             // Patch Tuesday automatic message generation
+            
+            var insiderRedditUrlPattern = new Regex(@"https:\/\/.*reddit.com\/r\/Windows[0-9]{1,}.*cumulative_updates.*");
 
-            if (e.Message.Author.Id != authorId || e.Channel.Id != channelId)
+            // Filter to messages by passed author & channel IDs, and that match the pattern
+            if (e.Message.Author.Id != authorId || e.Channel.Id != channelId || !insiderRedditUrlPattern.IsMatch(e.Message.Content))
                 return;
             
             // List of roles to ping with message
@@ -201,11 +204,10 @@ public partial class ServerSpecificFeatures
             
             // Get message before current message; if authors do not match or message is not a Cumulative Updates post, ignore
             var previousMessage = (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1).ToListAsync())[0];
-            if (previousMessage.Author.Id != e.Message.Author.Id || !previousMessage.Content.Contains("Cumulative Updates"))
+            if (previousMessage.Author.Id != e.Message.Author.Id || !insiderRedditUrlPattern.IsMatch(previousMessage.Content))
                 return;
             
             // Get URLs from both messages
-            var insiderRedditUrlPattern = new Regex(@"https:\/\/.*reddit.com\/r\/Windows[0-9]{1,}.*cumulative_updates.*");
             var thisUrl = insiderRedditUrlPattern.Match(e.Message.Content).Value;
             var previousUrl = insiderRedditUrlPattern.Match(previousMessage.Content).Value;
             
