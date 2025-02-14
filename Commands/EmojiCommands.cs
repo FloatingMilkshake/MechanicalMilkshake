@@ -183,6 +183,6 @@ public partial class Emoji
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(response));
     }
 
-    [GeneratedRegex("<(a)?:([A-z]*):([0-9]*)>")]
+    [GeneratedRegex("<(a)?:([A-Za-z0-9]*):([0-9]*)>")]
     private static partial Regex EmojiPattern();
 }
