@@ -132,7 +132,7 @@ public class Program
             
             // Register context checks
             extension.AddCheck<RequireAuthCheck>();
-            extension.AddCheck<ServerSpecificFeatures.TargetServersContextCheck>();
+            extension.AddCheck<ServerSpecificFeatures.CommandChecks.AllowedServersContextCheck>();
             
             // Register error handling
             extension.CommandErrored += ErrorEvents.CommandErrored;

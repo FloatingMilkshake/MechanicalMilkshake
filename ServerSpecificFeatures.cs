@@ -2,7 +2,7 @@ namespace MechanicalMilkshake;
 
 public partial class ServerSpecificFeatures
 {
-    public partial class Checks
+    public partial class EventChecks
     {
         public static bool ShutBotsAllowed;
         
@@ -232,143 +232,149 @@ public partial class ServerSpecificFeatures
         [GeneratedRegex(@"https.*windows-(\d+).*?build[s]?-(?:(\d+(?:-\d+)?)(?:-and-(\d+-\d+)?)*)(?:.+?(?:(canary|dev|beta|release-preview)(?:-and-(canary|dev|beta|release-preview))*)?-channel[s]?.*)?\/")]
         private static partial Regex InsiderUrlPattern();
     }
-
-    public class MessageCommands
+    
+    public class Commands
     {
-        // Per-server commands go here. Use the [TargetServer(serverId)] attribute to restrict a command to a specific guild.
-
-        [Command("poop")]
-        [Description("immaturity is key")]
-        [TextAlias("shit", "defecate")]
-        [TargetServers(799644062973427743, 1203128266559328286)]
-        [AllowedProcessors(typeof(TextCommandProcessor))]
-        public async Task Poop(CommandContext ctx, [RemainingText] string much = "")
+        public class MessageCommands
         {
-            if (ctx.Channel.IsPrivate)
-            {
-                await ctx.RespondAsync("sorry, no can do.");
-                return;
-            }
-            
-            try
-            {
-                // ReSharper disable JoinDeclarationAndInitializer
-                DiscordChannel chan;
-                DiscordMessage msg;
-                // ReSharper restore JoinDeclarationAndInitializer
-                #if DEBUG
-                chan = await Program.Discord.GetChannelAsync(893654247709741088);
-                msg = await chan.GetMessageAsync(1282187612844589168);
-                #else
-                chan = await Program.Discord.GetChannelAsync(892978015309557870);
-                msg = much == "MUCH" ? await chan.GetMessageAsync(1294869494648279071) : await chan.GetMessageAsync(1085253151155830895);
-                #endif
-                
-                var phrases = msg.Content.Split("\n");
+            // Per-server commands go here. Use the [TargetServer(serverId)] attribute to restrict a command to a specific guild.
 
-                await ctx.Channel.SendMessageAsync(phrases[Program.Random.Next(0, phrases.Length)]
-                    .Replace("{user}", ctx.Member!.DisplayName));
-            }
-            catch
+            [Command("poop")]
+            [Description("immaturity is key")]
+            [TextAlias("shit", "defecate")]
+            [CommandChecks.AllowedServers(799644062973427743, 1203128266559328286)]
+            [AllowedProcessors(typeof(TextCommandProcessor))]
+            public async Task Poop(CommandContext ctx, [RemainingText] string much = "")
             {
-                await ctx.RespondAsync("sorry, no can do.");
+                if (ctx.Channel.IsPrivate)
+                {
+                    await ctx.RespondAsync("sorry, no can do.");
+                    return;
+                }
+                
+                try
+                {
+                    // ReSharper disable JoinDeclarationAndInitializer
+                    DiscordChannel chan;
+                    DiscordMessage msg;
+                    // ReSharper restore JoinDeclarationAndInitializer
+#if DEBUG
+                    chan = await Program.Discord.GetChannelAsync(893654247709741088);
+                    msg = await chan.GetMessageAsync(1282187612844589168);
+#else
+                    chan = await Program.Discord.GetChannelAsync(892978015309557870);
+                    msg = much == "MUCH" ? await chan.GetMessageAsync(1294869494648279071) : await chan.GetMessageAsync(1085253151155830895);
+#endif
+                    
+                    var phrases = msg.Content.Split("\n");
+
+                    await ctx.Channel.SendMessageAsync(phrases[Program.Random.Next(0, phrases.Length)]
+                        .Replace("{user}", ctx.Member!.DisplayName));
+                }
+                catch
+                {
+                    await ctx.RespondAsync("sorry, no can do.");
+                }
+            }
+        }
+    
+        public class RoleCommands
+        {
+            [Command("rolename")]
+            [Description("Change the name of someone's role.")]
+            [AllowedProcessors(typeof(SlashCommandProcessor))]
+            public static async Task RoleName(MechanicalMilkshake.SlashCommandContext ctx,
+                [Parameter("name"), Description("The new name.")] string name,
+                [Parameter("user"), Description("The user whose role name to change.")] DiscordUser user = default)
+            {
+                await ctx.DeferResponseAsync();
+
+                if (ctx.Guild.Id != 984903591816990730)
+                {
+                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                        .WithContent("This command is not available in this server."));
+                    return;
+                }
+
+                if (user == default) user = ctx.User;
+                DiscordMember member;
+                try
+                {
+                    member = await ctx.Guild.GetMemberAsync(user.Id);
+                }
+                catch
+                {
+                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that user!"));
+                    return;
+                }
+
+                List<DiscordRole> roles = new();
+                if (member.Roles.Any())
+                {
+                    roles.AddRange(member.Roles.OrderBy(role => role.Position).Reverse());
+                }
+                else
+                {
+                    var response = ctx.User == user ? "You don't have any roles." : "That user doesn't have any roles.";
+                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(response));
+                    return;
+                }
+
+                if (roles.Count == 1 && roles.First().Id is 984903591833796659 or 984903591816990739 or 984936907874136094)
+                {
+                    var response = ctx.User == user
+                        ? "You don't have a role that can be renamed!"
+                        : "That user doesn't have a role that can be renamed!";
+                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(response));
+                    return;
+                }
+
+                var roleToModify = roles.FirstOrDefault(role =>
+                    role.Id is not (984903591833796659 or 984903591816990739 or 984936907874136094));
+
+                if (roleToModify == default)
+                {
+                    var response = ctx.User == user
+                        ? "You don't have a role that can be renamed!"
+                        : "That user doesn't have a role that can be renamed!";
+                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                        .WithContent(response));
+                    return;
+                }
+
+                try
+                {
+                    await roleToModify.ModifyAsync(role => role.Name = name);
+                }
+                catch (UnauthorizedException)
+                {
+                    await ctx.FollowupAsync(
+                        new DiscordFollowupMessageBuilder().WithContent("I don't have permission to rename that role!"));
+                    return;
+                }
+                
+                var finalResponse = ctx.User == user
+                    ? $"Your role has been renamed to **{name}**."
+                    : $"{member.Mention}'s role has been renamed to **{name}**.";
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(finalResponse));
             }
         }
     }
     
-    public class RoleCommands
-     {
-         [Command("rolename")]
-         [Description("Change the name of someone's role.")]
-         [AllowedProcessors(typeof(SlashCommandProcessor))]
-         public static async Task RoleName(MechanicalMilkshake.SlashCommandContext ctx,
-             [Parameter("name"), Description("The new name.")] string name,
-             [Parameter("user"), Description("The user whose role name to change.")] DiscordUser user = default)
-         {
-             await ctx.DeferResponseAsync();
-
-             if (ctx.Guild.Id != 984903591816990730)
-             {
-                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                     .WithContent("This command is not available in this server."));
-                 return;
-             }
-
-             if (user == default) user = ctx.User;
-             DiscordMember member;
-             try
-             {
-                 member = await ctx.Guild.GetMemberAsync(user.Id);
-             }
-             catch
-             {
-                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that user!"));
-                 return;
-             }
-
-             List<DiscordRole> roles = new();
-             if (member.Roles.Any())
-             {
-                 roles.AddRange(member.Roles.OrderBy(role => role.Position).Reverse());
-             }
-             else
-             {
-                 var response = ctx.User == user ? "You don't have any roles." : "That user doesn't have any roles.";
-                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(response));
-                 return;
-             }
-
-             if (roles.Count == 1 && roles.First().Id is 984903591833796659 or 984903591816990739 or 984936907874136094)
-             {
-                 var response = ctx.User == user
-                     ? "You don't have a role that can be renamed!"
-                     : "That user doesn't have a role that can be renamed!";
-                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(response));
-                 return;
-             }
-
-             var roleToModify = roles.FirstOrDefault(role =>
-                 role.Id is not (984903591833796659 or 984903591816990739 or 984936907874136094));
-
-             if (roleToModify == default)
-             {
-                 var response = ctx.User == user
-                     ? "You don't have a role that can be renamed!"
-                     : "That user doesn't have a role that can be renamed!";
-                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                     .WithContent(response));
-                 return;
-             }
-
-             try
-             {
-                 await roleToModify.ModifyAsync(role => role.Name = name);
-             }
-             catch (UnauthorizedException)
-             {
-                 await ctx.FollowupAsync(
-                     new DiscordFollowupMessageBuilder().WithContent("I don't have permission to rename that role!"));
-                 return;
-             }
-             
-             var finalResponse = ctx.User == user
-                 ? $"Your role has been renamed to **{name}**."
-                 : $"{member.Mention}'s role has been renamed to **{name}**.";
-             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(finalResponse));
-         }
-     }
-    
-    public class TargetServersAttribute(params ulong[] targetServers) : ContextCheckAttribute
+    public class CommandChecks
     {
-        public ulong[] TargetServers { get; } = targetServers;
-    }
+        public class AllowedServersAttribute(params ulong[] allowedServers) : ContextCheckAttribute
+        {
+            public ulong[] AllowedServers { get; } = allowedServers;
+        }
     
-    public class TargetServersContextCheck : IContextCheck
-    {
+        public class AllowedServersContextCheck : IContextCheck
+        {
 #nullable enable
-        public ValueTask<string?> ExecuteCheckAsync(TargetServersAttribute attribute, CommandContext ctx) =>
-            ValueTask.FromResult(!ctx.Channel.IsPrivate && ctx.Guild is not null && attribute.TargetServers.Contains(ctx.Guild.Id)
-            ? null
-            : "This command is not available in this server.");
+            public ValueTask<string?> ExecuteCheckAsync(AllowedServersAttribute attribute, CommandContext ctx) =>
+                ValueTask.FromResult(!ctx.Channel.IsPrivate && ctx.Guild is not null && attribute.AllowedServers.Contains(ctx.Guild.Id)
+                    ? null
+                    : "This command is not available in this server.");
+        }
     }
 }

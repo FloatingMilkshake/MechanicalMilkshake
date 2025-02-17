@@ -43,8 +43,8 @@ public class CommandHelpers
         if (Program.ConfigJson.Base.UseServerSpecificFeatures)
         {
             // Register server-specific feature commands in home server when debugging
-            extension.AddCommands<ServerSpecificFeatures.RoleCommands>(homeServerId);
-            extension.AddCommands<ServerSpecificFeatures.MessageCommands>(homeServerId);
+            extension.AddCommands<ServerSpecificFeatures.Commands.RoleCommands>(homeServerId);
+            extension.AddCommands<ServerSpecificFeatures.Commands.MessageCommands>(homeServerId);
         }
 #else
         // Register guild-install commands globally for 'production' bot
@@ -53,8 +53,8 @@ public class CommandHelpers
         if (Program.ConfigJson.Base.UseServerSpecificFeatures)
         {
             // Register server-specific feature commands in respective guilds for 'production' bot
-            extension.AddCommands<ServerSpecificFeatures.RoleCommands>(homeServerId, 984903591816990730);
-            extension.AddCommands<ServerSpecificFeatures.MessageCommands>(homeServerId, 1203128266559328286);
+            extension.AddCommands<ServerSpecificFeatures.Commands.RoleCommands>(homeServerId, 984903591816990730);
+            extension.AddCommands<ServerSpecificFeatures.Commands.MessageCommands>(homeServerId, 1203128266559328286);
         }
 #endif
     }
