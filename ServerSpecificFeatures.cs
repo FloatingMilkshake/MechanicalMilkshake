@@ -8,11 +8,13 @@ public partial class ServerSpecificFeatures
         
         public static async Task MessageCreateChecks(MessageCreatedEventArgs e)
         {
+            // ignore dms
             if (e.Channel.IsPrivate) return;
             
+            #region dev/home server
             if (e.Guild.Id == 799644062973427743)
             {
-                // &caption -> #captions
+                #region &caption -> #captions
                 if (e.Message.Author.Id == 1031968180974927903 &&
                     (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1).ToListAsync())[0].Content
                     .Contains("caption"))
@@ -23,8 +25,9 @@ public partial class ServerSpecificFeatures
                     else if (e.Message.Content.Contains("http"))
                         await chan.SendMessageAsync(e.Message.Content);
                 }
+                #endregion &caption -> #captions
                 
-                // parse Windows Insiders RSS feed
+                #region parse Windows Insiders RSS feed
                 if (e.Message.Author.Id == 944784076735414342 && e.Message.Channel.Id == 1227636018375819296)
                 {
                     // ignore no-content messages
@@ -92,8 +95,11 @@ public partial class ServerSpecificFeatures
                     await Task.Delay(1000);
                     await msg.ModifyEmbedSuppressionAsync(true);
                 }
+                #endregion parse Windows Insiders RSS feed
             }
+            #endregion dev/home server
             
+            #region Patch Tuesday announcements
 #if DEBUG
             if (e.Guild.Id == 799644062973427743) // my testing server
             {
@@ -105,7 +111,9 @@ public partial class ServerSpecificFeatures
                 await PatchTuesdayAnnouncementCheck(e, 696333378990899301, 1251028070488477716);
             }
 #endif
+            #endregion Patch Tuesday announcements
             
+            #region shut
             // Redis "shutCooldowns" hash:
             // Key user ID
             // Value whether user has attempted to use the command during cooldown
@@ -183,6 +191,71 @@ public partial class ServerSpecificFeatures
                         await Program.Db.HashSetAsync("shutCooldowns", userId.ToString(), JsonConvert.SerializeObject(userShutCooldown));
                 }
             }
+            #endregion shut
+        }
+        
+        public static async Task GuildMemberUpdateChecks(GuildMemberUpdatedEventArgs e)
+        {
+            #region avatar update
+            
+            // this only applies to me (FloatingMilkshake).
+            // if "cdn" commands are disabled, configuration required to upload to cdn is missing;
+            // that means this probably won't work either!
+            if (e.MemberAfter.Id == 455432936339144705 && !Program.DisabledCommands.Contains("cdn"))
+            {
+                // compare avatar hash; if it has changed, update avatar on cdn
+                
+                // try to get last known avatar hash
+                var lastHash = (await Program.Db.StringGetAsync("lastAvatarHash")).ToString();
+                
+                if (string.IsNullOrEmpty(lastHash) || lastHash != e.MemberAfter.AvatarHash)
+                {
+                    // last known hash is unknown, or it doesn't match the current hash. update!
+                    try
+                    {
+                        // get avatar from Discord
+                        MemoryStream avatar = new(await Program.HttpClient.GetByteArrayAsync(e.MemberAfter.AvatarUrl));
+                        
+                        // try to upload to cdn...
+                        await Program.Minio.PutObjectAsync(new PutObjectArgs()
+                            .WithBucket(Program.ConfigJson.S3.Bucket)
+                            .WithObject("avatar_test.png")
+                            .WithStreamData(avatar)
+                            .WithObjectSize(avatar.Length)
+                            .WithContentType("image/png"));
+                        
+                        // if successful, record new hash & drop a message
+                        await Program.Db.StringSetAsync("lastAvatarHash", e.MemberAfter.AvatarHash);
+                        await Program.HomeChannel.SendMessageAsync($"<@455432936339144705> avatar updated!");
+                    }
+                    catch (MinioException mex)
+                    {
+                        // handle upload failures
+                        
+                        await Program.HomeChannel.SendMessageAsync(new DiscordEmbedBuilder()
+                        {
+                            Title = "A MinIO error occurred while processing an avatar update",
+                            Description =
+                                $"A `{mex.GetType()}` exception occurred while attempting to upload an updated avatar."
+                                + $"```\n{mex.GetType()}: {mex.Message}\n{mex.StackTrace}\n```"
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        // handle other errors
+                        
+                        await Program.HomeChannel.SendMessageAsync(new DiscordEmbedBuilder()
+                        {
+                            Title = "An error occurred while processing an avatar update",
+                            Description =
+                                $"A `{ex.GetType()}` exception occurred while processing an updated avatar."
+                                + $"```\n{ex.GetType()}: {ex.Message}\n{ex.StackTrace}\n```"
+                        });
+                    }
+                }
+            }
+            
+            #endregion avatar update
         }
 
         private static async Task PatchTuesdayAnnouncementCheck(MessageCreatedEventArgs e, ulong authorId, ulong channelId)
@@ -227,10 +300,12 @@ public partial class ServerSpecificFeatures
             await e.Message.Channel.SendMessageAsync(msg);
         }
 
+        #region regex
         [GeneratedRegex("(.*)?<@!?([0-9]+)>(.*)")]
         private static partial Regex MentionPattern();
         [GeneratedRegex(@"https.*windows-(\d+).*?build[s]?-(?:(\d+(?:-\d+)?)(?:-and-(\d+-\d+)?)*)(?:.+?(?:(canary|dev|beta|release-preview)(?:-and-(canary|dev|beta|release-preview))*)?-channel[s]?.*)?\/")]
         private static partial Regex InsiderUrlPattern();
+        #endregion regex
     }
     
     public class Commands
