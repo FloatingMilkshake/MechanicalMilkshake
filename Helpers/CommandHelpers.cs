@@ -32,7 +32,11 @@ public class CommandHelpers
         var homeServerSlashCommandTypes = GetHomeServerInteractionCommandTypes();
         
         // Always register owner commands in home server only (+ second private server)
+#if DEBUG
+        extension.AddCommands(homeServerSlashCommandTypes, homeServerId);
+#else
         extension.AddCommands(homeServerSlashCommandTypes, homeServerId, 1342179809618559026);
+#endif
         
         // Always register user-install commands globally
         extension.AddCommands(userInstallCommandTypes);
