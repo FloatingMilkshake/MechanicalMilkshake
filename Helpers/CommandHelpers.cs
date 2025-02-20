@@ -31,8 +31,8 @@ public class CommandHelpers
         var guildInstallCommandTypes = GetGuildInstallInteractionCommandTypes(publicInteractionCommandTypes);
         var homeServerSlashCommandTypes = GetHomeServerInteractionCommandTypes();
         
-        // Always register owner commands in home server only
-        extension.AddCommands(homeServerSlashCommandTypes, homeServerId);
+        // Always register owner commands in home server only (+ second private server)
+        extension.AddCommands(homeServerSlashCommandTypes, homeServerId, 1342179809618559026);
         
         // Always register user-install commands globally
         extension.AddCommands(userInstallCommandTypes);
