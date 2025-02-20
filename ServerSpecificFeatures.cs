@@ -26,9 +26,14 @@ public partial class ServerSpecificFeatures
                         await chan.SendMessageAsync(e.Message.Content);
                 }
                 #endregion &caption -> #captions
-                
+            }
+            #endregion dev/home server
+            
+            #region private server
+            if (e.Guild.Id == 1342179809618559026)
+            {
                 #region parse Windows Insiders RSS feed
-                if (e.Message.Author.Id == 944784076735414342 && e.Message.Channel.Id == 1227636018375819296)
+                if (e.Message.Author.Id == 944784076735414342 && e.Message.Channel.Id == 1342180704401883288)
                 {
                     // ignore no-content messages
                     if (e.Message.Content is null) return;
@@ -97,7 +102,7 @@ public partial class ServerSpecificFeatures
                 }
                 #endregion parse Windows Insiders RSS feed
             }
-            #endregion dev/home server
+            #endregion private server
             
             #region Patch Tuesday announcements
 #if DEBUG
