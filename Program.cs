@@ -267,9 +267,6 @@ public class Program
         // Populate ApplicationCommands
         await Task.Run(async () => CommandTasks.ExecuteAsync());
         
-        // Package update check
-        await Task.Run(async () => PackageUpdateTasks.ExecuteAsync());
-        
         // Reminder check
         await Task.Run(async () => ReminderTasks.ExecuteAsync());
         

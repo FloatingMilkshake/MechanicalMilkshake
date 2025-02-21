@@ -148,9 +148,6 @@ public class DebugCmds
         int numRemindersSent = default;
         int numRemindersFailed = default;
         int numRemindersWithNullTime = default;
-        int numHostsChecked = default;
-        int totalNumHosts = default;
-        string checkResult = default;
         double dbPing = default;
 
         switch (checksToRun)
@@ -158,7 +155,6 @@ public class DebugCmds
             case "all":
                 (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime) =
                     await ReminderTasks.CheckRemindersAsync();
-                (numHostsChecked, totalNumHosts, checkResult) = await PackageUpdateTasks.CheckPackageUpdatesAsync();
                 dbPing = await DatabaseTasks.CheckDatabaseConnectionAsync();
                 break;
             case "reminders":
@@ -167,9 +163,6 @@ public class DebugCmds
                 break;
             case "databaseConnection":
                 dbPing = await DatabaseTasks.CheckDatabaseConnectionAsync();
-                break;
-            case "packageUpdates":
-                (numHostsChecked, totalNumHosts, checkResult) = await PackageUpdateTasks.CheckPackageUpdatesAsync();
                 break;
         }
         
@@ -186,29 +179,19 @@ public class DebugCmds
         // database ping
         var dbPingResultMessage = $"**Database ping:** {(double.IsNaN(dbPing) ? "Unreachable!" : $"`{dbPing}ms`")}";
         
-        // package updates
-        var packageUpdateCheckResultMessage = "**Package Updates:** " + (totalNumHosts == 0
-            ? "No hosts to check for package updates.\n"
-            : $"Checked `{numHostsChecked}`/`{totalNumHosts}` hosts for package updates.\n> ");
-        if (numHostsChecked != 0 && checkResult is not null)
-            packageUpdateCheckResultMessage += $"{checkResult.Replace("\n", "\n> ")}";
-        
         // set up response msg content
         // include relevant check results (see variables)
         var response = "Done!\n";
         switch (checksToRun)
         {
             case "all":
-                response += $"{reminderCheckResultMessage}\n{dbPingResultMessage}\n{packageUpdateCheckResultMessage}";
+                response += $"{reminderCheckResultMessage}\n{dbPingResultMessage}";
                 break;
             case "reminders":
                 response += reminderCheckResultMessage;
                 break;
             case "databaseConnection":
                 response += dbPingResultMessage;
-                break;
-            case "packageUpdates":
-                response += packageUpdateCheckResultMessage;
                 break;
         }
         
@@ -271,8 +254,7 @@ public class DebugCmds
         [
             new("All", "all"),
             new("Reminders", "reminders"),
-            new("Database Connection", "databaseConnection"),
-            new("Package Updates", "packageUpdates")
+            new("Database Connection", "databaseConnection")
         ];
         
         public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;

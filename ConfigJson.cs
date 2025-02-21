@@ -37,10 +37,6 @@ public class BaseConfig
 
     [JsonProperty("authorizedUsers")] public string[] AuthorizedUsers { get; private set; }
 
-    [JsonProperty("sshHosts")] public string[] SshHosts { get; private set; }
-    
-    [JsonProperty("packageUpdateCheckIntervalDays")] public int PackageUpdateCheckIntervalDays { get; private set; }
-
     [JsonProperty("useServerSpecificFeatures")] public bool UseServerSpecificFeatures { get; private set; }
     
     [JsonProperty("uptimeKumaHeartbeatUrl")] public string UptimeKumaHeartbeatUrl { get; private set; }
