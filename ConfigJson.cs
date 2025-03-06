@@ -17,10 +17,6 @@ public class ConfigJson
     [JsonProperty("logs")] public LogConfig Logs { get; private set; }
     
     [JsonProperty("dbots")] public DBotsConfig DBots { get; private set; }
-    
-    [JsonProperty("wakeOnLan")] public WakeOnLanConfig WakeOnLan { get; private set; }
-    
-    [JsonProperty("err")] public ErrConfig Err { get; private set; }
 }
 
 public class BaseConfig
@@ -113,17 +109,4 @@ public class DBotsConfig
     [JsonProperty("doStatsPosting")] public bool DoStatsPosting { get; private set; }
     [JsonProperty("apiToken")] public string ApiToken { get; private set; }
     [JsonProperty("apiEndpoint")] public string ApiEndpoint { get; private set; }
-}
-
-public class WakeOnLanConfig
-{
-    [JsonProperty("ipAddress")] public string IpAddress { get; private set; }
-    [JsonProperty("macAddress")] public string MacAddress { get; private set; }
-    [JsonProperty("port")] public int Port { get; private set; }
-}
-
-public class ErrConfig
-{
-    [JsonProperty("sshUsername")] public string SshUsername { get; private set; }
-    [JsonProperty("sshHost")] public string SshHost { get; private set; }
 }

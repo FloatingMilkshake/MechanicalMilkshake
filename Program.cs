@@ -233,16 +233,6 @@ public class Program
             DisabledCommands.Add("feedback");
         }
         
-        if (ConfigJson.WakeOnLan is null || ConfigJson.WakeOnLan.MacAddress == "" || ConfigJson.WakeOnLan.IpAddress == "" ||
-            ConfigJson.WakeOnLan.Port == 0 || ConfigJson.Err.SshUsername == "" || ConfigJson.Err.SshHost == "")
-        {
-            Discord.Logger.LogWarning(BotEventId,
-                // ReSharper disable once LogMessageIsSentenceProblem
-                "Error lookup command disabled due to missing Wake-on-LAN information.");
-
-            DisabledCommands.Add("err");
-        }
-        
         if (ConfigJson.Base.UptimeKumaHeartbeatUrl is null or "")
         {
             Discord.Logger.LogWarning(BotEventId, "Uptime Kuma heartbeats disabled due to missing push URL.");
