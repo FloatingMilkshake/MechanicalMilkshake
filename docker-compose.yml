@@ -14,10 +14,6 @@ services:
       - type: bind
         source: ./config.json
         target: /app/config.json
-      # Comment out or edit this mount if you aren't using an SSH key for package update checks, or if you are using a different key format
-      - type: bind
-        source: ./id_ed25519
-        target: /app/id_ed25519
   redis:
     image: redis:alpine
     restart: always

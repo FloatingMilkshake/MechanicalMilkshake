@@ -10,7 +10,4 @@ WORKDIR /app
 COPY --from=build-env /app/out .
 RUN apk add bash openssh redis icu-libs --no-cache
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
-RUN mkdir ~/.ssh \
-	&& echo StrictHostKeyChecking no > ~/.ssh/config \
-	&& touch ~/.ssh/id_ed25519
 ENTRYPOINT ["dotnet", "MechanicalMilkshake.dll"]
