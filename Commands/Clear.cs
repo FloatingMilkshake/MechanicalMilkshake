@@ -143,7 +143,7 @@ public partial class Clear
                 messagesToClear.Add(firstMsg);
                 while (true)
                 {
-                    var newMessages = await ctx.Channel.GetMessagesAfterAsync(firstMsgId).ToListAsync();
+                    var newMessages = await ctx.Channel.GetMessagesAfterAsync(firstMsgId).OrderByDescending(x => x.Id).ToListAsync();
                     messagesToClear.AddRange(newMessages);
                     firstMsgId = newMessages.First().Id;
                     if (newMessages.Count < 100)
