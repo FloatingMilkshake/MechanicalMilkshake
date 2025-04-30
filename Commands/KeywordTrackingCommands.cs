@@ -526,7 +526,7 @@ public partial class Track
 
         DiscordButtonComponent confirmButton = new(DiscordButtonStyle.Danger, "track-remove-confirm-button", "Remove");
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AddComponents(confirmButton).AsEphemeral());
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AddActionRowComponent(confirmButton).AsEphemeral());
     }
     
     [GeneratedRegex("[0-9]+")]

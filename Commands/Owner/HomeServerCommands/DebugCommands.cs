@@ -25,7 +25,7 @@ public class DebugCmds
 
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
             .WithContent("Are you sure you want to shut down the bot? This action cannot be undone.")
-            .AddComponents(shutdownButton, cancelButton));
+            .AddActionRowComponent(shutdownButton, cancelButton));
     }
 
     [Command("restart")]

@@ -266,7 +266,7 @@ public partial class ReminderCmds
 
         await ctx.FollowupAsync(
             new DiscordFollowupMessageBuilder().WithContent("Please choose a reminder to delete.")
-                .AddComponents(new DiscordSelectComponent("reminder-delete-dropdown", null, options))
+                .AddActionRowComponent(new DiscordSelectComponent("reminder-delete-dropdown", null, options))
                 .AsEphemeral());
     }
 
@@ -549,7 +549,7 @@ public partial class ReminderCmds
 
         await ctx.FollowupAsync(
             new DiscordFollowupMessageBuilder().WithContent("Please choose a reminder to show details for.")
-                .AddComponents(new DiscordSelectComponent("reminder-show-dropdown", null, options))
+                .AddActionRowComponent(new DiscordSelectComponent("reminder-show-dropdown", null, options))
                 .AsEphemeral());
     }
 

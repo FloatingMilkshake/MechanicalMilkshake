@@ -22,7 +22,7 @@ public partial class ComponentInteractionEvent
                             new DiscordInteractionResponseBuilder()
                                 .WithContent(
                                     "The bot may not be running under Docker and as such cannot be restarted this way! Please restart the bot manually.")
-                                .AddComponents(restartButton));
+                                .AddActionRowComponent(restartButton));
                         return;
                     }
                 }
@@ -33,13 +33,13 @@ public partial class ComponentInteractionEvent
                         new DiscordInteractionResponseBuilder()
                             .WithContent(
                                 "The bot may not be running under Docker and as such cannot be restarted this way! Please restart the bot manually.")
-                            .AddComponents(restartButton));
+                            .AddActionRowComponent(restartButton));
                     return;
                 }
 
                 e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage,
                     new DiscordInteractionResponseBuilder().WithContent("Restarting!")
-                        .AddComponents(restartButton));
+                        .AddActionRowComponent(restartButton));
                 Environment.Exit(1);
                 break;
             }
@@ -68,7 +68,7 @@ public partial class ComponentInteractionEvent
                 e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage,
                     new DiscordInteractionResponseBuilder()
                         .WithContent("Warning: The bot is now shutting down. This action cannot be undone.")
-                        .AddComponents(shutdownButton, cancelButton));
+                        .AddActionRowComponent(shutdownButton, cancelButton));
 
                 await Task.Delay(1000);
                 Program.Discord.DisconnectAsync();
@@ -100,7 +100,7 @@ public partial class ComponentInteractionEvent
                     new(DiscordButtonStyle.Primary, "shutdown-cancel-button", "Cancel", true);
                 e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage,
                     new DiscordInteractionResponseBuilder().WithContent("Shutdown canceled.")
-                        .AddComponents(shutdownButton, cancelButton));
+                        .AddActionRowComponent(shutdownButton, cancelButton));
                 break;
             }
             case "shutdown-cancel-button":
@@ -367,7 +367,7 @@ public partial class ComponentInteractionEvent
                         
                         DiscordMessageBuilder message = new();
                         message.AddEmbed(e.Message.Embeds[0]);
-                        message.AddComponents(new DiscordButtonComponent(DiscordButtonStyle.Danger,
+                        message.AddActionRowComponent(new DiscordButtonComponent(DiscordButtonStyle.Danger,
                             "track-remove-confirm-button",
                             "Remove", true));
                     }

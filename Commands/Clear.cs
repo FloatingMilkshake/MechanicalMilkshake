@@ -278,7 +278,7 @@ public partial class Clear
                     .WithContent(dryRun ? $"You would be about to delete {messagesToClear.Count} messages, but since "
                                             + "you used `dry_run = True`, I won't do anything."
                                         : $"You're about to delete {messagesToClear.Count} messages. Are you sure?")
-                    .AddComponents(confirmButton).AsEphemeral());
+                    .AddActionRowComponent(confirmButton).AsEphemeral());
 
                 MessagesToClear.Add(confirmationMessage.Id, messagesToClear);
                 break;

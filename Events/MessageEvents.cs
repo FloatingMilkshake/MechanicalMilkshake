@@ -278,7 +278,7 @@ public partial class MessageEvents
                         isReply = "Yes";
                         DiscordButtonComponent button = new(DiscordButtonStyle.Primary,
                             "view-dm-reply-info", "View Reply Info");
-                        messageBuilder = messageBuilder.AddComponents(button);
+                        messageBuilder = messageBuilder.AddActionRowComponent(button);
                     }
 
                     embed.AddField("Is Reply", isReply);
@@ -294,7 +294,7 @@ public partial class MessageEvents
                     {
                         DiscordButtonComponent button = new(DiscordButtonStyle.Primary, "view-dm-context",
                             "View Context");
-                        messageBuilder.AddComponents(button);
+                        messageBuilder.AddActionRowComponent(button);
                     }
 
                     messageBuilder = messageBuilder.AddEmbed(embed.Build());

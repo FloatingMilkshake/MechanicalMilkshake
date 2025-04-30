@@ -34,6 +34,6 @@ public class Avatar
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent(
                     $"You requested the avatar for {targetUser.Mention}. Please choose one of the options below.")
-                .AddComponents(serverAvatarButton, userAvatarButton).AsEphemeral());
+                .AddActionRowComponent(serverAvatarButton, userAvatarButton).AsEphemeral());
     }
 }
