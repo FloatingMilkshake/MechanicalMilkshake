@@ -114,7 +114,6 @@ public class Program
                     .HandleGuildCreated(GuildEvents.GuildCreated)
                     .HandleGuildDeleted(GuildEvents.GuildDeleted)
                     .HandleGuildDownloadCompleted(GuildEvents.GuildDownloadCompleted)
-                    .HandleGuildMemberUpdated(GuildMemberEvents.GuildMemberUpdated)
         );
         clientBuilder.UseInteractivity(new InteractivityConfiguration
         {
