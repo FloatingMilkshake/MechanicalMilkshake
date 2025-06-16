@@ -45,8 +45,8 @@ public class Lockdown
         
         // Construct failsafe permission sets
         // Grant Send Messages to the bot and to the invoker in addition to any permissions they might already have,
-        var botAllowedPermissions = botAllowedPermissionsBeforeLockdown.Add(DiscordPermission.SendMessages);
-        var invokerAllowedPermissions = invokerAllowedPermissionsBeforeLockdown.Add(DiscordPermission.SendMessages);
+        var botAllowedPermissions = botAllowedPermissionsBeforeLockdown + DiscordPermission.SendMessages;
+        var invokerAllowedPermissions = invokerAllowedPermissionsBeforeLockdown + DiscordPermission.SendMessages;
         
         // Apply failsafes for lockdown
         await ctx.Channel.AddOverwriteAsync(ctx.Channel.Guild.CurrentMember, botAllowedPermissions, botDeniedPermissionsBeforeLockdown, "Failsafe 1 for Lockdown");
@@ -66,7 +66,7 @@ public class Lockdown
             everyoneDeniedPermissionsBeforeLockdown = everyoneOverwritesBeforeLockdown.Denied;
         
         // Construct new @everyone permission set
-        var everyoneDeniedPermissions = everyoneDeniedPermissionsBeforeLockdown.Add(DiscordPermission.SendMessages);
+        var everyoneDeniedPermissions = everyoneDeniedPermissionsBeforeLockdown + DiscordPermission.SendMessages;
         
         // Lock the channel
         await ctx.Channel.AddOverwriteAsync(ctx.Channel.Guild.EveryoneRole, everyoneAllowedPermissionsBeforeLockdown, everyoneDeniedPermissions, $"Lockdown by {ctx.User.Username}");
@@ -124,8 +124,8 @@ public class Lockdown
         
         // Construct new permission sets for bot and invoker
         // Resets Send Messages and Send Messages in Threads for bot and invoker, while preserving other permissions
-        var botAllowedPermissions = botAllowedPermissionsBeforeUnlock.Remove(DiscordPermission.SendMessages).Remove(DiscordPermission.SendThreadMessages);
-        var invokerAllowedPermissions = invokerAllowedPermissionsBeforeUnlock.Remove(DiscordPermission.SendMessages).Remove(DiscordPermission.SendThreadMessages);
+        var botAllowedPermissions = botAllowedPermissionsBeforeUnlock - DiscordPermission.SendMessages - DiscordPermission.SendThreadMessages;
+        var invokerAllowedPermissions = invokerAllowedPermissionsBeforeUnlock - DiscordPermission.SendMessages - DiscordPermission.SendThreadMessages;
         
         // Get the @everyone role's permission set from before the unlock
         var everyoneOverwritesBeforeUnlock = permissions.Where(x => x.Id == ctx.Channel.Guild.EveryoneRole.Id).FirstOrDefault();
@@ -142,7 +142,7 @@ public class Lockdown
         
         // Construct new permission set for @everyone
         // Resets Send Messages while preserving other permissions
-        var everyoneDeniedPermissions = everyoneDeniedPermissionsBeforeUnlock.Remove(DiscordPermission.SendMessages);
+        var everyoneDeniedPermissions = everyoneDeniedPermissionsBeforeUnlock - DiscordPermission.SendMessages;
         
         // Unlock the channel
         await ctx.Channel.AddOverwriteAsync(ctx.Channel.Guild.EveryoneRole, everyoneAllowedPermissionsBeforeUnlock, everyoneDeniedPermissions, $"Unlock by {ctx.User.Username}");
