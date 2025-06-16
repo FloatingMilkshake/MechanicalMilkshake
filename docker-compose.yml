@@ -14,6 +14,7 @@ services:
       - type: bind
         source: ./config.json
         target: /app/config.json
+    labels: [ "com.centurylinklabs.watchtower.scope=mechanicalmilkshake" ]
   redis:
     image: redis:alpine
     restart: always
@@ -27,9 +28,11 @@ services:
       timeout: 5s
       retries: 5
     command: --appendonly yes
+    labels: [ "com.centurylinklabs.watchtower.scope=mechanicalmilkshake" ]
   watchtower:
     image: containrrr/watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command: --interval 30 --label-enable
+    command: --interval 30 --label-enable --scope mechanicalmilkshake
     restart: always
+    labels: [ "com.centurylinklabs.watchtower.scope=mechanicalmilkshake" ]
