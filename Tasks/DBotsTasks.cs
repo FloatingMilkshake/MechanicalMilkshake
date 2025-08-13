@@ -4,16 +4,17 @@ public class DBotsTasks
 {
     public static async Task ExecuteAsync()
     {
-        if (Program.ConfigJson.DBots is null ||
-            string.IsNullOrWhiteSpace(Program.ConfigJson.DBots.ApiToken) ||
-            string.IsNullOrWhiteSpace(Program.ConfigJson.DBots.ApiEndpoint))
+        if (string.IsNullOrWhiteSpace(Program.ConfigJson.DbotsApiToken))
         {
             Program.Discord.Logger.LogWarning(Program.BotEventId, "DBots stats posting disabled due to missing configuration.");
             return;
         }
 
         Program.Discord.Logger.LogDebug(Program.BotEventId, "DBots stats posting {Status}.",
-            Program.ConfigJson.DBots.DoStatsPosting ? "enabled" : "disabled");
+            Program.ConfigJson.DoDbotsStatsPosting ? "enabled" : "disabled");
+        
+        if (!Program.ConfigJson.DoDbotsStatsPosting)
+            return;
         
         while (true)
         {
@@ -25,8 +26,8 @@ public class DBotsTasks
     
     public static async Task UpdateStatsAsync()
     {
-        using var requestMessage = new HttpRequestMessage(HttpMethod.Post, Program.ConfigJson.DBots.ApiEndpoint);
-        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(Program.ConfigJson.DBots.ApiToken);
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Post, $"https://discord.bots.gg/api/v1/bots/{Program.Discord.CurrentUser.Id}/stats");
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(Program.ConfigJson.DbotsApiToken);
         requestMessage.Content = JsonContent.Create(new { guildCount = Program.Discord.Guilds.Count });
         
         using var response = await Program.HttpClient.SendAsync(requestMessage);
@@ -39,7 +40,7 @@ public class DBotsTasks
         else
         {
             Program.Discord.Logger.LogError(Program.BotEventId, "Failed posting stats to DBots. {StatusCode} {Reason}",
-                response.StatusCode, response.ReasonPhrase);
+                (int)response.StatusCode, response.ReasonPhrase);
         }
     }
 }

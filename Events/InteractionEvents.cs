@@ -15,8 +15,8 @@ public class InteractionEvents
         {
             // Ignore home server, excluded servers, and authorized users
             if (context.Guild is not null && (context.Guild.Id == Program.HomeServer.Id || context.Guild.Id == 1342179809618559026 ||
-                Program.ConfigJson.Logs.SlashCommands.CmdLogExcludedGuilds.Contains(context.Guild.Id.ToString())) ||
-                Program.ConfigJson.Base.AuthorizedUsers.Contains(context.User.Id.ToString()))
+                Program.ConfigJson.SlashCommandLogExcludedGuilds.Contains(context.Guild.Id.ToString())) ||
+                Program.ConfigJson.BotCommanders.Contains(context.User.Id.ToString()))
                 return;
 
             // Increment count
@@ -26,7 +26,7 @@ public class InteractionEvents
                 await Program.Db.HashSetAsync("commandCounts", context.Command.FullName, 1);
 
             // Log to log channel if configured
-            if (Program.ConfigJson.Logs.SlashCommands.LogChannel is not null)
+            if (Program.ConfigJson.SlashCommandLogChannel is not null)
             {
                 var description = context.Channel.IsPrivate
                     ? $"{context.User.Username} (`{context.User.Id}`) used {SlashCmdMentionHelpers.GetSlashCmdMention(context.Command.FullName)} in DMs."
@@ -41,7 +41,7 @@ public class InteractionEvents
                 try
                 {
                     await (await context.Client.GetChannelAsync(
-                        Convert.ToUInt64(Program.ConfigJson.Logs.SlashCommands.LogChannel))).SendMessageAsync(embed);
+                        Convert.ToUInt64(Program.ConfigJson.SlashCommandLogChannel))).SendMessageAsync(embed);
                 }
                 catch (Exception ex) when (ex is UnauthorizedException or NotFoundException)
                 {

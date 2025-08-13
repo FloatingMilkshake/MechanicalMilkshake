@@ -1,77 +1,26 @@
 {
-  "base": {
-    "botToken": "",
-    "homeChannel": "",
-    "homeServer": "",
-    "hastebinUrl": "",
-    "wolframAlphaAppId": "",
-    "authorizedUsers": [
-      "",
-      ""
-    ],
-    "useServerSpecificFeatures": false,
-    "uptimeKumaHeartbeatUrl": ""
-  },
-  
-  "ids": {
-    "feedbackChannel": "",
-    "ratelimitCautionChannels": []
-  },
-  
-  "hastebin": {
-    "url": "",
-    "namespaceId": ""
-  },
-
-  "workerLinks": {
-    "baseUrl": "",
-    "secret": "",
-    "namespaceId": "",
-    "apiKey": "",
-    "email": ""
-  },
-
-  "s3": {
-    "bucket": "",
-    "cdnBaseUrl": "",
-    "endpoint": "",
-    "accessKey": "",
-    "secretKey": "",
-    "region": ""
-  },
-
-  "cloudflare": {
-    "urlPrefix": "",
-    "zoneId": "",
-    "token": "",
-    "accountId": ""
-  },
-
-  "logs": {
-    "slashCommands": {
-      "logChannel": "",
-      "cmdLogExcludedGuilds": [
-        "",
-        ""
-      ]
-    },
-    "guilds": ""
-  },
-  
-  "dbots": {
-    "doStatsPosting": false,
-    "apiToken": "",
-    "apiEndpoint": ""
-  },
-
-  "wakeOnLan": {
-    "ipAddress": "",
-    "macAddress": "",
-    "port": 9
-  },
-  
-  "err": {
-    "sshUsername": "",
-    "sshHost": ""
-  }
+  "botToken": "blahblahblahblahblah",
+  "homeChannel": "886067494069100544",
+  "homeServer": "799644062973427743",
+  "hastebinUrl": "https://haste.floatingmilkshake.com",
+  "wolframAlphaAppId": "blah-blahblah",
+  "botCommanders": [
+    "455432936339144705",
+    "795484125184131073",
+    "455428041586376729"
+  ],
+  "useServerSpecificFeatures": true,
+  "uptimeKumaHeartbeatUrl": "https://uptime.floatingmilkshake.com/api/push/blah-blah-blah",
+  "feedbackChannel": "1016805107993677926",
+  "ratelimitCautionChannels": [
+    "119222314964353025",
+    "882446411130601472"
+  ],
+  "slashCommandLogChannel": "1037044194860085318",
+  "slashCommandLogExcludedGuilds": [
+    "1007457740655968327"
+  ],
+  "guildLogChannel": "1019068256163729461",
+  "doDbotsStatsPosting": true,
+  "dbotsApiToken": "blahblahblahblahblah"
 }

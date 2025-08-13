@@ -29,7 +29,7 @@ public class WolframAlpha
 
         var queryEncoded = HttpUtility.UrlEncode(query).Replace("(", "%28").Replace(")", "%29");
 
-        var appid = Program.ConfigJson.Base.WolframAlphaAppId;
+        var appid = Program.ConfigJson.WolframAlphaAppId;
 
         var queryEscaped = query.Replace("`", @"\`")
             .Replace("*", @"\*")

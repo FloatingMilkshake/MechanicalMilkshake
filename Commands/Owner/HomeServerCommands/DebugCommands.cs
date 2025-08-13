@@ -68,17 +68,17 @@ public class DebugCmds
             Color = Program.BotColor
         };
 
-        List<DiscordUser> authorizedUsers = [];
+        List<DiscordUser> BotCommanders = [];
 
         var botOwners = ctx.Client.CurrentApplication.Owners.ToList();
 
-        foreach (var userId in Program.ConfigJson.Base.AuthorizedUsers)
-            authorizedUsers.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
+        foreach (var userId in Program.ConfigJson.BotCommanders)
+            BotCommanders.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
 
         var botOwnerList = botOwners.Aggregate("",
             (current, owner) => current + $"\n- {UserInfoHelpers.GetFullUsername(owner)} (`{owner.Id}`)");
 
-        var authUsersList = authorizedUsers.Aggregate("",
+        var authUsersList = BotCommanders.Aggregate("",
             (current, user) => current + $"\n- {UserInfoHelpers.GetFullUsername(user)} (`{user.Id}`)");
 
         embed.AddField("Bot Owners", botOwnerList);

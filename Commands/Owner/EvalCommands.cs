@@ -57,7 +57,7 @@ public class EvalCommands
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(response));
     }
 
-    public static async Task<ShellCommandResponse> RunCommand(string command)
+    private static async Task<ShellCommandResponse> RunCommand(string command)
     {
         var osDescription = RuntimeInformation.OSDescription;
         string fileName;
@@ -168,20 +168,62 @@ public class EvalCommands
     private static string HideSensitiveInfo(string input)
     {
         const string redacted = "[redacted]";
-        var output = input.Replace(Program.ConfigJson.Base.BotToken, redacted);
-        if (Program.ConfigJson.Base.WolframAlphaAppId != "")
-            output = output.Replace(Program.ConfigJson.Base.WolframAlphaAppId, redacted);
-        if (Program.ConfigJson.WorkerLinks.Secret != "")
-            output = output.Replace(Program.ConfigJson.WorkerLinks.Secret, redacted);
-        if (Program.ConfigJson.WorkerLinks.ApiKey != "")
-            output = output.Replace(Program.ConfigJson.WorkerLinks.ApiKey, redacted);
-        if (Program.ConfigJson.S3.AccessKey != "")
-            output = output.Replace(Program.ConfigJson.S3.AccessKey, redacted);
-        if (Program.ConfigJson.S3.SecretKey != "")
-            output = output.Replace(Program.ConfigJson.S3.SecretKey, redacted);
-        if (Program.ConfigJson.Cloudflare.Token != "")
-            output = output.Replace(Program.ConfigJson.Cloudflare.Token, redacted);
+        var output = input.Replace(Program.ConfigJson.BotToken, redacted);
+        if (Program.ConfigJson.WolframAlphaAppId != "")
+            output = output.Replace(Program.ConfigJson.WolframAlphaAppId, redacted);
 
         return output;
     }
+}
+
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
+internal class Globals
+{
+    public Globals(DiscordClient client, MechanicalMilkshake.SlashCommandContext ctx)
+    {
+        Context = ctx;
+        Client = client;
+        Channel = ctx.Channel;
+        Guild = ctx.Guild;
+        User = ctx.User;
+        if (Guild is not null) Member = Guild.GetMemberAsync(User.Id).ConfigureAwait(false).GetAwaiter().GetResult();
+    }
+
+    public DiscordClient Client { get; set; }
+    public DiscordMessage Message { get; set; }
+    public DiscordChannel Channel { get; set; }
+    public DiscordGuild Guild { get; set; }
+    public DiscordUser User { get; set; }
+    public DiscordMember Member { get; set; }
+    public MechanicalMilkshake.SlashCommandContext Context { get; set; }
+}
+
+internal class ShellCommandResponse
+{
+    public ShellCommandResponse(int exitCode, string output, string error)
+    {
+        ExitCode = exitCode;
+        Output = output;
+        Error = error;
+    }
+    
+    public ShellCommandResponse(int exitCode, string output)
+    {
+        ExitCode = exitCode;
+        Output = output;
+        Error = default;
+    }
+
+    public ShellCommandResponse()
+    {
+        ExitCode = default;
+        Output = default;
+        Error = default;
+    }
+
+    public int ExitCode { get; set; }
+    public string Output { get; set; }
+    public string Error { get; set; }
 }

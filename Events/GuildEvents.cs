@@ -9,7 +9,7 @@ public class GuildEvents
     public static async Task GuildCreated(DiscordClient client, GuildCreatedEventArgs e)
     {
         // Fail silently if log channel ID missing or invalid
-        if (Program.ConfigJson.Logs.Guilds == "") return;
+        if (Program.ConfigJson.GuildLogChannel == "") return;
         if (!await GetFeedbackChannel()) return;
         
         if (UnavailableGuilds.Contains(e.Guild.Id))
@@ -31,7 +31,7 @@ public class GuildEvents
     public static async Task GuildDeleted(DiscordClient client, GuildDeletedEventArgs e)
     {
         // Fail silently if log channel ID missing or invalid
-        if (Program.ConfigJson.Logs.Guilds == "") return;
+        if (Program.ConfigJson.GuildLogChannel == "") return;
         if (!await GetFeedbackChannel()) return;
         
         if (e.Guild.IsUnavailable)
@@ -92,7 +92,7 @@ public class GuildEvents
 
         try
         {
-            var chanId = Convert.ToUInt64(Program.ConfigJson.Logs.Guilds);
+            var chanId = Convert.ToUInt64(Program.ConfigJson.GuildLogChannel);
             _guildLogChannel = await Program.Discord.GetChannelAsync(chanId);
             success = true;
         }

@@ -40,7 +40,7 @@ public class CommandHelpers
         // Register guild-install commands in home server when debugging
         extension.AddCommands(guildInstallCommandTypes, homeServerId);
         
-        if (Program.ConfigJson.Base.UseServerSpecificFeatures)
+        if (Program.ConfigJson.UseServerSpecificFeatures)
         {
             // Register server-specific feature commands in home server when debugging
             extension.AddCommands<ServerSpecificFeatures.Commands.RoleCommands>(homeServerId);
@@ -50,7 +50,7 @@ public class CommandHelpers
         // Register guild-install commands globally for 'production' bot
         extension.AddCommands(guildInstallCommandTypes);
 
-        if (Program.ConfigJson.Base.UseServerSpecificFeatures)
+        if (Program.ConfigJson.UseServerSpecificFeatures)
         {
             // Register server-specific feature commands in respective guilds for 'production' bot
             extension.AddCommands<ServerSpecificFeatures.Commands.RoleCommands>(homeServerId, 984903591816990730);

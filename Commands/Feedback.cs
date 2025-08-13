@@ -51,7 +51,7 @@ public class Feedback
     {
         try
         {
-            return Convert.ToUInt64(Program.ConfigJson.Ids.FeedbackChannel);
+            return Convert.ToUInt64(Program.ConfigJson.FeedbackChannel);
         }
         catch
         {

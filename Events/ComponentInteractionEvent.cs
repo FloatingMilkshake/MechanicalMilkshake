@@ -8,7 +8,7 @@ public partial class ComponentInteractionEvent
         switch (e.Id)
         {
             case "slash-fail-restart-button"
-                when Program.ConfigJson.Base.AuthorizedUsers.Contains(e.User.Id.ToString()):
+                when Program.ConfigJson.BotCommanders.Contains(e.User.Id.ToString()):
             {
                 DiscordButtonComponent restartButton =
                     new(DiscordButtonStyle.Danger, "slash-fail-restart-button", "Restart", true);
@@ -51,7 +51,7 @@ public partial class ComponentInteractionEvent
                         .AsEphemeral());
                 break;
             }
-            case "shutdown-button" when Program.ConfigJson.Base.AuthorizedUsers.Contains(e.User.Id.ToString()):
+            case "shutdown-button" when Program.ConfigJson.BotCommanders.Contains(e.User.Id.ToString()):
             {
                 if (e.User.Id != e.Message.Interaction.User.Id)
                 {
@@ -84,7 +84,7 @@ public partial class ComponentInteractionEvent
                         .AsEphemeral());
                 break;
             }
-            case "shutdown-cancel-button" when Program.ConfigJson.Base.AuthorizedUsers.Contains(e.User.Id.ToString()):
+            case "shutdown-cancel-button" when Program.ConfigJson.BotCommanders.Contains(e.User.Id.ToString()):
             {
                 if (e.User.Id != e.Message.Interaction.User.Id)
                 {
@@ -483,12 +483,6 @@ public partial class ComponentInteractionEvent
                     new DiscordInteractionResponseBuilder().AddEmbed(embed).AsEphemeral());
                 break;
             }
-            case "right":
-            case "rightskip":
-            case "left":
-            case "leftskip":
-            case "stop":
-                break; // avoid getting in the way when pagination is used
             default:
                 e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(

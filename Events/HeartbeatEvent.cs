@@ -6,11 +6,11 @@ public class HeartbeatEvent
 {
     public static async Task Heartbeated(IGatewayClient client)
     {
-        if (Program.ConfigJson.Base.UptimeKumaHeartbeatUrl is null or "") return;
+        if (Program.ConfigJson.UptimeKumaHeartbeatUrl is null or "") return;
         
         try
         {
-            var heartbeatResponse = await Program.HttpClient.GetAsync($"{Program.ConfigJson.Base.UptimeKumaHeartbeatUrl}{client.Ping.TotalMilliseconds}");
+            var heartbeatResponse = await Program.HttpClient.GetAsync($"{Program.ConfigJson.UptimeKumaHeartbeatUrl}{client.Ping.TotalMilliseconds}");
             if (heartbeatResponse.IsSuccessStatusCode)
                 Program.Discord.Logger.LogDebug(Program.BotEventId, "Successfully sent Uptime Kuma heartbeat with ping {ping}ms", client.Ping.TotalMilliseconds);
             else

@@ -25,7 +25,7 @@ public partial class MessageEvents
         {
             try
             {
-                if (Program.ConfigJson.Base.UseServerSpecificFeatures) await ServerSpecificFeatures.EventChecks.MessageCreateChecks(e);
+                if (Program.ConfigJson.UseServerSpecificFeatures) await ServerSpecificFeatures.EventChecks.MessageCreateChecks(e);
                 
                 await KeywordTrackingHelpers.KeywordCheck(e.Message);
 

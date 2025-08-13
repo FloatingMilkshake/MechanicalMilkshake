@@ -14,7 +14,6 @@ public class Program
 {
     public static DiscordClient Discord;
     private static readonly string[] Prefixes = ["pls"];
-    public static MinioClient Minio;
     public static readonly List<string> DisabledCommands = [];
     public static readonly Random Random = new();
     public static DateTime ConnectTime;
@@ -71,25 +70,17 @@ public class Program
 
         ConfigJson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
-        if (ConfigJson?.Base is null)
-        {
-            Discord.Logger.LogCritical(BotEventId,
-                // ReSharper disable once LogMessageIsSentenceProblem
-                "Your config.json file is malformed. Please be sure it has all of the required values.");
-            Environment.Exit(1);
-        }
-
-        if (string.IsNullOrWhiteSpace(ConfigJson.Base.HomeChannel) ||
-            string.IsNullOrWhiteSpace(ConfigJson.Base.HomeServer) ||
-            string.IsNullOrWhiteSpace(ConfigJson.Base.BotToken))
+        if (string.IsNullOrWhiteSpace(ConfigJson.HomeChannel) ||
+            string.IsNullOrWhiteSpace(ConfigJson.HomeServer) ||
+            string.IsNullOrWhiteSpace(ConfigJson.BotToken))
         {
             Discord.Logger.LogError(BotEventId,
                 // ReSharper disable once LogMessageIsSentenceProblem
-                "You are missing required values in your config.json file. Please make sure you have values for all of the keys under \"base\".");
+                "You are missing required values in your config.json file! Exiting...");
             Environment.Exit(1);
         }
         
-        var clientBuilder = DiscordClientBuilder.CreateDefault(ConfigJson.Base.BotToken, DiscordIntents.All.RemoveIntent(DiscordIntents.GuildPresences));
+        var clientBuilder = DiscordClientBuilder.CreateDefault(ConfigJson.BotToken, DiscordIntents.All.RemoveIntent(DiscordIntents.GuildPresences));
 #if DEBUG
         clientBuilder.SetLogLevel(LogLevel.Debug);
 #else
@@ -156,8 +147,8 @@ public class Program
         ulong homeServerId = default;
         try
         {
-            homeChanId = Convert.ToUInt64(ConfigJson.Base.HomeChannel);
-            homeServerId = Convert.ToUInt64(ConfigJson.Base.HomeServer);
+            homeChanId = Convert.ToUInt64(ConfigJson.HomeChannel);
+            homeServerId = Convert.ToUInt64(ConfigJson.HomeServer);
         }
         catch
         {
@@ -170,51 +161,7 @@ public class Program
         HomeChannel = await Discord.GetChannelAsync(homeChanId);
         HomeServer = await Discord.GetGuildAsync(homeServerId);
 
-        // Set up Minio (used for some Owner commands)
-        if (ConfigJson.S3 is null || ConfigJson.S3.Bucket == "" || ConfigJson.S3.CdnBaseUrl == "" || ConfigJson.S3.Endpoint == "" ||
-            ConfigJson.S3.AccessKey == "" || ConfigJson.S3.SecretKey == "" || ConfigJson.S3.Region == "" ||
-            ConfigJson.Cloudflare.UrlPrefix == "" || ConfigJson.Cloudflare.ZoneId == "" ||
-            ConfigJson.Cloudflare.Token == "")
-        {
-            Discord.Logger.LogWarning(BotEventId,
-                // ReSharper disable once LogMessageIsSentenceProblem
-                "CDN commands disabled due to missing S3 or Cloudflare information.");
-
-            DisabledCommands.Add("cdn");
-        }
-        else
-        {
-            Minio = new MinioClient()
-                .WithEndpoint(ConfigJson.S3.Endpoint)
-                .WithCredentials(ConfigJson.S3.AccessKey, ConfigJson.S3.SecretKey)
-                .WithRegion(ConfigJson.S3.Region)
-                .WithSSL();
-        }
-
-        if (ConfigJson.WorkerLinks is null || ConfigJson.Cloudflare is null
-            || ConfigJson.WorkerLinks.BaseUrl == "" || ConfigJson.WorkerLinks.Secret == ""
-            || ConfigJson.WorkerLinks.NamespaceId == "" || ConfigJson.WorkerLinks.ApiKey == ""
-            || ConfigJson.Cloudflare.AccountId == "" || ConfigJson.WorkerLinks.Email == "")
-        {
-            Discord.Logger.LogWarning(BotEventId,
-                // ReSharper disable once LogMessageIsSentenceProblem
-                "Short-link commands disabled due to missing WorkerLinks information.");
-
-            DisabledCommands.Add("wl");
-        }
-        
-        if (ConfigJson.Cloudflare is null || ConfigJson.Hastebin is null
-            || ConfigJson.Cloudflare.AccountId == "" || ConfigJson.Hastebin.NamespaceId == ""
-            || ConfigJson.Hastebin.Url == "")
-        {
-            Discord.Logger.LogWarning(BotEventId,
-                // ReSharper disable once LogMessageIsSentenceProblem
-                "Hastebin commands disabled due to missing Cloudflare or Hastebin information.");
-            
-            DisabledCommands.Add("haste");
-        }
-
-        if (ConfigJson.Base is null || ConfigJson.Base.WolframAlphaAppId == "")
+        if (ConfigJson is null || ConfigJson.WolframAlphaAppId == "")
         {
             Discord.Logger.LogWarning(BotEventId,
                 // ReSharper disable once LogMessageIsSentenceProblem
@@ -223,7 +170,7 @@ public class Program
             DisabledCommands.Add("wa");
         }
 
-        if (ConfigJson.Ids is null || ConfigJson.Ids.FeedbackChannel == "")
+        if (ConfigJson is null || ConfigJson.FeedbackChannel == "")
         {
             Discord.Logger.LogWarning(BotEventId,
                 // ReSharper disable once LogMessageIsSentenceProblem
@@ -232,7 +179,7 @@ public class Program
             DisabledCommands.Add("feedback");
         }
         
-        if (ConfigJson.Base.UptimeKumaHeartbeatUrl is null or "")
+        if (ConfigJson.UptimeKumaHeartbeatUrl is null or "")
         {
             Discord.Logger.LogWarning(BotEventId, "Uptime Kuma heartbeats disabled due to missing push URL.");
         }
@@ -279,7 +226,7 @@ public class RequireAuthCheck : IContextCheck<RequireAuthAttribute>
 {
 #nullable enable
     public ValueTask<string?> ExecuteCheckAsync(RequireAuthAttribute _, CommandContext ctx) =>
-        ValueTask.FromResult(Program.ConfigJson.Base.AuthorizedUsers.Contains(ctx.User.Id.ToString())
+        ValueTask.FromResult(Program.ConfigJson.BotCommanders.Contains(ctx.User.Id.ToString())
             ? null
             : "The user is not authorized to use this command.");
 }
