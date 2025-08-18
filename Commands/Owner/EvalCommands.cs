@@ -179,7 +179,7 @@ public class EvalCommands
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
-internal class Globals
+public class Globals
 {
     public Globals(DiscordClient client, MechanicalMilkshake.SlashCommandContext ctx)
     {
