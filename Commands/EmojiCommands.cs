@@ -10,7 +10,7 @@ public partial class Emoji
     
     [Command("get")]
     [Description("Get all emoji from a server. I must be in the server for this to work.")]
-    public static async Task GetEmoji(MechanicalMilkshake.SlashCommandContext ctx,
+    public static async Task GetEmoji(SlashCommandContext ctx,
         [Parameter("server"), Description("The ID of the server to get emoji from. I must be in the server for this to work!")] string server,
         [Parameter("zip"), Description("Whether to include a zip file containing all of the emoji. Defaults to True.")] bool zip = true)
     {
@@ -150,7 +150,7 @@ public partial class Emoji
 
     [Command("enlarge")]
     [Description("Enlarge an emoji! Only works for custom emoji.")]
-    public static async Task EnlargeEmoji(MechanicalMilkshake.SlashCommandContext ctx, [Parameter("emoji"), Description("The emoji to enlarge.")] string emoji)
+    public static async Task EnlargeEmoji(SlashCommandContext ctx, [Parameter("emoji"), Description("The emoji to enlarge.")] string emoji)
     {
         await ctx.DeferResponseAsync();
 

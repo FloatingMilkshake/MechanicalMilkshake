@@ -8,7 +8,7 @@ public class WolframAlpha
     [Description("Search WolframAlpha without leaving Discord!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
     [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task WolframAlphaCommand(MechanicalMilkshake.SlashCommandContext ctx,
+    public static async Task WolframAlphaCommand(SlashCommandContext ctx,
         [Parameter("query"), Description("What to search for.")]
         string query)
     {

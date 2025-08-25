@@ -8,7 +8,7 @@ public class Feedback
     [Description("Have feedback about the bot? Submit it here!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
     [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task FeedbackCommand(MechanicalMilkshake.SlashCommandContext ctx,
+    public static async Task FeedbackCommand(SlashCommandContext ctx,
         [Parameter("message"), Description("Your feedback message.")] [MinMaxLength(maxLength: 4000)]
         string feedbackMsg)
     {

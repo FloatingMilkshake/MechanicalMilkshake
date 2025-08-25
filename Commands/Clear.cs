@@ -10,7 +10,7 @@ public partial class Clear
     [RequirePermissions(DiscordPermission.ManageMessages)]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
     [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
-    public static async Task ClearCommand(MechanicalMilkshake.SlashCommandContext ctx,
+    public static async Task ClearCommand(SlashCommandContext ctx,
         [Parameter("count"), Description("The number of messages to consider for deletion. Required if you don't use the 'up_to' argument.")]
         long count = 0,
         [Parameter("up_to"), Description("Optionally delete messages up to (not including) this one. Accepts IDs and links.")]

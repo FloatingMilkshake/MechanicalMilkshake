@@ -224,7 +224,7 @@ public partial class ServerSpecificFeatures
             [Command("rolename")]
             [Description("Change the name of someone's role.")]
             [AllowedProcessors(typeof(SlashCommandProcessor))]
-            public static async Task RoleName(MechanicalMilkshake.SlashCommandContext ctx,
+            public static async Task RoleName(SlashCommandContext ctx,
                 [Parameter("name"), Description("The new name.")] string name,
                 [Parameter("user"), Description("The user whose role name to change.")] DiscordUser user = default)
             {

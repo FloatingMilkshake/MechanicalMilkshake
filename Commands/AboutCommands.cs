@@ -6,7 +6,7 @@ public class AboutCommands
     [Description("View information about me!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
     [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task About(MechanicalMilkshake.SlashCommandContext ctx)
+    public static async Task About(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
 
@@ -65,7 +65,7 @@ public class AboutCommands
     [Description("Show my version information.")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
     [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task CommitInfo(MechanicalMilkshake.SlashCommandContext ctx,
+    public static async Task CommitInfo(SlashCommandContext ctx,
         [Parameter("extended"), Description("Whether to show extended info. Defaults to False.")] bool extended = false)
     {
         await ctx.DeferResponseAsync();
@@ -89,7 +89,7 @@ public class AboutCommands
     [Description("Check my uptime!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
     [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-        public static async Task Uptime(MechanicalMilkshake.SlashCommandContext ctx)
+        public static async Task Uptime(SlashCommandContext ctx)
         {
             await ctx.DeferResponseAsync();
 

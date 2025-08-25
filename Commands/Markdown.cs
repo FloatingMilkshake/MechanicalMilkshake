@@ -6,7 +6,7 @@ public partial class Markdown
     [Description("Expose the Markdown formatting behind a message!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)] // TODO: make a context menu command that works everywhere
     [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
-    public static async Task MarkdownCommand(MechanicalMilkshake.SlashCommandContext ctx,
+    public static async Task MarkdownCommand(SlashCommandContext ctx,
         [Parameter("message"), Description("The message you want to expose the formatting of. Accepts message IDs and links.")]
         string messageToExpose)
     {

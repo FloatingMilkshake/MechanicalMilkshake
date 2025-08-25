@@ -17,7 +17,7 @@ public class EvalCommands
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
     [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
 
-    public static async Task RunCommand(MechanicalMilkshake.SlashCommandContext ctx,
+    public static async Task RunCommand(SlashCommandContext ctx,
         [Parameter("command"), Description("The command to run, including any arguments.")]
         string command)
     {
@@ -105,7 +105,7 @@ public class EvalCommands
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
     [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
 
-    public static async Task Eval(MechanicalMilkshake.SlashCommandContext ctx, [Parameter("code"), Description("The code to evaluate.")] string code)
+    public static async Task Eval(SlashCommandContext ctx, [Parameter("code"), Description("The code to evaluate.")] string code)
     {
         await ctx.DeferResponseAsync();
 
@@ -181,7 +181,7 @@ public class EvalCommands
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 public class Globals
 {
-    public Globals(DiscordClient client, MechanicalMilkshake.SlashCommandContext ctx)
+    public Globals(DiscordClient client, SlashCommandContext ctx)
     {
         Context = ctx;
         Client = client;
@@ -197,7 +197,7 @@ public class Globals
     public DiscordGuild Guild { get; set; }
     public DiscordUser User { get; set; }
     public DiscordMember Member { get; set; }
-    public MechanicalMilkshake.SlashCommandContext Context { get; set; }
+    public SlashCommandContext Context { get; set; }
 }
 
 internal class ShellCommandResponse

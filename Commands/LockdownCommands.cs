@@ -10,7 +10,7 @@ public class Lockdown
 {
     [Command("lock")]
     [Description("Lock a channel to prevent members from sending messages.")]
-    public static async Task Lock(MechanicalMilkshake.SlashCommandContext ctx)
+    public static async Task Lock(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(true);
 
@@ -79,7 +79,7 @@ public class Lockdown
 
     [Command("unlock")]
     [Description("Unlock a locked channel to allow members to send messages again.")]
-    public static async Task Unlock(MechanicalMilkshake.SlashCommandContext ctx)
+    public static async Task Unlock(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(true);
 

@@ -6,7 +6,7 @@ public class Avatar
     [Description("Returns the avatar of the provided user. Defaults to yourself if no user is provided.")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
     [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task AvatarCommand(MechanicalMilkshake.SlashCommandContext ctx,
+    public static async Task AvatarCommand(SlashCommandContext ctx,
         [Parameter("user"), Description("The user whose avatar to get.")]
         DiscordUser user = null)
     {

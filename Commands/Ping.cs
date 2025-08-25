@@ -6,7 +6,7 @@ public class Ping
     [Description("Pong!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
     [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task PingCommand(MechanicalMilkshake.SlashCommandContext ctx)
+    public static async Task PingCommand(SlashCommandContext ctx)
     {
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent("Ping!"));
         var timeNow = DateTime.UtcNow;

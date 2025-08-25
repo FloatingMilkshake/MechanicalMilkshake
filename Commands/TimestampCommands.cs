@@ -8,7 +8,7 @@ public class TimestampCmds
 {
     [Command("id")]
     [Description("Returns the Unix timestamp of a given Discord ID/snowflake.")]
-    public static async Task TimestampSnowflakeCmd(MechanicalMilkshake.SlashCommandContext ctx,
+    public static async Task TimestampSnowflakeCmd(SlashCommandContext ctx,
         [Parameter("snowflake"), Description("The ID/snowflake to fetch the Unix timestamp for.")]
         string id,
         [SlashChoiceProvider(typeof(TimestampFormatChoiceProvider))]
@@ -49,7 +49,7 @@ public class TimestampCmds
 
     [Command("date")]
     [Description("Returns the Unix timestamp of a given date.")]
-    public static async Task TimestampDateCmd(MechanicalMilkshake.SlashCommandContext ctx,
+    public static async Task TimestampDateCmd(SlashCommandContext ctx,
         [Parameter("date"), Description("The date to fetch the Unix timestamp for.")]
         string date,
         [SlashChoiceProvider(typeof(TimestampFormatChoiceProvider))]

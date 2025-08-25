@@ -6,7 +6,7 @@ public class UserInfo
     [Description("Returns information about the provided user.")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
     [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task UserInfoCommand(MechanicalMilkshake.SlashCommandContext ctx,
+    public static async Task UserInfoCommand(SlashCommandContext ctx,
         [Parameter("user"), Description("The user to look up information for. Defaults to yourself.")]
         DiscordUser user = null)
     {

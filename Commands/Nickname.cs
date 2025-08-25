@@ -8,7 +8,7 @@ public class Nickname
     [RequirePermissions(DiscordPermission.ChangeNickname, DiscordPermission.ManageNicknames)]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
     [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
-    public static async Task NicknameCommand(MechanicalMilkshake.SlashCommandContext ctx,
+    public static async Task NicknameCommand(SlashCommandContext ctx,
         [Parameter("nickname"), Description("What to change my nickname to. Leave this blank to clear it.")] [MinMaxLength(maxLength: 32)]
         string nickname = null)
     {
