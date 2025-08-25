@@ -255,8 +255,8 @@ public class ErrorEvents
             if (Program.Discord.CurrentApplication.Owners.Any(owner => owner.Id == e.Context.User.Id))
             {
                 friendlyResponse =
-                    $"This command threw a(n) `{exception.GetType()}` exception. \"{exception.Message}\""
-                    + $"\n\nHere's the stack trace:\n```{exception.StackTrace}```";
+                    $"Threw `{exception.GetType()}`. \"{exception.Message}\""
+                    + $"\n\nStack trace:\n```\n{exception.StackTrace}\n```";
             }
             
             // We need to respond differently based on the type of command this is.
