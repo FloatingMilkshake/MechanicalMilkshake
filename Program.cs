@@ -74,9 +74,7 @@ public class Program
             string.IsNullOrWhiteSpace(ConfigJson.HomeServer) ||
             string.IsNullOrWhiteSpace(ConfigJson.BotToken))
         {
-            Discord.Logger.LogError(BotEventId,
-                // ReSharper disable once LogMessageIsSentenceProblem
-                "You are missing required values in your config.json file! Exiting...");
+            Console.WriteLine("You are missing required values in your config.json file! Exiting...");
             Environment.Exit(1);
         }
         
