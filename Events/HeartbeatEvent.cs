@@ -24,7 +24,7 @@ public class HeartbeatEvent
             else
                 Program.Discord.Logger.LogWarning(Program.BotEventId, "Uptime Kuma heartbeat failed: {exType}: {exMessage}\n{stackTrace}", ex.GetType(), ex.Message, ex.StackTrace);
             
-            Program.LastUptimeKumaHeartbeatStatus = "exception thrown";
+            Program.LastUptimeKumaHeartbeatStatus = "failed";
         }
     }
 }

@@ -26,6 +26,6 @@ public class Ping
             + $"Websocket ping: `{websocketPing}ms`\n"
             + $"Interaction latency: `{interactionLatency}ms`\n"
             + $"Database ping: {(double.IsNaN(dbPing) ? "Unreachable!" : $"`{dbPing}ms`")}\n"
-            + $"Uptime Kuma heartbeat status: `{Program.LastUptimeKumaHeartbeatStatus}`"));
+            + $"Heartbeat: `{Program.LastUptimeKumaHeartbeatStatus}`"));
     }
 }

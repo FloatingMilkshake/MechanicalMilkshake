@@ -33,7 +33,7 @@ public class Program
     public static readonly IDatabase Db = Redis.GetDatabase();
     public static bool RedisExceptionsSuppressed;
     public static readonly Entities.MessageCaching.MessageCache MessageCache = new();
-    public static string LastUptimeKumaHeartbeatStatus = "N/A";
+    public static string LastUptimeKumaHeartbeatStatus = "waiting";
     public static bool GuildDownloadCompleted = false;
 
     public static readonly Dictionary<string, ulong> UserFlagEmoji = new()
