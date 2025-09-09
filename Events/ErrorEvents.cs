@@ -74,6 +74,43 @@ public class ErrorEvents
     {
         switch (e.Exception)
         {
+            case CommandNotFoundException commandNotFoundException:
+                string response;
+                
+                if (Program.Discord.CurrentApplication.Owners.Any(owner => owner.Id == e.Context.User.Id))
+                {
+                    response = "Waiting for command registration. Try again later.";
+                }
+                else
+                {
+                    response = "Sorry, I'm waiting for Discord to process my commands! This command should be ready in a moment. If this issue persists, please DM me with a description of your issue.";
+                }
+                
+                if ((DateTime.Now - Convert.ToDateTime(Program.ProcessStartTime)).TotalMinutes < 5)
+                {
+                    try
+                    {
+                        await e.Context.RespondAsync(
+                            new DiscordInteractionResponseBuilder().WithContent(response));
+                    }
+                    catch (Exception ex) when (ex is BadRequestException or InvalidOperationException)
+                    {
+                        try
+                        {
+                            // If the interaction was deferred, RespondAsync() won't work
+                            // Try using FollowupAsync() instead
+                            await e.Context.FollowupAsync(
+                                new DiscordFollowupMessageBuilder().WithContent(response));
+                        }
+                        catch
+                        {
+                            // Ignore, oh well
+                        }
+                    }
+                }
+                
+                return;
+            
             case ChecksFailedException permsCheckFailedException
                 when permsCheckFailedException.Errors.Any(e => e.ContextCheckAttribute is RequirePermissionsAttribute):
                 var noPermsResponse = "I couldn't run this command! Please make sure you and I both have permission to use it." +
