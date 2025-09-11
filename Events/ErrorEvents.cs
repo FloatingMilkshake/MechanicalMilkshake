@@ -74,6 +74,7 @@ public class ErrorEvents
     {
         switch (e.Exception)
         {
+#if !DEBUG
             case CommandNotFoundException commandNotFoundException:
                 string response;
                 
@@ -110,6 +111,7 @@ public class ErrorEvents
                 }
                 
                 return;
+#endif
             
             case ChecksFailedException permsCheckFailedException
                 when permsCheckFailedException.Errors.Any(e => e.ContextCheckAttribute is RequirePermissionsAttribute):
