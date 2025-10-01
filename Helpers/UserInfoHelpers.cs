@@ -70,7 +70,7 @@ public class UserInfoHelpers
         if (member.Roles.Any()) rolesFieldName += $" - {member.Roles.Count()}";
 
         var extendedUserInfoEmbed = new DiscordEmbedBuilder()
-            .WithColor(new DiscordColor($"{member.Color}"))
+            .WithColor(new DiscordColor($"{member.Color.PrimaryColor}"))
             .AddField("User Mention", member.Mention, true)
             .WithFooter($"User ID: {member.Id}");
 
