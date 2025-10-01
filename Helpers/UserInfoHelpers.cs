@@ -80,10 +80,10 @@ public class UserInfoHelpers
         if (!string.IsNullOrWhiteSpace(member.Nickname))
             extendedUserInfoEmbed.AddField("Nickname", member.Nickname, true);
 
-        extendedUserInfoEmbed.AddField("Account registered on", $"<t:{registeredAt}:F> (<t:{registeredAt}:R>)");
+        extendedUserInfoEmbed.AddField("Account created on", $"<t:{registeredAt}:F> (<t:{registeredAt}:R>)");
         extendedUserInfoEmbed.AddField("Joined server on", $"<t:{joinedAtTimestamp}:F> (<t:{joinedAtTimestamp}:R>)");
         extendedUserInfoEmbed.AddField(rolesFieldName, roles);
-        extendedUserInfoEmbed.WithThumbnail(member.AvatarUrl);
+        extendedUserInfoEmbed.WithThumbnail(member.DisplayAvatarUrl);
         
         var badges = GetBadges(member);
         if (badges != "") extendedUserInfoEmbed.AddField("Badges", badges, true);
@@ -112,9 +112,10 @@ public class UserInfoHelpers
         var basicUserInfoEmbed = new DiscordEmbedBuilder()
             .WithThumbnail($"{user.AvatarUrl}")
             .WithColor(Program.BotColor)
-            .AddField("ID", $"{user.Id}");
+            .WithFooter($"User ID: {user.Id}")
+            .AddField("User Mention", user.Mention, true);
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        if (user.GlobalName is not null) basicUserInfoEmbed.AddField("DisplayName", user.GlobalName);
+        if (user.GlobalName is not null) basicUserInfoEmbed.AddField("Display Name", user.GlobalName, true);
         basicUserInfoEmbed.AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
 
         var userBadges = GetBadges(user);
