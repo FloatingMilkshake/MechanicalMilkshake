@@ -69,6 +69,12 @@ public class MessageCache
         return Messages.Count;
     }
     
+    // Get count of messages in cache with filter
+    public int Count(Func<CachedMessage, bool> predicate)
+    {
+        return Messages.Count(predicate);
+    }
+    
     // Modify cache
     
     // Add message to cache
