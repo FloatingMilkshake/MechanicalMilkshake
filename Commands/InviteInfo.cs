@@ -21,7 +21,7 @@ public partial class InviteInfo
         DiscordInvite invite;
         try
         {
-            invite = await Program.Discord.GetInviteByCodeAsync(targetInvite, true, true);
+            invite = await Program.Discord.GetInviteByCodeAsync(targetInvite, true);
         }
         catch
         {
