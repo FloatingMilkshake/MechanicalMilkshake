@@ -21,7 +21,7 @@ public partial class ServerSpecificFeatures
                 {
                     var chan = await Program.Discord.GetChannelAsync(1048242806486999092);
                     if (string.IsNullOrWhiteSpace(e.Message.Content))
-                        await chan.SendMessageAsync(e.Message.Attachments[0].Url);
+                        await chan.SendMessageAsync($"{e.Message.Attachments[0].Url} ({e.Message.JumpLink})");
                     else if (e.Message.Content.Contains("http"))
                         await chan.SendMessageAsync(e.Message.Content);
                 }
