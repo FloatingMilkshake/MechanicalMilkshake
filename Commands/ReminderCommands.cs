@@ -47,7 +47,7 @@ public partial class ReminderCmds
                 {
                     await ctx.FollowupAsync(
                         new DiscordFollowupMessageBuilder()
-                            .WithContent("You can't set a reminder to go off in the past!").AsEphemeral(isPrivate));
+                            .WithContent("You can't set a reminder for a time in the past!").AsEphemeral(isPrivate));
                     return;
                 }
             }
@@ -182,7 +182,7 @@ public partial class ReminderCmds
                               ? $"[Set <t:{setTime}:R>]({reminderLink}). This reminder will not be sent automatically."
                                 + " This reminder was set privately, so this is only a link to the messages around the time it was set."
                               : $"[Set <t:{setTime}:R>]({reminderLink}). This reminder will not be sent automatically."
-                          : $"[Set <t:{setTime}:R>]({reminderLink}) to go off <t:{reminderTime}:R>");
+                          : $"[Set <t:{setTime}:R>]({reminderLink}) to remind you <t:{reminderTime}:R>");
 
             if (reminder.ReminderTime is not null) output += reminderLocation;
 
@@ -215,7 +215,7 @@ public partial class ReminderCmds
 
                 desc += reminder.ReminderTime is null
                     ? $"`{reminder.ReminderId}` - set <t:{setTime}:R>. This reminder will not be sent automatically."
-                    : $"`{reminder.ReminderId}` - set <t:{setTime}:R> to go off <t:{reminderTime}:R>\n";
+                    : $"`{reminder.ReminderId}` - set <t:{setTime}:R> to remind you <t:{reminderTime}:R>\n";
             }
 
             embed.WithDescription(desc.Trim());
@@ -436,7 +436,7 @@ public partial class ReminderCmds
             {
                 await ctx.FollowupAsync(
                     new DiscordFollowupMessageBuilder()
-                        .WithContent("You can't set a reminder to go off in the past!").AsEphemeral(isPrivate));
+                        .WithContent("You can't set a reminder for a time in the past!").AsEphemeral(isPrivate));
                 return;
             }
         }
