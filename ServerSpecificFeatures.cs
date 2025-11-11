@@ -33,7 +33,7 @@ public partial class ServerSpecificFeatures
 #if DEBUG
             if (e.Guild.Id == 799644062973427743) // my testing server
             {
-                await PatchTuesdayAnnouncementCheck(e, 455432936339144705, 882446411130601472);
+                await PatchTuesdayAnnouncementCheck(e, 455432936339144705, 1409289579139305573);
             }
 #else
             if (e.Guild.Id == 438781053675634713) // not my testing server
@@ -160,7 +160,7 @@ public partial class ServerSpecificFeatures
             foreach (var user in usersToPing)
                 msg += $"<@{user}> ";
             
-            msg += $"```\nIt's <@&445773142233710594>! Update discussion threads & changelist links are here: {windows10Url} (Windows 10) and {windows11Url} (Windows 11)\n```";
+            msg += $"```\nIt's <@&445773142233710594>! Update discussion threads & changelist links are here: {windows10Url} (Windows 10 Extended Security Updates) and {windows11Url} (Windows 11)\n```";
             
             // Send message
             await e.Message.Channel.SendMessageAsync(msg);
