@@ -63,9 +63,7 @@ public class ServerInfo
             .AddField("Channels", $"{guild.Channels.Count - categoryCount}", true)
             .AddField("Categories", $"{categoryCount}", true)
             .AddField("Roles", $"{guild.Roles.Count}", true)
-            .AddField("Members (total)", $"{guild.MemberCount}", true)
-            .AddField("Bots", "loading... this might take a while", true)
-            .AddField("Humans", "loading... this might take a while", true)
+            .AddField("Members", $"{guild.MemberCount}", true)
             .WithThumbnail($"{guild.IconUrl}")
             .WithFooter($"Server ID: {guild.Id}");
 
@@ -73,16 +71,5 @@ public class ServerInfo
             .WithContent($"Server Info for **{guild.Name}**").AddEmbed(embed);
 
         await ctx.FollowupAsync(response);
-
-        var members = await guild.GetAllMembersAsync().ToListAsync();
-        var botCount = members.Count(member => member.IsBot);
-        var humanCount = guild.MemberCount - botCount;
-
-        var newEmbed = response.Embeds[0];
-
-        newEmbed.Fields.FirstOrDefault(field => field.Name == "Bots")!.Value = $"{botCount}";
-        newEmbed.Fields.FirstOrDefault(field => field.Name == "Humans")!.Value = $"{humanCount}";
-
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(response.Content).AddEmbed(embed));
     }
 }

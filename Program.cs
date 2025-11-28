@@ -81,7 +81,7 @@ public class Program
         if (string.IsNullOrEmpty(ConfigJson.UptimeKumaHeartbeatUrl))
             LastUptimeKumaHeartbeatStatus = "disabled";
         
-        var clientBuilder = DiscordClientBuilder.CreateDefault(ConfigJson.BotToken, DiscordIntents.All.RemoveIntent(DiscordIntents.GuildPresences));
+        var clientBuilder = DiscordClientBuilder.CreateDefault(ConfigJson.BotToken, DiscordIntents.All.RemoveIntent(DiscordIntents.GuildPresences).RemoveIntent(DiscordIntents.GuildMembers));
 #if DEBUG
         clientBuilder.SetLogLevel(LogLevel.Debug);
 #else
