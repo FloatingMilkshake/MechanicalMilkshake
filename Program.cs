@@ -121,6 +121,13 @@ public class Program
                 EnableCommandNotFoundException = false
             });
             extension.AddProcessor(textCommandProcessor);
+
+            // Use custom SlashCommandProcessor to use UnconditionallyOverwriteCommands
+            SlashCommandProcessor slashCommandProcessor = new(new()
+            {
+                UnconditionallyOverwriteCommands = true,
+            });
+            extension.AddProcessor(slashCommandProcessor);
             
             // Register context checks
             extension.AddCheck<RequireAuthCheck>();
@@ -137,7 +144,7 @@ public class Program
             
         }, new CommandsConfiguration
         {
-            UseDefaultCommandErrorHandler = false
+            UseDefaultCommandErrorHandler = false,
         });
         
         // Build the client
