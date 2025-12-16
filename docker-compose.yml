@@ -30,7 +30,7 @@ services:
     command: --appendonly yes
     labels: [ "com.centurylinklabs.watchtower.scope=mechanicalmilkshake" ]
   watchtower:
-    image: containrrr/watchtower
+    image: nickfedor/watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command: --interval 30 --label-enable --scope mechanicalmilkshake
