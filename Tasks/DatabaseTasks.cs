@@ -9,7 +9,6 @@ public class DatabaseTasks
             await CheckDatabaseConnectionAsync();
             await Task.Delay(TimeSpan.FromSeconds(5));
         }
-        // ReSharper disable once FunctionNeverReturns
     }
     
     public static async Task<double> CheckDatabaseConnectionAsync()

@@ -176,9 +176,6 @@ public class EvalCommands
     }
 }
 
-// ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 public class Globals
 {
     public Globals(DiscordClient client, SlashCommandContext ctx)

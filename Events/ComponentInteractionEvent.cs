@@ -495,9 +495,6 @@ public partial class ComponentInteractionEvent
     private static partial Regex IdPattern();
 }
 
-// ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable UnusedAutoPropertyAccessor.Global
-// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 public class EventGlobals
 {
     public EventGlobals(DiscordClient client, DiscordInteraction ctx)

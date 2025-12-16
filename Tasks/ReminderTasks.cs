@@ -9,7 +9,6 @@ public class ReminderTasks
             await CheckRemindersAsync();
             await Task.Delay(TimeSpan.FromSeconds(10));
         }
-        // ReSharper disable once FunctionNeverReturns
     }
     
     public static async Task<(int numRemindersBefore,int numRemindersAfter, int numRemindersSent, int numRemindersFailed, int numRemindersWithNullTime)> CheckRemindersAsync()

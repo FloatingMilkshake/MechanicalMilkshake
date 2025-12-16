@@ -154,7 +154,6 @@ public class Program
         catch
         {
             Discord.Logger.LogError(BotEventId,
-                // ReSharper disable once LogMessageIsSentenceProblem
                 "\"homeChannel\" or \"homeServer\" in config.json are misconfigured. Please make sure you have a valid ID for both of these values.");
             Environment.Exit(1);
         }
@@ -165,7 +164,6 @@ public class Program
         if (ConfigJson is null || ConfigJson.WolframAlphaAppId == "")
         {
             Discord.Logger.LogWarning(BotEventId,
-                // ReSharper disable once LogMessageIsSentenceProblem
                 "WolframAlpha commands disabled due to missing App ID.");
 
             DisabledCommands.Add("wa");
@@ -174,7 +172,6 @@ public class Program
         if (ConfigJson is null || ConfigJson.FeedbackChannel == "")
         {
             Discord.Logger.LogWarning(BotEventId,
-                // ReSharper disable once LogMessageIsSentenceProblem
                 "Feedback command disabled due to missing channel ID.");
 
             DisabledCommands.Add("feedback");

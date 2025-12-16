@@ -195,10 +195,8 @@ public partial class ServerSpecificFeatures
                 
                 try
                 {
-                    // ReSharper disable JoinDeclarationAndInitializer
                     DiscordChannel chan;
                     DiscordMessage msg;
-                    // ReSharper restore JoinDeclarationAndInitializer
 #if DEBUG
                     chan = await Program.Discord.GetChannelAsync(893654247709741088);
                     msg = await chan.GetMessageAsync(1282187612844589168);

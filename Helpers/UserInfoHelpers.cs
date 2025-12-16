@@ -114,7 +114,6 @@ public class UserInfoHelpers
             .WithColor(Program.BotColor)
             .WithFooter($"User ID: {user.Id}")
             .AddField("User Mention", user.Mention, true);
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (user.GlobalName is not null) basicUserInfoEmbed.AddField("Display Name", user.GlobalName, true);
         basicUserInfoEmbed.AddField("Account created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)");
 

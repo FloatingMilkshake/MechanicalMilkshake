@@ -21,7 +21,6 @@ public class DBotsTasks
             await UpdateStatsAsync();
             await Task.Delay(TimeSpan.FromHours(1));
         }
-        // ReSharper disable once FunctionNeverReturns
     }
     
     public static async Task UpdateStatsAsync()

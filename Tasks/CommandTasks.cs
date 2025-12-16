@@ -9,7 +9,6 @@ public class CommandTasks
             await PopulateApplicationCommandListAsync();
             await Task.Delay(TimeSpan.FromMinutes(1));
         }
-        // ReSharper disable once FunctionNeverReturns
     }
     
     public static async Task PopulateApplicationCommandListAsync()

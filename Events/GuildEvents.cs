@@ -2,7 +2,6 @@
 
 public class GuildEvents
 {
-    // ReSharper disable once MemberCanBePrivate.Global
     public static readonly List<ulong> UnavailableGuilds = [];
     private static DiscordChannel _guildLogChannel;
     

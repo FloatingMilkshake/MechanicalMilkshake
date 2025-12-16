@@ -9,7 +9,6 @@ public class ActivityTasks
             await Task.Delay(TimeSpan.FromHours(1));
             await SetActivityAsync();
         }
-        // ReSharper disable once FunctionNeverReturns
     }
     
     public static async Task SetActivityAsync()
@@ -53,7 +52,6 @@ public class ActivityTasks
                 }
 
                 var chosenStatus = random.Next(0, customStatusList.Length);
-                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                 if (Program.Discord.CurrentUser.Presence is not null && !string.IsNullOrWhiteSpace(Program.Discord.CurrentUser.Presence.Activity.Name))
                     if (customStatusList.Length != 1)
                         while (customStatusList[chosenStatus].Name.ToString() ==
@@ -151,7 +149,6 @@ public class ActivityTasks
                         return;
                 }
 
-                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                 if (Program.Discord.CurrentUser.Presence is null || string.IsNullOrWhiteSpace(Program.Discord.CurrentUser.Presence.Activity.Name))
                     await Program.Db.StringSetAsync("customStatusLastUpdated", $"{DateTime.Now}");
                 else
