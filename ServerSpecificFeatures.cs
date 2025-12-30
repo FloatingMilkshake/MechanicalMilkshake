@@ -20,7 +20,13 @@ public partial class ServerSpecificFeatures
                     .Contains("caption"))
                 {
                     var chan = await Program.Discord.GetChannelAsync(1048242806486999092);
-                    if (string.IsNullOrWhiteSpace(e.Message.Content))
+                    if (e.Message.Flags?.HasFlag(DiscordMessageFlags.IsComponentsV2) ?? false)
+                    {
+                        var mediaGalleryComponent = e.Message.Components.First() as DiscordMediaGalleryComponent;
+                        var mediaUrl = mediaGalleryComponent.Items.First().Media.Url;
+                        await chan.SendMessageAsync($"{mediaUrl} ({e.Message.JumpLink})");
+                    }
+                    else if (string.IsNullOrWhiteSpace(e.Message.Content))
                         await chan.SendMessageAsync($"{e.Message.Attachments[0].Url} ({e.Message.JumpLink})");
                     else if (e.Message.Content.Contains("http"))
                         await chan.SendMessageAsync(e.Message.Content);
