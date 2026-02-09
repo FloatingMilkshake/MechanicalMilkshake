@@ -88,7 +88,7 @@ public partial class ReminderCmds
                 // the bot throw an error (not shown to the them), leaving them wondering where their reminder is.
                 try
                 {
-                    await ctx.Member.SendMessageAsync(
+                    await ctx.User.SendMessageAsync(
                         $"Hi! This is a confirmation for your reminder, \"{text}\", due for <t:{unixTime}:F> (<t:{unixTime}:R>)!");
                 }
                 catch
