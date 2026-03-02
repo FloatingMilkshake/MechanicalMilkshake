@@ -7,10 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Abyssal.HumanDateParser" Version="2.0.0-20191113.1"/>
-        <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-02563" />
-        <PackageReference Include="DSharpPlus.Commands" Version="5.0.0-nightly-02563" />
-        <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-02563" />
+        <PackageReference Include="Abyssal.HumanDateParser" Version="2.0.0-20191113.1" />
+        <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-02573" />
+        <PackageReference Include="DSharpPlus.Commands" Version="5.0.0-nightly-02573" />
+        <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-02573" />
         <PackageReference Include="Humanizer.Core" Version="3.0.0-beta.54" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0-2.final" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.12.0-2.final" />
@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(OS)' != 'Windows_NT' ">
-        <Exec Command="git rev-parse --short main &gt; &quot;$(OutDir)/CommitHash.txt&quot;&#xD;&#xA;git log --pretty=format:&quot;%25s&quot; -n 1 &gt; &quot;$(OutDir)/CommitMessage.txt&quot;&#xD;&#xA;git log --pretty=format:&quot;%25ci&quot; -n 1 &gt; &quot;$(OutDir)/CommitTime.txt&quot;&#xD;&#xA;git config --get remote.origin.url &gt; &quot;$(OutDir)/RemoteUrl.txt&quot;&#xD;&#xA;" IgnoreExitCode="true"/>
+        <Exec Command="git rev-parse --short main &gt; &quot;$(OutDir)/CommitHash.txt&quot;&#xD;&#xA;git log --pretty=format:&quot;%25s&quot; -n 1 &gt; &quot;$(OutDir)/CommitMessage.txt&quot;&#xD;&#xA;git log --pretty=format:&quot;%25ci&quot; -n 1 &gt; &quot;$(OutDir)/CommitTime.txt&quot;&#xD;&#xA;git config --get remote.origin.url &gt; &quot;$(OutDir)/RemoteUrl.txt&quot;&#xD;&#xA;" IgnoreExitCode="true" />
     </Target>
 
 </Project>
