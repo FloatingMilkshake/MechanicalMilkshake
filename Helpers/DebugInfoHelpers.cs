@@ -67,8 +67,8 @@ public class DebugInfoHelpers
         embed.AddField("Platform", debugInfo.Platform, true);
         embed.AddField("Library", debugInfo.Library, true);
         embed.AddField("Server Count", Program.Discord.Guilds.Count.ToString(), true);
-        while (Program.ApplicationCommands is null) await Task.Delay(500);
-        embed.AddField("Command Count", Program.ApplicationCommands.Count.ToString(), true);
+        //while (Program.ApplicationCommands is null) await Task.Delay(500);
+        //embed.AddField("Command Count", Program.ApplicationCommands.Count.ToString(), true);
         if (isOnStartup) embed.AddField("Time Since Process Start", debugInfo.TimeSinceProcessStart, true);
         embed.AddField("Commit Hash", commitHash, true);
         embed.AddField(debugInfo.CommitTimeDescription, debugInfo.CommitTimestamp, true);
