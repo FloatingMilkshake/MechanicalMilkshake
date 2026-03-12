@@ -2,20 +2,19 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <InvariantGlobalization>false</InvariantGlobalization>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Abyssal.HumanDateParser" Version="2.0.0-20191113.1" />
-        <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-02573" />
-        <PackageReference Include="DSharpPlus.Commands" Version="5.0.0-nightly-02573" />
-        <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-02573" />
-        <PackageReference Include="Humanizer.Core" Version="3.0.0-beta.54" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0-2.final" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.12.0-2.final" />
-        <PackageReference Include="StackExchange.Redis" Version="2.8.16" />
-        <PackageReference Include="System.Linq.Async" Version="6.0.1" />
+        <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-02575" />
+        <PackageReference Include="DSharpPlus.Commands" Version="5.0.0-nightly-02575" />
+        <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-02575" />
+        <PackageReference Include="Humanizer.Core" Version="3.0.10" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.3.0" />
+        <PackageReference Include="StackExchange.Redis" Version="2.11.8" />
     </ItemGroup>
 
     <ItemGroup>
