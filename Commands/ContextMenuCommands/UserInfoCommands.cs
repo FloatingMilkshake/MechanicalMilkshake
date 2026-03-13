@@ -17,7 +17,7 @@ public class UserInfoCommands
             if (ctx.Guild is not null)
             {
                 var member = await ctx.Guild.GetMemberAsync(targetUser.Id);
-                userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(member);   
+                userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(member);
             }
             else
             {

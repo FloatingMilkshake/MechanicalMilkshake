@@ -10,16 +10,16 @@ public class ReminderTasks
             await Task.Delay(TimeSpan.FromSeconds(10));
         }
     }
-    
-    public static async Task<(int numRemindersBefore,int numRemindersAfter, int numRemindersSent, int numRemindersFailed, int numRemindersWithNullTime)> CheckRemindersAsync()
+
+    public static async Task<(int numRemindersBefore, int numRemindersAfter, int numRemindersSent, int numRemindersFailed, int numRemindersWithNullTime)> CheckRemindersAsync()
     {
         // keep some tallies to report back for manual checks
         var numRemindersSent = 0;
         var numRemindersFailed = 0;
         var numRemindersWithNullTime = 0;
-        
+
         // FETCH REMINDERS
-        
+
         // get reminders from db
         var reminders = await Program.Db.HashGetAllAsync("reminders");
 
@@ -40,7 +40,7 @@ public class ReminderTasks
                 continue;
             }
             if (reminderData!.ReminderTime > DateTime.Now) continue;
-            
+
             // BUILD MESSAGE
 
             // get time reminder was set and start building embed
@@ -53,7 +53,7 @@ public class ReminderTasks
             };
 
             // add context field
-            
+
             string context;
             if (reminderData.IsPrivate)
                 context =
@@ -70,7 +70,7 @@ public class ReminderTasks
 
             // add pushback field
             ReminderHelpers.AddReminderPushbackEmbedField(embed);
-            
+
             // GET USER
 
             // try to fetch user to send reminder to in case of private reminder or if channel send fails
@@ -86,7 +86,7 @@ public class ReminderTasks
                 // reminder can still be sent in channel, but not privately!
                 user = default;
             }
-            
+
             // get server member if user was able to be fetched
             DiscordMember targetMember = default;
             if (user != default)
@@ -104,11 +104,11 @@ public class ReminderTasks
                 if (mutualServer != default)
                     targetMember = await mutualServer.GetMemberAsync(user.Id);
             }
-            
+
             // SEND REMINDER
-            
+
             // PRIVATE REMINDERS
-            
+
             // if reminder is private, try to send in DM
             if (reminderData.IsPrivate)
             {
@@ -153,7 +153,7 @@ public class ReminderTasks
                         numRemindersWithNullTime++;
                         await Program.Db.HashSetAsync("reminders", reminderData.ReminderId,
                             JsonConvert.SerializeObject(reminderData));
-                        
+
                         // continue to next reminder
                         continue;
                     }
@@ -165,16 +165,16 @@ public class ReminderTasks
                         await ReminderHelpers.LogReminderErrorAsync(Program.HomeChannel, ex);
 
                         await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
-                        
+
                         // increment failed reminder count
                         numRemindersFailed++;
-                        
+
                         // continue to next reminder
                         continue;
                     }
                 }
             }
-            
+
             // PUBLIC REMINDERS
 
             // reminder is not private; try to send in channel
@@ -227,17 +227,17 @@ public class ReminderTasks
                     await ReminderHelpers.LogReminderErrorAsync(Program.HomeChannel, ex);
 
                     await Program.Db.HashDeleteAsync("reminders", reminderData.ReminderId);
-                    
+
                     // increment failed reminder count
                     numRemindersFailed++;
                 }
             }
         }
-        
+
         // get number of reminders in db after check
         reminders = await Program.Db.HashGetAllAsync("reminders");
         var numRemindersAfter = reminders.Length;
-        
+
         return (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime);
     }
 }

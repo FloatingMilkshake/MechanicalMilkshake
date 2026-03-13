@@ -11,9 +11,9 @@ public class ServerInfoCommands
         string guildId = default)
     {
         await ctx.DeferResponseAsync();
-        
+
         DiscordGuild guild;
-        
+
         if (ctx.Channel.IsPrivate && guildId == default)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
@@ -46,7 +46,7 @@ public class ServerInfoCommands
                 return;
             }
         }
-        
+
         var description = "None";
 
         if (guild.Description is not null) description = guild.Description;

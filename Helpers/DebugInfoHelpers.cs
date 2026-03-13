@@ -51,7 +51,7 @@ public class DebugInfoHelpers
         // If not, wait until it has
         while (!Program.GuildDownloadCompleted)
             Task.Delay(1000).Wait();
-        
+
         DiscordEmbedBuilder embed = new()
         {
             Title = isOnStartup ? "Connected!" : "",

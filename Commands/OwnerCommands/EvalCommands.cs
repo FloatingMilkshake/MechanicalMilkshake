@@ -42,7 +42,7 @@ public class EvalCommands
 
         var cmdResponse = await RunCommand(command);
         string response;
-        
+
         if (cmdResponse.Output.Length > 1947)
         {
             var hasteUploadResult = await HastebinHelpers.UploadToHastebinAsync(cmdResponse.Output);
@@ -53,7 +53,7 @@ public class EvalCommands
         {
             response = $"Finished with exit code `{cmdResponse.ExitCode}`! Output: ```\n{HideSensitiveInfo(cmdResponse.Output)}```";
         }
-        
+
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(response));
     }
 
@@ -141,7 +141,7 @@ public class EvalCommands
                         new DiscordFollowupMessageBuilder().WithContent($"\"{result.ReturnValue}\""));
                     return;
                 }
-                
+
                 // Upload to Hastebin if content is too long for Discord
                 if (result.ReturnValue.ToString()!.Length > 1947)
                 {
@@ -152,7 +152,7 @@ public class EvalCommands
                             $"The result was too long to post here, so it was uploaded to Hastebin here: {hasteUploadResult}"));
                     return;
                 }
-                
+
                 // Respond in channel if content length within Discord character limit
                 await ctx.FollowupAsync(
                     new DiscordFollowupMessageBuilder().WithContent(HideSensitiveInfo(result.ReturnValue.ToString())));
@@ -205,7 +205,7 @@ internal class ShellCommandResponse
         Output = output;
         Error = error;
     }
-    
+
     public ShellCommandResponse(int exitCode, string output)
     {
         ExitCode = exitCode;

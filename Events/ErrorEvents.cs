@@ -17,7 +17,7 @@ public class ErrorEvents
                 break;
         }
     }
-    
+
     /// <summary>
     /// Handler for database connection errors.
     /// </summary>
@@ -38,12 +38,12 @@ public class ErrorEvents
             catch (RedisTimeoutException)
             {
                 // db ping failed
-                
+
                 // if exceptions are already suppressed, don't report
                 if (Program.RedisExceptionsSuppressed) return true;
-                
+
                 // report and suppress further timeout exceptions
-                
+
                 var ownerMention =
                     Program.Discord.CurrentApplication.Owners.Aggregate("",
                         (current, user) => current + user.Mention + " ");
@@ -60,7 +60,7 @@ public class ErrorEvents
                         Title = "A database error occurred",
                         Description = $"```{ex.GetType()}: {ex.Message}\n{ex.StackTrace}```".Truncate(4096),
                     });
-                
+
                 Program.RedisExceptionsSuppressed = true;
             }
 
@@ -69,7 +69,7 @@ public class ErrorEvents
 
         return false;
     }
-    
+
     private static async Task SlashCommandErrored(CommandsExtension ext, CommandErroredEventArgs e)
     {
         switch (e.Exception)
@@ -112,7 +112,7 @@ public class ErrorEvents
                 
                 return;
 #endif
-            
+
             case ChecksFailedException permsCheckFailedException
                 when permsCheckFailedException.Errors.Any(e => e.ContextCheckAttribute is RequirePermissionsAttribute):
                 var noPermsResponse = "I couldn't run this command! Please make sure you and I both have permission to use it." +
@@ -126,9 +126,9 @@ public class ErrorEvents
                     await e.Context.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(noPermsResponse)
                         .AsEphemeral());
                 }
-                
+
                 return;
-            
+
             case ChecksFailedException guildCheckFailedException
                 when guildCheckFailedException.Errors.Any(e => e.ContextCheckAttribute is RequireGuildAttribute):
                 var noDmResponse = "This command cannot be used in DMs. Please use it in a server." +
@@ -142,7 +142,7 @@ public class ErrorEvents
                     await e.Context.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(noDmResponse)
                         .AsEphemeral());
                 }
-                
+
                 return;
             case ChecksFailedException:
                 var cmdFailedResponse = $"Hmm, it looks like one of the checks for this command failed." +
@@ -163,13 +163,13 @@ public class ErrorEvents
                     // Failed to respond to the user for an unknown reason
                     await LogError(ext, e, false, unexpectedEx);
                 }
-                
+
                 return;
             default:
-            {
-                await LogError(ext, e, true);
-                break;
-            }
+                {
+                    await LogError(ext, e, true);
+                    break;
+                }
         }
     }
 
@@ -223,14 +223,14 @@ public class ErrorEvents
                 .HasPermission(DiscordPermission.SendMessages))
                 await e.Context.RespondAsync(embed.Build()).ConfigureAwait(false);
         }
-        
+
         await LogError(ext, e, false);
     }
-    
+
     private static async Task LogError(CommandsExtension ext, CommandErroredEventArgs e, bool respond, Exception extraException = null)
     {
         var exception = e.Exception;
-        
+
         string commandName;
         try
         {
@@ -257,7 +257,7 @@ public class ErrorEvents
         };
         embed.AddField("Exception Details",
             $"```{exception.GetType()}: {exception.Message}:\n{exception.StackTrace}".Truncate(1020) + "\n```");
-        
+
         if (extraException is not null)
         {
             embed.Description += " Additionally, an unexpected exception was thrown when attempting to respond to the user.";
@@ -283,13 +283,13 @@ public class ErrorEvents
 
                 return;
             }
-        
+
             // For other commands, send the embed to the bot's home channel, and respond with a friendlier message
-            
+
             var friendlyResponse = "It looks like this command is having issues!"
                + " Try again in a few minutes, or DM a bot owner if this keeps happening."
                + $" See {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list of owners.";
-            
+
             // If command invoker is a bot owner, make the message more detailed
             if (Program.Discord.CurrentApplication.Owners.Any(owner => owner.Id == e.Context.User.Id))
             {
@@ -297,7 +297,7 @@ public class ErrorEvents
                     $"Threw `{exception.GetType()}`. \"{exception.Message}\""
                     + $"\n\nStack trace:\n```\n{exception.StackTrace}\n```";
             }
-            
+
             // We need to respond differently based on the type of command this is.
             if (e.Context is SlashCommandContext)
             {
@@ -327,11 +327,11 @@ public class ErrorEvents
                 {
                     // Failed to respond to the interaction for an unknown reason.
                     // Log the error anyway, plus this exception.
-                    
-                    embed.Description+= $" Additionally, an unknown exception occurred when trying to respond to the interaction: {ex.GetType()}: {ex.Message}";
+
+                    embed.Description += $" Additionally, an unknown exception occurred when trying to respond to the interaction: {ex.GetType()}: {ex.Message}";
                     await Program.HomeChannel.SendMessageAsync(embed);
                 }
-                
+
                 if (failedToRespond) embed.Description += " I was unable to respond to the interaction with an error.";
             }
             else if (e.Context is TextCommandContext)
@@ -341,7 +341,7 @@ public class ErrorEvents
             // else { ??? }
             // Currently SlashCommandContext and TextCommandContext are the only derived classes of CommandContext
         }
-        
+
         // Send the exception embed to the bot's home channel
         await Program.HomeChannel.SendMessageAsync(embed);
     }

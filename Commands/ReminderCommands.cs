@@ -67,7 +67,7 @@ public partial class ReminderCmds
         foreach (var rem in reminders)
             while (rem.Name == reminderId)
                 reminderId = random.Next(1000, 9999);
-        
+
         Reminder reminder = new()
         {
             UserId = ctx.User.Id,

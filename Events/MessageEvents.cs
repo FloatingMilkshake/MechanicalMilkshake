@@ -2,7 +2,6 @@
 
 public partial class MessageEvents
 {
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
     public static Task MessageUpdated(DiscordClient _, MessageUpdatedEventArgs e)
     {
         Task.Run(async () =>
@@ -26,7 +25,7 @@ public partial class MessageEvents
             try
             {
                 if (Program.ConfigJson.UseServerSpecificFeatures) await ServerSpecificFeatures.EventChecks.MessageCreateChecks(e);
-                
+
                 await KeywordTrackingHelpers.KeywordCheck(e.Message);
 
                 if (!e.Channel.IsPrivate)
@@ -54,7 +53,7 @@ public partial class MessageEvents
             // If message is in cache, remove
             if (Program.MessageCache.TryGetMessage(e.Message.Id, out var cachedMessage) && cachedMessage.MessageId == e.Message.Id)
                 Program.MessageCache.RemoveMessage(cachedMessage.MessageId);
-        
+
             // Add most recent message from channel to cache
             var msg = (await e.Channel.GetMessagesAsync(1).ToListAsync())[0];
             Program.MessageCache.AddMessage(new CachedMessage(msg.Channel.Id, msg.Id, msg.Author.Id));
@@ -66,10 +65,10 @@ public partial class MessageEvents
     {
         // Ignore some HTTP errors
         if (ex is HttpRequestException && ex.Message.Contains("Resource temporarily unavailable")) return;
-        
+
         // Handle redis timeout errors differently
         if (await ErrorEvents.DatabaseConnectionErrored(ex)) return;
-    
+
         DiscordEmbedBuilder embed = new()
         {
             Color = DiscordColor.Red,
@@ -86,13 +85,13 @@ public partial class MessageEvents
 
         await Program.HomeChannel.SendMessageAsync(embed);
     }
-    
+
     private static async Task HandleDirectMessageAsync(DiscordClient client, MessageCreatedEventArgs e)
     {
         // Ignore self
         if (e.Author.IsCurrent)
             return;
-        
+
         if (client.CurrentApplication.Owners.Contains(e.Author))
         {
             // If this is a message from an owner & it is a reply & the message being replied to has an embed whose title contains "DM received from"...
@@ -102,7 +101,7 @@ public partial class MessageEvents
                 && reply.Embeds[0].Title.Contains("DM received from"))
             {
                 // This is a reply from an owner, forward
-                
+
                 // Don't allow both reply and sendto
                 if (e.Message.Content.StartsWith("sendto"))
                 {
@@ -148,7 +147,7 @@ public partial class MessageEvents
             else if (e.Message.Content.Contains("sendto"))
             {
                 // Owner using sendto, forward content
-                
+
                 var idPattern = IdPattern();
                 DiscordChannel targetChannel = default;
                 DiscordUser targetUser = default;
@@ -240,7 +239,7 @@ public partial class MessageEvents
         else
         {
             // Message from non-owner, forward
-            
+
             // Wrap in try/catch so the error and message can be logged
             try
             {
@@ -310,7 +309,7 @@ public partial class MessageEvents
                 Program.Discord.Logger.LogError(Program.BotEventId,
                     "A DM was received, but could not be forwarded!\nMessage Content: {MessageContent}\nException Details: {ex.GetType()}: {ExMessage}\n{exStackTrace}",
                     e.Message.Content, ex.GetType(), ex.Message, ex.StackTrace);
-                
+
                 try
                 {
                     await Program.HomeChannel.SendMessageAsync(new DiscordEmbedBuilder()
@@ -333,7 +332,7 @@ public partial class MessageEvents
             }
         }
     }
-    
+
     [GeneratedRegex("[0-9]{5,}")]
     private static partial Regex IdPattern();
     [GeneratedRegex(".*?[0-9]+((?:.|\n)*)")]

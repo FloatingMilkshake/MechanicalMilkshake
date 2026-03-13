@@ -131,7 +131,7 @@ public partial class ClearCommands
                     return;
                 }
             }
-            
+
             try
             {
                 // This is the message we will delete up to. This message will not be deleted.
@@ -169,7 +169,7 @@ public partial class ClearCommands
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent($"Something went wrong when I tried to find the message you provided for `up_to`! Please make sure you provided a valid message ID or link. `{ex.GetType()}: {ex.Message}`")
                     .AsEphemeral());
-                
+
                 // Log to home channel
                 await LogClearErrorAsync(ctx, ex);
                 return;
@@ -188,7 +188,7 @@ public partial class ClearCommands
         if (ignoreMe)
             foreach (var message in messagesToClear.ToList().Where(message => message.Author == ctx.User))
                 messagesToClear.Remove(message);
-        
+
         // Match text, including embeds if selected
         if (match != "")
         {
@@ -271,68 +271,68 @@ public partial class ClearCommands
             // All filters checked. 'messages' is now our final list of messages to delete.
             // Warn if we're going to be deleting 50 or more messages.
             case >= 50:
-            {
-                DiscordButtonComponent confirmButton =
-                    new(DiscordButtonStyle.Danger, "clear-confirm-callback", "Delete Messages", disabled: dryRun);
-                var confirmationMessage = await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent(dryRun ? $"You would be about to delete {messagesToClear.Count} messages, but since "
-                                            + "you used `dry_run = True`, I won't do anything."
-                                        : $"You're about to delete {messagesToClear.Count} messages. Are you sure?")
-                    .AddActionRowComponent(confirmButton).AsEphemeral());
-
-                MessagesToClear.Add(confirmationMessage.Id, messagesToClear);
-                break;
-            }
-            case >= 1:
-            {
-                if (dryRun)
                 {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"You would be about to"
-                    + $" delete {messagesToClear.Count} messages, but since you used `dry_run = True`,"
-                    + " I won't do anything.").AsEphemeral());
+                    DiscordButtonComponent confirmButton =
+                        new(DiscordButtonStyle.Danger, "clear-confirm-callback", "Delete Messages", disabled: dryRun);
+                    var confirmationMessage = await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                        .WithContent(dryRun ? $"You would be about to delete {messagesToClear.Count} messages, but since "
+                                                + "you used `dry_run = True`, I won't do anything."
+                                            : $"You're about to delete {messagesToClear.Count} messages. Are you sure?")
+                        .AddActionRowComponent(confirmButton).AsEphemeral());
+
+                    MessagesToClear.Add(confirmationMessage.Id, messagesToClear);
                     break;
                 }
+            case >= 1:
+                {
+                    if (dryRun)
+                    {
+                        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"You would be about to"
+                        + $" delete {messagesToClear.Count} messages, but since you used `dry_run = True`,"
+                        + " I won't do anything.").AsEphemeral());
+                        break;
+                    }
 
-                try
-                {
-                    await ctx.Channel.DeleteMessagesAsync(messagesToClear,
-                        $"[Clear by {UserInfoHelpers.GetFullUsername(ctx.User)}]");
+                    try
+                    {
+                        await ctx.Channel.DeleteMessagesAsync(messagesToClear,
+                            $"[Clear by {UserInfoHelpers.GetFullUsername(ctx.User)}]");
+                    }
+                    catch (UnauthorizedException)
+                    {
+                        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                            .WithContent("I don't have permission to delete messages in this channel! Make sure I have the `Manage Messages` permission.")
+                            .AsEphemeral());
+                        return;
+                    }
+                    // not catching other exceptions because they are handled by generic slash error handler, but this one deserves a clear message
+
+                    if (skipped)
+                        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                            .WithContent(
+                                $"Cleared **{messagesToClear.Count}** messages from {ctx.Channel.Mention}!\nSome messages were not deleted because they are older than 2 weeks.")
+                            .AsEphemeral());
+                    else
+                        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                            .WithContent($"Cleared **{messagesToClear.Count}** messages from {ctx.Channel.Mention}!")
+                            .AsEphemeral());
+                    break;
                 }
-                catch (UnauthorizedException)
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent("I don't have permission to delete messages in this channel! Make sure I have the `Manage Messages` permission.")
-                        .AsEphemeral());
-                    return;
-                }
-                // not catching other exceptions because they are handled by generic slash error handler, but this one deserves a clear message
-                
-                if (skipped)
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent(
-                            $"Cleared **{messagesToClear.Count}** messages from {ctx.Channel.Mention}!\nSome messages were not deleted because they are older than 2 weeks.")
-                        .AsEphemeral());
-                else
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent($"Cleared **{messagesToClear.Count}** messages from {ctx.Channel.Mention}!")
-                        .AsEphemeral());
-                break;
-            }
             default:
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                     "There were no messages that matched all of the arguments you provided! Nothing to do."));
                 break;
         }
     }
-    
+
     private static async Task LogClearErrorAsync(SlashCommandContext ctx, Exception ex)
     {
         await Program.HomeChannel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
-            {
-                Color = DiscordColor.Red,
-                Title = "An exception occurred when executing a slash command",
-                Description = $"An exception occurred when {ctx.User.Mention} used `/clear`. Details are below."
-            }
+        {
+            Color = DiscordColor.Red,
+            Title = "An exception occurred when executing a slash command",
+            Description = $"An exception occurred when {ctx.User.Mention} used `/clear`. Details are below."
+        }
             .AddField("Exception Details", $"```\n{ex.GetType()}: {ex.Message}\n{ex.StackTrace}\n```")));
     }
 

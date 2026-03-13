@@ -10,7 +10,7 @@ public class ActivityTasks
             await SetActivityAsync();
         }
     }
-    
+
     public static async Task SetActivityAsync()
     {
         try

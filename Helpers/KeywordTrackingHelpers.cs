@@ -18,11 +18,11 @@ public class KeywordTrackingHelpers
 
         var fields = await Program.Db.HashGetAllAsync("keywords");
         var keywordsList = fields.Select(x => JsonConvert.DeserializeObject<TrackedKeyword>(x.Value)).ToList();
-        
+
         // Stop! Before we make ANY API calls, does this message even contain any keywords?
         if (!keywordsList.Any(x => message.Content.Contains(x.Keyword)))
             return;
-        
+
         // It does*. For any matched keywords, is the target user in the guild?
         // *this is a broad check, we check again more specifically later (respecting other keyword properties)
         foreach (var matchedKeyword in keywordsList.Where(x => message.Content.Contains(x.Keyword, StringComparison.OrdinalIgnoreCase)))
@@ -37,9 +37,9 @@ public class KeywordTrackingHelpers
                 return;
             }
         }
-        
+
         // Yes. Continue with other checks.
-        
+
         // Get message before current to check for assumed presence
         // Attempt to get message from cache before fetching from Discord to avoid potential API spam
         // todo: can we do this later, but without spamming the API (like repeatedly checking the same message for different keywords in the foreach loop below)?
@@ -108,7 +108,7 @@ public class KeywordTrackingHelpers
             // If message was sent by a bot and bots should be ignored for this keyword, ignore
             if (fieldValue.IgnoreBots && message.Author.IsBot)
                 continue;
-            
+
             // If user is seemingly present and we should assume presence, ignore
             if (fieldValue.AssumePresence)
                 if (msgBefore != default && msgBefore.authorId == fieldValue.UserId)
@@ -130,7 +130,7 @@ public class KeywordTrackingHelpers
                 // Member is not in server. We cannot check permissions, and it would be silly to continue anyway. Stop here.
                 return;
             }
-            
+
             if (!message.Channel.PermissionsFor(member).HasPermission(DiscordPermission.ViewChannel) || !message.Channel.PermissionsFor(member).HasPermission(DiscordPermission.ReadMessageHistory))
                 break;
 
@@ -140,7 +140,7 @@ public class KeywordTrackingHelpers
                 await KeywordAlert(fieldValue.UserId, message, fieldValue.Keyword, isEdit);
         }
     }
-    
+
     public static async Task<DiscordEmbedBuilder> GenerateKeywordDetailsEmbed(TrackedKeyword keyword)
     {
         var ignoredUserMentions = "\n";
@@ -233,5 +233,5 @@ public class KeywordTrackingHelpers
             // User has DMs disabled.
         }
     }
-    
+
 }

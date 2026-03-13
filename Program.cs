@@ -77,10 +77,10 @@ public class Program
             Console.WriteLine("You are missing required values in your config.json file! Exiting...");
             Environment.Exit(1);
         }
-        
+
         if (string.IsNullOrEmpty(ConfigJson.UptimeKumaHeartbeatUrl))
             LastUptimeKumaHeartbeatStatus = "disabled";
-        
+
         var clientBuilder = DiscordClientBuilder.CreateDefault(ConfigJson.BotToken, DiscordIntents.All.RemoveIntent(DiscordIntents.GuildPresences).RemoveIntent(DiscordIntents.GuildMembers));
 #if DEBUG
         clientBuilder.SetLogLevel(LogLevel.Debug);
@@ -96,7 +96,7 @@ public class Program
             config.LogUnknownEvents = false;
             config.LogUnknownAuditlogs = false;
         });
-        clientBuilder.ConfigureEventHandlers(builder => 
+        clientBuilder.ConfigureEventHandlers(builder =>
             builder.HandleSessionCreated(ReadyEvent.OnReady)
                     .HandleMessageCreated(MessageEvents.MessageCreated)
                     .HandleMessageUpdated(MessageEvents.MessageUpdated)
@@ -129,25 +129,25 @@ public class Program
                 UnconditionallyOverwriteCommands = true,
             });
             extension.AddProcessor(slashCommandProcessor);
-            
+
             // Register context checks
             extension.AddCheck<RequireAuthCheck>();
             extension.AddCheck<ServerSpecificFeatures.CommandChecks.AllowedServersContextCheck>();
-            
+
             // Register error handling
             extension.CommandErrored += ErrorEvents.CommandErrored;
-            
+
             // Register logging
             extension.CommandExecuted += Events.InteractionEvents.CommandExecuted;
-            
+
             // Register interaction commands
             CommandHelpers.RegisterCommands(extension, HomeServer.Id);
-            
+
         }, new CommandsConfiguration
         {
             UseDefaultCommandErrorHandler = false,
         });
-        
+
         // Build the client
         Discord = clientBuilder.Build();
 
@@ -184,7 +184,7 @@ public class Program
 
             DisabledCommands.Add("feedback");
         }
-        
+
         if (ConfigJson.UptimeKumaHeartbeatUrl is null or "")
         {
             Discord.Logger.LogWarning(BotEventId, "Uptime Kuma heartbeats disabled due to missing push URL.");
@@ -196,24 +196,24 @@ public class Program
 
         // Delay to give bot time to connect
         await Task.Delay(TimeSpan.FromSeconds(1));
-        
+
         // Start tasks
-        
+
         // Populate ApplicationCommands
         await Task.Run(async () => CommandTasks.ExecuteAsync());
-        
+
         // Reminder check
         await Task.Run(async () => ReminderTasks.ExecuteAsync());
-        
+
         // Database connection check
         await Task.Run(async () => DatabaseTasks.ExecuteAsync());
-        
+
         // Custom status update
         await Task.Run(async () => ActivityTasks.ExecuteAsync());
-        
+
         // DBots stats update
         await Task.Run(async () => DBotsTasks.ExecuteAsync());
-        
+
         // Send startup message
         await Program.HomeChannel.SendMessageAsync(await DebugInfoHelpers.GenerateDebugInfoEmbed(true));
 

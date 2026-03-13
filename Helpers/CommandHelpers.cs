@@ -18,7 +18,7 @@ public class CommandHelpers
         else
             await ctx.RespondAsync(failureMsg);
     }
-    
+
     /// <summary>
     ///     Registers commands with the provided CommandsExtension.
     /// </summary>
@@ -30,16 +30,16 @@ public class CommandHelpers
         var userInstallCommandTypes = GetUserInstallInteractionCommandTypes(publicInteractionCommandTypes);
         var guildInstallCommandTypes = GetGuildInstallInteractionCommandTypes(publicInteractionCommandTypes);
         var homeServerSlashCommandTypes = GetHomeServerInteractionCommandTypes();
-        
+
         // Always register owner commands in home server only
         extension.AddCommands(homeServerSlashCommandTypes, homeServerId);
-        
+
         // Always register user-install commands globally
         extension.AddCommands(userInstallCommandTypes);
 #if DEBUG
         // Register guild-install commands in home server when debugging
         extension.AddCommands(guildInstallCommandTypes, homeServerId);
-        
+
         if (Program.ConfigJson.UseServerSpecificFeatures)
         {
             // Register server-specific feature commands in home server when debugging
@@ -58,7 +58,7 @@ public class CommandHelpers
         }
 #endif
     }
-    
+
     /// <summary>
     ///     Gets a list of all public interaction command types. To be used for registering commands.
     /// </summary>
@@ -69,7 +69,7 @@ public class CommandHelpers
             t.IsClass && t.Namespace is not null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
             !t.IsNested).ToList();
     }
-    
+
     /// <summary>
     ///     Gets a list of all interaction command types that allow user-install. To be used for registering commands.
     /// </summary>
@@ -78,7 +78,7 @@ public class CommandHelpers
     private static List<Type> GetUserInstallInteractionCommandTypes(List<Type> publicInteractionCommandTypes)
     {
         List<Type> userInstallInteractionCommandTypes = [];
-        
+
         foreach (var type in publicInteractionCommandTypes)
         {
             // Check type (class) for InteractionInstallTypeAttribute; if present, check if it allows user install
@@ -102,10 +102,10 @@ public class CommandHelpers
                 }
             }
         }
-        
+
         return userInstallInteractionCommandTypes;
     }
-    
+
     /// <summary>
     ///     Gets a list of all interaction command types that allow guild-install and do not allow user-install. To be used for registering commands.
     /// </summary>
@@ -114,7 +114,7 @@ public class CommandHelpers
     private static List<Type> GetGuildInstallInteractionCommandTypes(List<Type> publicInteractionCommandTypes)
     {
         List<Type> guildInstallInteractionCommandTypes = [];
-        
+
         foreach (var type in publicInteractionCommandTypes)
         {
             // Check type (class) for InteractionInstallTypeAttribute; if present, check if it allows guild install
@@ -140,10 +140,10 @@ public class CommandHelpers
                 }
             }
         }
-        
+
         return guildInstallInteractionCommandTypes;
     }
-    
+
     /// <summary>
     ///     Gets a list of all interaction command types that are only allowed in the home server. To be used for registering commands.
     /// </summary>

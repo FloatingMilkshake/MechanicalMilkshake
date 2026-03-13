@@ -1,6 +1,4 @@
-﻿using DSharpPlus.Commands.EventArgs;
-
-namespace MechanicalMilkshake.Events;
+﻿namespace MechanicalMilkshake.Events;
 
 public class InteractionEvents
 {
@@ -31,7 +29,7 @@ public class InteractionEvents
                 var description = context.Channel.IsPrivate
                     ? $"{context.User.Username} (`{context.User.Id}`) used {SlashCmdMentionHelpers.GetSlashCmdMention(context.Command.FullName)} in DMs."
                     : $"{context.User.Username} (`{context.User.Id}`) used {SlashCmdMentionHelpers.GetSlashCmdMention(context.Command.FullName)} in `{context.Channel.Name}` (`{context.Channel.Id}`) in \"{context.Guild.Name}\" (`{context.Guild.Id}`).";
-                
+
                 var embed = new DiscordEmbedBuilder()
                     .WithColor(Program.BotColor)
                     .WithAuthor(context.User.Username, null, context.User.AvatarUrl)
@@ -68,9 +66,9 @@ public class InteractionEvents
             };
             embed.AddField("Exception Details",
                 $"```{ex.GetType()}: {ex.Message}:\n{ex.StackTrace}".Truncate(1020) + "\n```");
-            
+
             await Program.HomeChannel.SendMessageAsync(embed);
         }
-        
+
     }
 }

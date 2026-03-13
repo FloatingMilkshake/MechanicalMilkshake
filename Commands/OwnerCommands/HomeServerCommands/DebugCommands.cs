@@ -11,7 +11,8 @@ public class DebugCmds
     {
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
         {
-            Title = "Time Check", Color = Program.BotColor,
+            Title = "Time Check",
+            Color = Program.BotColor,
             Description = $"Seems to me like it's currently `{DateTime.Now:s}`."
         }));
     }
@@ -165,9 +166,9 @@ public class DebugCmds
                 dbPing = await DatabaseTasks.CheckDatabaseConnectionAsync();
                 break;
         }
-        
+
         // templates for check result messages
-        
+
         // reminders
         var reminderCheckResultMessage = $"**Reminders:** "
                                     + $"Before: `{numRemindersBefore}`; "
@@ -175,10 +176,10 @@ public class DebugCmds
                                     + $"Sent: `{numRemindersSent}`; "
                                     + $"Failed: `{numRemindersFailed}`; "
                                     + $"Null Time: `{numRemindersWithNullTime}`";
-        
+
         // database ping
         var dbPingResultMessage = $"**Database ping:** {(double.IsNaN(dbPing) ? "Unreachable!" : $"`{dbPing}ms`")}";
-        
+
         // set up response msg content
         // include relevant check results (see variables)
         var response = "Done!\n";
@@ -194,7 +195,7 @@ public class DebugCmds
                 response += dbPingResultMessage;
                 break;
         }
-        
+
         // send response
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(response));
     }
@@ -206,7 +207,7 @@ public class DebugCmds
         await ctx.DeferResponseAsync();
 
         var cmdCounts = (from cmd in await Program.Db.HashGetAllAsync("commandCounts")
-            select new KeyValuePair<string, int>(cmd.Name, int.Parse(cmd.Value))).ToList();
+                         select new KeyValuePair<string, int>(cmd.Name, int.Parse(cmd.Value))).ToList();
         cmdCounts.Sort((x, y) => y.Value.CompareTo(x.Value));
 
         var output = cmdCounts.Aggregate("",
@@ -247,7 +248,7 @@ public class DebugCmds
                 throw new ChecksFailedException(fakeErrorData, fakeCommand, "This is a test exception");
         }
     }
-    
+
     private class ChecksChoiceProvider : IChoiceProvider
     {
         private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
@@ -256,10 +257,10 @@ public class DebugCmds
             new("Reminders", "reminders"),
             new("Database Connection", "databaseConnection")
         ];
-        
+
         public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
     }
-    
+
     private class TestExceptionChoiceProvider : IChoiceProvider
     {
         private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
@@ -268,7 +269,7 @@ public class DebugCmds
             new("InvalidOperationException", "invalidop"),
             new("ChecksFailedException", "checksfailed")
         ];
-        
+
         public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
     }
 }

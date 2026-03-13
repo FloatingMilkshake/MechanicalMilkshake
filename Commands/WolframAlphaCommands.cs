@@ -36,7 +36,7 @@ public class WolframAlphaCommands
             .Replace("_", @"\_")
             .Replace("~", @"\~")
             .Replace(">", @"\>");
-        
+
         var response = new DiscordMessageBuilder();
 
         // Text response
@@ -50,7 +50,7 @@ public class WolframAlphaCommands
             // kaboom
             // (don't need to do anything here)
         }
-            
+
         // Image response
         MemoryStream imageResponse = default;
         try
@@ -63,25 +63,25 @@ public class WolframAlphaCommands
             // kaboom
             // (don't need to do anything here)
         }
-        
+
         if (textResponse == default && imageResponse == default)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                 "Hmm, WolframAlpha didn't have an answer to that query! Try rephrasing it, or check your spelling."));
             return;
         }
-        
+
         response.Content += $"> {queryEscaped}";
-        
+
         if (textResponse != default)
             response.Content += $"\n{(imageResponse != default ? "**Simple answer:** " : "")}{textResponse}";
-        
+
         if (imageResponse != default)
         {
             if (textResponse != default) response.Content += "\n**Extended answer:**";
             response.AddFile("result.gif", imageResponse);
         }
-        
+
         await ctx.FollowupAsync(response);
     }
 }

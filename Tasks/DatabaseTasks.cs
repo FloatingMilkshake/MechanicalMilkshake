@@ -10,7 +10,7 @@ public class DatabaseTasks
             await Task.Delay(TimeSpan.FromSeconds(5));
         }
     }
-    
+
     public static async Task<double> CheckDatabaseConnectionAsync()
     {
         var dbPing = double.NaN;
@@ -22,7 +22,7 @@ public class DatabaseTasks
         {
             await ErrorEvents.DatabaseConnectionErrored(ex);
         }
-        
+
         // un-suppress exceptions if redis is reachable & they are currently suppressed
         if (Program.RedisExceptionsSuppressed && !double.IsNaN(dbPing))
         {

@@ -3,7 +3,7 @@ namespace MechanicalMilkshake.Entities.MessageCaching;
 public class MessageCache
 {
     // Constructors
-    
+
     // Init cache with list
     public MessageCache(List<CachedMessage> messages)
     {
@@ -15,77 +15,77 @@ public class MessageCache
     {
         Messages = [];
     }
-    
+
     // Get data from cache
-    
+
     // Equivalent to List<T>().TryGetValue(TKey, out TValue)
     public bool TryGetMessage(ulong messageId, out CachedMessage message)
     {
         message = GetMessage(messageId);
         return message != null;
     }
-    
+
     // Same as above but checking by channel ID
     public bool TryGetMessageByChannel(ulong channelId, out CachedMessage message)
     {
         message = GetMessageByChannel(channelId);
         return message != null;
     }
-    
+
     // Same as above but checking by author ID
     public bool TryGetMessageByAuthor(ulong authorId, out CachedMessage message)
     {
         message = GetMessageByAuthor(authorId);
         return message != null;
     }
-    
+
     // Get message by ID
     public CachedMessage GetMessage(ulong messageId)
     {
         return Messages.Find(x => x.MessageId == messageId);
     }
-    
+
     // Get message by chan ID
     public CachedMessage GetMessageByChannel(ulong channelId)
     {
         return Messages.Find(x => x.ChannelId == channelId);
     }
-    
+
     // Get message by author ID
     public CachedMessage GetMessageByAuthor(ulong authorId)
     {
         return Messages.Find(x => x.AuthorId == authorId);
     }
-    
+
     // Get entire cache
     public List<CachedMessage> GetAllMessages()
     {
         return Messages;
     }
-    
+
     // Get count of messages in cache
     public int Count()
     {
         return Messages.Count;
     }
-    
+
     // Get count of messages in cache with filter
     public int Count(Func<CachedMessage, bool> predicate)
     {
         return Messages.Count(predicate);
     }
-    
+
     // Modify cache
-    
+
     // Add message to cache
     public void AddMessage(CachedMessage message)
     {
         if (TryGetMessageByChannel(message.ChannelId, out var _))
             RemoveChannel(message.ChannelId);
-        
+
         Messages.Add(message);
     }
-    
+
     // Remove message from cache by message ID
     public void RemoveMessage(ulong messageId)
     {

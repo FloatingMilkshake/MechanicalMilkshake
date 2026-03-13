@@ -78,7 +78,7 @@ public partial class RandomCmds
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("You're going too fast! Try again in a few seconds."));
             else
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"Something went wrong! The Dog API returned status code {ex.StatusCode}. Try again in a bit, or contact a bot owner if this persists."));
-                
+
             return;
         }
         var pattern = DogApiUrlPattern();

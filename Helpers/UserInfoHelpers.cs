@@ -76,7 +76,7 @@ public class UserInfoHelpers
 
         if (member.GlobalName is not null)
             extendedUserInfoEmbed.AddField("Display Name", member.GlobalName, true);
-        
+
         if (!string.IsNullOrWhiteSpace(member.Nickname))
             extendedUserInfoEmbed.AddField("Nickname", member.Nickname, true);
 
@@ -84,10 +84,10 @@ public class UserInfoHelpers
         extendedUserInfoEmbed.AddField("Joined server on", $"<t:{joinedAtTimestamp}:F> (<t:{joinedAtTimestamp}:R>)");
         extendedUserInfoEmbed.AddField(rolesFieldName, roles);
         extendedUserInfoEmbed.WithThumbnail(member.DisplayAvatarUrl);
-        
+
         var badges = GetBadges(member);
         if (badges != "") extendedUserInfoEmbed.AddField("Badges", badges, true);
-        
+
         if (member.PremiumSince is not null)
         {
             var premiumSinceUtc = member.PremiumSince.Value.UtcDateTime;

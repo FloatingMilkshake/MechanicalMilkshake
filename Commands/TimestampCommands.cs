@@ -86,7 +86,7 @@ public class TimestampCmds
                     new DiscordInteractionResponseBuilder().WithContent($"<t:{unixTime}:{format}>"));
         }
     }
-    
+
     private class TimestampFormatChoiceProvider : IChoiceProvider
     {
         private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
@@ -100,7 +100,7 @@ public class TimestampCmds
             new("Relative Time", "R"),
             new("Raw Timestamp", "")
         ];
-        
+
         public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
     }
 }

@@ -4,13 +4,13 @@ public class GuildEvents
 {
     public static readonly List<ulong> UnavailableGuilds = [];
     private static DiscordChannel _guildLogChannel;
-    
+
     public static async Task GuildCreated(DiscordClient client, GuildCreatedEventArgs e)
     {
         // Fail silently if log channel ID missing or invalid
         if (Program.ConfigJson.GuildLogChannel == "") return;
         if (!await GetFeedbackChannel()) return;
-        
+
         if (UnavailableGuilds.Contains(e.Guild.Id))
         {
             var owner = await e.Guild.GetGuildOwnerAsync();
@@ -23,7 +23,7 @@ public class GuildEvents
             await _guildLogChannel.SendMessageAsync(embed);
             return;
         }
-        
+
         await SendGuildEventLogEmbed(_guildLogChannel, e.Guild, true);
     }
 
@@ -32,16 +32,16 @@ public class GuildEvents
         // Fail silently if log channel ID missing or invalid
         if (Program.ConfigJson.GuildLogChannel == "") return;
         if (!await GetFeedbackChannel()) return;
-        
+
         if (e.Guild.IsUnavailable)
         {
             UnavailableGuilds.Add(e.Guild.Id);
             return;
         }
-        
+
         await SendGuildEventLogEmbed(_guildLogChannel, e.Guild, false);
     }
-    
+
     public static Task GuildDownloadCompleted(DiscordClient _, GuildDownloadCompletedEventArgs __)
     {
         Program.GuildDownloadCompleted = true;
@@ -81,7 +81,7 @@ public class GuildEvents
 
         // Only send owner info on join; will fail to fetch on leave
         if (isJoin) msg.AddEmbed(userInfoEmbed);
-        
+
         await chan.SendMessageAsync(msg);
     }
 

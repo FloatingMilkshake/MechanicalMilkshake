@@ -70,7 +70,8 @@ public class AboutCommands
     {
         await ctx.DeferResponseAsync();
 
-        if (extended) {
+        if (extended)
+        {
             await ctx.FollowupAsync(await DebugInfoHelpers.GenerateDebugInfoEmbed(false));
             return;
         }
@@ -89,24 +90,24 @@ public class AboutCommands
     [Description("Check my uptime!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
     [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-        public static async Task Uptime(SlashCommandContext ctx)
+    public static async Task Uptime(SlashCommandContext ctx)
+    {
+        await ctx.DeferResponseAsync();
+
+        DiscordEmbedBuilder embed = new()
         {
-            await ctx.DeferResponseAsync();
+            Title = "Uptime",
+            Color = Program.BotColor
+        };
 
-            DiscordEmbedBuilder embed = new()
-            {
-                Title = "Uptime",
-                Color = Program.BotColor
-            };
+        var connectUnixTime = ((DateTimeOffset)Program.ConnectTime).ToUnixTimeSeconds();
 
-            var connectUnixTime = ((DateTimeOffset)Program.ConnectTime).ToUnixTimeSeconds();
+        var startTime = Convert.ToDateTime(Program.ProcessStartTime);
+        var startUnixTime = ((DateTimeOffset)startTime).ToUnixTimeSeconds();
 
-            var startTime = Convert.ToDateTime(Program.ProcessStartTime);
-            var startUnixTime = ((DateTimeOffset)startTime).ToUnixTimeSeconds();
+        embed.AddField("Process started at", $"<t:{startUnixTime}:F> (<t:{startUnixTime}:R>)");
+        embed.AddField("Last connected to Discord at", $"<t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)");
 
-            embed.AddField("Process started at", $"<t:{startUnixTime}:F> (<t:{startUnixTime}:R>)");
-            embed.AddField("Last connected to Discord at", $"<t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)");
-
-            await ctx.FollowupAsync(embed);
-        }
+        await ctx.FollowupAsync(embed);
+    }
 }

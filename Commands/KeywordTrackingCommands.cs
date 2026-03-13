@@ -198,7 +198,7 @@ public partial class KeywordTrackingCommands
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent("Done!").AsEphemeral());
     }
-    
+
     [Command("edit")]
     [Description("Edit a tracked keyword.")]
     public static async Task TrackEdit(SlashCommandContext ctx,
@@ -222,9 +222,9 @@ public partial class KeywordTrackingCommands
         bool? currentGuildOnly = null)
     {
         await ctx.DeferResponseAsync(true);
-        
+
         var allKeywordsRawData = await Program.Db.HashGetAllAsync("keywords");
-        
+
         var userKeywords = allKeywordsRawData.Select(field => JsonConvert.DeserializeObject<TrackedKeyword>(field.Value))
             .Where(x => x!.UserId == ctx.User.Id).ToList();
 
@@ -239,7 +239,7 @@ public partial class KeywordTrackingCommands
 
             return;
         }
-        
+
         var thisKeywordRawData = allKeywordsRawData.FirstOrDefault(field =>
             JsonConvert.DeserializeObject<TrackedKeyword>(field.Value)!.Id.ToString() == keyword).Value;
 
@@ -248,7 +248,7 @@ public partial class KeywordTrackingCommands
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral());
             return;
         }
-        
+
         if (newKeyword is null && matchWholeWord is null && ignoreBots is null && assumePresence is null &&
             userIgnoreList is null && channelIgnoreList is null && guildIgnoreList is null &&
             currentGuildOnly is null)
@@ -256,9 +256,9 @@ public partial class KeywordTrackingCommands
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("You didn't change anything! Nothing to do.").AsEphemeral());
             return;
         }
-        
+
         var thisKeywordData = JsonConvert.DeserializeObject<TrackedKeyword>(thisKeywordRawData.ToString());
-        
+
         if (newKeyword is not null)
             thisKeywordData.Keyword = newKeyword;
         if (matchWholeWord is not null)
@@ -267,7 +267,7 @@ public partial class KeywordTrackingCommands
             thisKeywordData.IgnoreBots = ignoreBots.Value;
         if (assumePresence is not null)
             thisKeywordData.AssumePresence = assumePresence.Value;
-        
+
         List<string> checkedUsers = [];
         List<ulong> usersToIgnore = [];
         if (userIgnoreList is not null)
@@ -402,13 +402,13 @@ public partial class KeywordTrackingCommands
             }
         }
         thisKeywordData.GuildIgnoreList = guildsToIgnore;
-        
+
         if (currentGuildOnly is not null)
             thisKeywordData.GuildId = currentGuildOnly.Value ? ctx.Guild.Id : default;
-        
+
         // Write back to db
         await Program.Db.HashSetAsync("keywords", thisKeywordData.Id, JsonConvert.SerializeObject(thisKeywordData));
-        
+
         // Respond
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("Done!").AsEphemeral());
     }
@@ -475,13 +475,13 @@ public partial class KeywordTrackingCommands
         }
 
         var keywordRawData = await Program.Db.HashGetAsync("keywords", keyword);
-        
+
         if (string.IsNullOrWhiteSpace(keywordRawData))
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral());
             return;
         }
-        
+
         var keywordData = JsonConvert.DeserializeObject<TrackedKeyword>(keywordRawData);
         var embed = await KeywordTrackingHelpers.GenerateKeywordDetailsEmbed(keywordData);
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral());
@@ -512,13 +512,13 @@ public partial class KeywordTrackingCommands
         }
 
         var keywordRawData = await Program.Db.HashGetAsync("keywords", keyword);
-        
+
         if (string.IsNullOrWhiteSpace(keywordRawData))
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral());
             return;
         }
-        
+
         var keywordData = JsonConvert.DeserializeObject<TrackedKeyword>(keywordRawData);
         var embed = (await KeywordTrackingHelpers.GenerateKeywordDetailsEmbed(keywordData))
             .WithTitle("Are you sure you want to remove this keyword?").WithColor(DiscordColor.Red)
@@ -528,10 +528,10 @@ public partial class KeywordTrackingCommands
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AddActionRowComponent(confirmButton).AsEphemeral());
     }
-    
+
     [GeneratedRegex("[0-9]+")]
     private static partial Regex UserIdPattern();
-    
+
     private class TrackingAutocompleteProvider : IAutoCompleteProvider
     {
         public async ValueTask<IEnumerable<DiscordAutoCompleteChoice>> AutoCompleteAsync(AutoCompleteContext ctx)

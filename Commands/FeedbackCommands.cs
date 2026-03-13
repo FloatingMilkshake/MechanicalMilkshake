@@ -1,6 +1,4 @@
-﻿using DSharpPlus.Commands.ArgumentModifiers;
-
-namespace MechanicalMilkshake.Commands;
+﻿namespace MechanicalMilkshake.Commands;
 
 public class FeedbackCommands
 {
@@ -22,16 +20,17 @@ public class FeedbackCommands
         if (feedbackChannelId == default)
         {
             var aboutCmd = SlashCmdMentionHelpers.GetSlashCmdMention("about");
-            
+
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent(
                 $"The feedback channel ID set in `config.json` is invalid! Please contact the bot owner;" +
                 $" you can find who this is and how to contact them in {aboutCmd}.").AsEphemeral());
             return;
         }
-        
+
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
         {
-            Title = "Thank you!", Color = Program.BotColor,
+            Title = "Thank you!",
+            Color = Program.BotColor,
             Description = $"Your feedback has been recorded. You can view it below.\n> {feedbackMsg}"
         }).AsEphemeral());
         var feedbackChannel = await ctx.Client.GetChannelAsync(feedbackChannelId);

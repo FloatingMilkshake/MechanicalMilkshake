@@ -20,7 +20,7 @@ public class PingCommands
         var interactionLatency = Math.Round((timeNow - msg.CreationTimestamp.UtcDateTime).TotalMilliseconds);
 
         var dbPing = await DatabaseTasks.CheckDatabaseConnectionAsync();
-        
+
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(
             $"Pong!\n"
             + $"Websocket ping: `{websocketPing}ms`\n"

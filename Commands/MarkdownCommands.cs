@@ -16,7 +16,7 @@ public partial class MarkdownCommands
         if (DiscordUrlPattern().IsMatch(messageToExpose))
         {
             // Assume the user provided a message link. Extract channel and message IDs to get message content.
-            
+
             // Pattern to extract channel and message IDs from URL
             var idPattern = IdPattern();
 
@@ -36,7 +36,7 @@ public partial class MarkdownCommands
                     "I wasn't able to find that message! Make sure I have permission to see the channel it's in."));
                 return;
             }
-            
+
             // Get message ID
             var targetMessage =
                 Convert.ToUInt64(idPattern.Match(messageToExpose).Groups[2].ToString().Replace("/", ""));

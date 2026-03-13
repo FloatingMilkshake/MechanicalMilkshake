@@ -7,7 +7,7 @@
 public partial class EmojiCommands
 {
     private static readonly Regex EmojiRegex = EmojiPattern();
-    
+
     [Command("get")]
     [Description("Get all emoji from a server. I must be in the server for this to work.")]
     public static async Task GetEmoji(SlashCommandContext ctx,

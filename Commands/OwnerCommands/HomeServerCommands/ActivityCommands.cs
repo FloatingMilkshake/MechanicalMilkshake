@@ -59,19 +59,19 @@ public class ActivityCmds
 
         // Get custom statuses, loop through them, and set the one at the matching index
         var dbList = await Program.Db.HashGetAllAsync("customStatusList");
-        
+
         if (dbList.Length == 0)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("There are no custom status messages in the list!"));
             return;
         }
-        
+
         if (id > dbList.Length || id < 1)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("There's no activity with that ID!"));
             return;
         }
-        
+
         var index = 1;
         foreach (var item in dbList)
         {
@@ -80,7 +80,7 @@ public class ActivityCmds
                 index++;
                 continue;
             }
-            
+
             // Try to format stored activity as a DiscordActivity; on failure, show error & return
             var (success, activity) = ParseActivityType(new DiscordActivity { Name = item.Name }, item);
             if (!success)
@@ -365,11 +365,11 @@ public class ActivityCmds
         {
             List<DiscordUser> uniqueUsers = [];
             foreach (var guild in Program.Discord.Guilds)
-            foreach (var member in guild.Value.Members)
-            {
-                var user = await Program.Discord.GetUserAsync(member.Value.Id);
-                if (!uniqueUsers.Contains(user)) uniqueUsers.Add(user);
-            }
+                foreach (var member in guild.Value.Members)
+                {
+                    var user = await Program.Discord.GetUserAsync(member.Value.Id);
+                    if (!uniqueUsers.Contains(user)) uniqueUsers.Add(user);
+                }
 
             activity.Name = activity.Name.Replace("{userCount}", uniqueUsers.Count.ToString());
         }
@@ -384,7 +384,7 @@ public class ActivityCmds
 
         return activity;
     }
-    
+
     private class ActivityTypeChoiceProvider : IChoiceProvider
     {
         private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
@@ -394,10 +394,10 @@ public class ActivityCmds
             new("Competing in", "competing"),
             new("Listening to", "listening")
         ];
-        
+
         public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
     }
-    
+
     private class OnlineStatusChoiceProvider : IChoiceProvider
     {
         private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
@@ -407,7 +407,7 @@ public class ActivityCmds
             new("Do Not Disturb", "dnd"),
             new("Invisible", "invisible")
         ];
-        
+
         public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
     }
 }
