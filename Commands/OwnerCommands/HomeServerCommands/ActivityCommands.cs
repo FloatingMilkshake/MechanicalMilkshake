@@ -1,4 +1,4 @@
-﻿namespace MechanicalMilkshake.Commands.Owner.HomeServerCommands;
+﻿namespace MechanicalMilkshake.Commands.OwnerCommands.HomeServerCommands;
 
 [Command("activity")]
 [Description("Configure the bot's activity!")]

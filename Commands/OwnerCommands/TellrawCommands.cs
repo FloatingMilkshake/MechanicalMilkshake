@@ -1,6 +1,6 @@
-﻿namespace MechanicalMilkshake.Commands.Owner;
+﻿namespace MechanicalMilkshake.Commands.OwnerCommands;
 
-public class Tellraw
+public class TellrawCommands
 {
     [Command("tellraw")]
     [Description("???")]

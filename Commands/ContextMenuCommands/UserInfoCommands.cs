@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Commands.ContextMenuCommands;
 
-public class UserInfo
+public class UserInfoCommands
 {
     [Command("User Info")]
     [AllowedProcessors(typeof(UserCommandProcessor))]

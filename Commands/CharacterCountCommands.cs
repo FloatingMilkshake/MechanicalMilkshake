@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class CharacterCount
+public class CharacterCountCommands
 {
     [Command("charactercount")]
     [Description("Counts the characters in a message.")]

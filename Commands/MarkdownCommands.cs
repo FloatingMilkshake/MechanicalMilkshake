@@ -1,6 +1,6 @@
 namespace MechanicalMilkshake.Commands;
 
-public partial class Markdown
+public partial class MarkdownCommands
 {
     [Command("markdown")]
     [Description("Expose the Markdown formatting behind a message!")]

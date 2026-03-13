@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class UserInfo
+public class UserInfoCommands
 {
     [Command("userinfo")]
     [Description("Returns information about the provided user.")]

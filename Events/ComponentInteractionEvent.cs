@@ -290,7 +290,7 @@ public partial class ComponentInteractionEvent
             {
                 Task.Run(async () =>
                 {
-                    var messagesToClear = Clear.MessagesToClear;
+                    var messagesToClear = ClearCommands.MessagesToClear;
 
                     if (!messagesToClear.ContainsKey(e.Message.Id))
                     {

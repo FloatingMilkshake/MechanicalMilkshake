@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Commands.ContextMenuCommands;
 
-public class Reminder
+public class ReminderCommands
 {
     // Used to pass context to modal handling
     // <user ID, message from context>

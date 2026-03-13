@@ -6,7 +6,7 @@
 [RequirePermissions(DiscordPermission.ManageChannels, DiscordPermission.ModerateMembers)]
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
 [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
-public class Lockdown
+public class LockdownCommands
 {
     [Command("lock")]
     [Description("Lock a channel to prevent members from sending messages.")]

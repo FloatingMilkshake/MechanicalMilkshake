@@ -1,7 +1,7 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
 [RequireGuild]
-public partial class Clear
+public partial class ClearCommands
 {
     public static readonly Dictionary<ulong, List<DiscordMessage>> MessagesToClear = new();
 

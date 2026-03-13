@@ -152,7 +152,7 @@ public class CommandHelpers
     {
         return Assembly.GetExecutingAssembly().GetTypes().Where(t =>
             t.IsClass && t.Namespace is not null &&
-            t.Namespace.Contains("MechanicalMilkshake.Commands.Owner.HomeServerCommands") &&
+            t.Namespace.Contains("MechanicalMilkshake.Commands.OwnerCommands.HomeServerCommands") &&
             !t.IsNested).ToList();
     }
 }

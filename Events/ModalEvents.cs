@@ -7,7 +7,7 @@ public class ModalEvents
         await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
             new DiscordInteractionResponseBuilder().AsEphemeral(true));
 
-        var targetMessage = Commands.ContextMenuCommands.Reminder.ReminderInteractionCache[e.Interaction.User.Id];
+        var targetMessage = Commands.ContextMenuCommands.ReminderCommands.ReminderInteractionCache[e.Interaction.User.Id];
 
         var timeInput = (e.Values["remind-me-about-this-time-input"] as TextInputModalSubmission).Value;
 

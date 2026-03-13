@@ -4,7 +4,7 @@
 [Description("Track or untrack keywords.")]
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
 [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
-public partial class Track
+public partial class KeywordTrackingCommands
 {
     [Command("add")]
     [Description("Track a new keyword.")]

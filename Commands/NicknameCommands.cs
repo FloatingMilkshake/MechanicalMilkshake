@@ -1,7 +1,7 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
 [RequireGuild]
-public class Nickname
+public class NicknameCommands
 {
     [Command("nickname")]
     [Description("Changes my nickname.")]

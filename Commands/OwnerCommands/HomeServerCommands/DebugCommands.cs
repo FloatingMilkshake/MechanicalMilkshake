@@ -1,4 +1,4 @@
-﻿namespace MechanicalMilkshake.Commands.Owner.HomeServerCommands;
+﻿namespace MechanicalMilkshake.Commands.OwnerCommands.HomeServerCommands;
 
 [Command("debug")]
 [Description("Commands for checking if the bot is working properly.")]

@@ -4,7 +4,7 @@
 [Description("Commands for working with emoji.")]
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
 [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-public partial class Emoji
+public partial class EmojiCommands
 {
     private static readonly Regex EmojiRegex = EmojiPattern();
     

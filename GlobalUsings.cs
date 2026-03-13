@@ -24,7 +24,7 @@ global using DSharpPlus.Net.Gateway;
 global using HumanDateParser;
 global using Humanizer;
 global using MechanicalMilkshake.Commands;
-global using MechanicalMilkshake.Commands.Owner;
+global using MechanicalMilkshake.Commands.OwnerCommands;
 global using MechanicalMilkshake.Entities;
 global using MechanicalMilkshake.Entities.MessageCaching;
 global using MechanicalMilkshake.Events;

@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class WolframAlpha
+public class WolframAlphaCommands
 {
     private const string QueryUrlLinkDisplayText = "Click here for more details";
 

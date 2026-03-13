@@ -1,7 +1,7 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
 [RequireGuild]
-public class Kick
+public class KickCommands
 {
     [Command("kick")]
     [Description("Kick a user. They can rejoin the server with an invite.")]

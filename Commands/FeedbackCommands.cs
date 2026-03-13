@@ -2,7 +2,7 @@
 
 namespace MechanicalMilkshake.Commands;
 
-public class Feedback
+public class FeedbackCommands
 {
     [Command("feedback")]
     [Description("Have feedback about the bot? Submit it here!")]

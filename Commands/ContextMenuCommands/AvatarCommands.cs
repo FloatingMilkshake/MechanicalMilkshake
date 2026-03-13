@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Commands.ContextMenuCommands;
 
-public class Avatar
+public class AvatarCommands
 {
     [Command("Avatar")]
     [AllowedProcessors(typeof(UserCommandProcessor))]

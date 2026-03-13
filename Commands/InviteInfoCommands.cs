@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public partial class InviteInfo
+public partial class InviteInfoCommands
 {
     [Command("inviteinfo")]
     [Description("Return information about a Discord invite.")]

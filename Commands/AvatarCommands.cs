@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class Avatar
+public class AvatarCommands
 {
     [Command("avatar")]
     [Description("Returns the avatar of the provided user. Defaults to yourself if no user is provided.")]

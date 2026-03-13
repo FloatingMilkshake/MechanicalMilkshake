@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class Ping
+public class PingCommands
 {
     [Command("ping")]
     [Description("Pong!")]

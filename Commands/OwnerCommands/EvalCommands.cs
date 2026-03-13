@@ -1,4 +1,4 @@
-﻿namespace MechanicalMilkshake.Commands.Owner;
+﻿namespace MechanicalMilkshake.Commands.OwnerCommands;
 
 [RequireAuth]
 public class EvalCommands

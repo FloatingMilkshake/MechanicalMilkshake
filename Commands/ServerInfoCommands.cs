@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class ServerInfo
+public class ServerInfoCommands
 {
     [Command("serverinfo")]
     [Description("Look up information about a server.")]
