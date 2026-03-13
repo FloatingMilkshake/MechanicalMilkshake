@@ -106,6 +106,7 @@ public class Program
                     .HandleGuildCreated(GuildEvents.GuildCreated)
                     .HandleGuildDeleted(GuildEvents.GuildDeleted)
                     .HandleGuildDownloadCompleted(GuildEvents.GuildDownloadCompleted)
+                    .HandleModalSubmitted(ModalEvents.ModalSubmitted)
         );
         clientBuilder.UseInteractivity(new InteractivityConfiguration
         {

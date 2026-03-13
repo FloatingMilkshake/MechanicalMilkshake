@@ -2,6 +2,9 @@
 
 public class Reminder
 {
+    // Used to pass context to modal handling
+    // <user ID, message from context>
+    public static Dictionary<ulong, DiscordMessage> ReminderInteractionCache = new();
 
     [Command("Remind Me About This")]
     [AllowedProcessors(typeof(MessageCommandProcessor))]
@@ -11,73 +14,12 @@ public class Reminder
 
     public static async Task ContextReminder(MessageCommandContext ctx, DiscordMessage targetMessage)
     {
-        DiscordChannel responseChannel;
-        if (ctx.Interaction.Guild is null)
-        {
-            try
-            {
-                responseChannel = (await ctx.User.SendMessageAsync($"OK {ctx.User.Mention}, I can remind you about [that message](<{targetMessage.JumpLink}>). When would you like to be reminded?")).Channel;
-                await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent("Check your DMs!").AsEphemeral());
-            }
-            catch
-            {
-                await ctx.RespondAsync("Sorry, that didn't work! Try using `/reminder set` instead.");
-                return;
-            }
-        }
-        else
-        {
-            await ctx.RespondAsync($"OK {ctx.User.Mention}, I can remind you about [that message](<{targetMessage.JumpLink}>). When would you like to be reminded?");
-            responseChannel = ctx.Channel;
-        }
-        
-        var nextMsg = await responseChannel.GetNextMessageAsync(m => m.Author.Id == ctx.User.Id);
-        
-        if (nextMsg.Result is null)
-        {
-            // Timed out!
-            await responseChannel.SendMessageAsync("You took too long to respond! Please try again.");
-            return;
-        }
+        await ctx.RespondWithModalAsync(new DiscordModalBuilder()
+            .WithTitle("Remind Me About This")
+            .WithCustomId("remind-me-about-this-modal")
+            .AddTextInput(new DiscordTextInputComponent("remind-me-about-this-time-input"), "When do you want to be reminded?")
+        );
 
-        DateTime time;
-        try
-        {
-            time = HumanDateParser.HumanDateParser.Parse(nextMsg.Result.Content);
-        }
-        catch
-        {
-            await nextMsg.Result.RespondAsync($"I couldn't parse \"{nextMsg.Result.Content}\" as a time! Please try again.");
-            return;
-        }
-        
-        // Create reminder
-        
-        Random random = new();
-        var reminderId = random.Next(1000, 9999);
-
-        var reminders = await Program.Db.HashGetAllAsync("reminders");
-        foreach (var rem in reminders)
-            while (rem.Name == reminderId)
-                reminderId = random.Next(1000, 9999);
-        
-        var reminder = new Entities.Reminder
-        {
-            UserId = ctx.User.Id,
-            ChannelId = ctx.Channel.Id,
-            MessageId = targetMessage.Id,
-            SetTime = DateTime.Now,
-            ReminderTime = time,
-            ReminderId = reminderId,
-            ReminderText = "You set this reminder on a message with the \"Remind Me About This\" command.",
-            GuildId = ctx.Guild is null ? "@me" : ctx.Guild.Id.ToString()
-        };
-        
-        // Save reminder to db
-        await Program.Db.HashSetAsync("reminders", reminderId.ToString(), JsonConvert.SerializeObject(reminder));
-        
-        // Respond
-        var unixTime = ((DateTimeOffset)time).ToUnixTimeSeconds();
-        await nextMsg.Result.RespondAsync($"Alright, I will remind you about [that message](<{targetMessage.JumpLink}>) on <t:{unixTime}:F> (<t:{unixTime}:R>).");
+        ReminderInteractionCache[ctx.User.Id] = targetMessage;
     }
 }
