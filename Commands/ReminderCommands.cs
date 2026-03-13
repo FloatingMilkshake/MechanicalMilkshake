@@ -62,11 +62,12 @@ public partial class ReminderCmds
         Random random = new();
         var reminderId = random.Next(1000, 9999);
 
+        // This is to avoid conflicts with reminder IDs
         var reminders = await Program.Db.HashGetAllAsync("reminders");
         foreach (var rem in reminders)
             while (rem.Name == reminderId)
                 reminderId = random.Next(1000, 9999);
-        // This is to avoid the potential for duplicate reminders
+        
         Reminder reminder = new()
         {
             UserId = ctx.User.Id,
@@ -272,106 +273,44 @@ public partial class ReminderCmds
 
     [Command("modify")]
     [Description("Modify an existing reminder using its unique ID.")]
-    public static async Task ModifyReminder(SlashCommandContext ctx,
-        [Parameter("reminder"), Description("The ID of the reminder to modify. You can get this with /reminder list.")]
-        long reminderToModify,
-        [Parameter("time"), Description("When do you want to be reminded? Leave this blank if you don't want to change it.")]
-        string time = null,
-        [Parameter("text"), Description("What should the reminder say? Leave this blank if you don't want to change it.")]
-        [MinMaxLength(maxLength: 1000)]
-        string text = null)
+    public static async Task ModifyReminder(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(true);
 
-        var idRegex = IdPattern();
-        if (!idRegex.IsMatch(reminderToModify.ToString()))
+        var options = new List<DiscordSelectComponentOption>();
+
+        var reminders = await Program.Db.HashGetAllAsync("reminders");
+
+        var userHasReminders = false;
+        foreach (var reminder in reminders)
         {
+            var reminderDetails = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
+
+            if (reminderDetails is null) continue;
+            if (reminderDetails.UserId != ctx.User.Id) continue;
+            userHasReminders = true;
+            options.Add(new DiscordSelectComponentOption(reminderDetails.ReminderId.ToString(),
+                reminderDetails.ReminderId.ToString(),
+                reminderDetails.ReminderText.Truncate(100)));
+        }
+
+        if (!userHasReminders)
+        {
+            var reminderCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "reminder");
+
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
-                    $"The reminder ID you provided isn't correct! You can get a reminder ID with {SlashCmdMentionHelpers.GetSlashCmdMention("reminder", "list")}. It should look something like this: `1234`")
+                    reminderCmd is null
+                        ? "You don't have any reminders!"
+                        : $"You don't have any reminders! Set one with </{reminderCmd.Name} set:{reminderCmd.Id}>.")
                 .AsEphemeral());
             return;
         }
 
-        var currentReminders = await Program.Db.HashGetAllAsync("reminders");
-        var keys = currentReminders.Select(item => item.Name.ToString()).ToList();
-
-        if (!keys.Contains(reminderToModify.ToString()))
-        {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    $"A reminder with that ID doesn't exist! Make sure you've got the right ID. You can get it with {SlashCmdMentionHelpers.GetSlashCmdMention("reminder", "list")}. It should look something like this: `1234`")
+        await ctx.FollowupAsync(
+            new DiscordFollowupMessageBuilder().WithContent("Please choose a reminder to modify.")
+                .AddActionRowComponent(new DiscordSelectComponent("reminder-modify-dropdown", null, options))
                 .AsEphemeral());
-            return;
-        }
-
-        var reminder =
-            JsonConvert.DeserializeObject<Reminder>(
-                await Program.Db.HashGetAsync("reminders", reminderToModify));
-
-        if (reminder!.UserId != ctx.User.Id)
-        {
-            await ctx.FollowupAsync(
-                new DiscordFollowupMessageBuilder().WithContent(
-                    "Only the person who set that reminder can modify it!").AsEphemeral());
-            return;
-        }
-
-        if (text is null && time is null)
-        {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("Reminder unchanged.")
-                .AsEphemeral());
-            return;
-        }
-
-        if (text is not null) reminder.ReminderText = text;
-
-        if (time is not null)
-            try
-            {
-                reminder.ReminderTime = HumanDateParser.HumanDateParser.Parse(time);
-            }
-            catch
-            {
-                // Parse error, either because the user did it wrong or because HumanDateParser is weird
-
-                await ctx.FollowupAsync(
-                    new DiscordFollowupMessageBuilder().WithContent(
-                        $"I couldn't parse \"{time}\" as a time! Please try again.").AsEphemeral());
-                return;
-            }
-
-        await Program.Db.HashSetAsync("reminders", reminder.ReminderId, JsonConvert.SerializeObject(reminder));
-
-        if (!reminder.IsPrivate && reminder.ReminderTime is not null)
-        {
-            try
-            {
-                var reminderChannel = await Program.Discord.GetChannelAsync(reminder.ChannelId);
-            
-                if (reminder.MessageId != default)
-                {
-                    var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
-                
-                    var unixTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
-
-                    if (reminderMessage.Content.Contains("pushed back"))
-                        await reminderMessage.ModifyAsync(
-                            $"[Reminder](https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId})" +
-                            $" pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
-                            $"\nReminder ID: `{reminder.ReminderId}`");
-                    else
-                        await reminderMessage.ModifyAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
-                                                          $"\nReminder ID: `{reminder.ReminderId}`");
-                }
-            }
-            catch
-            {
-                // Not important
-            }
-        }
-
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-            .WithContent("Reminder modified successfully.").AsEphemeral());
     }
 
     [Command("pushback")]
@@ -554,5 +493,5 @@ public partial class ReminderCmds
     }
 
     [GeneratedRegex("[0-9]+")]
-    private static partial Regex IdPattern();
+    internal static partial Regex IdPattern();
 }

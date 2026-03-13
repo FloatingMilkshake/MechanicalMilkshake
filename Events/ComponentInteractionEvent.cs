@@ -2,6 +2,10 @@
 
 public partial class ComponentInteractionEvent
 {
+    // Used to pass context between /reminder modify and the modal
+    // <user ID, reminder>
+    public static Dictionary<ulong, Reminder> ReminderModifyCache = new();
+
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
     public static async Task ComponentInteractionCreated(DiscordClient s, ComponentInteractionCreatedEventArgs e)
     {
@@ -426,6 +430,37 @@ public partial class ComponentInteractionEvent
                         .WithContent("Reminder deleted successfully.").AsEphemeral());
                 break;
             }
+            case "reminder-modify-dropdown":
+                {
+                    Reminder reminder;
+                    try
+                    {
+                        reminder = JsonConvert.DeserializeObject<Reminder>(await Program.Db.HashGetAsync("reminders", e.Values[0]));
+                    }
+                    catch
+                    {
+                        await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
+                            new DiscordInteractionResponseBuilder().WithContent($"Sorry, something went wrong. Please try again or contact a bot owner for help."));
+                        return;
+                    }
+
+                    if (reminder.UserId != e.Interaction.User.Id)
+                    {
+                        await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
+                            new DiscordInteractionResponseBuilder()
+                            .WithContent("Only the person who set that reminder can modify it!").AsEphemeral());
+                        return;
+                    }
+
+                    ReminderModifyCache[e.Interaction.User.Id] = reminder;
+
+                    await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal,
+                        new DiscordModalBuilder().WithCustomId("reminder-modify-modal").WithTitle("Modify a Reminder")
+                        .AddTextInput(new DiscordTextInputComponent("reminder-modify-time-input", placeholder: reminder.ReminderTime.Humanize(), required: false), "When do you want to be reminded?")
+                        .AddTextInput(new DiscordTextInputComponent("reminder-modify-text-input", placeholder: reminder.ReminderText, required: false), "What do you want to be reminded about?"));
+
+                    break;
+                }
             case "reminder-show-dropdown":
             {
                 Reminder reminder;
@@ -486,7 +521,7 @@ public partial class ComponentInteractionEvent
             default:
                 e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
-                        $"Unknown interaction ID `{e.Id}`! Contact the bot developer for assistance.").AsEphemeral());
+                        $"Unknown interaction ID `{e.Id}`! Please contact a bot owner for help.").AsEphemeral());
                 break;
         }
     }
