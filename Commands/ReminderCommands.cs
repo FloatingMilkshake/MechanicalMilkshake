@@ -230,7 +230,7 @@ public partial class ReminderCmds
     }
 
     [Command("delete")]
-    [Description("Delete a reminder using its unique ID.")]
+    [Description("Delete a reminder.")]
     public static async Task DeleteReminder(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(true);
@@ -272,7 +272,7 @@ public partial class ReminderCmds
     }
 
     [Command("modify")]
-    [Description("Modify an existing reminder using its unique ID.")]
+    [Description("Modify a reminder.")]
     public static async Task ModifyReminder(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(true);
@@ -314,7 +314,7 @@ public partial class ReminderCmds
     }
 
     [Command("pushback")]
-    [Description("Push back a reminder that just went off.")]
+    [Description("Push back a reminder that just triggered.")]
     public static async Task PushBackReminder(SlashCommandContext ctx,
         [Parameter("message"), Description("The message for the reminder to push back. Accepts message IDs.")]
         string msgId,
