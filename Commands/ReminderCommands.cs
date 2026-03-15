@@ -247,9 +247,9 @@ public partial class ReminderCmds
             if (reminderDetails is null) continue;
             if (reminderDetails.UserId != ctx.User.Id) continue;
             userHasReminders = true;
-            options.Add(new DiscordSelectComponentOption(reminderDetails.ReminderId.ToString(),
+            options.Add(new DiscordSelectComponentOption(reminderDetails.ReminderText.Truncate(100),
                 reminderDetails.ReminderId.ToString(),
-                reminderDetails.ReminderText.Truncate(100)));
+                reminderDetails.ReminderTime.Humanize()));
         }
 
         if (!userHasReminders)
@@ -275,30 +275,17 @@ public partial class ReminderCmds
     [Description("Modify a reminder.")]
     public static async Task ModifyReminder(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync(true);
-
-        var options = new List<DiscordSelectComponentOption>();
+        // We can't defer this!! Want to respond with a modal if the user has >25 reminders.
 
         var reminders = await Program.Db.HashGetAllAsync("reminders");
 
-        var userHasReminders = false;
-        foreach (var reminder in reminders)
-        {
-            var reminderDetails = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
+        var userReminders = reminders.Select(x => JsonConvert.DeserializeObject<Reminder>(x.Value)).Where(r => r is not null && r.UserId == ctx.User.Id).ToList();
 
-            if (reminderDetails is null) continue;
-            if (reminderDetails.UserId != ctx.User.Id) continue;
-            userHasReminders = true;
-            options.Add(new DiscordSelectComponentOption(reminderDetails.ReminderId.ToString(),
-                reminderDetails.ReminderId.ToString(),
-                reminderDetails.ReminderText.Truncate(100)));
-        }
-
-        if (!userHasReminders)
+        if (userReminders.Count == 0)
         {
             var reminderCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "reminder");
 
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent(
                     reminderCmd is null
                         ? "You don't have any reminders!"
@@ -306,11 +293,35 @@ public partial class ReminderCmds
                 .AsEphemeral());
             return;
         }
+        else if (userReminders.Count <= 25)
+        {
+            var options = new List<DiscordSelectComponentOption>();
+            options.AddRange(userReminders.Select(reminder =>
+                new DiscordSelectComponentOption(reminder.ReminderText.Truncate(100),
+                    reminder.ReminderId.ToString(),
+                    reminder.ReminderTime.Humanize())));
 
-        await ctx.FollowupAsync(
-            new DiscordFollowupMessageBuilder().WithContent("Please choose a reminder to modify.")
+            await ctx.RespondAsync(
+            new DiscordInteractionResponseBuilder().WithContent("Please choose a reminder to modify.")
                 .AddActionRowComponent(new DiscordSelectComponent("reminder-modify-dropdown", null, options))
                 .AsEphemeral());
+        }
+        else
+        {
+            // User has more than 25 reminders. Show a modal where they are prompted to enter the ID for the reminder they want to modify.
+            // I wanted to paginate a select menu instead, but Discord and D#+ limitations make that really difficult for now. (cba writing my own pagination)
+
+            var modalText = "You have a lot of reminders! Please enter the ID of the reminder you wish to modify.";
+            var reminderListCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "reminder");
+            if (reminderListCmd is not null)
+                modalText += $" You can see reminder IDs with </reminder list:{reminderListCmd.Id}>.";
+
+            await ctx.RespondWithModalAsync(new DiscordModalBuilder().WithCustomId("reminder-modify-modal").WithTitle("Modify a Reminder")
+                .AddTextDisplay(modalText)
+                .AddTextInput(new DiscordTextInputComponent("reminder-modify-id-input"), "Reminder ID")
+                .AddTextInput(new DiscordTextInputComponent("reminder-modify-time-input", required: false), "(Optional) Enter the new reminder time:")
+                .AddTextInput(new DiscordTextInputComponent("reminder-modify-text-input", required: false), "(Optional) Enter the new reminder text:"));
+        }
     }
 
     [Command("pushback")]
@@ -453,43 +464,71 @@ public partial class ReminderCmds
 
     [Command("show")]
     [Description("Show the details for a reminder.")]
-    public static async Task ReminderShow(SlashCommandContext ctx)
+    public static async Task ReminderShow(SlashCommandContext ctx, [Parameter("id"), Description("The ID of the reminder to show.")] string id)
     {
         await ctx.DeferResponseAsync(true);
 
-        var options = new List<DiscordSelectComponentOption>();
+        var reminderCmd = Program.ApplicationCommands.FirstOrDefault(x => x.Name == "reminder");
 
-        var reminders = await Program.Db.HashGetAllAsync("reminders");
-
-        var userHasReminders = false;
-        foreach (var reminder in reminders)
+        Regex idRegex = new("[0-9]+");
+        if (!idRegex.IsMatch(id.ToString()))
         {
-            var reminderDetails = JsonConvert.DeserializeObject<Reminder>(reminder.Value);
-
-            if (reminderDetails!.UserId != ctx.User.Id) continue;
-            userHasReminders = true;
-            options.Add(new DiscordSelectComponentOption(reminderDetails.ReminderId.ToString(),
-                reminderDetails.ReminderId.ToString(),
-                reminderDetails.ReminderText.Truncate(100)));
-        }
-
-        if (!userHasReminders)
-        {
-            var reminderCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "reminder");
-
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent(
-                    reminderCmd is null
-                        ? "You don't have any reminders!"
-                        : $"You don't have any reminders! Set one with </{reminderCmd.Name} set:{reminderCmd.Id}>.")
+                .WithContent($"The reminder ID you provided isn't correct! It should look something like this: `1234`.{(reminderCmd is null ? "" : $" You can see your reminders and their IDs with </reminder list:{reminderCmd.Id}>.")}")
                 .AsEphemeral());
             return;
         }
 
-        await ctx.FollowupAsync(
-            new DiscordFollowupMessageBuilder().WithContent("Please choose a reminder to show details for.")
-                .AddActionRowComponent(new DiscordSelectComponent("reminder-show-dropdown", null, options))
-                .AsEphemeral());
+        Reminder reminder;
+        try
+        {
+            reminder = JsonConvert.DeserializeObject<Reminder>(await Program.Db.HashGetAsync("reminders", id));
+        }
+        catch
+        {
+
+
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent($"I couldn't find a reminder with that ID! Make sure it's correct. It should look something like this: `1234`.{(reminderCmd is null ? "" : $" You can see your reminders and their IDs with </reminder list:{reminderCmd.Id}>.")}")
+                    .AsEphemeral());
+            return;
+        }
+
+        DiscordEmbedBuilder embed = new()
+        {
+            Title = $"Reminder `{id}`",
+            Description = reminder!.ReminderText,
+            Color = Program.BotColor
+        };
+
+        if (reminder.GuildId != "@me" && reminder.ReminderTime is not null)
+        {
+            embed.AddField("Server",
+                $"{(await Program.Discord.GetGuildAsync(Convert.ToUInt64(reminder.GuildId))).Name}");
+            embed.AddField("Channel", $"<#{reminder.ChannelId}>");
+        }
+
+        var jumpLink = reminder.IsPrivate
+            ? $"This reminder was set privately, so the message where it was set is unavailable. Here is a link to the surrounding context: https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}/"
+            : $"https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}";
+
+        embed.AddField("Jump Link", jumpLink);
+
+        var setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
+
+        long reminderTime = default;
+        if (reminder.ReminderTime is not null)
+            reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
+
+        embed.AddField("Set At", $"<t:{setTime}:F> (<t:{setTime}:R>)");
+
+        if (reminder.ReminderTime is not null)
+            embed.AddField("Set For", $"<t:{reminderTime}:F> (<t:{reminderTime}:R>)");
+        else
+            embed.WithFooter(
+                "This reminder will not be sent automatically.");
+
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral());
     }
 
     [GeneratedRegex("[0-9]+")]

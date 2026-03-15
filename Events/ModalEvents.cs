@@ -63,10 +63,50 @@ public class ModalEvents
                 {
                     await e.Interaction.DeferAsync(true);
 
+                    var reminderCmd = Program.ApplicationCommands.FirstOrDefault(x => x.Name == "reminder");
+
                     var time = (e.Values["reminder-modify-time-input"] as TextInputModalSubmission).Value;
                     var text = (e.Values["reminder-modify-text-input"] as TextInputModalSubmission).Value;
+                    string id = null;
+                    if (e.Values.ContainsKey("reminder-modify-id-input"))
+                        id = (e.Values["reminder-modify-id-input"] as TextInputModalSubmission).Value;
 
-                    var reminder = ComponentInteractionEvent.ReminderModifyCache[e.Interaction.User.Id];
+                    Reminder reminder;
+                    try
+                    {
+                        if (!ComponentInteractionEvent.ReminderModifyCache.TryGetValue(e.Interaction.User.Id, out reminder))
+                        {
+                            Regex idRegex = new("[0-9]+");
+                            if (!idRegex.IsMatch(id))
+                            {
+                                await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
+                                    .WithContent($"The reminder ID you provided isn't correct! It should look something like this: `1234`.{(reminderCmd is null ? "" : $" You can see your reminders and their IDs with </reminder list:{reminderCmd.Id}>.")}")
+                                    .AsEphemeral());
+                                return;
+                            }
+
+                            reminder = JsonConvert.DeserializeObject<Reminder>(await Program.Db.HashGetAsync("reminders", id));
+                        }
+                    }
+                    catch (ArgumentNullException)
+                    {
+                        await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
+                            .WithContent($"I couldn't find a reminder with that ID! Make sure it's correct. It should look something like this: `1234`.{(reminderCmd is null ? "" : $" You can see your reminders and their IDs with </reminder list:{reminderCmd.Id}>.")}")
+                            .AsEphemeral());
+                        return;
+                    }
+                    catch
+                    {
+                        await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent($"Sorry, something went wrong. Please try again or contact a bot owner for help."));
+                        return;
+                    }
+
+                    if (reminder.UserId != e.Interaction.User.Id)
+                    {
+                        await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
+                            .WithContent("Only the person who set that reminder can modify it!").AsEphemeral());
+                        return;
+                    }
 
                     if (string.IsNullOrWhiteSpace(text) && string.IsNullOrWhiteSpace(time))
                     {
@@ -123,6 +163,8 @@ public class ModalEvents
 
                     await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
                         .WithContent("Reminder modified successfully."));
+
+                    ComponentInteractionEvent.ReminderModifyCache.Remove(e.Interaction.User.Id);
 
                     break;
                 }

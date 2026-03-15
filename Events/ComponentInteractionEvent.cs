@@ -2,7 +2,7 @@
 
 public partial class ComponentInteractionEvent
 {
-    // Used to pass context between /reminder modify and the modal
+    // Used to pass context between reminder modify interactions
     // <user ID, reminder>
     public static Dictionary<ulong, Reminder> ReminderModifyCache = new();
 
