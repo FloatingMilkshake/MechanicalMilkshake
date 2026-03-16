@@ -271,7 +271,7 @@ public partial class ReminderCmds
         }
 
         var jumpLink = reminder.IsPrivate
-            ? $"This reminder was set privately, so the message where it was set is unavailable. Here is a link to the surrounding context: https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}/"
+            ? $"This reminder was set privately, so the message where it was set is unavailable. Here is a link to the surrounding context: https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}"
             : $"https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}";
 
         embed.AddField("Jump Link", jumpLink);
