@@ -141,10 +141,7 @@ public partial class ReminderCmds
     {
         // We can't defer this!! Want to respond with a modal if the user has >25 reminders.
 
-        var reminders = await Program.Db.HashGetAllAsync("reminders");
-
-        var userReminders = reminders.Select(x => JsonConvert.DeserializeObject<Reminder>(x.Value)).Where(r => r is not null && r.UserId == ctx.User.Id).ToList();
-
+        var userReminders = await GetUserRemindersAsync(ctx.User.Id);
         if (userReminders.Count == 0)
         {
             var reminderCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "reminder");
@@ -159,15 +156,9 @@ public partial class ReminderCmds
         }
         else if (userReminders.Count <= 25)
         {
-            var options = new List<DiscordSelectComponentOption>();
-            options.AddRange(userReminders.Select(reminder =>
-                new DiscordSelectComponentOption(reminder.ReminderText.Truncate(100),
-                    reminder.ReminderId.ToString(),
-                    reminder.ReminderTime.Humanize())));
-
             await ctx.RespondAsync(
             new DiscordInteractionResponseBuilder().WithContent("Please choose a reminder to modify.")
-                .AddActionRowComponent(new DiscordSelectComponent("reminder-modify-dropdown", null, options))
+                .AddActionRowComponent(CreateSelectComponentFromReminders(userReminders, "reminder-modify-dropdown"))
                 .AsEphemeral());
         }
         else
