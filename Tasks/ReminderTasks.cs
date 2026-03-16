@@ -68,8 +68,8 @@ public class ReminderTasks
 
             embed.AddField("Context", context);
 
-            // add pushback field
-            ReminderHelpers.AddReminderPushbackEmbedField(embed);
+            // add delay field
+            ReminderHelpers.AddReminderDelayEmbedField(embed);
 
             // GET USER
 
@@ -119,9 +119,9 @@ public class ReminderTasks
                         $"<@{reminderData.UserId}>, I have a reminder for you:",
                         embed);
 
-                    // update pushback field to include message id
+                    // update delay field to include message id
                     embed.RemoveFieldAt(1);
-                    ReminderHelpers.AddReminderPushbackEmbedField(embed, msg.Id);
+                    ReminderHelpers.AddReminderDelayEmbedField(embed, msg.Id);
                     await msg.ModifyAsync(msg.Content, embed.Build());
 
                     // delete reminder from db
@@ -186,9 +186,9 @@ public class ReminderTasks
                     $"<@{reminderData.UserId}>, I have a reminder for you:",
                     embed);
 
-                // update pushback field to include message id
+                // update delay field to include message id
                 embed.RemoveFieldAt(1);
-                ReminderHelpers.AddReminderPushbackEmbedField(embed, msg.Id);
+                ReminderHelpers.AddReminderDelayEmbedField(embed, msg.Id);
                 await msg.ModifyAsync(msg.Content, embed.Build());
 
                 // delete reminder from db
@@ -209,9 +209,9 @@ public class ReminderTasks
                         $"<@{reminderData.UserId}>, I have a reminder for you:",
                         embed);
 
-                    // update pushback field to include message id
+                    // update delay field to include message id
                     embed.RemoveFieldAt(1);
-                    ReminderHelpers.AddReminderPushbackEmbedField(embed, msg.Id);
+                    ReminderHelpers.AddReminderDelayEmbedField(embed, msg.Id);
                     await msg.ModifyAsync(msg.Content, embed.Build());
 
                     // delete reminder from db

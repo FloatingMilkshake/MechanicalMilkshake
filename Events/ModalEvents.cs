@@ -168,6 +168,47 @@ public class ModalEvents
 
                     break;
                 }
+            case "reminder-delete-modal":
+                {
+                    await e.Interaction.DeferAsync(true);
+
+                    var id = (e.Values["reminder-delete-id-input"] as TextInputModalSubmission).Value;
+
+                    var (reminder, error) = await ReminderHelpers.GetReminderAsync(id, e.Interaction.User.Id);
+                    if (reminder is null)
+                    {
+                        await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent(error).AsEphemeral());
+                        return;
+                    }
+
+                    await Program.Db.HashDeleteAsync("reminders", id);
+
+                    if (!reminder.IsPrivate && reminder.ReminderTime is not null)
+                    {
+                        try
+                        {
+                            var reminderChannel = await Program.Discord.GetChannelAsync(reminder.ChannelId);
+
+                            if (reminder.MessageId != default)
+                            {
+                                var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
+
+                                var unixTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
+
+                                await reminderMessage.ModifyAsync("This reminder was deleted.");
+                            }
+                        }
+                        catch
+                        {
+                            // Not important
+                        }
+                    }
+
+                    await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
+                        .WithContent("Reminder deleted successfully."));
+
+                    break;
+                }
             default:
                 {
                     await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
