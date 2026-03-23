@@ -55,6 +55,8 @@ public class Program
 
     internal static async Task Main()
     {
+        HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("MechanicalMilkshake (https://github.com/FloatingMilkshake/MechanicalMilkshake)");
+
         // Read config.json, or config.dev.json if running in development mode
         string json;
 #if DEBUG
