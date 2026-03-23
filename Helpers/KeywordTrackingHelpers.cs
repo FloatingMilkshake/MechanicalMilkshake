@@ -13,7 +13,7 @@ public class KeywordTrackingHelpers
         if (message.Channel.IsPrivate)
             return;
 
-        if (isEdit && (message.EditedTimestamp is null || message.CreationTimestamp == message.EditedTimestamp))
+        if (isEdit && (message.EditedTimestamp is null || message.CreationTimestamp == message.EditedTimestamp || message.EditedTimestamp.Value.UtcDateTime < (DateTime.UtcNow - TimeSpan.FromMinutes(1))))
             return;
 
         var fields = await Program.Db.HashGetAllAsync("keywords");
