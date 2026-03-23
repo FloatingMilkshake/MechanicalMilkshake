@@ -146,8 +146,7 @@ public class KeywordTrackingHelpers
         var ignoredUserMentions = "\n";
         foreach (var userToIgnore in keyword!.UserIgnoreList)
         {
-            var user = await Program.Discord.GetUserAsync(userToIgnore);
-            ignoredUserMentions += $"- {user.Mention}\n";
+            ignoredUserMentions += $"- <@{userToIgnore}>\n";
         }
 
         if (ignoredUserMentions == "\n") ignoredUserMentions = " None\n";
@@ -155,8 +154,7 @@ public class KeywordTrackingHelpers
         var ignoredChannelMentions = "\n";
         foreach (var channelToIgnore in keyword.ChannelIgnoreList)
         {
-            var channel = await Program.Discord.GetChannelAsync(channelToIgnore);
-            ignoredChannelMentions += $"- {channel.Mention}\n";
+            ignoredChannelMentions += $"- <#{channelToIgnore}>\n";
         }
 
         if (ignoredChannelMentions == "\n") ignoredChannelMentions = " None\n";
