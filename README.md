@@ -13,7 +13,7 @@ This is the other way to get the bot into one of your servers, and is best for d
 
 ## Setup/Usage
 
-> ### Note
+> [!NOTE]
 > These instructions assume you know how to create a bot application through Discord's Developer Portal and how to obtain a bot token, channel ID, etc. If you need help with any of this, feel free to reach out to me with any of the contact methods listed on [my website](https://floatingmilkshake.com)!
 
 ### With Docker
@@ -27,7 +27,9 @@ First, you must have Docker installed. If you do not have it installed already, 
 - Run `docker compose up -d`
 
 ### Without Docker (for development)
-This is the way to go if you intend on working on development. Note that you will need to have Redis installed to run the bot this way - if you do not already have it installed, I recommend [this guide](https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/install-redis-on-linux/) for Linux, [this guide](https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/install-redis-on-mac-os/) for macOS, and [this port](https://github.com/tporadowski/redis) for Windows. Once you have Redis installed:
+This is the way to go if you intend on working on development.
+> [!IMPORTANT]
+> You will need to have Redis installed to run the bot this way. If you do not already have it installed, I recommend [this guide](https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/install-redis-on-linux/) for Linux, [this guide](https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/install-redis-on-mac-os/) for macOS, and [this port](https://github.com/tporadowski/redis) for Windows.
 
 - Clone the repo
 - Copy `config.example.json` to `config.dev.json`
