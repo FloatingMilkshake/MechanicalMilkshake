@@ -9,7 +9,7 @@
     "455428041586376729"
   ],
   "useServerSpecificFeatures": true,
-  "uptimeKumaHeartbeatUrl": "https://uptime.floatingmilkshake.com/api/push/blah-blah-blah",
+  "uptimeKumaHeartbeatUrl": "https://uptime.milkshake.services/api/push/blah-blah-blah",
   "feedbackChannel": "1016805107993677926",
   "ratelimitCautionChannels": [
     "119222314964353025",
