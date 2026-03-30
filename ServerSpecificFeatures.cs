@@ -134,10 +134,10 @@ public partial class ServerSpecificFeatures
         {
             // Patch Tuesday automatic message generation
 
-            var insiderRedditUrlPattern = new Regex(@"https:\/\/.*reddit.com\/r\/Windows[0-9]{1,}.*cumulative_updates.*");
+            var insiderRedditUrlPattern = @"https:\/\/.*reddit.com\/r\/Windows[0-9]{1,}.*cumulative_updates.*";
 
             // Filter to messages by passed author & channel IDs, and that match the pattern
-            if (e.Message.Author.Id != authorId || e.Channel.Id != channelId || !insiderRedditUrlPattern.IsMatch(e.Message.Content))
+            if (e.Message.Author.Id != authorId || e.Channel.Id != channelId || !Regex.IsMatch(e.Message.Content, insiderRedditUrlPattern))
                 return;
 
             // List of roles to ping with message
@@ -149,12 +149,12 @@ public partial class ServerSpecificFeatures
 
             // Get message before current message; if authors do not match or message is not a Cumulative Updates post, ignore
             var previousMessage = (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1).ToListAsync())[0];
-            if (previousMessage.Author.Id != e.Message.Author.Id || !insiderRedditUrlPattern.IsMatch(previousMessage.Content))
+            if (previousMessage.Author.Id != e.Message.Author.Id || !Regex.IsMatch(previousMessage.Content, insiderRedditUrlPattern))
                 return;
 
             // Get URLs from both messages
-            var thisUrl = insiderRedditUrlPattern.Match(e.Message.Content).Value;
-            var previousUrl = insiderRedditUrlPattern.Match(previousMessage.Content).Value;
+            var thisUrl = Regex.Match(e.Message.Content, insiderRedditUrlPattern).Value;
+            var previousUrl = Regex.Match(previousMessage.Content, insiderRedditUrlPattern).Value;
 
             // Figure out which URL is Windows 10 and which is Windows 11
             var windows10Url = thisUrl.Contains("Windows10") ? thisUrl : previousUrl;

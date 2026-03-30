@@ -16,8 +16,8 @@ internal class StringHelpers
             string codeBlockStart = null;
 
             // If input is a code block, record the start line (backticks & language) for later & remove it & the last line (ending backticks) from the list
-            var codeBlockRegex = new Regex("```.*$");
-            var match = codeBlockRegex.Match(lines.First());
+            var codeBlockRegex = "```.*$";
+            var match = Regex.Match(lines.First(), codeBlockRegex);
             if (match.Success)
             {
                 codeBlockStart = match.Value;
