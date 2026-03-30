@@ -41,20 +41,8 @@ public class EvalCommands
 
 
         var cmdResponse = await RunCommand(command);
-        string response;
 
-        if (cmdResponse.Output.Length > 1947)
-        {
-            var hasteUploadResult = await HastebinHelpers.UploadToHastebinAsync(cmdResponse.Output);
-            response = $"Finished with exit code `{cmdResponse.ExitCode}`!" +
-                   $" The result was too long to post here, so it was uploaded to Hastebin here: {hasteUploadResult}";
-        }
-        else
-        {
-            response = $"Finished with exit code `{cmdResponse.ExitCode}`! Output: ```\n{HideSensitiveInfo(cmdResponse.Output)}```";
-        }
-
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(response));
+        await StringHelpers.SplitStringAsync($"```\n{cmdResponse.Output}\n{cmdResponse.Error}\n```", true, ctx: ctx, completionMessage: $"\nFinished with exit code `{cmdResponse.ExitCode}`.");
     }
 
     private static async Task<ShellCommandResponse> RunCommand(string command)
@@ -137,25 +125,13 @@ public class EvalCommands
                 if (string.IsNullOrWhiteSpace(result.ReturnValue.ToString()))
                 {
                     // Isn't null, so it has to be whitespace
-                    await ctx.FollowupAsync(
-                        new DiscordFollowupMessageBuilder().WithContent($"\"{result.ReturnValue}\""));
+                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"\"{result.ReturnValue}\""));
                     return;
                 }
 
-                // Upload to Hastebin if content is too long for Discord
-                if (result.ReturnValue.ToString()!.Length > 1947)
-                {
-                    var hasteUploadResult = await HastebinHelpers.UploadToHastebinAsync(result.ReturnValue.ToString());
+                await StringHelpers.SplitStringAsync(HideSensitiveInfo(result.ReturnValue.ToString()), true, ctx: ctx);
 
-                    await ctx.FollowupAsync(
-                        new DiscordFollowupMessageBuilder().WithContent(
-                            $"The result was too long to post here, so it was uploaded to Hastebin here: {hasteUploadResult}"));
-                    return;
-                }
-
-                // Respond in channel if content length within Discord character limit
-                await ctx.FollowupAsync(
-                    new DiscordFollowupMessageBuilder().WithContent(HideSensitiveInfo(result.ReturnValue.ToString())));
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("Done!"));
             }
         }
         catch (Exception e)

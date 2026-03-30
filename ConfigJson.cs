@@ -8,8 +8,6 @@ public class ConfigJson
 
     [JsonProperty("homeServer")] public string HomeServer { get; private set; }
 
-    [JsonProperty("hastebinUrl")] public string HastebinUrl { get; private set; }
-
     [JsonProperty("wolframAlphaAppId")] public string WolframAlphaAppId { get; private set; }
 
     [JsonProperty("botCommanders")] public string[] BotCommanders { get; private set; }
