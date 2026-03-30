@@ -171,6 +171,8 @@ public class EvalCommands
         var output = input.Replace(Program.ConfigJson.BotToken, redacted);
         if (Program.ConfigJson.WolframAlphaAppId != "")
             output = output.Replace(Program.ConfigJson.WolframAlphaAppId, redacted);
+        if (Program.ConfigJson.DbotsApiToken != "")
+            output = output.Replace(Program.ConfigJson.DbotsApiToken, redacted);
 
         return output;
     }
