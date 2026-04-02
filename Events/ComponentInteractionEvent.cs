@@ -457,7 +457,7 @@ public partial class ComponentInteractionEvent
                     await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal,
                         new DiscordModalBuilder().WithCustomId("reminder-modify-modal").WithTitle("Modify a Reminder")
                         .AddTextInput(new DiscordTextInputComponent("reminder-modify-time-input", placeholder: reminder.ReminderTime.Humanize(), required: false), "When do you want to be reminded?")
-                        .AddTextInput(new DiscordTextInputComponent("reminder-modify-text-input", placeholder: reminder.ReminderText, required: false), "What do you want to be reminded about?"));
+                        .AddTextInput(new DiscordTextInputComponent("reminder-modify-text-input", placeholder: string.IsNullOrWhiteSpace(reminder.ReminderText) ? "[no content]" : reminder.ReminderText, required: false), "What do you want to be reminded about?"));
 
                     break;
                 }

@@ -105,7 +105,9 @@ public partial class ReminderHelpers
     internal static DiscordSelectComponent CreateSelectComponentFromReminders(List<Reminder> reminders, string componentCustomId)
     {
         List<DiscordSelectComponentOption> options = reminders.Select(reminder =>
-            new DiscordSelectComponentOption(reminder.ReminderText.Truncate(100),
+            new DiscordSelectComponentOption(string.IsNullOrWhiteSpace(reminder.ReminderText)
+                ? "[no content]"
+                : reminder.ReminderText.Truncate(100),
                 reminder.ReminderId.ToString(),
                 reminder.ReminderTime.Humanize()))
             .ToList();
