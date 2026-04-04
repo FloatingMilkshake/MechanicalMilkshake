@@ -538,6 +538,11 @@ public partial class ComponentInteractionEvent
 
                     await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
 
+                    await e.Message.ModifyAsync(new DiscordMessageBuilder().WithContent("Working on it...")
+                        .AddActionRowComponent(new DiscordActionRowComponent(
+                            [new DiscordButtonComponent(DiscordButtonStyle.Danger, "eval-cancel-button", "Cancelling...", true)]
+                        )));
+
                     EvalCommands.Cancellations[e.Message.Id].Cancel();
 
                     break;
