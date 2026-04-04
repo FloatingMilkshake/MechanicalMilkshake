@@ -520,11 +520,14 @@ public partial class ComponentInteractionEvent
                 }
             case "eval-cancel-button":
                 {
+                    await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
+
                     if (!EvalCommands.Cancellations.ContainsKey(e.Message.Id))
                     {
-                        await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
-                            new DiscordInteractionResponseBuilder().WithContent(
-                                "Unknown task! I can't cancel this, sorry. Are you sure it's still running?").AsEphemeral());
+                        await e.Message.ModifyAsync(new DiscordMessageBuilder().WithContent("Working on it...")
+                        .AddActionRowComponent(new DiscordActionRowComponent(
+                            [new DiscordButtonComponent(DiscordButtonStyle.Danger, "eval-cancel-button", "Failed to Cancel", true)]
+                        )));
                         return;
                     }
 
@@ -535,8 +538,6 @@ public partial class ComponentInteractionEvent
                                 "Only the person that used this command can cancel it!").AsEphemeral());
                         return;
                     }
-
-                    await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
 
                     await e.Message.ModifyAsync(new DiscordMessageBuilder().WithContent("Working on it...")
                         .AddActionRowComponent(new DiscordActionRowComponent(
