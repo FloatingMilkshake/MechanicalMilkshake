@@ -203,9 +203,9 @@ public class EvalCommands
     {
         const string redacted = "[redacted]";
         var output = input.Replace(Program.ConfigJson.BotToken, redacted);
-        if (Program.ConfigJson.WolframAlphaAppId != "")
+        if (!string.IsNullOrWhiteSpace(Program.ConfigJson.WolframAlphaAppId))
             output = output.Replace(Program.ConfigJson.WolframAlphaAppId, redacted);
-        if (Program.ConfigJson.DbotsApiToken != "")
+        if (!string.IsNullOrWhiteSpace(Program.ConfigJson.DbotsApiToken))
             output = output.Replace(Program.ConfigJson.DbotsApiToken, redacted);
 
         return output;
