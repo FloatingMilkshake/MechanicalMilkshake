@@ -2,7 +2,7 @@
 
 internal class StringHelpers
 {
-    public static async Task<List<string>> SplitStringAsync(string input, bool respond = false, int maxLength = 1980, CommandContext ctx = null, string completionMessage = null)
+    public static async Task<List<string>> SplitStringAsync(string input, int maxLength = 1980)
     {
         List<string> split = [];
 
@@ -49,21 +49,7 @@ internal class StringHelpers
             split.Add(input);
         }
 
-        if (!respond)
-            return split;
-
-        if (ctx is null)
-            throw new ArgumentException("SplitStringAsync cannot respond to a null CommandContext. Please provide a CommandContext.");
-
-        foreach (var message in split)
-        {
-            await ctx.Channel.SendMessageAsync(message);
-            await Task.Delay(2000);
-        }
-        if (completionMessage is not null)
-            await ctx.RespondAsync(completionMessage);
-
-        return [];
+        return split;
     }
 
     public static string Truncate(string input, int maxLength)

@@ -518,6 +518,30 @@ public partial class ComponentInteractionEvent
                         new DiscordInteractionResponseBuilder().AddEmbed(embed).AsEphemeral());
                     break;
                 }
+            case "eval-cancel-button":
+                {
+                    if (!EvalCommands.Cancellations.ContainsKey(e.Message.Id))
+                    {
+                        await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
+                            new DiscordInteractionResponseBuilder().WithContent(
+                                "Unknown task! I can't cancel this, sorry. Are you sure it's still running?").AsEphemeral());
+                        return;
+                    }
+
+                    if (e.User.Id != e.Message.Interaction.User.Id)
+                    {
+                        await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
+                            new DiscordInteractionResponseBuilder().WithContent(
+                                "Only the person that used this command can cancel it!").AsEphemeral());
+                        return;
+                    }
+
+                    await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
+
+                    EvalCommands.Cancellations[e.Message.Id].Cancel();
+
+                    break;
+                }
             default:
                 e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder().WithContent(
