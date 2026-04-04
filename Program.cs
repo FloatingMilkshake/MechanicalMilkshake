@@ -163,7 +163,7 @@ public class Program
         }
         catch
         {
-            Discord.Logger.LogError(BotEventId,
+            Discord.Logger.LogCritical(BotEventId,
                 "\"homeChannel\" or \"homeServer\" in config.json are misconfigured. Please make sure you have a valid ID for both of these values.");
             Environment.Exit(1);
         }
