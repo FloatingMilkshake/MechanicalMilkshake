@@ -21,26 +21,52 @@ public class UserInfoHelpers
         }
         else
         {
-            if (member.Permissions.HasPermission(DiscordPermission.ManageChannels))
-                notablePerms.Add("Manage Channels");
-            if (member.Permissions.HasPermission(DiscordPermission.ManageGuildExpressions))
-                notablePerms.Add("Manage Emojis and Stickers");
-            if (member.Permissions.HasPermission(DiscordPermission.ManageEvents))
-                notablePerms.Add("Manage Events");
+            if (member.Permissions.HasPermission(DiscordPermission.BanMembers))
+                notablePerms.Add("Ban Members");
+            if (member.Permissions.HasPermission(DiscordPermission.KickMembers))
+                notablePerms.Add("Kick, Approve, and Reject Members");
+            if (member.Permissions.HasPermission(DiscordPermission.ModerateMembers))
+                notablePerms.Add("Timeout Members");
             if (member.Permissions.HasPermission(DiscordPermission.ManageGuild))
                 notablePerms.Add("Manage Server");
-            if (member.Permissions.HasPermission(DiscordPermission.ManageMessages))
-                notablePerms.Add("Manage Messages");
-            if (member.Permissions.HasPermission(DiscordPermission.ManageNicknames))
-                notablePerms.Add("Manage Nicknames");
             if (member.Permissions.HasPermission(DiscordPermission.ManageRoles))
                 notablePerms.Add("Manage Roles");
+            if (member.Permissions.HasPermission(DiscordPermission.ManageChannels))
+                notablePerms.Add("Manage Channels");
+            if (member.Permissions.HasPermission(DiscordPermission.MentionEveryone))
+                notablePerms.Add("Mention @everyone, @here, and All Roles");
+            if (member.Permissions.HasPermission(DiscordPermission.ManageGuildExpressions))
+                notablePerms.Add("Manage Expressions");
+            if (member.Permissions.HasPermission(DiscordPermission.CreateGuildExpressions))
+                notablePerms.Add("Create Expressions");
+            if (member.Permissions.HasPermission(DiscordPermission.ManageEvents))
+                notablePerms.Add("Manage Events");
+            if (member.Permissions.HasPermission(DiscordPermission.ManageMessages))
+                notablePerms.Add("Manage Messages");
+            if (member.Permissions.HasPermission(DiscordPermission.PinMessages))
+                notablePerms.Add("Pin Messages");
+            if (member.Permissions.HasPermission(DiscordPermission.BypassSlowmode))
+                notablePerms.Add("Bypass Slowmode");
+            if (member.Permissions.HasPermission(DiscordPermission.ManageNicknames))
+                notablePerms.Add("Manage Nicknames");
             if (member.Permissions.HasPermission(DiscordPermission.ManageThreads))
                 notablePerms.Add(member.Guild.Features.Contains("COMMUNITY")
                     ? "Manage Threads and Posts"
                     : "Manage Threads");
             if (member.Permissions.HasPermission(DiscordPermission.ManageWebhooks))
                 notablePerms.Add("Manage Webhooks");
+            if (member.Permissions.HasPermission(DiscordPermission.ViewAuditLog))
+                notablePerms.Add("View Audit Log");
+            if (member.Permissions.HasPermission(DiscordPermission.ViewGuildInsights))
+                notablePerms.Add("View Server Insights");
+            if (member.Permissions.HasPermission(DiscordPermission.PrioritySpeaker))
+                notablePerms.Add("Priority Speaker");
+            if (member.Permissions.HasPermission(DiscordPermission.MuteMembers))
+                notablePerms.Add("Mute Members");
+            if (member.Permissions.HasPermission(DiscordPermission.DeafenMembers))
+                notablePerms.Add("Deafen Members");
+            if (member.Permissions.HasPermission(DiscordPermission.MoveMembers))
+                notablePerms.Add("Move Members");
         }
 
         var roles = "None";
