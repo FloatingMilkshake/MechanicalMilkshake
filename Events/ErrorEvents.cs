@@ -6,7 +6,7 @@ public class ErrorEvents
     {
         switch (e.Context)
         {
-            case SlashCommandContext or DSharpPlus.Commands.Processors.SlashCommands.SlashCommandContext:
+            case SlashCommandContext:
                 await SlashCommandErrored(ext, e);
                 break;
             case TextCommandContext:
@@ -151,7 +151,7 @@ public class ErrorEvents
                                         $" (see {SlashCmdMentionHelpers.GetSlashCmdMention("about")} for a list).";
                 try
                 {
-                    await e.Context.As<DSharpPlus.Commands.Processors.SlashCommands.SlashCommandContext>().RespondAsync(cmdFailedResponse, true);
+                    await e.Context.As<SlashCommandContext>().RespondAsync(cmdFailedResponse, true);
                 }
                 catch (Exception ex) when (ex is BadRequestException or NotFoundException or InvalidOperationException)
                 {
