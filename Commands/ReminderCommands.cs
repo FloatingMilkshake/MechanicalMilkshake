@@ -18,6 +18,9 @@ public partial class ReminderCmds
         [Parameter("private"), Description("Whether to keep this reminder private. It will be sent in DMs.")]
         bool isPrivate = false)
     {
+        if (ctx.Guild is null)
+            isPrivate = true;
+
         await ctx.DeferResponseAsync(isPrivate);
 
         var (parsedTime, error) = await ValidateReminderTimeAsync(time);
@@ -31,7 +34,7 @@ public partial class ReminderCmds
         {
             UserId = ctx.User.Id,
             ChannelId = ctx.Channel.Id,
-            GuildId = ctx.Channel.IsPrivate ? "@me" : ctx.Guild.Id.ToString(),
+            GuildId = ctx.Guild is null ? "@me" : ctx.Guild.Id.ToString(),
             ReminderId = await GenerateUniqueReminderIdAsync(),
             ReminderText = text,
             ReminderTime = parsedTime,
@@ -41,13 +44,13 @@ public partial class ReminderCmds
 
         var unixTime = ((DateTimeOffset)parsedTime).ToUnixTimeSeconds();
 
-        if (isPrivate)
+        if (isPrivate && ctx.Guild is not null)
             // Try to DM user. If DMs are closed, private reminders will not work; we should let them know now instead of having
             // the bot throw an error (not shown to the them), leaving them wondering where their reminder is.
             try
             {
                 await ctx.User.SendMessageAsync(
-                    $"Hi! This is a confirmation for your reminder, \"{text}\", due for <t:{unixTime}:F> (<t:{unixTime}:R>)!");
+                    $"Hi! This is a confirmation for your reminder, due for <t:{unixTime}:F> (<t:{unixTime}:R>)!");
             }
             catch
             {
@@ -189,6 +192,9 @@ public partial class ReminderCmds
         [Parameter("private"), Description("Whether to keep this reminder private. It will be sent in DMs.")]
         bool isPrivate = false)
     {
+        if (ctx.Guild is null)
+            isPrivate = true;
+
         await ctx.DeferResponseAsync(isPrivate);
 
         DiscordMessage message;
@@ -222,7 +228,7 @@ public partial class ReminderCmds
             UserId = ctx.User.Id,
             ChannelId = ctx.Channel.Id,
             MessageId = message.Id,
-            GuildId = ctx.Channel.IsPrivate ? "@me" : ctx.Guild.Id.ToString(),
+            GuildId = ctx.Guild is null ? "@me" : ctx.Guild.Id.ToString(),
             ReminderId = await GenerateUniqueReminderIdAsync(),
             ReminderText = message.Embeds[0].Description,
             ReminderTime = reminderTime,
