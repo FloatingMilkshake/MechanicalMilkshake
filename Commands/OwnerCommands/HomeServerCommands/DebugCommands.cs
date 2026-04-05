@@ -91,7 +91,11 @@ public class DebugCmds
 
     [Command("guilds")]
     [Description("Show the guilds that the bot is in.")]
-    public static async Task Guilds(SlashCommandContext ctx)
+    public static async Task Guilds(SlashCommandContext ctx,
+        [SlashChoiceProvider(typeof(GuildsListSortChoiceProvider))]
+        [Parameter("sort_by"), Description("What to sort the list of guilds by.")] string sortBy = "",
+        [SlashChoiceProvider(typeof(GuildsListSortDirectionChoiceProvider))]
+        [Parameter("sort_direction"), Description("Which direction to sort the list of guilds.")] string sortDirection = "asc")
     {
         await ctx.DeferResponseAsync();
 
@@ -100,6 +104,29 @@ public class DebugCmds
             Title = $"Joined Guilds - {Program.Discord.Guilds.Count}",
             Color = Program.BotColor
         };
+
+        IReadOnlyList<DiscordGuild> sortedGuilds;
+        switch (sortBy)
+        {
+            case "name":
+                sortedGuilds = sortDirection == "asc"
+                    ? Program.Discord.Guilds.Values.OrderBy(g => g.Name).ToList()
+                    : Program.Discord.Guilds.Values.OrderByDescending(g => g.Name).ToList();
+                break;
+            case "memberCount":
+                sortedGuilds = sortDirection == "asc"
+                    ? Program.Discord.Guilds.Values.OrderBy(g => g.MemberCount).ToList()
+                    : Program.Discord.Guilds.Values.OrderByDescending(g => g.MemberCount).ToList();
+                break;
+            case "joinDate":
+                sortedGuilds = sortDirection == "asc"
+                    ? Program.Discord.Guilds.Values.OrderBy(g => g.JoinedAt).ToList()
+                    : Program.Discord.Guilds.Values.OrderByDescending(g => g.JoinedAt).ToList();
+                break;
+            default:
+                sortedGuilds = Program.Discord.Guilds.Values.ToList();
+                break;
+        }
 
         foreach (var guild in Program.Discord.Guilds)
             embed.Description += $"- {guild.Value.Name}\n";
@@ -247,6 +274,29 @@ public class DebugCmds
                 Command fakeCommand = default;
                 throw new ChecksFailedException(fakeErrorData, fakeCommand, "This is a test exception");
         }
+    }
+
+    private class GuildsListSortChoiceProvider : IChoiceProvider
+    {
+        private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
+        [
+            new("Name", "name"),
+            new("Member Count", "memberCount"),
+            new("Join Date", "joinDate"),
+        ];
+
+        public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
+    }
+
+    private class GuildsListSortDirectionChoiceProvider : IChoiceProvider
+    {
+        private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
+        [
+            new("Ascending", "asc"),
+            new("Descending", "desc"),
+        ];
+
+        public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
     }
 
     private class ChecksChoiceProvider : IChoiceProvider
