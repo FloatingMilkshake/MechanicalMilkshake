@@ -328,7 +328,7 @@ public class ErrorEvents
                     // Failed to respond to the interaction for an unknown reason.
                     // Log the error anyway, plus this exception.
 
-                    embed.Description += $" Additionally, an unknown exception occurred when trying to respond to the interaction: {ex.GetType()}: {ex.Message}";
+                    embed.Description += $" Additionally, an unexpected exception occurred when trying to respond to the interaction: {ex.GetType()}: {ex.Message}";
                     await Program.HomeChannel.SendMessageAsync(embed);
                 }
 
