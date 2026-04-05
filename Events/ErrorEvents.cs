@@ -153,7 +153,7 @@ public class ErrorEvents
                 {
                     await e.Context.As<DSharpPlus.Commands.Processors.SlashCommands.SlashCommandContext>().RespondAsync(cmdFailedResponse, true);
                 }
-                catch (Exception ex) when (ex is BadRequestException or NotFoundException)
+                catch (Exception ex) when (ex is BadRequestException or NotFoundException or InvalidOperationException)
                 {
                     await e.Context.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(cmdFailedResponse)
                         .AsEphemeral());
