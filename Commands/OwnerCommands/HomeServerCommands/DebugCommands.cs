@@ -102,7 +102,7 @@ public class DebugCmds
         };
 
         foreach (var guild in Program.Discord.Guilds)
-            embed.Description += $"- `{guild.Value.Id}`: {guild.Value.Name}\n";
+            embed.Description += $"- {guild.Value.Name}\n";
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
     }
