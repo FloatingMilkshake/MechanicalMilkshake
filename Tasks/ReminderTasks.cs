@@ -62,9 +62,7 @@ public class ReminderTasks
                     $"/{reminderData.ChannelId}/{reminderData.MessageId}) should show you messages around the time" +
                     " that you set the reminder.";
             else
-                context =
-                    $"[Jump Link](https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}" +
-                    $"/{reminderData.MessageId})";
+                context = $"https://discord.com/channels/{reminderData.GuildId}/{reminderData.ChannelId}/{reminderData.MessageId}";
 
             embed.AddField("Context", context);
 
