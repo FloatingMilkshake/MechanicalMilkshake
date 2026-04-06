@@ -46,7 +46,8 @@ public class ModalEvents
                         ReminderTime = time,
                         ReminderId = reminderId,
                         ReminderText = "You set this reminder on a message with the \"Remind Me About This\" command.",
-                        GuildId = e.Interaction.Guild is null ? "@me" : e.Interaction.Guild.Id.ToString()
+                        GuildId = e.Interaction.Guild is null ? "@me" : e.Interaction.Guild.Id.ToString(),
+                        IsPrivate = true
                     };
 
                     // Save reminder to db

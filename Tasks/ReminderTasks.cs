@@ -55,7 +55,7 @@ public class ReminderTasks
             // add context field
 
             string context;
-            if (reminderData.IsPrivate)
+            if (reminderData.IsPrivate && !reminderData.ReminderText.Equals("You set this reminder on a message with the \"Remind Me About This\" command."))
                 context =
                     "This reminder was set privately, so I can't link back to the message where it was set!" +
                     $" However, [this link](https://discord.com/channels/{reminderData.GuildId}" +
