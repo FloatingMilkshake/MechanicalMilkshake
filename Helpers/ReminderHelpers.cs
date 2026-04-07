@@ -44,16 +44,7 @@ public partial class ReminderHelpers
 
         if (parsedTime <= DateTime.Now)
         {
-            // If user says something like "4pm" and its past 4pm, assume they mean "4pm tomorrow"
-            if (parsedTime.Date == DateTime.Now.Date &&
-                parsedTime.TimeOfDay < DateTime.Now.TimeOfDay)
-            {
-                parsedTime = parsedTime.AddDays(1);
-            }
-            else
-            {
-                return (null, "You can't set a reminder for a time in the past!");
-            }
+            return (null, "You can't set a reminder for a time in the past!");
         }
 
         return (parsedTime, null);
