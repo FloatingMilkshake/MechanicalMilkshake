@@ -2,6 +2,7 @@
 
 [Command("activity")]
 [Description("Configure the bot's activity!")]
+[RequireAuth]
 public class ActivityCmds
 {
     [Command("add")]
