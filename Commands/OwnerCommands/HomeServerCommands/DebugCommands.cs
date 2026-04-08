@@ -113,11 +113,6 @@ public class DebugCmds
                     ? Program.Discord.Guilds.Values.OrderBy(g => g.Name).ToList()
                     : Program.Discord.Guilds.Values.OrderByDescending(g => g.Name).ToList();
                 break;
-            case "memberCount":
-                sortedGuilds = sortDirection == "asc"
-                    ? Program.Discord.Guilds.Values.OrderBy(g => g.MemberCount).ToList()
-                    : Program.Discord.Guilds.Values.OrderByDescending(g => g.MemberCount).ToList();
-                break;
             case "joinDate":
                 sortedGuilds = sortDirection == "asc"
                     ? Program.Discord.Guilds.Values.OrderBy(g => g.JoinedAt).ToList()
@@ -281,7 +276,6 @@ public class DebugCmds
         private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
         [
             new("Name", "name"),
-            new("Member Count", "memberCount"),
             new("Join Date", "joinDate"),
         ];
 
