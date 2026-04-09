@@ -21,7 +21,7 @@ internal class ReminderCommands
 
     [Command("reminder")]
     [Description("Set, modify and delete reminders.")]
-    internal class ReminderSlashCommands
+    public class ReminderSlashCommands
     {
         [Command("set")]
         [Description("Set a reminder.")]
