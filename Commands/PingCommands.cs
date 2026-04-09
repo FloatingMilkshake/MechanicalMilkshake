@@ -1,31 +1,32 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class PingCommands
+internal class PingCommands
 {
     [Command("ping")]
     [Description("Pong!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task PingCommand(SlashCommandContext ctx)
+    public static async Task PingCommandAsync(SlashCommandContext ctx)
     {
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent("Ping!"));
-        var timeNow = DateTime.UtcNow;
 
         var websocketPing = ctx.Client.GetConnectionLatency(
             ctx.Channel.IsPrivate
-                ? ctx.Guild?.Id ?? Program.HomeServer.Id
-                : Program.HomeServer.Id
+                ? ctx.Guild?.Id ?? Setup.Configuration.Discord.HomeServer.Id
+                : Setup.Configuration.Discord.HomeServer.Id
             ).TotalMilliseconds;
         var msg = await ctx.Interaction.GetOriginalResponseAsync();
-        var interactionLatency = Math.Round((timeNow - msg.CreationTimestamp.UtcDateTime).TotalMilliseconds);
+        var interactionLatency = Math.Round((DateTime.UtcNow - msg.CreationTimestamp.UtcDateTime).TotalMilliseconds);
 
-        var dbPing = await DatabaseTasks.CheckDatabaseConnectionAsync();
+        var redisPing = await RedisTasks.CheckRedisConnectionAsync();
 
-        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(
-            $"Pong!\n"
+        var response = $"Pong!\n"
             + $"Websocket ping: `{websocketPing}ms`\n"
-            + $"Interaction latency: `{interactionLatency}ms`\n"
-            + $"Database ping: {(double.IsNaN(dbPing) ? "Unreachable!" : $"`{dbPing}ms`")}\n"
-            + $"Heartbeat: `{Program.LastUptimeKumaHeartbeatStatus}`"));
+            + $"Interaction latency: `{interactionLatency}ms`\n";
+
+        if (Setup.Configuration.ConfigJson.BotCommanders.Contains(ctx.User.Id.ToString()))
+            response += $"Redis ping: {(double.IsNaN(redisPing) ? "Unreachable!" : $"`{redisPing}ms`")}\n"
+            + $"Heartbeat: `{Setup.State.Process.LastUptimeKumaHeartbeatStatus}`";
+
+        await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(response));
     }
 }

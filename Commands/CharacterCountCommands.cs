@@ -1,12 +1,11 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class CharacterCountCommands
+internal class CharacterCountCommands
 {
     [Command("charactercount")]
     [Description("Counts the characters in a message.")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task CharacterCountCommand(SlashCommandContext ctx,
+    public static async Task CharacterCountCommandAsync(SlashCommandContext ctx,
         [Parameter("message"), Description("The message to count the characters of.")]
         string chars)
     {

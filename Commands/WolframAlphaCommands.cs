@@ -1,35 +1,25 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class WolframAlphaCommands
+internal class WolframAlphaCommands
 {
-    private const string QueryUrlLinkDisplayText = "Click here for more details";
-
     [Command("wolframalpha")]
     [Description("Search WolframAlpha without leaving Discord!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task WolframAlphaCommand(SlashCommandContext ctx,
+    public static async Task WolframAlphaCommandAsync(SlashCommandContext ctx,
         [Parameter("query"), Description("What to search for.")]
         string query)
     {
         await ctx.DeferResponseAsync();
 
-        if (Program.DisabledCommands.Contains("wa"))
+        if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.WolframAlphaAppId))
         {
-            await CommandHelpers.FailOnMissingInfo(ctx, true);
-            return;
-        }
-
-        if (query is null)
-        {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                "Hmm, it doesn't look like you entered a valid query. Try something like `/wolframalpha query:What is the meaning of life?`."));
+            await ctx.FollowupAsync("Sorry, this command is unavailable! Please contact a bot owner for help.");
             return;
         }
 
         var queryEncoded = HttpUtility.UrlEncode(query).Replace("(", "%28").Replace(")", "%29");
 
-        var appid = Program.ConfigJson.WolframAlphaAppId;
+        var appid = Setup.Configuration.ConfigJson.WolframAlphaAppId;
 
         var queryEscaped = query.Replace("`", @"\`")
             .Replace("*", @"\*")
@@ -43,7 +33,7 @@ public class WolframAlphaCommands
         string textResponse = default;
         try
         {
-            textResponse = await Program.HttpClient.GetStringAsync($"https://api.wolframalpha.com/v1/result?appid={appid}&i={queryEncoded}");
+            textResponse = await Setup.Constants.HttpClient.GetStringAsync($"https://api.wolframalpha.com/v1/result?appid={appid}&i={queryEncoded}");
         }
         catch
         {
@@ -55,7 +45,7 @@ public class WolframAlphaCommands
         MemoryStream imageResponse = default;
         try
         {
-            var data = await Program.HttpClient.GetByteArrayAsync($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={queryEncoded}");
+            var data = await Setup.Constants.HttpClient.GetByteArrayAsync($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={queryEncoded}");
             imageResponse = new MemoryStream(data);
         }
         catch

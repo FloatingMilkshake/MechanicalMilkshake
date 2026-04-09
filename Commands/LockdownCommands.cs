@@ -2,15 +2,14 @@
 
 [Command("lockdown")]
 [Description("Lock or unlock a channel.")]
-[RequireGuild]
 [RequirePermissions(DiscordPermission.ManageChannels, DiscordPermission.ModerateMembers)]
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
-[InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
-public class LockdownCommands
+internal class LockdownCommands
 {
+#pragma warning disable DSP0007 // Use one 'ctx.Channel.ModifyAsync(..)' instead of multiple 'ctx.Channel.AddOverwriteAsync(..)'
     [Command("lock")]
     [Description("Lock a channel to prevent members from sending messages.")]
-    public static async Task Lock(SlashCommandContext ctx)
+    public static async Task LockdownLockCommandAsync(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(true);
 
@@ -18,7 +17,7 @@ public class LockdownCommands
         DiscordOverwrite[] existingOverwrites = ctx.Channel.PermissionOverwrites.ToArray();
 
         // Get the bot's permission set from before the lockdown
-        var botOverwritesBeforeLockdown = existingOverwrites.Where(x => x.Id == Program.Discord.CurrentUser.Id).FirstOrDefault();
+        var botOverwritesBeforeLockdown = existingOverwrites.Where(x => x.Id == Setup.State.Discord.Client.CurrentUser.Id).FirstOrDefault();
 
         // Get the bot's allowed permission set
         var botAllowedPermissionsBeforeLockdown = DiscordPermissions.None;
@@ -74,12 +73,12 @@ public class LockdownCommands
         await ctx.Channel.SendMessageAsync("This channel has been locked.");
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("Channel locked successfully.")
-            .AsEphemeral());
+            .AsEphemeral(true));
     }
 
     [Command("unlock")]
     [Description("Unlock a locked channel to allow members to send messages again.")]
-    public static async Task Unlock(SlashCommandContext ctx)
+    public static async Task LockdownUnlockCommandAsync(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(true);
 
@@ -89,7 +88,7 @@ public class LockdownCommands
                 !o.Denied.HasPermission(DiscordPermission.SendMessages)))
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent("This channel is not locked!").AsEphemeral());
+                .WithContent("This channel is not locked!").AsEphemeral(true));
             return;
         }
 
@@ -97,7 +96,7 @@ public class LockdownCommands
         var permissions = ctx.Channel.PermissionOverwrites.ToArray();
 
         // Get bot's permission set from before the unlock
-        var botOverwritesBeforeUnlock = permissions.Where(x => x.Id == Program.Discord.CurrentUser.Id).FirstOrDefault();
+        var botOverwritesBeforeUnlock = permissions.Where(x => x.Id == Setup.State.Discord.Client.CurrentUser.Id).FirstOrDefault();
 
         // Get bot's allowed permission set
         var botAllowedPermissionsBeforeUnlock = DiscordPermissions.None;
@@ -162,6 +161,6 @@ public class LockdownCommands
 
         await ctx.Channel.SendMessageAsync("This channel has been unlocked.");
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-            .WithContent("Channel unlocked successfully.").AsEphemeral());
+            .WithContent("Channel unlocked successfully.").AsEphemeral(true));
     }
 }

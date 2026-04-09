@@ -3,13 +3,11 @@
 [Command("track")]
 [Description("Track or untrack keywords.")]
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
-[InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
-public partial class KeywordTrackingCommands
+internal class KeywordTrackingCommands
 {
     [Command("add")]
     [Description("Track a new keyword.")]
-    [RequireGuild]
-    public static async Task TrackAdd(SlashCommandContext ctx,
+    public static async Task TrackAddCommandAsync(SlashCommandContext ctx,
         [Parameter("keyword"), Description("The keyword or phrase to track.")]
         string keyword,
         [Parameter("match_whole_word"), Description("Whether you want to match the keyword only when it is a whole word. Defaults to False.")]
@@ -30,17 +28,17 @@ public partial class KeywordTrackingCommands
         await ctx.DeferResponseAsync(true);
 
         if (currentGuildOnly && guildIgnoreList is not null &&
-            guildIgnoreList.Split(' ').Any(g => g == ctx.Guild!.Id.ToString())) currentGuildOnly = false;
+            guildIgnoreList.Split(' ').Any(g => g == ctx.Guild.Id.ToString())) currentGuildOnly = false;
 
-        var fields = await Program.Db.HashGetAllAsync("keywords");
+        var fields = await Setup.Storage.Redis.HashGetAllAsync("keywords");
         foreach (var field in fields)
         {
-            var fieldValue = JsonConvert.DeserializeObject<TrackedKeyword>(field.Value);
+            var fieldValue = JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(field.Value);
 
             // If the keyword is already being tracked, delete the current entry
             // This way we don't end up with duplicate entries for keywords
-            if (fieldValue!.Keyword != keyword) continue;
-            await Program.Db.HashDeleteAsync("keywords", fieldValue.Id);
+            if (fieldValue.Keyword != keyword) continue;
+            await Setup.Storage.Redis.HashDeleteAsync("keywords", fieldValue.Id);
             break;
         }
 
@@ -56,20 +54,19 @@ public partial class KeywordTrackingCommands
                 if (checkedUsers.Any(u => u.ToString() == user)) continue;
                 checkedUsers.Add(user);
 
-                var idRegex = UserIdPattern();
-                var id = user.Contains('@') ? idRegex.Match(user).ToString() : user;
+                var id = user.Contains('@') ? Setup.Constants.RegularExpressions.DiscordIdPattern.Match(user).ToString() : user;
 
                 DiscordUser userToAdd;
                 try
                 {
-                    userToAdd = await Program.Discord.GetUserAsync(Convert.ToUInt64(id));
+                    userToAdd = await Setup.State.Discord.Client.GetUserAsync(Convert.ToUInt64(id));
                 }
                 catch
                 {
                     await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                         .WithContent(
                             $"I wasn't able to parse {user} as a user ID. Make sure it's formatted correctly! If you want to ignore multiple users, separate their mentions or IDs with a space.")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     return;
                 }
 
@@ -89,13 +86,12 @@ public partial class KeywordTrackingCommands
                 if (checkedChannels.Any(c => c.ToString() == channel)) continue;
                 checkedChannels.Add(channel);
 
-                var idRegex = UserIdPattern();
-                var id = idRegex.Match(channel).ToString();
+                var id = Setup.Constants.RegularExpressions.DiscordIdPattern.Match(channel).ToString();
 
                 DiscordChannel channelToAdd;
                 try
                 {
-                    channelToAdd = await Program.Discord.GetChannelAsync(Convert.ToUInt64(id));
+                    channelToAdd = await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(id));
                 }
                 catch (UnauthorizedException)
                 {
@@ -103,7 +99,7 @@ public partial class KeywordTrackingCommands
                             $"I wasn't able to fetch the channel {channel}! Discord says I'm not allowed to see it." +
                             " (I won't be able to track keywords there, so your decision to ignore that channel will still be respected." +
                             " However, the channel will not appear in this keyword's details.)")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     continue;
                 }
                 catch (NotFoundException)
@@ -112,7 +108,7 @@ public partial class KeywordTrackingCommands
                             $"I wasn't able to fetch the channel {channel}! Discord says that channel doesn't exist." +
                             " (I won't be able to track keywords there, so your decision to ignore that channel will still be respected." +
                             " However, the channel will not appear in this keyword's details.)")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     continue;
                 }
                 catch
@@ -120,7 +116,7 @@ public partial class KeywordTrackingCommands
                     await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                         .WithContent(
                             $"I wasn't able to parse {channel} as a channel ID. Make sure it's formatted correctly! If you want to ignore multiple channels, please separate their IDs with a space.")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     return;
                 }
 
@@ -140,13 +136,12 @@ public partial class KeywordTrackingCommands
                 if (checkedGuilds.Any(g => g.ToString() == guild)) continue;
                 checkedGuilds.Add(guild);
 
-                var idRegex = UserIdPattern();
-                var id = idRegex.Match(guild).ToString();
+                var id = Setup.Constants.RegularExpressions.DiscordIdPattern.Match(guild).ToString();
 
                 DiscordGuild guildToAdd;
                 try
                 {
-                    guildToAdd = await Program.Discord.GetGuildAsync(Convert.ToUInt64(id));
+                    guildToAdd = await Setup.State.Discord.Client.GetGuildAsync(Convert.ToUInt64(id));
                 }
                 catch (UnauthorizedException)
                 {
@@ -154,7 +149,7 @@ public partial class KeywordTrackingCommands
                             $"I wasn't able to fetch the server {guild}! Discord says I'm not allowed to see it." +
                             " (I won't be able to track keywords there, so your decision to ignore that server will still be respected." +
                             " However, the server will not appear in this keyword's details.)")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     continue;
                 }
                 catch (NotFoundException)
@@ -163,7 +158,7 @@ public partial class KeywordTrackingCommands
                             $"I wasn't able to fetch the server {guild}! Discord says that server doesn't exist." +
                             " (I won't be able to track keywords there, so your decision to ignore that server will still be respected." +
                             " However, the server will not appear in this keyword's details.)")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     continue;
                 }
                 catch
@@ -171,7 +166,7 @@ public partial class KeywordTrackingCommands
                     await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                         .WithContent(
                             $"I wasn't able to parse {guild} as a server ID. Make sure it's formatted correctly! If you want to ignore multiple servers, please separate their IDs with a space.")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     return;
                 }
 
@@ -179,7 +174,7 @@ public partial class KeywordTrackingCommands
             }
         }
 
-        TrackedKeyword trackedKeyword = new()
+        Setup.Types.TrackedKeyword trackedKeyword = new()
         {
             Keyword = keyword,
             UserId = ctx.User.Id,
@@ -193,16 +188,16 @@ public partial class KeywordTrackingCommands
             GuildId = currentGuildOnly ? ctx.Guild.Id : default
         };
 
-        await Program.Db.HashSetAsync("keywords", ctx.Interaction.Id,
+        await Setup.Storage.Redis.HashSetAsync("keywords", ctx.Interaction.Id,
             JsonConvert.SerializeObject(trackedKeyword));
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-            .WithContent("Done!").AsEphemeral());
+            .WithContent("Done!").AsEphemeral(true));
     }
 
     [Command("edit")]
     [Description("Edit a tracked keyword.")]
-    public static async Task TrackEdit(SlashCommandContext ctx,
-        [SlashAutoCompleteProvider(typeof(TrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to edit.")]
+    public static async Task TrackEditCommandAsync(SlashCommandContext ctx,
+        [SlashAutoCompleteProvider(typeof(Setup.Types.AutoCompleteProviders.TrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to edit.")]
         string keyword,
         [Parameter("new_keyword"), Description("The new keyword or phrase to use instead.")]
         string newKeyword = null,
@@ -223,29 +218,27 @@ public partial class KeywordTrackingCommands
     {
         await ctx.DeferResponseAsync(true);
 
-        var allKeywordsRawData = await Program.Db.HashGetAllAsync("keywords");
+        var allKeywordsRawData = await Setup.Storage.Redis.HashGetAllAsync("keywords");
 
-        var userKeywords = allKeywordsRawData.Select(field => JsonConvert.DeserializeObject<TrackedKeyword>(field.Value))
-            .Where(x => x!.UserId == ctx.User.Id).ToList();
+        var userKeywords = allKeywordsRawData.Select(field => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(field.Value))
+            .Where(x => x.UserId == ctx.User.Id).ToList();
 
         if (userKeywords.Count == 0)
         {
-            var trackCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "track");
+            var trackAddCommand = CommandHelpers.GetSlashCmdMention("track add");
 
-            await ctx.FollowupAsync(
-                new DiscordFollowupMessageBuilder().WithContent(trackCmd is null
-                    ? "You don't have any tracked keywords!"
-                    : $"You don't have any tracked keywords! Add some with </{trackCmd.Name} add:{trackCmd.Id}>."));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent($"You don't have any tracked keywords! Add some with {trackAddCommand}."));
 
             return;
         }
 
         var thisKeywordRawData = allKeywordsRawData.FirstOrDefault(field =>
-            JsonConvert.DeserializeObject<TrackedKeyword>(field.Value)!.Id.ToString() == keyword).Value;
+            JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(field.Value).Id.ToString() == keyword).Value;
 
         if (string.IsNullOrWhiteSpace(thisKeywordRawData))
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral());
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral(true));
             return;
         }
 
@@ -253,11 +246,11 @@ public partial class KeywordTrackingCommands
             userIgnoreList is null && channelIgnoreList is null && guildIgnoreList is null &&
             currentGuildOnly is null)
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("You didn't change anything! Nothing to do.").AsEphemeral());
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("You didn't change anything! Nothing to do.").AsEphemeral(true));
             return;
         }
 
-        var thisKeywordData = JsonConvert.DeserializeObject<TrackedKeyword>(thisKeywordRawData.ToString());
+        var thisKeywordData = JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(thisKeywordRawData.ToString());
 
         if (newKeyword is not null)
             thisKeywordData.Keyword = newKeyword;
@@ -279,20 +272,19 @@ public partial class KeywordTrackingCommands
                 if (checkedUsers.Any(u => u.ToString() == user)) continue;
                 checkedUsers.Add(user);
 
-                var idRegex = UserIdPattern();
-                var id = user.Contains('@') ? idRegex.Match(user).ToString() : user;
+                var id = user.Contains('@') ? Setup.Constants.RegularExpressions.DiscordIdPattern.Match(user).ToString() : user;
 
                 DiscordUser userToAdd;
                 try
                 {
-                    userToAdd = await Program.Discord.GetUserAsync(Convert.ToUInt64(id));
+                    userToAdd = await Setup.State.Discord.Client.GetUserAsync(Convert.ToUInt64(id));
                 }
                 catch
                 {
                     await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                         .WithContent(
                             $"I wasn't able to parse {user} as a user ID. Make sure it's formatted correctly! If you want to ignore multiple users, separate their mentions or IDs with a space.")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     return;
                 }
 
@@ -312,13 +304,12 @@ public partial class KeywordTrackingCommands
                 if (checkedChannels.Any(c => c.ToString() == channel)) continue;
                 checkedChannels.Add(channel);
 
-                var idRegex = UserIdPattern();
-                var id = idRegex.Match(channel).ToString();
+                var id = Setup.Constants.RegularExpressions.DiscordIdPattern.Match(channel).ToString();
 
                 DiscordChannel channelToAdd;
                 try
                 {
-                    channelToAdd = await Program.Discord.GetChannelAsync(Convert.ToUInt64(id));
+                    channelToAdd = await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(id));
                 }
                 catch (UnauthorizedException)
                 {
@@ -326,7 +317,7 @@ public partial class KeywordTrackingCommands
                             $"I wasn't able to fetch the channel {channel}! Discord says I'm not allowed to see it." +
                             " (I won't be able to track keywords there, so your decision to ignore that channel will still be respected." +
                             " However, the channel will not appear in this keyword's details.)")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     continue;
                 }
                 catch (NotFoundException)
@@ -335,7 +326,7 @@ public partial class KeywordTrackingCommands
                             $"I wasn't able to fetch the channel {channel}! Discord says that channel doesn't exist." +
                             " (I won't be able to track keywords there, so your decision to ignore that channel will still be respected." +
                             " However, the channel will not appear in this keyword's details.)")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     continue;
                 }
                 catch
@@ -343,7 +334,7 @@ public partial class KeywordTrackingCommands
                     await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                         .WithContent(
                             $"I wasn't able to parse {channel} as a channel ID. Make sure it's formatted correctly! If you want to ignore multiple channels, please separate their IDs with a space.")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     return;
                 }
 
@@ -363,13 +354,12 @@ public partial class KeywordTrackingCommands
                 if (checkedGuilds.Any(g => g.ToString() == guild)) continue;
                 checkedGuilds.Add(guild);
 
-                var idRegex = UserIdPattern();
-                var id = idRegex.Match(guild).ToString();
+                var id = Setup.Constants.RegularExpressions.DiscordIdPattern.Match(guild).ToString();
 
                 DiscordGuild guildToAdd;
                 try
                 {
-                    guildToAdd = await Program.Discord.GetGuildAsync(Convert.ToUInt64(id));
+                    guildToAdd = await Setup.State.Discord.Client.GetGuildAsync(Convert.ToUInt64(id));
                 }
                 catch (UnauthorizedException)
                 {
@@ -377,7 +367,7 @@ public partial class KeywordTrackingCommands
                             $"I wasn't able to fetch the server {guild}! Discord says I'm not allowed to see it." +
                             " (I won't be able to track keywords there, so your decision to ignore that server will still be respected." +
                             " However, the server will not appear in this keyword's details.)")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     continue;
                 }
                 catch (NotFoundException)
@@ -386,7 +376,7 @@ public partial class KeywordTrackingCommands
                             $"I wasn't able to fetch the server {guild}! Discord says that server doesn't exist." +
                             " (I won't be able to track keywords there, so your decision to ignore that server will still be respected." +
                             " However, the server will not appear in this keyword's details.)")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     continue;
                 }
                 catch
@@ -394,7 +384,7 @@ public partial class KeywordTrackingCommands
                     await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                         .WithContent(
                             $"I wasn't able to parse {guild} as a server ID. Make sure it's formatted correctly! If you want to ignore multiple servers, please separate their IDs with a space.")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     return;
                 }
 
@@ -407,140 +397,105 @@ public partial class KeywordTrackingCommands
             thisKeywordData.GuildId = currentGuildOnly.Value ? ctx.Guild.Id : default;
 
         // Write back to db
-        await Program.Db.HashSetAsync("keywords", thisKeywordData.Id, JsonConvert.SerializeObject(thisKeywordData));
+        await Setup.Storage.Redis.HashSetAsync("keywords", thisKeywordData.Id, JsonConvert.SerializeObject(thisKeywordData));
 
         // Respond
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("Done!").AsEphemeral());
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("Done!").AsEphemeral(true));
     }
 
     [Command("list")]
     [Description("List tracked keywords.")]
-    public static async Task TrackList(SlashCommandContext ctx)
+    public static async Task TrackListCommandAsync(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(true);
 
-        var data = await Program.Db.HashGetAllAsync("keywords");
-
-        var response = data.Select(field => JsonConvert.DeserializeObject<TrackedKeyword>(field.Value))
-            .Where(fieldValue => fieldValue!.UserId == ctx.User.Id).Aggregate("",
-                (current, fieldValue) => current + $"- {fieldValue.Keyword.Truncate(45)}\n");
-
-        var trackCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "track");
+        var keywords = (await Setup.Storage.Redis.HashGetAllAsync("keywords")).Select(x => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(x.Value));
+        var keywordList = string.Join("\n", keywords.Select(k => $"- {k.Keyword.Truncate(45)}"));
 
         DiscordEmbedBuilder embed = new()
         {
             Title = "Tracked Keywords",
-            Color = Program.BotColor
+            Color = Setup.Constants.BotColor
         };
 
-        if (string.IsNullOrWhiteSpace(response))
-            embed.WithDescription(
-                trackCmd is null
-                    ? "You don't have any tracked keywords!"
-                    : $"You don't have any tracked keywords! Add some with </{trackCmd.Name} add:{trackCmd.Id}>.");
+        if (string.IsNullOrWhiteSpace(keywordList))
+            embed.WithDescription($"You don't have any tracked keywords! Add some with {CommandHelpers.GetSlashCmdMention("track add")}.");
         else
-            embed.WithDescription(
-                (trackCmd is null
-                    ? ""
-                    : $"**To see extended information, use </{trackCmd.Name} details:{trackCmd.Id}>.**\n" +
-                      "Keywords are truncated to 45 characters in this list.\n\n")
-                + response);
+            embed.WithDescription($"**To see extended information, use {CommandHelpers.GetSlashCmdMention("track details")}.**\n" +
+                      $"Keywords are truncated to 45 characters in this list.\n\n{keywordList}");
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral());
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral(true));
     }
 
     [Command("details")]
     [Description("Show details about a tracked keyword.")]
-    public static async Task TrackDetails(SlashCommandContext ctx,
-        [SlashAutoCompleteProvider(typeof(TrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to show details for.")] string keyword)
+    public static async Task TrackDetailsCommandAsync(SlashCommandContext ctx,
+        [SlashAutoCompleteProvider(typeof(Setup.Types.AutoCompleteProviders.TrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to show details for.")] string keyword)
     {
         await ctx.DeferResponseAsync(true);
 
-        var keywords = await Program.Db.HashGetAllAsync("keywords");
+        var keywords = await Setup.Storage.Redis.HashGetAllAsync("keywords");
 
-        var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<TrackedKeyword>(field.Value))
-            .Where(x => x!.UserId == ctx.User.Id).ToList();
+        var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(field.Value))
+            .Where(x => x.UserId == ctx.User.Id).ToList();
 
         if (userKeywords.Count == 0)
         {
-            var trackCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "track");
-
-            await ctx.FollowupAsync(
-                new DiscordFollowupMessageBuilder().WithContent(
-                    trackCmd is null
-                        ? "You don't have any tracked keywords!"
-                        : $"You don't have any tracked keywords! Add some with </{trackCmd.Name} add:{trackCmd.Id}>."));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent($"You don't have any tracked keywords! Add some with {CommandHelpers.GetSlashCmdMention("track add")}."));
 
             return;
         }
 
-        var keywordRawData = await Program.Db.HashGetAsync("keywords", keyword);
+        var keywordRawData = await Setup.Storage.Redis.HashGetAsync("keywords", keyword);
 
         if (string.IsNullOrWhiteSpace(keywordRawData))
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral());
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral(true));
             return;
         }
 
-        var keywordData = JsonConvert.DeserializeObject<TrackedKeyword>(keywordRawData);
+        var keywordData = JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(keywordRawData);
         var embed = await KeywordTrackingHelpers.GenerateKeywordDetailsEmbed(keywordData);
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral());
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral(true));
     }
 
     [Command("remove")]
     [Description("Untrack a keyword.")]
-    public static async Task TrackRemove(SlashCommandContext ctx,
-        [SlashAutoCompleteProvider(typeof(TrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to untrack.")] string keyword)
+    public static async Task TrackRemoveCommandAsync(SlashCommandContext ctx,
+        [SlashAutoCompleteProvider(typeof(Setup.Types.AutoCompleteProviders.TrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to untrack.")] string keyword)
     {
         await ctx.DeferResponseAsync(true);
 
-        var keywords = await Program.Db.HashGetAllAsync("keywords");
+        var keywords = await Setup.Storage.Redis.HashGetAllAsync("keywords");
 
-        var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<TrackedKeyword>(field.Value))
-            .Where(x => x!.UserId == ctx.User.Id).ToList();
+        var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(field.Value))
+            .Where(x => x.UserId == ctx.User.Id).ToList();
 
         if (userKeywords.Count == 0)
         {
-            var trackCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "track");
-
             await ctx.FollowupAsync(
-                new DiscordFollowupMessageBuilder().WithContent(trackCmd is null
-                    ? "You don't have any tracked keywords!"
-                    : $"You don't have any tracked keywords! Add some with </{trackCmd.Name} add:{trackCmd.Id}>."));
+                new DiscordFollowupMessageBuilder()
+                .WithContent($"You don't have any tracked keywords! Add some with {CommandHelpers.GetSlashCmdMention("track add")}."));
 
             return;
         }
 
-        var keywordRawData = await Program.Db.HashGetAsync("keywords", keyword);
+        var keywordRawData = await Setup.Storage.Redis.HashGetAsync("keywords", keyword);
 
         if (string.IsNullOrWhiteSpace(keywordRawData))
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral());
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral(true));
             return;
         }
 
-        var keywordData = JsonConvert.DeserializeObject<TrackedKeyword>(keywordRawData);
+        var keywordData = JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(keywordRawData);
         var embed = (await KeywordTrackingHelpers.GenerateKeywordDetailsEmbed(keywordData))
             .WithTitle("Are you sure you want to remove this keyword?").WithColor(DiscordColor.Red)
-            .WithDescription(keywordData!.Keyword);
+            .WithDescription(keywordData.Keyword);
 
-        DiscordButtonComponent confirmButton = new(DiscordButtonStyle.Danger, "track-remove-confirm-button", "Remove");
+        DiscordButtonComponent confirmButton = new(DiscordButtonStyle.Danger, "button-callback-track-remove-confirm", "Remove");
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AddActionRowComponent(confirmButton).AsEphemeral());
-    }
-
-    [GeneratedRegex("[0-9]+")]
-    private static partial Regex UserIdPattern();
-
-    private class TrackingAutocompleteProvider : IAutoCompleteProvider
-    {
-        public async ValueTask<IEnumerable<DiscordAutoCompleteChoice>> AutoCompleteAsync(AutoCompleteContext ctx)
-        {
-            var allKeywordRawData = await Program.Db.HashGetAllAsync("keywords");
-            var userKeywords = allKeywordRawData.Select(field => JsonConvert.DeserializeObject<TrackedKeyword>(field.Value))
-                .Where(keyword => keyword!.UserId == ctx.User.Id).ToList();
-
-            return userKeywords.Select(keyword => new DiscordAutoCompleteChoice(keyword.Keyword, keyword.Id.ToString())).ToList();
-        }
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AddActionRowComponent(confirmButton).AsEphemeral(true));
     }
 }

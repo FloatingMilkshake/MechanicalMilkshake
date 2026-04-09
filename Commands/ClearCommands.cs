@@ -1,16 +1,12 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-[RequireGuild]
-public partial class ClearCommands
+internal class ClearCommands
 {
-    public static readonly Dictionary<ulong, List<DiscordMessage>> MessagesToClear = new();
-
     [Command("clear")]
     [Description("Delete many messages from the current channel.")]
     [RequirePermissions(DiscordPermission.ManageMessages)]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
-    [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
-    public static async Task ClearCommand(SlashCommandContext ctx,
+    public static async Task ClearCommandAsync(SlashCommandContext ctx,
         [Parameter("count"), Description("The number of messages to consider for deletion. Required if you don't use the 'up_to' argument.")]
         long count = 0,
         [Parameter("up_to"), Description("Optionally delete messages up to (not including) this one. Accepts IDs and links.")]
@@ -37,11 +33,6 @@ public partial class ClearCommands
     {
         await ctx.DeferResponseAsync(true);
 
-        var discordLinkRx = DiscordLinkPattern();
-
-        // Credit to @Erisa for this line of regex. https://github.com/Erisa/Cliptok/blob/a80e700/Constants/RegexConstants.cs#L8
-        var urlRx = UrlPattern();
-
         switch (count)
         {
             // If all args are unset
@@ -50,26 +41,26 @@ public partial class ClearCommands
                         dryRun == false:
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("You must provide at least one argument! I need to know which messages to delete.")
-                    .AsEphemeral());
+                    .AsEphemeral(true));
                 return;
             case 0 when upTo == "":
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         "I need to know how many messages to delete! Please provide a value for `count` or `up_to`.")
-                    .AsEphemeral());
+                    .AsEphemeral(true));
                 return;
             // If count is too low or too high, refuse the request
             case < 0:
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         "I can't delete a negative number of messages! Try setting `count` to a positive number.")
-                    .AsEphemeral());
+                    .AsEphemeral(true));
                 return;
             case >= 1000:
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         "Deleting that many messages poses a risk of something disastrous happening, so I'm refusing your request, sorry.")
-                    .AsEphemeral());
+                    .AsEphemeral(true));
                 return;
         }
 
@@ -80,7 +71,7 @@ public partial class ClearCommands
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
                     "You can't provide both a count of messages and a message to delete up to! Please only provide one of the two arguments.")
-                .AsEphemeral());
+                .AsEphemeral(true));
             return;
         }
 
@@ -96,7 +87,7 @@ public partial class ClearCommands
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("I don't have permission to read messages in this channel, so I can't find the messages to be deleted! This is necessary to apply any filters you may have set. Make sure I have the `View Channel` and `Read Message History` permissions for this channel.")
-                    .AsEphemeral());
+                    .AsEphemeral(true));
                 return;
             }
             catch (Exception ex)
@@ -121,13 +112,13 @@ public partial class ClearCommands
             else
             {
                 if (
-                    discordLinkRx.Match(upTo).Groups[2].Value != ctx.Channel.Id.ToString()
-                    || !ulong.TryParse(discordLinkRx.Match(upTo).Groups[3].Value, out messageId)
+                    Setup.Constants.RegularExpressions.DiscordUrlPattern.Match(upTo).Groups[2].Value != ctx.Channel.Id.ToString()
+                    || !ulong.TryParse(Setup.Constants.RegularExpressions.DiscordUrlPattern.Match(upTo).Groups[3].Value, out messageId)
                 )
                 {
                     await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                         .WithContent("Please provide a valid link to a message in this channel!")
-                        .AsEphemeral());
+                        .AsEphemeral(true));
                     return;
                 }
             }
@@ -154,21 +145,21 @@ public partial class ClearCommands
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("I couldn't find the message you provided for `up_to`! Please provide a valid message ID or link; the message must be in this channel.")
-                    .AsEphemeral());
+                    .AsEphemeral(true));
                 return;
             }
             catch (UnauthorizedException) // User specified a msg the bot can't read
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("I don't have permission to read the message you provided for `up_to`, or it was not sent in this channel! Please make sure I have the `View Channel` and `Read Message History` permissions in this channel, and that you've provided a message ID or link for a message in this channel.")
-                    .AsEphemeral());
+                    .AsEphemeral(true));
                 return;
             }
             catch (Exception ex) // Just catch the rest for clean errors or logging or whatever
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent($"Something went wrong when I tried to find the message you provided for `up_to`! Please make sure you provided a valid message ID or link. `{ex.GetType()}: {ex.Message}`")
-                    .AsEphemeral());
+                    .AsEphemeral(true));
 
                 // Log to home channel
                 await LogClearErrorAsync(ctx, ex);
@@ -216,7 +207,7 @@ public partial class ClearCommands
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         "You can't use `bots_only` and `humans_only` together! Pick one or the other please.")
-                    .AsEphemeral());
+                    .AsEphemeral(true));
                 return;
             }
 
@@ -237,7 +228,7 @@ public partial class ClearCommands
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         "You can't use `images_only` and `links_only` together! Pick one or the other please.")
-                    .AsEphemeral());
+                    .AsEphemeral(true));
                 return;
             }
 
@@ -248,7 +239,7 @@ public partial class ClearCommands
         // Links only
         if (linksOnly)
             foreach (var message in messagesToClear.ToList()
-                         .Where(message => !urlRx.IsMatch(message.Content.ToLower())))
+                         .Where(message => !Setup.Constants.RegularExpressions.UrlPattern.IsMatch(message.Content.ToLower())))
                 messagesToClear.Remove(message);
 
         // Skip messages older than 2 weeks, since Discord won't let us delete them anyway
@@ -266,21 +257,21 @@ public partial class ClearCommands
             case 0 when skipped:
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("All of the messages to delete are older than 2 weeks, so I can't delete them!")
-                    .AsEphemeral());
+                    .AsEphemeral(true));
                 return;
             // All filters checked. 'messages' is now our final list of messages to delete.
             // Warn if we're going to be deleting 50 or more messages.
             case >= 50:
                 {
                     DiscordButtonComponent confirmButton =
-                        new(DiscordButtonStyle.Danger, "clear-confirm-callback", "Delete Messages", disabled: dryRun);
+                        new(DiscordButtonStyle.Danger, "button-callback-clear-confirm", "Delete Messages", disabled: dryRun);
                     var confirmationMessage = await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                         .WithContent(dryRun ? $"You would be about to delete {messagesToClear.Count} messages, but since "
                                                 + "you used `dry_run = True`, I won't do anything."
                                             : $"You're about to delete {messagesToClear.Count} messages. Are you sure?")
-                        .AddActionRowComponent(confirmButton).AsEphemeral());
+                        .AddActionRowComponent(confirmButton).AsEphemeral(true));
 
-                    MessagesToClear.Add(confirmationMessage.Id, messagesToClear);
+                    Setup.State.Caches.ClearCache.Add(confirmationMessage.Id, messagesToClear);
                     break;
                 }
             case >= 1:
@@ -289,7 +280,7 @@ public partial class ClearCommands
                     {
                         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"You would be about to"
                         + $" delete {messagesToClear.Count} messages, but since you used `dry_run = True`,"
-                        + " I won't do anything.").AsEphemeral());
+                        + " I won't do anything.").AsEphemeral(true));
                         break;
                     }
 
@@ -302,7 +293,7 @@ public partial class ClearCommands
                     {
                         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                             .WithContent("I don't have permission to delete messages in this channel! Make sure I have the `Manage Messages` permission.")
-                            .AsEphemeral());
+                            .AsEphemeral(true));
                         return;
                     }
                     // not catching other exceptions because they are handled by generic slash error handler, but this one deserves a clear message
@@ -311,11 +302,11 @@ public partial class ClearCommands
                         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                             .WithContent(
                                 $"Cleared **{messagesToClear.Count}** messages from {ctx.Channel.Mention}!\nSome messages were not deleted because they are older than 2 weeks.")
-                            .AsEphemeral());
+                            .AsEphemeral(true));
                     else
                         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                             .WithContent($"Cleared **{messagesToClear.Count}** messages from {ctx.Channel.Mention}!")
-                            .AsEphemeral());
+                            .AsEphemeral(true));
                     break;
                 }
             default:
@@ -327,7 +318,7 @@ public partial class ClearCommands
 
     private static async Task LogClearErrorAsync(SlashCommandContext ctx, Exception ex)
     {
-        await Program.HomeChannel.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
+        await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
         {
             Color = DiscordColor.Red,
             Title = "An exception occurred when executing a slash command",
@@ -335,9 +326,4 @@ public partial class ClearCommands
         }
             .AddField("Exception Details", $"```\n{ex.GetType()}: {ex.Message}\n{ex.StackTrace}\n```")));
     }
-
-    [GeneratedRegex(@".*discord(?:app)?.com\/channels\/((?:@)?[a-z0-9]*)\/([0-9]*)(?:\/)?([0-9]*)")]
-    private static partial Regex DiscordLinkPattern();
-    [GeneratedRegex("(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]")]
-    private static partial Regex UrlPattern();
 }

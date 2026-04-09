@@ -3,12 +3,11 @@
 [Command("random")]
 [Description("Get a random number, fact, or picture of a dog or cat.")]
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-[InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-public partial class RandomCmds
+internal class RandomCommands
 {
     [Command("number")]
     [Description("Generates a random number between two that you specify.")]
-    public static async Task RandomNumber(SlashCommandContext ctx,
+    public static async Task RandomNumberCommandAsync(SlashCommandContext ctx,
         [Parameter("min"), Description("The minimum number to choose between. Defaults to 1.")]
         long min = 1,
         [Parameter("max"), Description("The maximum number to choose between. Defaults to 10.")]
@@ -30,67 +29,73 @@ public partial class RandomCmds
 
     [Command("fact")]
     [Description("Get a random fact.")]
-    public static async Task RandomFact(SlashCommandContext ctx)
+    public static async Task RandomFactCommandAsync(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
-        var fact = JsonConvert.DeserializeObject<JObject>(await Program.HttpClient.GetStringAsync("https://uselessfacts.jsph.pl/random.md?language=en"));
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(fact["text"].ToString()));
+        Setup.Types.Apis.FactApi.Fact fact;
+        try
+        {
+            var data = await Setup.Constants.HttpClient.GetStringAsync("https://uselessfacts.jsph.pl/api/v2/facts/random?language=en");
+            fact = JsonConvert.DeserializeObject<Setup.Types.Apis.FactApi.Fact>(data);
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.StatusCode is HttpStatusCode.TooManyRequests)
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("You're going too fast! Try again in a few seconds."));
+            else
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"Something went wrong! Error code  {(int)ex.StatusCode}. Try again in a bit, or contact a bot owner if this persists."));
+
+            return;
+        }
+        
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(fact.Text));
     }
 
     [Command("cat")]
     [Description("Get a random cat picture from the internet.")]
-    public static async Task RandomCat(SlashCommandContext ctx)
+    public static async Task RandomCatCommandAsync(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
-        string data;
+        List<Setup.Types.Apis.CatDogApi.CatDogImage> images;
         try
         {
-            data = await Program.HttpClient.GetStringAsync("https://api.thecatapi.com/v1/images/search");
+            var data = await Setup.Constants.HttpClient.GetStringAsync("https://api.thecatapi.com/v1/images/search");
+            images = JsonConvert.DeserializeObject<List<Setup.Types.Apis.CatDogApi.CatDogImage>>(data);
         }
         catch (HttpRequestException ex)
         {
             if (ex.StatusCode is HttpStatusCode.TooManyRequests)
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("You're going too fast! Try again in a few seconds."));
             else
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"Something went wrong! The Cat API returned status code {ex.StatusCode}. Try again in a bit, or contact a bot owner if this persists."));
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"Something went wrong! Error code {(int)ex.StatusCode}. Try again in a bit, or contact a bot owner if this persists."));
 
             return;
         }
-        var pattern = CatApiUrlPattern();
-        var cat = pattern.Match(data);
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"{cat}"));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(images.First().Url));
     }
 
     [Command("dog")]
     [Description("Get a random dog picture from the internet.")]
-    public static async Task RandomDog(SlashCommandContext ctx)
+    public static async Task RandomDogCommandAsync(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
-        string data;
+        List<Setup.Types.Apis.CatDogApi.CatDogImage> images;
         try
         {
-            data = await Program.HttpClient.GetStringAsync("https://dog.ceo/api/breeds/image/random");
+            var data = await Setup.Constants.HttpClient.GetStringAsync("https://api.thedogapi.com/v1/images/search");
+            images = JsonConvert.DeserializeObject<List<Setup.Types.Apis.CatDogApi.CatDogImage>>(data);
         }
         catch (HttpRequestException ex)
         {
             if (ex.StatusCode is HttpStatusCode.TooManyRequests)
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("You're going too fast! Try again in a few seconds."));
             else
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"Something went wrong! The Dog API returned status code {ex.StatusCode}. Try again in a bit, or contact a bot owner if this persists."));
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"Something went wrong! Error code {(int)ex.StatusCode}. Try again in a bit, or contact a bot owner if this persists."));
 
             return;
         }
-        var pattern = DogApiUrlPattern();
-        var dogMatch = pattern.Match(data);
 
-        var dog = dogMatch.ToString();
-        dog = dog.Replace("\\", "");
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"{dog}"));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(images.First().Url));
     }
-
-    [GeneratedRegex(@"https:\/\/cdn2.thecatapi.com\/images\/.*(\.[A-Za-z]{3,4})")]
-    private static partial Regex CatApiUrlPattern();
-    [GeneratedRegex(@"https:\\\/\\\/images.dog.ceo\\\/breeds\\\/.*(\.[A-Za-z]{3,4})")]
-    private static partial Regex DogApiUrlPattern();
 }

@@ -1,12 +1,11 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class HttpCatCommands
+internal class HttpCatCommands
 {
     [Command("httpcat")]
     [Description("Get an http.cat image!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task HttpCatCommand(SlashCommandContext ctx,
+    public static async Task HttpCatCommandAsync(SlashCommandContext ctx,
         [Parameter("code"), Description("The code to get the http.cat image for.")] [MinMaxValue(100, 599)]
         int? code = null)
     {
@@ -25,7 +24,7 @@ public class HttpCatCommands
             randomCode = true;
         }
 
-        var httpResponse = await Program.HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, $"https://http.{tld}/{code}.jpg"));
+        var httpResponse = await Setup.Constants.HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, $"https://http.{tld}/{code}.jpg"));
 
         while (!httpResponse.IsSuccessStatusCode)
         {
@@ -34,14 +33,14 @@ public class HttpCatCommands
                 if (randomCode)
                 {
                     code = random.Next(100, 600);
-                    httpResponse = await Program.HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, $"https://http.{tld}/{code}.jpg"));
+                    httpResponse = await Setup.Constants.HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, $"https://http.{tld}/{code}.jpg"));
                 }
                 else return "Either that's not a valid HTTP status code, or it's not supported! Try another one.";
             }
             else if (httpResponse.StatusCode == HttpStatusCode.TooManyRequests)
             {
                 await Task.Delay(2000);
-                httpResponse = await Program.HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, $"https://http.{tld}/{code}.jpg"));
+                httpResponse = await Setup.Constants.HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, $"https://http.{tld}/{code}.jpg"));
             }
             else return $"I ran into an error trying to get a random http.{tld} image!" +
                     $"Request returned code `{(int)httpResponse.StatusCode}: {httpResponse.ReasonPhrase}` for HTTP code {code}.";

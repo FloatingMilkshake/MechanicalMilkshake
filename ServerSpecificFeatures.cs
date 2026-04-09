@@ -1,12 +1,12 @@
 namespace MechanicalMilkshake;
 
-public partial class ServerSpecificFeatures
+internal class ServerSpecificFeatures
 {
-    public partial class EventChecks
+    internal class EventChecks
     {
-        public static bool ShutBotsAllowed;
+        internal static bool ShutBotsAllowed;
 
-        public static async Task MessageCreateChecks(MessageCreatedEventArgs e)
+        internal static async Task MessageCreateChecks(MessageCreatedEventArgs e)
         {
             // ignore dms
             if (e.Channel.IsPrivate) return;
@@ -19,11 +19,11 @@ public partial class ServerSpecificFeatures
                     (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1).ToListAsync())[0].Content
                     .Contains("caption"))
                 {
-                    var chan = await Program.Discord.GetChannelAsync(1048242806486999092);
+                    var chan = await Setup.State.Discord.Client.GetChannelAsync(1048242806486999092);
                     if (e.Message.Flags?.HasFlag(DiscordMessageFlags.IsComponentsV2) ?? false)
                     {
-                        var mediaGalleryComponent = e.Message.Components.First() as DiscordMediaGalleryComponent;
-                        var mediaUrl = mediaGalleryComponent.Items.First().Media.Url;
+                        var mediaGalleryComponent = e.Message.Components[0] as DiscordMediaGalleryComponent;
+                        var mediaUrl = mediaGalleryComponent.Items[0].Media.Url;
                         await chan.SendMessageAsync($"{mediaUrl} ({e.Message.JumpLink})");
                     }
                     else if (string.IsNullOrWhiteSpace(e.Message.Content))
@@ -56,7 +56,7 @@ public partial class ServerSpecificFeatures
             // Value is used so that on user's first attempt during cooldown, we can respond to indicate the cooldown;
             // but on subsequent attempts we should not respond to avoid ratelimits as that would defeat the purpose of the cooldown
 
-            if (e.Guild.Id == 1203128266559328286 || e.Guild.Id == Program.HomeServer.Id)
+            if (e.Guild.Id == 1203128266559328286 || e.Guild.Id == Setup.Configuration.Discord.HomeServer.Id)
             {
                 if (e.Message.Content == "shutok" && e.Message.Author.Id == 455432936339144705)
                 {
@@ -74,10 +74,10 @@ public partial class ServerSpecificFeatures
                     || e.Message.Content.Equals("**shut**", StringComparison.OrdinalIgnoreCase) || e.Message.Content.Equals("**open**", StringComparison.OrdinalIgnoreCase)))
                 {
                     if (e.Message.Author.IsBot)
-                        if (!ShutBotsAllowed || e.Message.Author.Id == Program.Discord.CurrentApplication.Id || e.Channel.Id != 1285684652543185047) return; // testing uwubot? use 1285760935310655568 for channel id
+                        if (!ShutBotsAllowed || e.Message.Author.Id == Setup.State.Discord.Client.CurrentApplication.Id || e.Channel.Id != 1285684652543185047) return; // testing uwubot? use 1285760935310655568 for channel id
 
                     var userId = e.Message.Author.Id;
-                    var userShutCooldownSerialized = await Program.Db.HashGetAsync("shutCooldowns", userId.ToString());
+                    var userShutCooldownSerialized = await Setup.Storage.Redis.HashGetAsync("shutCooldowns", userId.ToString());
                     KeyValuePair<DateTime, bool> userShutCooldown = new();
                     if (userShutCooldownSerialized.HasValue)
                     {
@@ -87,7 +87,7 @@ public partial class ServerSpecificFeatures
                         }
                         catch (Exception ex)
                         {
-                            Program.Discord.Logger.LogWarning("Failed to read shut cooldown from db for user {user}! {exType}: {exMessage}\n{exStackTrace}", userId, ex.GetType(), ex.Message, ex.StackTrace);
+                            Setup.State.Discord.Client.Logger.LogWarning("Failed to read shut cooldown from db for user {user}! {exType}: {exMessage}\n{exStackTrace}", userId, ex.GetType(), ex.Message, ex.StackTrace);
                         }
 
                         var userCooldownTime = userShutCooldown.Key;
@@ -124,7 +124,7 @@ public partial class ServerSpecificFeatures
                     }
 
                     if (userShutCooldown.Key == DateTime.MinValue && userShutCooldown.Value == false)
-                        await Program.Db.HashSetAsync("shutCooldowns", userId.ToString(), JsonConvert.SerializeObject(userShutCooldown));
+                        await Setup.Storage.Redis.HashSetAsync("shutCooldowns", userId.ToString(), JsonConvert.SerializeObject(userShutCooldown));
                 }
             }
             #endregion shut
@@ -171,27 +171,20 @@ public partial class ServerSpecificFeatures
             // Send message
             await e.Message.Channel.SendMessageAsync(msg);
         }
-
-        #region regex
-        [GeneratedRegex("(.*)?<@!?([0-9]+)>(.*)")]
-        private static partial Regex MentionPattern();
-        [GeneratedRegex(@"https.*windows-(\d+).*?build[s]?-(?:(\d+(?:-\d+)?)(?:-and-(\d+-\d+)?)*)(?:.+?(?:(canary|dev|beta|release-preview)(?:-and-(canary|dev|beta|release-preview))*)?-channel[s]?.*)?\/")]
-        private static partial Regex InsiderUrlPattern();
-        #endregion regex
     }
 
-    public class Commands
+    internal class Commands
     {
-        public class MessageCommands
+        internal class MessageCommands
         {
             // Per-server commands go here. Use the [TargetServer(serverId)] attribute to restrict a command to a specific guild.
 
             [Command("poop")]
             [Description("immaturity is key")]
             [TextAlias("shit", "defecate")]
-            [CommandChecks.AllowedServers(799644062973427743, 1203128266559328286)]
+            [CommandChecks.AllowedServers(799644062973427743)]
             [AllowedProcessors(typeof(TextCommandProcessor))]
-            public async Task Poop(CommandContext ctx, [RemainingText] string much = "")
+            internal static async Task Poop(CommandContext ctx, [RemainingText] string much = "")
             {
                 if (ctx.Channel.IsPrivate)
                 {
@@ -204,17 +197,17 @@ public partial class ServerSpecificFeatures
                     DiscordChannel chan;
                     DiscordMessage msg;
 #if DEBUG
-                    chan = await Program.Discord.GetChannelAsync(893654247709741088);
+                    chan = await Setup.State.Discord.Client.GetChannelAsync(893654247709741088);
                     msg = await chan.GetMessageAsync(1282187612844589168);
 #else
-                    chan = await Program.Discord.GetChannelAsync(892978015309557870);
+                    chan = await Setup.State.Discord.Client.GetChannelAsync(892978015309557870);
                     msg = much == "MUCH" ? await chan.GetMessageAsync(1294869494648279071) : await chan.GetMessageAsync(1085253151155830895);
 #endif
 
                     var phrases = msg.Content.Split("\n");
 
-                    await ctx.Channel.SendMessageAsync(phrases[Program.Random.Next(0, phrases.Length)]
-                        .Replace("{user}", ctx.Member!.DisplayName));
+                    await ctx.Channel.SendMessageAsync(phrases[new Random().Next(0, phrases.Length)]
+                        .Replace("{user}", ctx.Member.DisplayName));
                 }
                 catch
                 {
@@ -223,12 +216,12 @@ public partial class ServerSpecificFeatures
             }
         }
 
-        public class RoleCommands
+        internal class RoleCommands
         {
             [Command("rolename")]
             [Description("Change the name of someone's role.")]
             [AllowedProcessors(typeof(SlashCommandProcessor))]
-            public static async Task RoleName(SlashCommandContext ctx,
+            internal static async Task RoleName(SlashCommandContext ctx,
                 [Parameter("name"), Description("The new name.")] string name,
                 [Parameter("user"), Description("The user whose role name to change.")] DiscordUser user = default)
             {
@@ -253,7 +246,7 @@ public partial class ServerSpecificFeatures
                     return;
                 }
 
-                List<DiscordRole> roles = new();
+                List<DiscordRole> roles = [];
                 if (member.Roles.Any())
                 {
                     roles.AddRange(member.Roles.OrderBy(role => role.Position).Reverse());
@@ -306,17 +299,17 @@ public partial class ServerSpecificFeatures
         }
     }
 
-    public class CommandChecks
+    internal class CommandChecks
     {
-        public class AllowedServersAttribute(params ulong[] allowedServers) : ContextCheckAttribute
+        internal class AllowedServersAttribute(params ulong[] allowedServers) : ContextCheckAttribute
         {
-            public ulong[] AllowedServers { get; } = allowedServers;
+            internal ulong[] AllowedServers { get; } = allowedServers;
         }
 
-        public class AllowedServersContextCheck : IContextCheck
+        internal class AllowedServersContextCheck : IContextCheck
         {
 #nullable enable
-            public ValueTask<string?> ExecuteCheckAsync(AllowedServersAttribute attribute, CommandContext ctx) =>
+            internal static ValueTask<string?> ExecuteCheckAsync(AllowedServersAttribute attribute, CommandContext ctx) =>
                 ValueTask.FromResult(!ctx.Channel.IsPrivate && ctx.Guild is not null && attribute.AllowedServers.Contains(ctx.Guild.Id)
                     ? null
                     : "This command is not available in this server.");

@@ -2,7 +2,7 @@
 
 internal class StringHelpers
 {
-    public static async Task<List<string>> SplitStringAsync(string input, int maxLength = 1980)
+    internal static async Task<List<string>> SplitStringAsync(string input, int maxLength = 1980)
     {
         List<string> split = [];
 
@@ -52,7 +52,7 @@ internal class StringHelpers
         return split;
     }
 
-    public static string Truncate(string input, int maxLength)
+    internal static string Truncate(string input, int maxLength)
     {
         if (input is null && maxLength <= 9)
             return "[invalid]";

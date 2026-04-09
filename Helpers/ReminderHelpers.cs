@@ -1,6 +1,6 @@
 namespace MechanicalMilkshake.Helpers;
 
-public partial class ReminderHelpers
+internal class ReminderHelpers
 {
     internal static async Task LogReminderErrorAsync(DiscordChannel logChannel, Exception ex)
     {
@@ -14,7 +14,7 @@ public partial class ReminderHelpers
         errorEmbed.AddField("Message", $"{ex.Message}");
         errorEmbed.AddField("Stack Trace", $"```\n{ex.StackTrace}\n```");
 
-        Program.Discord.Logger.LogError(Program.BotEventId, "An exception occurred when checking reminders!"
+        Setup.State.Discord.Client.Logger.LogError("An exception occurred when checking reminders!"
             + "\n{exType}: {exMessage}\n{exStackTrace}", ex.GetType(), ex.Message, ex.StackTrace);
 
         await logChannel.SendMessageAsync(errorEmbed);
@@ -25,20 +25,20 @@ public partial class ReminderHelpers
         var id = msgId == default ? "[loading...]" : $"`{msgId}`";
 
         embed.AddField("Need to delay this reminder?",
-            $"Use {SlashCmdMentionHelpers.GetSlashCmdMention("reminder", "delay")} and set `message` to {id}.");
+            $"Use {CommandHelpers.GetSlashCmdMention("reminder delay")} and set `message` to {id}.");
     }
 
-    internal static async Task<(DateTime? parsedTime, string error)> ValidateReminderTimeAsync(string reminderTime)
+    internal static async Task<(DateTime? parsedTime, string error)> ValidateReminderTriggerTimeAsync(string triggerTime)
     {
-        if (!DateTime.TryParse(reminderTime, out DateTime parsedTime))
+        if (!DateTime.TryParse(triggerTime, out DateTime parsedTime))
         {
             try
             {
-                parsedTime = HumanDateParser.HumanDateParser.Parse(reminderTime);
+                parsedTime = HumanDateParser.HumanDateParser.Parse(triggerTime);
             }
             catch (ParseException)
             {
-                return (null, $"I couldn't parse \"{reminderTime}\" as a time! Please try again.");
+                return (null, $"I couldn't parse \"{triggerTime}\" as a time! Please try again.");
             }
         }
 
@@ -50,34 +50,35 @@ public partial class ReminderHelpers
         return (parsedTime, null);
     }
 
-    internal static async Task<(Reminder reminder, string error)> GetReminderAsync(string reminderId, ulong requestingUserId)
+    internal static async Task<(Setup.Types.Reminder reminder, string error)> GetReminderAsync(string reminderId, ulong requestingUserId)
     {
-        var reminderCmd = Program.ApplicationCommands.FirstOrDefault(x => x.Name == "reminder");
+        if (!Setup.Constants.RegularExpressions.DiscordIdPattern.IsMatch(reminderId))
+            return (null, "The reminder ID you provided isn't correct! It should look something like this: `1234`." +
+                $" You can see your reminders and their IDs with {CommandHelpers.GetSlashCmdMention("reminder list")}.");
 
-        if (!IdPattern().IsMatch(reminderId))
-            return (null, $"The reminder ID you provided isn't correct! It should look something like this: `1234`.{(reminderCmd is null ? "" : $" You can see your reminders and their IDs with </reminder list:{reminderCmd.Id}>.")}");
-
-        Reminder reminder;
+        Setup.Types.Reminder reminder;
         try
         {
-            reminder = JsonConvert.DeserializeObject<Reminder>(await Program.Db.HashGetAsync("reminders", reminderId));
+            reminder = JsonConvert.DeserializeObject<Setup.Types.Reminder>(await Setup.Storage.Redis.HashGetAsync("reminders", reminderId));
         }
         catch
         {
-            return (null, $"I couldn't find a reminder with that ID! Make sure it's correct. It should look something like this: `1234`.{(reminderCmd is null ? "" : $" You can see your reminders and their IDs with </reminder list:{reminderCmd.Id}>.")}");
+            return (null, "I couldn't find a reminder with that ID! Make sure it's correct. It should look something like this: `1234`." +
+                $" You can see your reminders and their IDs with {CommandHelpers.GetSlashCmdMention("reminder list")}.");
         }
 
         if (reminder.UserId != requestingUserId)
-            return (null, $"I couldn't find a reminder with that ID! Make sure it's correct. It should look something like this: `1234`.{(reminderCmd is null ? "" : $" You can see your reminders and their IDs with </reminder list:{reminderCmd.Id}>.")}");
+            return (null, "I couldn't find a reminder with that ID! Make sure it's correct. It should look something like this: `1234`." +
+                $" You can see your reminders and their IDs with {CommandHelpers.GetSlashCmdMention("reminder list")}.");
 
         return (reminder, null);
     }
 
-    internal static async Task<List<Reminder>> GetUserRemindersAsync(ulong userId)
+    internal static async Task<List<Setup.Types.Reminder>> GetUserRemindersAsync(ulong userId)
     {
-        return (await Program.Db.HashGetAllAsync("reminders"))
-            .Select(x => JsonConvert.DeserializeObject<Reminder>(x.Value)).Where(r => r is not null && r.UserId == userId)
-            .OrderBy(x => x.ReminderTime)
+        return (await Setup.Storage.Redis.HashGetAllAsync("reminders"))
+            .Select(x => JsonConvert.DeserializeObject<Setup.Types.Reminder>(x.Value)).Where(r => r is not null && r.UserId == userId)
+            .OrderBy(x => x.TriggerTime)
             .ToList();
     }
 
@@ -86,42 +87,38 @@ public partial class ReminderHelpers
         Random random = new();
         var reminderId = random.Next(1000, 9999);
 
-        var reminders = await Program.Db.HashGetAllAsync("reminders");
+        var reminders = await Setup.Storage.Redis.HashGetAllAsync("reminders");
         while (reminders.Any(x => x.Name == reminderId))
             reminderId = random.Next(1000, 9999);
 
         return reminderId;
     }
 
-    internal static DiscordSelectComponent CreateSelectComponentFromReminders(List<Reminder> reminders, string componentCustomId)
+    internal static DiscordSelectComponent CreateSelectComponentFromReminders(List<Setup.Types.Reminder> reminders, string componentCustomId)
     {
         List<DiscordSelectComponentOption> options = reminders.Select(reminder =>
             new DiscordSelectComponentOption(string.IsNullOrWhiteSpace(reminder.ReminderText)
                 ? "[no content]"
                 : reminder.ReminderText.Truncate(100),
                 reminder.ReminderId.ToString(),
-                reminder.ReminderTime.Humanize()))
+                reminder.TriggerTime.Humanize()))
             .ToList();
 
         return new DiscordSelectComponent(componentCustomId, null, options);
     }
 
-    internal static async Task<DiscordEmbed> CreateReminderListEmbedAsync(List<Reminder> reminders)
+    internal static async Task<DiscordEmbed> CreateReminderListEmbedAsync(List<Setup.Types.Reminder> reminders)
     {
-        string output = "";
+        string embedDescription = "";
         foreach (var reminder in reminders)
         {
-            var setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
+            var reminderSetTimeTimestamp = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
+            var reminderTriggerTimeTimestamp = ((DateTimeOffset)reminder.TriggerTime).ToUnixTimeSeconds();
 
-            long reminderTime = default;
-            if (reminder.ReminderTime is not null)
-                reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
-
-            var idRegex = IdPattern();
             string guildName;
-            if (idRegex.IsMatch(reminder.GuildId))
+            if (Setup.Constants.RegularExpressions.DiscordIdPattern.IsMatch(reminder.GuildId))
             {
-                var targetGuild = await Program.Discord.GetGuildAsync(Convert.ToUInt64(reminder.GuildId));
+                var targetGuild = Setup.State.Discord.Client.Guilds[Convert.ToUInt64(reminder.GuildId)];
                 guildName = targetGuild.Name;
             }
             else
@@ -131,69 +128,44 @@ public partial class ReminderHelpers
 
             var reminderLink = $"<https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}>";
 
-            var reminderText = reminder.ReminderText.Length > 350
-                ? $"{reminder.ReminderText.Truncate(350)} *(truncated)*"
-                : reminder.ReminderText;
+            var reminderText = reminder.ReminderText.Truncate(350, " *(truncated)*");
 
-            var reminderLocation = $" in {guildName}";
             if (guildName != "DMs")
-                reminderLocation += $" <#{reminder.ChannelId}>";
+                guildName += $" <#{reminder.ChannelId}>";
 
-            output += $"`{reminder.ReminderId}`:\n"
+            embedDescription += $"`{reminder.ReminderId}`:\n"
                       + (string.IsNullOrWhiteSpace(reminderText)
                           ? ""
                           : $"> {reminderText}\n")
-                      + (reminder.ReminderTime is null
-                          ? reminder.IsPrivate
-                              ? $"[Set <t:{setTime}:R>]({reminderLink}). This reminder will not be sent automatically."
-                                  + " This reminder was set privately, so this is only a link to the messages around the time it was set."
-                              : $"[Set <t:{setTime}:R>]({reminderLink}). This reminder will not be sent automatically."
-                          : $"[Set <t:{setTime}:R>]({reminderLink}) to remind you <t:{reminderTime}:R>");
-
-            if (reminder.ReminderTime is not null)
-                output += reminderLocation;
-
-            output += "\n\n";
+                      + $"[Set <t:{reminderSetTimeTimestamp}:R>]({reminderLink}) to remind you <t:{reminderTriggerTimeTimestamp}:R> in {guildName}\n\n";
         }
 
         DiscordEmbedBuilder embed = new()
         {
             Title = "Reminders",
-            Color = Program.BotColor
+            Color = Setup.Constants.BotColor
         };
 
-        if (output.Length > 4096)
+        if (embedDescription.Length > 4096)
         {
             embed.WithColor(DiscordColor.Red);
 
-            var reminderCmd = Program.ApplicationCommands.FirstOrDefault(c => c.Name == "reminder");
-            var desc = reminderCmd is null
-                    ? "You have too many reminders to list here! Here are the IDs of each one.\n\n"
-                    : $"You have too many reminders to list here! Here are the IDs of each one. Use </{reminderCmd.Name} show:{reminderCmd.Id}> for details.\n\n";
+            var embedDescriptionWithTruncatedReminders = $"You have too many reminders to list here! Here are the IDs of each one. Use {CommandHelpers.GetSlashCmdMention("reminder show")} for details.\n";
 
             foreach (var reminder in reminders)
             {
-                var setTime = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
-
-                long reminderTime = default;
-                if (reminder.ReminderTime is not null)
-                    reminderTime = ((DateTimeOffset)reminder.ReminderTime).ToUnixTimeSeconds();
-
-                desc += reminder.ReminderTime is null
-                    ? $"`{reminder.ReminderId}` - set <t:{setTime}:R>. This reminder will not be sent automatically."
-                    : $"`{reminder.ReminderId}` - set <t:{setTime}:R> to remind you <t:{reminderTime}:R>\n";
+                var reminderSetTimeTimestamp = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
+                long reminderTriggerTimeTimestamp = ((DateTimeOffset)reminder.TriggerTime).ToUnixTimeSeconds();
+                embedDescriptionWithTruncatedReminders += $"\n`{reminder.ReminderId}` - set <t:{reminderSetTimeTimestamp}:R> to remind you <t:{reminderTriggerTimeTimestamp}:R>";
             }
 
-            embed.WithDescription(desc.Trim());
+            embed.WithDescription(embedDescriptionWithTruncatedReminders);
         }
         else
         {
-            embed.WithDescription(output);
+            embed.WithDescription(embedDescription);
         }
 
         return embed;
     }
-
-    [GeneratedRegex("[0-9]+")]
-    internal static partial Regex IdPattern();
 }

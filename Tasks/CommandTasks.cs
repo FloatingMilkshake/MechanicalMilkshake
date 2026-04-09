@@ -1,22 +1,23 @@
 ﻿namespace MechanicalMilkshake.Tasks;
 
-public class CommandTasks
+internal class CommandTasks
 {
-    public static async Task ExecuteAsync()
+    internal static async Task ExecuteAsync()
     {
         while (true)
         {
             await PopulateApplicationCommandListAsync();
-            await Task.Delay(TimeSpan.FromMinutes(1));
+            //await Task.Delay(TimeSpan.FromMinutes(1));
+            return;
         }
     }
 
-    public static async Task PopulateApplicationCommandListAsync()
+    private static async Task PopulateApplicationCommandListAsync()
     {
-        var applicationCommands = await Program.Discord.GetGlobalApplicationCommandsAsync() as List<DiscordApplicationCommand> ?? [];
-        applicationCommands.AddRange(await Program.Discord.GetGuildApplicationCommandsAsync(Program.HomeServer.Id) as List<DiscordApplicationCommand> ?? []);
+        var applicationCommands = await Setup.State.Discord.Client.GetGlobalApplicationCommandsAsync() as List<DiscordApplicationCommand> ?? [];
+        applicationCommands.AddRange(await Setup.State.Discord.Client.GetGuildApplicationCommandsAsync(Setup.Configuration.Discord.HomeServer.Id) as List<DiscordApplicationCommand> ?? []);
         applicationCommands = applicationCommands.Distinct().ToList();
 
-        Program.ApplicationCommands = applicationCommands;
+        Setup.State.Commands.ApplicationCommands.AddRange(applicationCommands);
     }
 }

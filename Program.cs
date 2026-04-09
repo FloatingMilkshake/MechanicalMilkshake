@@ -1,63 +1,12 @@
 ﻿namespace MechanicalMilkshake;
 
-public class GatewayController : IGatewayController
+internal class Program
 {
-    public async Task HeartbeatedAsync(IGatewayClient client) => await HeartbeatEvent.Heartbeated(client);
-    public async Task ResumeAttemptedAsync(IGatewayClient _) { }
-    public async Task ZombiedAsync(IGatewayClient _) { }
-    public async Task ReconnectRequestedAsync(IGatewayClient _) { }
-    public async Task ReconnectFailedAsync(IGatewayClient _) { }
-    public async Task SessionInvalidatedAsync(IGatewayClient _) { }
-}
-
-public class Program
-{
-    public static DiscordClient Discord;
-    private static readonly string[] Prefixes = ["pls"];
-    public static readonly List<string> DisabledCommands = [];
-    public static readonly Random Random = new();
-    public static DateTime ConnectTime;
-    public static readonly HttpClient HttpClient = new();
-    public static ConfigJson ConfigJson;
-    public static readonly string ProcessStartTime = DateTime.Now.ToString(CultureInfo.CurrentCulture);
-    public static readonly DiscordColor BotColor = new("#FAA61A");
-    public static DiscordChannel HomeChannel;
-    public static DiscordGuild HomeServer;
-    public static List<DiscordApplicationCommand> ApplicationCommands;
-    public static EventId BotEventId { get; } = new(1000, "MechanicalMilkshake");
-#if DEBUG
-    private static readonly ConnectionMultiplexer Redis = ConnectionMultiplexer.Connect("localhost:6379");
-#else
-    private static readonly ConnectionMultiplexer Redis = ConnectionMultiplexer.Connect("redis");
-#endif
-    public static readonly IDatabase Db = Redis.GetDatabase();
-    public static bool RedisExceptionsSuppressed;
-    public static readonly Entities.MessageCaching.MessageCache MessageCache = new();
-    public static string LastUptimeKumaHeartbeatStatus = "waiting";
-    public static bool GuildDownloadCompleted = false;
-
-    public static readonly Dictionary<string, ulong> UserFlagEmoji = new()
-    {
-        { "earlyVerifiedBotDeveloper", 1000168738970144779 },
-        { "discordStaff", 1000168738022228088 },
-        { "hypesquadBalance", 1000168740073242756 },
-        { "hypesquadBravery", 1000168740991811704 },
-        { "hypesquadBrilliance", 1000168741973266462 },
-        { "hypesquadEvents", 1000168742535303312 },
-        { "bugHunterLevelOne", 1000168734666793001 },
-        { "bugHunterLevelTwo", 1000168735740526732 },
-        { "certifiedModerator", 1000168736789118976 },
-        { "partneredServerOwner", 1000168744192053298 },
-        { "verifiedBot1", 1000229381563744397 },
-        { "verifiedBot2", 1000229382431977582 },
-        { "earlySupporter", 1001317583124971582 }
-    };
-
     internal static async Task Main()
     {
-        HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("MechanicalMilkshake (https://github.com/FloatingMilkshake/MechanicalMilkshake)");
+        Setup.Constants.HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("MechanicalMilkshake (https://github.com/FloatingMilkshake/MechanicalMilkshake)");
 
-        // Read config.json, or config.dev.json if running in development mode
+        #region read config.json
         string json;
 #if DEBUG
         const string configFile = "config.dev.json";
@@ -70,20 +19,23 @@ public class Program
             json = await sr.ReadToEndAsync();
         }
 
-        ConfigJson = JsonConvert.DeserializeObject<ConfigJson>(json);
+        Setup.Configuration.ConfigJson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
-        if (string.IsNullOrWhiteSpace(ConfigJson.HomeChannel) ||
-            string.IsNullOrWhiteSpace(ConfigJson.HomeServer) ||
-            string.IsNullOrWhiteSpace(ConfigJson.BotToken))
+        if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.HomeChannel) ||
+            string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.HomeServer) ||
+            string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.BotToken))
         {
-            Console.WriteLine("You are missing required values in your config.json file! Exiting...");
+            Console.WriteLine("You are missing required values in your config.json file! Please ensure 'botToken', 'homeServer' and 'homeChannel' are set.");
             Environment.Exit(1);
         }
 
-        if (string.IsNullOrEmpty(ConfigJson.UptimeKumaHeartbeatUrl))
-            LastUptimeKumaHeartbeatStatus = "disabled";
+        if (string.IsNullOrEmpty(Setup.Configuration.ConfigJson.UptimeKumaHeartbeatUrl))
+            Setup.State.Process.LastUptimeKumaHeartbeatStatus = "disabled";
+        #endregion read config.json
 
-        var clientBuilder = DiscordClientBuilder.CreateDefault(ConfigJson.BotToken, DiscordIntents.All.RemoveIntent(DiscordIntents.GuildPresences).RemoveIntent(DiscordIntents.GuildMembers));
+        #region set up Discord client
+        var clientBuilder = DiscordClientBuilder.CreateDefault(Setup.Configuration.ConfigJson.BotToken,
+            DiscordIntents.All.RemoveIntent(DiscordIntents.GuildPresences).RemoveIntent(DiscordIntents.GuildMembers));
 #if DEBUG
         clientBuilder.SetLogLevel(LogLevel.Debug);
 #else
@@ -99,16 +51,16 @@ public class Program
             config.LogUnknownAuditlogs = false;
         });
         clientBuilder.ConfigureEventHandlers(builder =>
-            builder.HandleSessionCreated(ReadyEvent.OnReady)
-                    .HandleMessageCreated(MessageEvents.MessageCreated)
-                    .HandleMessageUpdated(MessageEvents.MessageUpdated)
-                    .HandleMessageDeleted(MessageEvents.MessageDeleted)
-                    .HandleChannelDeleted(ChannelEvents.ChannelDeleted)
-                    .HandleComponentInteractionCreated(ComponentInteractionEvent.ComponentInteractionCreated)
-                    .HandleGuildCreated(GuildEvents.GuildCreated)
-                    .HandleGuildDeleted(GuildEvents.GuildDeleted)
-                    .HandleGuildDownloadCompleted(GuildEvents.GuildDownloadCompleted)
-                    .HandleModalSubmitted(ModalEvents.ModalSubmitted)
+            builder.HandleSessionCreated(ReadyEvent.HandleReadyEventAsync)
+                    .HandleMessageCreated(MessageEvents.HandleMessageCreatedEventAsync)
+                    .HandleMessageUpdated(MessageEvents.HandleMessageUpdatedEventAsync)
+                    .HandleMessageDeleted(MessageEvents.HandleMessageDeletedEventAsync)
+                    .HandleChannelDeleted(ChannelEvents.HandleChannelDeletedEventAsync)
+                    .HandleComponentInteractionCreated(InteractionEvents.HandleComponentInteractionCreatedEventAsync)
+                    .HandleModalSubmitted(InteractionEvents.HandleModalSubmittedEventAsync)
+                    .HandleGuildCreated(GuildEvents.HandleGuildCreatedEventAsync)
+                    .HandleGuildDeleted(GuildEvents.HandleGuildDeletedEventAsync)
+                    .HandleGuildDownloadCompleted(GuildEvents.HandleGuildDownloadCompletedEventAsync)
         );
         clientBuilder.UseInteractivity(new InteractivityConfiguration
         {
@@ -120,7 +72,7 @@ public class Program
             // Use custom TextCommandProcessor to set custom prefixes & disable CommandNotFoundExceptions
             TextCommandProcessor textCommandProcessor = new(new()
             {
-                PrefixResolver = new DefaultPrefixResolver(true, Prefixes).ResolvePrefixAsync,
+                PrefixResolver = new DefaultPrefixResolver(true, ["pls"]).ResolvePrefixAsync,
                 EnableCommandNotFoundException = false
             });
             extension.AddProcessor(textCommandProcessor);
@@ -133,108 +85,53 @@ public class Program
             extension.AddProcessor(slashCommandProcessor);
 
             // Register context checks
-            extension.AddCheck<RequireAuthCheck>();
+            extension.AddCheck<RequireBotCommanderCheck>();
             extension.AddCheck<ServerSpecificFeatures.CommandChecks.AllowedServersContextCheck>();
 
             // Register error handling
-            extension.CommandErrored += ErrorEvents.CommandErrored;
+            extension.CommandErrored += Errors.CommandErrors.HandleCommandErroredEventAsync;
 
             // Register logging
-            extension.CommandExecuted += Events.InteractionEvents.CommandExecuted;
+            extension.CommandExecuted += Events.InteractionEvents.HandleCommandExecutedEventAsync;
 
             // Register interaction commands
-            CommandHelpers.RegisterCommands(extension, HomeServer.Id);
+            CommandHelpers.RegisterCommands(extension);
 
         }, new CommandsConfiguration
         {
             UseDefaultCommandErrorHandler = false,
         });
 
-        // Build the client
-        Discord = clientBuilder.Build();
+        Setup.State.Discord.Client = clientBuilder.Build();
+        #endregion set up Discord client
 
-        // Set home channel & guild for later reference
-        ulong homeChanId = default;
-        ulong homeServerId = default;
-        try
-        {
-            homeChanId = Convert.ToUInt64(ConfigJson.HomeChannel);
-            homeServerId = Convert.ToUInt64(ConfigJson.HomeServer);
-        }
-        catch
-        {
-            Discord.Logger.LogCritical(BotEventId,
-                "\"homeChannel\" or \"homeServer\" in config.json are misconfigured. Please make sure you have a valid ID for both of these values.");
-            Environment.Exit(1);
-        }
+        await SetupHelpers.CheckConfigurationAsync();
 
-        HomeChannel = await Discord.GetChannelAsync(homeChanId);
-        HomeServer = await Discord.GetGuildAsync(homeServerId);
+        await Setup.State.Discord.Client.ConnectAsync();
 
-        if (ConfigJson is null || ConfigJson.WolframAlphaAppId == "")
-        {
-            Discord.Logger.LogWarning(BotEventId,
-                "WolframAlpha commands disabled due to missing App ID.");
+        // Give bot time to connect before starting tasks
+        await Task.Delay(TimeSpan.FromSeconds(3));
 
-            DisabledCommands.Add("wa");
-        }
-
-        if (ConfigJson is null || ConfigJson.FeedbackChannel == "")
-        {
-            Discord.Logger.LogWarning(BotEventId,
-                "Feedback command disabled due to missing channel ID.");
-
-            DisabledCommands.Add("feedback");
-        }
-
-        if (ConfigJson.UptimeKumaHeartbeatUrl is null or "")
-        {
-            Discord.Logger.LogWarning(BotEventId, "Uptime Kuma heartbeats disabled due to missing push URL.");
-        }
-
-        await Discord.ConnectAsync();
-
-        // Run tasks
-
-        // Delay to give bot time to connect
-        await Task.Delay(TimeSpan.FromSeconds(1));
-
-        // Start tasks
-
-        // Populate ApplicationCommands
+        #region one-off tasks
+        // Populate BotInformation.ApplicationCommands
         await Task.Run(async () => CommandTasks.ExecuteAsync());
+        #endregion one-off tasks
 
+        #region recurring tasks
         // Reminder check
         await Task.Run(async () => ReminderTasks.ExecuteAsync());
 
-        // Database connection check
-        await Task.Run(async () => DatabaseTasks.ExecuteAsync());
-
-        // Custom status update
-        await Task.Run(async () => ActivityTasks.ExecuteAsync());
+        // Redis connection check
+        await Task.Run(async () => RedisTasks.ExecuteAsync());
 
         // DBots stats update
         await Task.Run(async () => DBotsTasks.ExecuteAsync());
+        #endregion recurring tasks
 
         // Send startup message
-        await Program.HomeChannel.SendMessageAsync(await DebugInfoHelpers.GenerateDebugInfoEmbed(true));
+        await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(await DebugInfoHelpers.GenerateDebugInfoEmbedAsync(true));
 
         // Wait indefinitely, let tasks continue running in async threads
-        await Task.Delay(System.Threading.Timeout.InfiniteTimeSpan);
+        await Task.Delay(Timeout.InfiniteTimeSpan);
     }
-}
-
-// Set custom command attributes
-
-// [RequireAuth] - used instead of [RequireOwner] or [SlashRequireOwner] to allow owners set in config.json
-// to use commands instead of restricting them to the bot account owner.
-public class RequireAuthAttribute : ContextCheckAttribute;
-
-public class RequireAuthCheck : IContextCheck<RequireAuthAttribute>
-{
-#nullable enable
-    public ValueTask<string?> ExecuteCheckAsync(RequireAuthAttribute _, CommandContext ctx) =>
-        ValueTask.FromResult(Program.ConfigJson.BotCommanders.Contains(ctx.User.Id.ToString())
-            ? null
-            : "The user is not authorized to use this command.");
 }

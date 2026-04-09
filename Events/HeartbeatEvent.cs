@@ -1,28 +1,28 @@
 ﻿namespace MechanicalMilkshake.Events;
 
-public class HeartbeatEvent
+internal class HeartbeatEvent
 {
-    public static async Task Heartbeated(IGatewayClient client)
+    internal static async Task HandleHeartbeatEventAsync(IGatewayClient client)
     {
-        if (Program.ConfigJson.UptimeKumaHeartbeatUrl is null or "") return;
+        if (Setup.Configuration.ConfigJson.UptimeKumaHeartbeatUrl is null or "") return;
 
         try
         {
-            var heartbeatResponse = await Program.HttpClient.GetAsync($"{Program.ConfigJson.UptimeKumaHeartbeatUrl}{client.Ping.TotalMilliseconds}");
-            if (heartbeatResponse.IsSuccessStatusCode)
-                Program.Discord.Logger.LogDebug(Program.BotEventId, "Successfully sent Uptime Kuma heartbeat with ping {ping}ms", client.Ping.TotalMilliseconds);
-            else
-                Program.Discord.Logger.LogWarning(Program.BotEventId, "Uptime Kuma heartbeat failed with status code {statusCode}", heartbeatResponse.StatusCode);
-            Program.LastUptimeKumaHeartbeatStatus = heartbeatResponse.StatusCode.ToString();
+            var heartbeatResponse = await Setup.Constants.HttpClient.GetAsync($"{Setup.Configuration.ConfigJson.UptimeKumaHeartbeatUrl}{client.Ping.TotalMilliseconds}");
+            if (heartbeatResponse.IsSuccessStatusCode && Setup.State.Discord.Client.Logger.IsEnabled(LogLevel.Debug))
+                Setup.State.Discord.Client.Logger.LogDebug("Successfully sent Uptime Kuma heartbeat with ping {ping}ms", client.Ping.TotalMilliseconds);
+            else if (!heartbeatResponse.IsSuccessStatusCode)
+                Setup.State.Discord.Client.Logger.LogWarning("Uptime Kuma heartbeat failed with status code {statusCode}", heartbeatResponse.StatusCode);
+            Setup.State.Process.LastUptimeKumaHeartbeatStatus = heartbeatResponse.StatusCode.ToString();
         }
         catch (Exception ex)
         {
             if (ex is HttpRequestException hrex)
-                Program.Discord.Logger.LogWarning(Program.BotEventId, "Uptime Kuma heartbeat failed with status code {statusCode}: {exType}: {exMessage}\n{stackTrace}", hrex.StatusCode, hrex.GetType(), hrex.Message, hrex.StackTrace);
+                Setup.State.Discord.Client.Logger.LogWarning("Uptime Kuma heartbeat failed with status code {statusCode}: {exType}: {exMessage}\n{stackTrace}", hrex.StatusCode, hrex.GetType(), hrex.Message, hrex.StackTrace);
             else
-                Program.Discord.Logger.LogWarning(Program.BotEventId, "Uptime Kuma heartbeat failed: {exType}: {exMessage}\n{stackTrace}", ex.GetType(), ex.Message, ex.StackTrace);
+                Setup.State.Discord.Client.Logger.LogWarning("Uptime Kuma heartbeat failed: {exType}: {exMessage}\n{stackTrace}", ex.GetType(), ex.Message, ex.StackTrace);
 
-            Program.LastUptimeKumaHeartbeatStatus = "failed";
+            Setup.State.Process.LastUptimeKumaHeartbeatStatus = "failed";
         }
     }
 }

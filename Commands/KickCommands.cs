@@ -1,14 +1,12 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-[RequireGuild]
-public class KickCommands
+internal class KickCommands
 {
     [Command("kick")]
     [Description("Kick a user. They can rejoin the server with an invite.")]
     [RequirePermissions(DiscordPermission.KickMembers)]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
-    [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
-    public static async Task KickCommand(SlashCommandContext ctx,
+    public static async Task KickCommandAsync(SlashCommandContext ctx,
         [Parameter("user"), Description("The user to kick.")] DiscordUser userToKick,
         [Parameter("reason"), Description("The reason for the kick.")] [MinMaxLength(maxLength: 1500)]
         string reason = "No reason provided.")
@@ -25,7 +23,7 @@ public class KickCommands
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
                     $"Hmm, **{UserInfoHelpers.GetFullUsername(userToKick)}** doesn't seem to be in the server.")
-                .AsEphemeral());
+                .AsEphemeral(true));
             return;
         }
 
@@ -38,12 +36,12 @@ public class KickCommands
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
                     $"Something went wrong. You or I may not be allowed to kick **{UserInfoHelpers.GetFullUsername(userToKick)}**! Please check the role hierarchy and permissions.")
-                .AsEphemeral());
+                .AsEphemeral(true));
             return;
         }
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-            .WithContent("User kicked successfully.").AsEphemeral());
+            .WithContent("User kicked successfully.").AsEphemeral(true));
         await ctx.Channel.SendMessageAsync($"{userToKick.Mention} has been kicked: **{reason}**");
     }
 }

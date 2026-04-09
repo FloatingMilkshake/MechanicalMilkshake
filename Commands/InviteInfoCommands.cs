@@ -1,29 +1,33 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public partial class InviteInfoCommands
+internal class InviteInfoCommands
 {
     [Command("inviteinfo")]
     [Description("Return information about a Discord invite.")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task InviteInfoCommand(SlashCommandContext ctx,
+    public static async Task InviteInfoCommandAsync(SlashCommandContext ctx,
         [Parameter("invite"), Description("The invite to return information about. Accepts an invite link or code.")]
         string targetInvite)
     {
         await ctx.DeferResponseAsync();
 
-        if (targetInvite.Contains(".gg")) // discord.gg link
-            targetInvite = DiscordDotGgLinkPattern().Replace(targetInvite, "");
-        else if (targetInvite.Contains("discord.com") ||
-                 targetInvite.Contains("discordapp.com")) // discord(app).com/invite link
-            targetInvite = DiscordDotComLinkPattern().Replace(targetInvite, "");
+        var inviteMatch = Setup.Constants.RegularExpressions.DiscordInvitePattern.Match(targetInvite);
+        if (!inviteMatch.Success)
+        {
+            inviteMatch = Setup.Constants.RegularExpressions.DiscordInvitePattern.Match($"discord.gg/{targetInvite}");
+            if (!inviteMatch.Success)
+            {
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("That's not a valid invite!"));
+                return;
+            }
+        }
 
         DiscordInvite invite;
         try
         {
-            invite = await Program.Discord.GetInviteByCodeAsync(targetInvite, true);
+            invite = await Setup.State.Discord.Client.GetInviteByCodeAsync(inviteMatch.Groups[1].Value, true);
         }
-        catch
+        catch (NotFoundException)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("That's not a valid invite!"));
             return;
@@ -36,7 +40,7 @@ public partial class InviteInfoCommands
                 : $"Invite info for {invite.Guild.Name}\n(discord.gg/{invite.Guild.VanityUrlCode})",
             //Title = $"Invite Info for {invite.Guild.Name}",
             Description = invite.Guild.Description,
-            Color = Program.BotColor
+            Color = Setup.Constants.BotColor
         };
 
         if (invite.Guild.VanityUrlCode is null || invite.Code != invite.Guild.VanityUrlCode)
@@ -76,9 +80,4 @@ public partial class InviteInfoCommands
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
     }
-
-    [GeneratedRegex(".*.gg/")]
-    private static partial Regex DiscordDotGgLinkPattern();
-    [GeneratedRegex(@".*\/invite\/")]
-    private static partial Regex DiscordDotComLinkPattern();
 }

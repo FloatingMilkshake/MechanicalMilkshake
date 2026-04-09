@@ -1,14 +1,10 @@
 namespace MechanicalMilkshake.Events;
 
-public class ChannelEvents
+internal class ChannelEvents
 {
-    public static Task ChannelDeleted(DiscordClient client, ChannelDeletedEventArgs e)
+    internal static async Task HandleChannelDeletedEventAsync(DiscordClient _, ChannelDeletedEventArgs e)
     {
-        Task.Run(async () =>
-        {
-            // If channel has a message in cache, remove
-            Program.MessageCache.RemoveChannel(e.Channel.Id);
-        });
-        return Task.CompletedTask;
+        // If channel has a message in cache, remove
+        Setup.State.Caches.MessageCache.RemoveChannel(e.Channel.Id);
     }
 }

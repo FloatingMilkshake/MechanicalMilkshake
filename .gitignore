@@ -2,11 +2,13 @@
 # Created by https://www.toptal.com/developers/gitignore/api/linux,windows,dotnetcore,visualstudio,visualstudiocode,csharp
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,windows,dotnetcore,visualstudio,visualstudiocode,csharp
 
-.env
 config.json
 config.dev.json
-id_ed25519
 db/*
+CommitHash.txt
+CommitMessage.txt
+CommitTime.txt
+RemoteUrl.txt
 
 .DS_STORE
 

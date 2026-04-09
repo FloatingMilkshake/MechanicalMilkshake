@@ -1,57 +1,44 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class AboutCommands
+internal class AboutCommands
 {
     [Command("about")]
     [Description("View information about me!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task About(SlashCommandContext ctx)
+    public static async Task AboutCommandAsync(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
 
-        // Set this to an empty string to disable the Privacy Policy notice in /about, or change it to your own
-        // Privacy Policy URL if you have one.
         const string privacyPolicyUrl = "https://floatingmilkshake.com/privacy#MechanicalMilkshake";
 
-        // Set this to an empty string to disable the Support Server notice in /about, or change it your own
-        // Support Server invite if you have one.
         const string supportServerInvite = "https://milkshake.wtf/bot/support";
 
-        // Create embed
-        // Description
         DiscordEmbedBuilder embed = new()
         {
             Title = $"About {ctx.Client.CurrentUser.Username}",
             Description =
                 "Hi! I'm a multipurpose bot that can do a bunch of different stuff. If you want to see a list of"
                 + " commands, hit `/` and pick me!",
-            Color = Program.BotColor
+            Color = Setup.Constants.BotColor
         };
 
-        // Server count, command count
         embed.AddField("Servers", ctx.Client.Guilds.Count.ToString(), true);
-        embed.AddField("Commands", Program.ApplicationCommands.Count.ToString(), true);
+        embed.AddField("Commands", Setup.State.Commands.ApplicationCommands.Count.ToString(), true);
 
-        // Privacy Policy link; hidden if privacyPolicyUrl is empty.
         if (!string.IsNullOrWhiteSpace(privacyPolicyUrl))
             embed.Description += $"\n\nMy Privacy Policy can be found [here]({privacyPolicyUrl})!";
 
-        // Repo link
         var remoteUrl = await FileHelpers.ReadFileAsync("RemoteUrl.txt");
         if (remoteUrl != "") embed.AddField("Source Code Repository", remoteUrl);
 
-        // Bot owner info
         var botOwners = ctx.Client.CurrentApplication.Owners.ToList();
 
         var ownerOutput = botOwners.Count == 1
             ? $"The bot owner is @{UserInfoHelpers.GetFullUsername(botOwners.First())}."
-            : botOwners.Aggregate("Bot owners are:",
-                (current, owner) => current + $"\n- @{UserInfoHelpers.GetFullUsername(owner)}");
+            : "Bot owners are:" + string.Join("\n", botOwners.Select(o => $"- @{UserInfoHelpers.GetFullUsername(o)}"));
 
         embed.AddField("Owners", ownerOutput);
 
-        // Need help?
         embed.AddField("Need help?",
             "If you need help with the bot or would like to report an issue, there are a few ways to do so! You can:"
         + (string.IsNullOrWhiteSpace(supportServerInvite) ? "" : $"\n- Join the bot's [support server]({supportServerInvite})")
@@ -64,45 +51,41 @@ public class AboutCommands
     [Command("version")]
     [Description("Show my version information.")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task CommitInfo(SlashCommandContext ctx,
+    public static async Task VersionCommandAsync(SlashCommandContext ctx,
         [Parameter("extended"), Description("Whether to show extended info. Defaults to False.")] bool extended = false)
     {
         await ctx.DeferResponseAsync();
 
         if (extended)
         {
-            await ctx.FollowupAsync(await DebugInfoHelpers.GenerateDebugInfoEmbed(false));
+            await ctx.FollowupAsync((await DebugInfoHelpers.GenerateDebugInfoEmbedAsync(false)).WithTitle("Version"));
             return;
         }
 
-        var commitHash = await FileHelpers.ReadFileAsync("CommitHash.txt", "dev");
-        var commitMessage = await FileHelpers.ReadFileAsync("CommitMessage.txt", "dev");
-        var commitUrl = await FileHelpers.ReadFileAsync("RemoteUrl.txt");
-
         await ctx.FollowupAsync(new DiscordEmbedBuilder()
-            .WithColor(Program.BotColor)
-            .AddField("Version", commitHash == "dev" ? "`dev`" : $"[`{commitHash}`]({commitUrl}): {commitMessage}")
-            .AddField("Last updated on", DebugInfoHelpers.GetDebugInfo().CommitTimestamp));
+        {
+            Title = "Version",
+            Color = Setup.Constants.BotColor,
+            Description = (await Setup.Types.DebugInfo.GetDebugInfoAsync()).CommitInformation
+        });
     }
 
     [Command("uptime")]
     [Description("Check my uptime!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-    [InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-    public static async Task Uptime(SlashCommandContext ctx)
+    public static async Task UptimeCommandAsync(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
 
         DiscordEmbedBuilder embed = new()
         {
             Title = "Uptime",
-            Color = Program.BotColor
+            Color = Setup.Constants.BotColor
         };
 
-        var connectUnixTime = ((DateTimeOffset)Program.ConnectTime).ToUnixTimeSeconds();
+        var connectUnixTime = ((DateTimeOffset)Setup.State.Discord.ConnectTime).ToUnixTimeSeconds();
 
-        var startTime = Convert.ToDateTime(Program.ProcessStartTime);
+        var startTime = Setup.State.Process.ProcessStartTime;
         var startUnixTime = ((DateTimeOffset)startTime).ToUnixTimeSeconds();
 
         embed.AddField("Process started at", $"<t:{startUnixTime}:F> (<t:{startUnixTime}:R>)");

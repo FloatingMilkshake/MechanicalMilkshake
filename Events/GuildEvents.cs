@@ -1,59 +1,36 @@
 ﻿namespace MechanicalMilkshake.Events;
 
-public class GuildEvents
+internal class GuildEvents
 {
-    public static readonly List<ulong> UnavailableGuilds = [];
-    private static DiscordChannel _guildLogChannel;
-
-    public static async Task GuildCreated(DiscordClient client, GuildCreatedEventArgs e)
+    internal static async Task HandleGuildCreatedEventAsync(DiscordClient _, GuildCreatedEventArgs e)
     {
-        // Fail silently if log channel ID missing or invalid
-        if (Program.ConfigJson.GuildLogChannel == "") return;
-        if (!await GetFeedbackChannel()) return;
-
-        if (UnavailableGuilds.Contains(e.Guild.Id))
-        {
-            var owner = await e.Guild.GetGuildOwnerAsync();
-            var embed = new DiscordEmbedBuilder().WithColor(Program.BotColor).WithTitle("Guild no longer unavailable")
-                .WithDescription(
-                    $"The guild {e.Guild.Name} (`{e.Guild.Id}`) was previously unavailable, but is now available again.")
-                .AddField("Members", e.Guild.MemberCount.ToString(), true).AddField("Owner",
-                    $"{UserInfoHelpers.GetFullUsername(owner)} (`{owner.Id}`)", true);
-
-            await _guildLogChannel.SendMessageAsync(embed);
+        if (Setup.Configuration.Discord.Channels.GuildLogs is null)
             return;
-        }
 
-        await SendGuildEventLogEmbed(_guildLogChannel, e.Guild, true);
+        await SendGuildEventLogEmbed(Setup.Configuration.Discord.Channels.GuildLogs, e.Guild, Setup.Types.GuildEventType.Join);
     }
 
-    public static async Task GuildDeleted(DiscordClient client, GuildDeletedEventArgs e)
+    internal static async Task HandleGuildDeletedEventAsync(DiscordClient _, GuildDeletedEventArgs e)
     {
-        // Fail silently if log channel ID missing or invalid
-        if (Program.ConfigJson.GuildLogChannel == "") return;
-        if (!await GetFeedbackChannel()) return;
-
-        if (e.Guild.IsUnavailable)
-        {
-            UnavailableGuilds.Add(e.Guild.Id);
+        if (Setup.Configuration.Discord.Channels.GuildLogs is null)
             return;
-        }
 
-        await SendGuildEventLogEmbed(_guildLogChannel, e.Guild, false);
+        await SendGuildEventLogEmbed(Setup.Configuration.Discord.Channels.GuildLogs, e.Guild, Setup.Types.GuildEventType.Leave);
     }
 
-    public static Task GuildDownloadCompleted(DiscordClient _, GuildDownloadCompletedEventArgs __)
+    internal static async Task HandleGuildDownloadCompletedEventAsync(DiscordClient _, GuildDownloadCompletedEventArgs __)
     {
-        Program.GuildDownloadCompleted = true;
-        return Task.CompletedTask;
+        Setup.State.Discord.GuildDownloadCompleted = true;
     }
 
-    private static async Task SendGuildEventLogEmbed(DiscordChannel chan, DiscordGuild guild, bool isJoin)
+    private static async Task SendGuildEventLogEmbed(DiscordChannel channel, DiscordGuild guild, Setup.Types.GuildEventType eventType)
     {
         DiscordEmbedBuilder embed = new()
         {
-            Title = isJoin ? "I've been added to a server!" : "I've been removed from a server!",
-            Color = Program.BotColor
+            Title = eventType == Setup.Types.GuildEventType.Join
+                ? "I've been added to a server!"
+                : "I've been removed from a server!",
+            Color = Setup.Constants.BotColor
         };
 
         embed.WithThumbnail(guild.IconUrl);
@@ -66,7 +43,7 @@ public class GuildEvents
         {
             var owner = await guild.GetGuildOwnerAsync();
             userInfoEmbed = new DiscordEmbedBuilder(await UserInfoHelpers.GenerateUserInfoEmbed(owner));
-            userInfoEmbed.WithColor(Program.BotColor);
+            userInfoEmbed.WithColor(Setup.Constants.BotColor);
             userInfoEmbed.WithTitle("User Info for Server Owner");
             userInfoEmbed.WithDescription($"{UserInfoHelpers.GetFullUsername(owner)}");
         }
@@ -80,26 +57,9 @@ public class GuildEvents
         var msg = new DiscordMessageBuilder().AddEmbed(embed);
 
         // Only send owner info on join; will fail to fetch on leave
-        if (isJoin) msg.AddEmbed(userInfoEmbed);
+        if (eventType == Setup.Types.GuildEventType.Join)
+            msg.AddEmbed(userInfoEmbed);
 
-        await chan.SendMessageAsync(msg);
-    }
-
-    private static async Task<bool> GetFeedbackChannel()
-    {
-        var success = false;
-
-        try
-        {
-            var chanId = Convert.ToUInt64(Program.ConfigJson.GuildLogChannel);
-            _guildLogChannel = await Program.Discord.GetChannelAsync(chanId);
-            success = true;
-        }
-        catch (Exception ex) when (ex is FormatException or NotFoundException or UnauthorizedException)
-        {
-            // do nothing, will return false
-        }
-
-        return success;
+        await channel.SendMessageAsync(msg);
     }
 }

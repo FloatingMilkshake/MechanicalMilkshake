@@ -1,28 +1,30 @@
-﻿namespace MechanicalMilkshake.Commands.OwnerCommands.HomeServerCommands;
+﻿namespace MechanicalMilkshake.Commands;
 
 [Command("debug")]
 [Description("Commands for checking if the bot is working properly.")]
-[RequireAuth]
-public class DebugCmds
+[RequireBotCommander]
+[RequireHomeServer]
+[InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
+internal class DebugCommands
 {
     [Command("timecheck")]
     [Description("Return the current time on the machine the bot is running on.")]
-    public static async Task TimeCheck(SlashCommandContext ctx)
+    public static async Task DebugTimeCheckCommandAsync(SlashCommandContext ctx)
     {
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
         {
             Title = "Time Check",
-            Color = Program.BotColor,
+            Color = Setup.Constants.BotColor,
             Description = $"Seems to me like it's currently `{DateTime.Now:s}`."
         }));
     }
 
     [Command("shutdown")]
     [Description("Shut down the bot.")]
-    public static async Task Shutdown(SlashCommandContext ctx)
+    public static async Task DebugShutdownCommandAsync(SlashCommandContext ctx)
     {
-        DiscordButtonComponent shutdownButton = new(DiscordButtonStyle.Danger, "shutdown-button", "Shut Down");
-        DiscordButtonComponent cancelButton = new(DiscordButtonStyle.Primary, "shutdown-cancel-button", "Cancel");
+        DiscordButtonComponent shutdownButton = new(DiscordButtonStyle.Danger, "button-callback-debug-shutdown", "Shut Down");
+        DiscordButtonComponent cancelButton = new(DiscordButtonStyle.Primary, "button-callback-debug-shutdown-cancel", "Cancel");
 
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
             .WithContent("Are you sure you want to shut down the bot? This action cannot be undone.")
@@ -31,7 +33,7 @@ public class DebugCmds
 
     [Command("restart")]
     [Description("Restart the bot.")]
-    public static async Task Restart(SlashCommandContext ctx)
+    public static async Task DebugRestartCommandAsync(SlashCommandContext ctx)
     {
         try
         {
@@ -39,17 +41,14 @@ public class DebugCmds
             if (string.IsNullOrWhiteSpace(dockerCheckFile))
             {
                 await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent(
-                    $"The bot may not be running under Docker; this means that {SlashCmdMentionHelpers.GetSlashCmdMention("debug", "restart")} will behave like {SlashCmdMentionHelpers.GetSlashCmdMention("debug", "shutdown")}."
-                    + $"\n\nOperation aborted. Use {SlashCmdMentionHelpers.GetSlashCmdMention("debug", "shutdown")} if you wish to shut down the bot."));
+                    $"The bot may not be running under Docker; restart is unavailable. Use {CommandHelpers.GetSlashCmdMention("debug shutdown")} if you wish to shut down the bot."));
                 return;
             }
         }
         catch
         {
-            // /proc/self/cgroup could not be found, which means the bot is not running in Docker.
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent(
-                $"The bot may not be running under Docker; this means that {SlashCmdMentionHelpers.GetSlashCmdMention("debug", "restart")} will behave like {SlashCmdMentionHelpers.GetSlashCmdMention("debug", "shutdown")}."
-                + $"\n\nOperation aborted. Use {SlashCmdMentionHelpers.GetSlashCmdMention("debug", "shutdown")} if you wish to shut down the bot."));
+                $"The bot may not be running under Docker; restart is unavailable. Use {CommandHelpers.GetSlashCmdMention("debug shutdown")} if you wish to shut down the bot."));
             return;
         }
 
@@ -59,71 +58,59 @@ public class DebugCmds
 
     [Command("owners")]
     [Description("Show the bot's owners.")]
-    public static async Task Owners(SlashCommandContext ctx)
+    public static async Task DebugOwnersCommandAsync(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
 
         DiscordEmbedBuilder embed = new()
         {
             Title = "Owners",
-            Color = Program.BotColor
+            Color = Setup.Constants.BotColor
         };
 
         List<DiscordUser> BotCommanders = [];
 
         var botOwners = ctx.Client.CurrentApplication.Owners.ToList();
 
-        foreach (var userId in Program.ConfigJson.BotCommanders)
+        foreach (var userId in Setup.Configuration.ConfigJson.BotCommanders)
             BotCommanders.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
 
-        var botOwnerList = botOwners.Aggregate("",
-            (current, owner) => current + $"\n- {UserInfoHelpers.GetFullUsername(owner)} (`{owner.Id}`)");
-
-        var authUsersList = BotCommanders.Aggregate("",
-            (current, user) => current + $"\n- {UserInfoHelpers.GetFullUsername(user)} (`{user.Id}`)");
+        var botOwnerList = string.Join("\n", botOwners.Select(o => $"- @{UserInfoHelpers.GetFullUsername(o)} (`{o.Id}`)"));
+        var botCommanderList = string.Join("\n", BotCommanders.Select(c => $"- @{UserInfoHelpers.GetFullUsername(c)} (`{c.Id}`)"));
 
         embed.AddField("Bot Owners", botOwnerList);
-        embed.AddField("Authorized Users",
-            $"These users are authorized to use owner-level commands.{authUsersList}");
+        embed.AddField("Bot Commanders",
+            $"These users are authorized to use owner-level commands.\n{botCommanderList}");
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
     }
 
     [Command("guilds")]
     [Description("Show the guilds that the bot is in.")]
-    public static async Task Guilds(SlashCommandContext ctx,
-        [SlashChoiceProvider(typeof(GuildsListSortChoiceProvider))]
+    public static async Task DebugGuildsCommandAsync(SlashCommandContext ctx,
+        [SlashChoiceProvider(typeof(Setup.Types.ChoiceProviders.GuildsListSortChoiceProvider))]
         [Parameter("sort_by"), Description("What to sort the list of guilds by.")] string sortBy = "",
-        [SlashChoiceProvider(typeof(GuildsListSortDirectionChoiceProvider))]
+        [SlashChoiceProvider(typeof(Setup.Types.ChoiceProviders.GuildsListSortDirectionChoiceProvider))]
         [Parameter("sort_direction"), Description("Which direction to sort the list of guilds.")] string sortDirection = "asc")
     {
         await ctx.DeferResponseAsync();
 
         DiscordEmbedBuilder embed = new()
         {
-            Title = $"Joined Guilds - {Program.Discord.Guilds.Count}",
-            Color = Program.BotColor
+            Title = $"Joined Guilds - {Setup.State.Discord.Client.Guilds.Count}",
+            Color = Setup.Constants.BotColor
         };
-
-        IReadOnlyList<DiscordGuild> sortedGuilds;
-        switch (sortBy)
+        IReadOnlyList<DiscordGuild> sortedGuilds = sortBy switch
         {
-            case "name":
-                sortedGuilds = sortDirection == "asc"
-                    ? Program.Discord.Guilds.Values.OrderBy(g => g.Name).ToList()
-                    : Program.Discord.Guilds.Values.OrderByDescending(g => g.Name).ToList();
-                break;
-            case "joinDate":
-                sortedGuilds = sortDirection == "asc"
-                    ? Program.Discord.Guilds.Values.OrderBy(g => g.JoinedAt).ToList()
-                    : Program.Discord.Guilds.Values.OrderByDescending(g => g.JoinedAt).ToList();
-                break;
-            default:
-                sortedGuilds = Program.Discord.Guilds.Values.ToList();
-                break;
-        }
-
-        foreach (var guild in Program.Discord.Guilds)
+            "name" => sortDirection == "asc"
+                ? Setup.State.Discord.Client.Guilds.Values.OrderBy(g => g.Name).ToList()
+                : Setup.State.Discord.Client.Guilds.Values.OrderByDescending(g => g.Name).ToList(),
+            "joinDate" => sortDirection == "asc"
+                ? Setup.State.Discord.Client.Guilds.Values.OrderBy(g => g.JoinedAt).ToList()
+                : Setup.State.Discord.Client.Guilds.Values.OrderByDescending(g => g.JoinedAt).ToList(),
+            _ => Setup.State.Discord.Client.Guilds.Values.ToList(),
+        };
+        foreach (var guild in Setup.State.Discord.Client.Guilds)
             embed.Description += $"- {guild.Value.Name}\n";
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
@@ -131,7 +118,7 @@ public class DebugCmds
 
     [Command("humandateparser")]
     [Description("See what happens when HumanDateParser tries to parse a date.")]
-    public static async Task HumanDateParserCmd(SlashCommandContext ctx,
+    public static async Task DebugHumanDateParserCommandAsync(SlashCommandContext ctx,
         [Parameter("date"), Description("The date (or time) for HumanDateParser to parse.")]
         string date)
     {
@@ -140,7 +127,7 @@ public class DebugCmds
         DiscordEmbedBuilder embed = new()
         {
             Title = "HumanDateParser Result",
-            Color = Program.BotColor
+            Color = Setup.Constants.BotColor
         };
 
         try
@@ -158,9 +145,9 @@ public class DebugCmds
 
     [Command("checks")]
     [Description("Run the bot's timed checks manually.")]
-    public static async Task DebugChecks(SlashCommandContext ctx,
+    public static async Task DebugChecksCommandAsync(SlashCommandContext ctx,
         [Parameter("checks"), Description("The checks that should be run.")]
-        [SlashChoiceProvider(typeof(ChecksChoiceProvider))]
+        [SlashChoiceProvider(typeof(Setup.Types.ChoiceProviders.ChecksChoiceProvider))]
         string checksToRun)
     {
         await ctx.DeferResponseAsync();
@@ -171,21 +158,21 @@ public class DebugCmds
         int numRemindersSent = default;
         int numRemindersFailed = default;
         int numRemindersWithNullTime = default;
-        double dbPing = default;
+        double redisPing = default;
 
         switch (checksToRun)
         {
             case "all":
                 (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime) =
                     await ReminderTasks.CheckRemindersAsync();
-                dbPing = await DatabaseTasks.CheckDatabaseConnectionAsync();
+                redisPing = await RedisTasks.CheckRedisConnectionAsync();
                 break;
             case "reminders":
                 (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime) =
                     await ReminderTasks.CheckRemindersAsync();
                 break;
-            case "databaseConnection":
-                dbPing = await DatabaseTasks.CheckDatabaseConnectionAsync();
+            case "redisConnection":
+                redisPing = await RedisTasks.CheckRedisConnectionAsync();
                 break;
         }
 
@@ -199,8 +186,8 @@ public class DebugCmds
                                     + $"Failed: `{numRemindersFailed}`; "
                                     + $"Null Time: `{numRemindersWithNullTime}`";
 
-        // database ping
-        var dbPingResultMessage = $"**Database ping:** {(double.IsNaN(dbPing) ? "Unreachable!" : $"`{dbPing}ms`")}";
+        // redis ping
+        var redisPingResultMessage = $"**Redis ping:** {(double.IsNaN(redisPing) ? "Unreachable!" : $"`{redisPing}ms`")}";
 
         // set up response msg content
         // include relevant check results (see variables)
@@ -208,13 +195,13 @@ public class DebugCmds
         switch (checksToRun)
         {
             case "all":
-                response += $"{reminderCheckResultMessage}\n{dbPingResultMessage}";
+                response += $"{reminderCheckResultMessage}\n{redisPingResultMessage}";
                 break;
             case "reminders":
                 response += reminderCheckResultMessage;
                 break;
-            case "databaseConnection":
-                response += dbPingResultMessage;
+            case "redisConnection":
+                response += redisPingResultMessage;
                 break;
         }
 
@@ -224,16 +211,15 @@ public class DebugCmds
 
     [Command("usage")]
     [Description("Show which commands are used the most.")]
-    public static async Task Usage(SlashCommandContext ctx)
+    public static async Task DebugUsageCommandAsync(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync();
 
-        var cmdCounts = (from cmd in await Program.Db.HashGetAllAsync("commandCounts")
+        var cmdCounts = (from cmd in await Setup.Storage.Redis.HashGetAllAsync("commandCounts")
                          select new KeyValuePair<string, int>(cmd.Name, int.Parse(cmd.Value))).ToList();
         cmdCounts.Sort((x, y) => y.Value.CompareTo(x.Value));
 
-        var output = cmdCounts.Aggregate("",
-            (current, cmd) => current + $"{SlashCmdMentionHelpers.GetSlashCmdMention(cmd.Key)}: {cmd.Value}\n");
+        var output = string.Join("\n", cmdCounts.Select(c => $"{CommandHelpers.GetSlashCmdMention(c.Key)}: {c.Value}"));
 
         if (string.IsNullOrWhiteSpace(output))
             output = "I don't have any command counts saved!";
@@ -243,9 +229,9 @@ public class DebugCmds
 
     [Command("throw")]
     [Description("Intentionally throw an exception for debugging.")]
-    public static async Task Error(SlashCommandContext ctx,
+    public static async Task DebugThrowCommandAsync(SlashCommandContext ctx,
         [Parameter("exception"), Description("The type of exception to throw.")]
-        [SlashChoiceProvider(typeof(TestExceptionChoiceProvider))]
+        [SlashChoiceProvider(typeof(Setup.Types.ChoiceProviders.TestExceptionChoiceProvider))]
         string exceptionType)
     {
         var exceptionFullName = exceptionType switch
@@ -269,51 +255,5 @@ public class DebugCmds
                 Command fakeCommand = default;
                 throw new ChecksFailedException(fakeErrorData, fakeCommand, "This is a test exception");
         }
-    }
-
-    private class GuildsListSortChoiceProvider : IChoiceProvider
-    {
-        private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
-        [
-            new("Name", "name"),
-            new("Join Date", "joinDate"),
-        ];
-
-        public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
-    }
-
-    private class GuildsListSortDirectionChoiceProvider : IChoiceProvider
-    {
-        private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
-        [
-            new("Ascending", "asc"),
-            new("Descending", "desc"),
-        ];
-
-        public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
-    }
-
-    private class ChecksChoiceProvider : IChoiceProvider
-    {
-        private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
-        [
-            new("All", "all"),
-            new("Reminders", "reminders"),
-            new("Database Connection", "databaseConnection")
-        ];
-
-        public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
-    }
-
-    private class TestExceptionChoiceProvider : IChoiceProvider
-    {
-        private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
-        [
-            new("NullReferenceException", "nullref"),
-            new("InvalidOperationException", "invalidop"),
-            new("ChecksFailedException", "checksfailed")
-        ];
-
-        public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
     }
 }

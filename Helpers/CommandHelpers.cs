@@ -1,158 +1,198 @@
 ﻿namespace MechanicalMilkshake.Helpers;
 
-public class CommandHelpers
+internal class CommandHelpers
 {
-    /// <summary>
-    ///     Responds to an interaction with a failure message if the command is disabled.
-    ///     Commands are disabled if required configuration information is missing.
-    /// </summary>
-    /// <param name="ctx">Interaction context used to respond to the interaction.</param>
-    /// <param name="isFollowUp">Whether to follow-up to the interaction (as opposed to creating a new interaction response).</param>
-    public static async Task FailOnMissingInfo(SlashCommandContext ctx, bool isFollowUp)
+    internal static string GetSlashCmdMention(string commandFullName)
     {
-        const string failureMsg =
-            "This command is disabled! Please make sure you have provided values for all of the necessary keys in the config file.";
+        if (char.IsUpper(commandFullName[0]) && !commandFullName.Contains(' '))
+            // This is probably a context menu command.
+            // Return it in inline code instead of a command mention.
+            return $"`{commandFullName}`";
 
-        if (isFollowUp)
-            await ctx.FollowupAsync(failureMsg);
-        else
-            await ctx.RespondAsync(failureMsg);
+        if (Setup.State.Commands.ApplicationCommands is null)
+            return $"`{string.Join(' ', commandFullName)}`";
+
+        var command = Setup.State.Commands.ApplicationCommands.FirstOrDefault(c => c.Name == commandFullName.Split(' ').First());
+
+        if (command is null)
+            return $"`/{string.Join(' ', commandFullName)}`";
+
+        return $"</{string.Join(' ', commandFullName)}:{command.Id}>";
     }
 
-    /// <summary>
-    ///     Registers commands with the provided CommandsExtension.
-    /// </summary>
-    /// <param name="extension">The extension to register commands with.</param>
-    /// <param name="homeServerId">The ID of the server to register home server-only commands in.</param>
-    public static void RegisterCommands(CommandsExtension extension, ulong homeServerId)
+    internal static void RegisterCommands(CommandsExtension extension)
     {
-        var publicInteractionCommandTypes = GetPublicInteractionCommandTypes();
-        var userInstallCommandTypes = GetUserInstallInteractionCommandTypes(publicInteractionCommandTypes);
-        var guildInstallCommandTypes = GetGuildInstallInteractionCommandTypes(publicInteractionCommandTypes);
-        var homeServerSlashCommandTypes = GetHomeServerInteractionCommandTypes();
+        var commandClasses = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
+            t.IsClass && !t.IsNested && t.Namespace is not null && t.Namespace == "MechanicalMilkshake.Commands").ToList();
 
-        // Always register owner commands in home server only
-        extension.AddCommands(homeServerSlashCommandTypes, homeServerId);
+        RegisterUserInstallCommands(extension, commandClasses);
+        RegisterPublicGuildInstallCommands(extension, commandClasses);
+        RegisterHomeServerCommands(extension, commandClasses);
+        RegisterPrivateCommands(extension);
+    }
 
-        // Always register user-install commands globally
-        extension.AddCommands(userInstallCommandTypes);
+    private static void RegisterUserInstallCommands(CommandsExtension extension, List<Type> commandClasses)
+    {
+        // Always register globally
+
+        List<Type> commandClassesToRegister = [];
+        List<MethodInfo> commandMethodsToRegister = [];
+
+        foreach (var commandClass in commandClasses)
+        {
+            if (commandClass.GetCustomAttributes().Any(a => a is InteractionInstallTypeAttribute ita &&
+                ita.InstallTypes.Contains(DiscordApplicationIntegrationType.UserInstall)))
+            {
+                commandClassesToRegister.Add(commandClass);
+                continue;
+            }
+
+            foreach (var commandMethod in commandClass.GetMethods())
+            {
+                if (commandMethod.GetCustomAttributes().Any(a => a is InteractionInstallTypeAttribute ita &&
+                    ita.InstallTypes.Contains(DiscordApplicationIntegrationType.UserInstall)))
+                {
+                    commandMethodsToRegister.Add(commandMethod);
+                }
+            }
+        }
+
+        foreach (var commandClass in commandClassesToRegister)
+        {
+            extension.AddCommands(commandClass);
+            foreach (var nestedType in commandClass.GetNestedTypes())
+            {
+                extension.AddCommands(nestedType);
+            }
+        }
+
+        foreach (var commandMethod in commandMethodsToRegister)
+        {
+            extension.AddCommand(CreateDelegateForCommand(commandMethod));
+        }
+    }
+
+    private static void RegisterPublicGuildInstallCommands(CommandsExtension extension, List<Type> commandClasses)
+    {
+        // Register in home server when debugging, globally otherwise
+
+        List<Type> commandClassesToRegister = [];
+        List<MethodInfo> commandMethodsToRegister = [];
+
+        foreach (var commandClass in commandClasses)
+        {
+            var commandClassCustomAttributes = commandClass.GetCustomAttributes();
+
+            if (commandClassCustomAttributes.Any(a => a is RequireHomeServerAttribute))
+                continue;
+
+            if (commandClassCustomAttributes.Any(a => a is InteractionInstallTypeAttribute ita &&
+                ita.InstallTypes.Contains(DiscordApplicationIntegrationType.GuildInstall) &&
+                !ita.InstallTypes.Contains(DiscordApplicationIntegrationType.UserInstall)))
+            {
+                commandClassesToRegister.Add(commandClass);
+                continue;
+            }
+
+            foreach (var commandMethod in commandClass.GetMethods())
+            {
+                if (commandMethod.GetCustomAttributes().Any(a => a is InteractionInstallTypeAttribute ita &&
+                    ita.InstallTypes.Contains(DiscordApplicationIntegrationType.GuildInstall) &&
+                    !ita.InstallTypes.Contains(DiscordApplicationIntegrationType.UserInstall)))
+                {
+                    commandMethodsToRegister.Add(commandMethod);
+                }
+            }
+        }
+
+        foreach (var commandClass in commandClassesToRegister)
+        {
 #if DEBUG
-        // Register guild-install commands in home server when debugging
-        extension.AddCommands(guildInstallCommandTypes, homeServerId);
-
-        if (Program.ConfigJson.UseServerSpecificFeatures)
-        {
-            // Register server-specific feature commands in home server when debugging
-            extension.AddCommands<ServerSpecificFeatures.Commands.RoleCommands>(homeServerId);
-            extension.AddCommands<ServerSpecificFeatures.Commands.MessageCommands>(homeServerId);
-        }
+            extension.AddCommands(commandClass, Setup.Configuration.Discord.HomeServer.Id);
 #else
-        // Register guild-install commands globally for 'production' bot
-        extension.AddCommands(guildInstallCommandTypes);
-
-        if (Program.ConfigJson.UseServerSpecificFeatures)
-        {
-            // Register server-specific feature commands in respective guilds for 'production' bot
-            extension.AddCommands<ServerSpecificFeatures.Commands.RoleCommands>(homeServerId, 984903591816990730);
-            extension.AddCommands<ServerSpecificFeatures.Commands.MessageCommands>(homeServerId, 1203128266559328286);
+            extension.AddCommands(commandClass, Setup.Configuration.Discord.HomeServer.Id);
+#endif
+            foreach (var nestedType in commandClass.GetNestedTypes())
+            {
+#if DEBUG
+                extension.AddCommands(nestedType, Setup.Configuration.Discord.HomeServer.Id);
+#else
+                extension.AddCommands(nestedType);
+#endif
+            }
         }
+
+        foreach (var commandMethod in commandMethodsToRegister)
+        {
+#if DEBUG
+            extension.AddCommand(CreateDelegateForCommand(commandMethod), Setup.Configuration.Discord.HomeServer.Id);
+#else
+            extension.AddCommand(CreateDelegateForCommand(commandMethod));
+#endif
+        }
+    }
+
+    private static void RegisterHomeServerCommands(CommandsExtension extension, List<Type> commandClasses)
+    {
+        // [RequireHomeServer]
+        // Register in home server always
+
+        List<Type> commandClassesToRegister = [];
+        List<MethodInfo> commandMethodsToRegister = [];
+
+        foreach (var commandClass in commandClasses)
+        {
+            var commandClassCustomAttributes = commandClass.GetCustomAttributes();
+
+            if (commandClassCustomAttributes.Any(a => a is RequireHomeServerAttribute))
+            {
+                commandClassesToRegister.Add(commandClass);
+                continue;
+            }
+
+            foreach (var commandMethod in commandClass.GetMethods())
+            {
+                if (commandMethod.GetCustomAttributes().Any(a => a is RequireHomeServerAttribute))
+                {
+                    commandMethodsToRegister.Add(commandMethod);
+                }
+            }
+        }
+
+        foreach (var commandClass in commandClassesToRegister)
+        {
+            extension.AddCommands(commandClass, Setup.Configuration.Discord.HomeServer.Id);
+            foreach (var nestedType in commandClass.GetNestedTypes())
+            {
+                extension.AddCommands(nestedType, Setup.Configuration.Discord.HomeServer.Id);
+            }
+        }
+
+        foreach (var commandMethod in commandMethodsToRegister)
+        {
+            extension.AddCommand(CreateDelegateForCommand(commandMethod), Setup.Configuration.Discord.HomeServer.Id);
+        }
+    }
+
+    private static void RegisterPrivateCommands(CommandsExtension extension)
+    {
+        // Commands specified in server-specific features
+        // Register in home server when debugging, or home server + respective servers otherwise
+#if DEBUG
+        extension.AddCommands<ServerSpecificFeatures.Commands.RoleCommands>(Setup.Configuration.Discord.HomeServer.Id);
+        extension.AddCommands<ServerSpecificFeatures.Commands.MessageCommands>(Setup.Configuration.Discord.HomeServer.Id);
+#else
+        extension.AddCommands<ServerSpecificFeatures.Commands.RoleCommands>(Setup.Configuration.Discord.HomeServer.Id, 984903591816990730);
+        extension.AddCommands<ServerSpecificFeatures.Commands.MessageCommands>(Setup.Configuration.Discord.HomeServer.Id, 1203128266559328286);
 #endif
     }
 
-    /// <summary>
-    ///     Gets a list of all public interaction command types. To be used for registering commands.
-    /// </summary>
-    /// <returns>A list of public interaction command types.</returns>
-    private static List<Type> GetPublicInteractionCommandTypes()
+    private static Delegate CreateDelegateForCommand(MethodInfo commandMethod)
     {
-        return Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-            t.IsClass && t.Namespace is not null && t.Namespace.Contains("MechanicalMilkshake.Commands") &&
-            !t.IsNested).ToList();
-    }
+        var parameterTypes = commandMethod.GetParameters().Select(p => p.ParameterType).Concat([commandMethod.ReturnType]).ToArray();
 
-    /// <summary>
-    ///     Gets a list of all interaction command types that allow user-install. To be used for registering commands.
-    /// </summary>
-    /// <param name="publicInteractionCommandTypes">A list of all public interaction command types to filter through.</param>
-    /// <returns>A list of all interaction command types that allow user-install.</returns>
-    private static List<Type> GetUserInstallInteractionCommandTypes(List<Type> publicInteractionCommandTypes)
-    {
-        List<Type> userInstallInteractionCommandTypes = [];
+        Type delegateType = System.Linq.Expressions.Expression.GetDelegateType(parameterTypes);
 
-        foreach (var type in publicInteractionCommandTypes)
-        {
-            // Check type (class) for InteractionInstallTypeAttribute; if present, check if it allows user install
-            if (type.GetCustomAttributes(typeof(InteractionInstallTypeAttribute), true).FirstOrDefault() is InteractionInstallTypeAttribute installTypeAttribute
-                && installTypeAttribute.InstallTypes.Contains(DiscordApplicationIntegrationType.UserInstall))
-            {
-                userInstallInteractionCommandTypes.Add(type);
-            }
-            else
-            {
-                // Check methods for InteractionInstallTypeAttribute; if present, check if it allows user install
-                var methods = type.GetMethods();
-                foreach (var method in methods)
-                {
-                    if (method.GetCustomAttributes(typeof(InteractionInstallTypeAttribute), true).FirstOrDefault() is InteractionInstallTypeAttribute methodInstallTypeAttribute
-                        && methodInstallTypeAttribute.InstallTypes.Contains(DiscordApplicationIntegrationType.UserInstall))
-                    {
-                        userInstallInteractionCommandTypes.Add(type);
-                        break;
-                    }
-                }
-            }
-        }
-
-        return userInstallInteractionCommandTypes;
-    }
-
-    /// <summary>
-    ///     Gets a list of all interaction command types that allow guild-install and do not allow user-install. To be used for registering commands.
-    /// </summary>
-    /// <param name="publicInteractionCommandTypes">A list of all public interaction command types to filter through.</param>
-    /// <returns>A list of all interaction command types that allow guild-install and do not allow user-install.</returns>
-    private static List<Type> GetGuildInstallInteractionCommandTypes(List<Type> publicInteractionCommandTypes)
-    {
-        List<Type> guildInstallInteractionCommandTypes = [];
-
-        foreach (var type in publicInteractionCommandTypes)
-        {
-            // Check type (class) for InteractionInstallTypeAttribute; if present, check if it allows guild install
-            if (type.GetCustomAttributes(typeof(InteractionInstallTypeAttribute), true).FirstOrDefault() is InteractionInstallTypeAttribute installTypeAttribute
-                && installTypeAttribute.InstallTypes.Contains(DiscordApplicationIntegrationType.GuildInstall)
-                && !installTypeAttribute.InstallTypes.Contains(DiscordApplicationIntegrationType.UserInstall))
-            {
-                guildInstallInteractionCommandTypes.Add(type);
-            }
-            else
-            {
-                // Check methods for InteractionInstallTypeAttribute; if present, check if it allows guild install
-                var methods = type.GetMethods();
-                foreach (var method in methods)
-                {
-                    if (method.GetCustomAttributes(typeof(InteractionInstallTypeAttribute), true).FirstOrDefault() is InteractionInstallTypeAttribute methodInstallTypeAttribute
-                        && methodInstallTypeAttribute.InstallTypes.Contains(DiscordApplicationIntegrationType.GuildInstall)
-                        && !methodInstallTypeAttribute.InstallTypes.Contains(DiscordApplicationIntegrationType.UserInstall))
-                    {
-                        guildInstallInteractionCommandTypes.Add(type);
-                        break;
-                    }
-                }
-            }
-        }
-
-        return guildInstallInteractionCommandTypes;
-    }
-
-    /// <summary>
-    ///     Gets a list of all interaction command types that are only allowed in the home server. To be used for registering commands.
-    /// </summary>
-    /// <returns>A list of all interaction command types that are only allowed in the home server.</returns>
-    private static List<Type> GetHomeServerInteractionCommandTypes()
-    {
-        return Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-            t.IsClass && t.Namespace is not null &&
-            t.Namespace.Contains("MechanicalMilkshake.Commands.OwnerCommands.HomeServerCommands") &&
-            !t.IsNested).ToList();
+        return commandMethod.CreateDelegate(delegateType);
     }
 }

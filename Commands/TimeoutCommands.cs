@@ -3,14 +3,12 @@
 [Command("timeout")]
 [Description("Set or clear a timeout for a user.")]
 [RequirePermissions(DiscordPermission.ModerateMembers)]
-[RequireGuild]
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
-[InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
-public class TimeoutCmds
+internal class TimeoutCommands
 {
     [Command("set")]
     [Description("Time out a member.")]
-    public static async Task SetTimeout(SlashCommandContext ctx,
+    public static async Task TimeoutSetCommandAsync(SlashCommandContext ctx,
         [Parameter("member"), Description("The member to time out.")]
         DiscordUser user,
         [Parameter("duration"), Description("How long the timeout should last. Maximum value is 28 days due to Discord limitations.")]
@@ -30,7 +28,7 @@ public class TimeoutCmds
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent("Hmm. It doesn't look like that user is in the server, so I can't time them out.")
-                .AsEphemeral());
+                .AsEphemeral(true));
             return;
         }
 
@@ -44,7 +42,7 @@ public class TimeoutCmds
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"I couldn't parse \"{duration}\" as a length of time! Please try again.")
-                .AsEphemeral());
+                .AsEphemeral(true));
             return;
         }
 
@@ -59,7 +57,7 @@ public class TimeoutCmds
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
                     "It looks like you tried to set the timeout duration to more than 28 days in the future! Due to Discord limitations, timeouts can only be up to 28 days.")
-                .AsEphemeral());
+                .AsEphemeral(true));
             return;
         }
         catch (UnauthorizedException)
@@ -67,14 +65,14 @@ public class TimeoutCmds
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
                     $"Something went wrong. You or I may not be allowed to time out **{UserInfoHelpers.GetFullUsername(user)}**! Please check the role hierarchy and permissions.")
-                .AsEphemeral());
+                .AsEphemeral(true));
             return;
         }
         catch (Exception e)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                     $"Hmm, something went wrong while trying to time out that user!\n\nThis was Discord's response:\n> {e.Message}\n\nIf you'd like to contact the bot owner about this, include this debug info:\n```{e}\n```")
-                .AsEphemeral());
+                .AsEphemeral(true));
             return;
         }
 
@@ -83,14 +81,14 @@ public class TimeoutCmds
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent($"Successfully timed out {user.Mention} until `{expireTime}` (<t:{unixTime}:R>)!")
-            .AsEphemeral());
+            .AsEphemeral(true));
         await ctx.Channel.SendMessageAsync(
             $"{user.Mention} has been timed out, expiring <t:{unixTime}:R>: **{reason}**");
     }
 
     [Command("clear")]
     [Description("Clear a timeout before it's set to expire.")]
-    public static async Task ClearTimeout(SlashCommandContext ctx,
+    public static async Task TimeoutClearCommandAsync(SlashCommandContext ctx,
         [Parameter("member"), Description("The member whose timeout to clear.")]
         DiscordUser user)
     {
@@ -123,7 +121,7 @@ public class TimeoutCmds
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                     $"Hmm, something went wrong while trying to clear the timeout for that user!\n\nThis was Discord's response:\n> {e.Message}\n\nIf you'd like to contact the bot owner about this, include this debug info:\n```{e}\n```")
-                .AsEphemeral());
+                .AsEphemeral(true));
             return;
         }
 

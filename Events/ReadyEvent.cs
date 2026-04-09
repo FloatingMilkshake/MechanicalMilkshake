@@ -1,13 +1,9 @@
 ﻿namespace MechanicalMilkshake.Events;
 
-public class ReadyEvent
+internal class ReadyEvent
 {
-    public static async Task OnReady(DiscordClient client, SessionCreatedEventArgs e)
+    internal static async Task HandleReadyEventAsync(DiscordClient _, SessionCreatedEventArgs __)
     {
-        await Task.Run(async () =>
-        {
-            Program.ConnectTime = DateTime.Now;
-            await ActivityTasks.SetActivityAsync();
-        });
+         Setup.State.Discord.ConnectTime = DateTime.Now;
     }
 }

@@ -1,12 +1,11 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-public class ServerInfoCommands
+internal class ServerInfoCommands
 {
     [Command("serverinfo")]
     [Description("Look up information about a server.")]
-    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)] // TODO: test in a guild w/ user-installed i.e. bot is not in guild
-    [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
-    public static async Task ServerInfoCommand(SlashCommandContext ctx,
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
+    public static async Task ServerInfoCommandAsync(SlashCommandContext ctx,
         [Parameter("server"), Description("The ID of the server to look up. Defaults to the current server if you're not using this in DMs.")]
         string guildId = default)
     {
@@ -56,7 +55,7 @@ public class ServerInfoCommands
         var categoryCount = guild.Channels.Count(channel => channel.Value.Type == DiscordChannelType.Category);
 
         var embed = new DiscordEmbedBuilder()
-            .WithColor(Program.BotColor)
+            .WithColor(Setup.Constants.BotColor)
             .AddField("Server Owner", $"{UserInfoHelpers.GetFullUsername(await guild.GetGuildOwnerAsync())}")
             .AddField("Description", $"{description}")
             .AddField("Created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)")

@@ -1,19 +1,13 @@
 namespace MechanicalMilkshake.Tasks;
 
-public class DBotsTasks
+internal class DBotsTasks
 {
-    public static async Task ExecuteAsync()
+    internal static async Task ExecuteAsync()
     {
-        if (string.IsNullOrWhiteSpace(Program.ConfigJson.DbotsApiToken))
-        {
-            Program.Discord.Logger.LogWarning(Program.BotEventId, "DBots stats posting disabled due to missing configuration.");
+        if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.DbotsApiToken))
             return;
-        }
 
-        Program.Discord.Logger.LogDebug(Program.BotEventId, "DBots stats posting {Status}.",
-            Program.ConfigJson.DoDbotsStatsPosting ? "enabled" : "disabled");
-
-        if (!Program.ConfigJson.DoDbotsStatsPosting)
+        if (!Setup.Configuration.ConfigJson.DoDbotsStatsPosting)
             return;
 
         while (true)
@@ -23,22 +17,22 @@ public class DBotsTasks
         }
     }
 
-    public static async Task UpdateStatsAsync()
+    private static async Task UpdateStatsAsync()
     {
-        using var requestMessage = new HttpRequestMessage(HttpMethod.Post, $"https://discord.bots.gg/api/v1/bots/{Program.Discord.CurrentUser.Id}/stats");
-        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(Program.ConfigJson.DbotsApiToken);
-        requestMessage.Content = JsonContent.Create(new { guildCount = Program.Discord.Guilds.Count });
+        using var requestMessage = new HttpRequestMessage(HttpMethod.Post, $"https://discord.bots.gg/api/v1/bots/{Setup.State.Discord.Client.CurrentUser.Id}/stats");
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(Setup.Configuration.ConfigJson.DbotsApiToken);
+        requestMessage.Content = JsonContent.Create(new { guildCount = Setup.State.Discord.Client.Guilds.Count });
 
-        using var response = await Program.HttpClient.SendAsync(requestMessage);
+        using var response = await Setup.Constants.HttpClient.SendAsync(requestMessage);
 
         // Debug logs
         if (response.IsSuccessStatusCode)
         {
-            Program.Discord.Logger.LogDebug(Program.BotEventId, "Successfully posted stats to DBots.");
+            Setup.State.Discord.Client.Logger.LogDebug("Successfully posted stats to DBots.");
         }
         else
         {
-            Program.Discord.Logger.LogError(Program.BotEventId, "Failed posting stats to DBots. {StatusCode} {Reason}",
+            Setup.State.Discord.Client.Logger.LogError("Failed posting stats to DBots. {StatusCode} {Reason}",
                 (int)response.StatusCode, response.ReasonPhrase);
         }
     }

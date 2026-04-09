@@ -1,11 +1,11 @@
 ﻿namespace MechanicalMilkshake.Helpers;
 
-public static class MarkdownHelpers
+internal static class MarkdownHelpers
 {
     /*
      * This parses a string and escapes all the markdown characters.
      */
-    public static string Parse(string input)
+    internal static string Parse(string input)
     {
         var output = input;
         output = output.Replace(@"\", @"\\");

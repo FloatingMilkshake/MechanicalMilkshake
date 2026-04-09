@@ -1,28 +1,24 @@
 namespace MechanicalMilkshake.Commands;
 
-public partial class MarkdownCommands
+internal class MarkdownCommands
 {
     [Command("markdown")]
     [Description("Expose the Markdown formatting behind a message!")]
-    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)] // TODO: make a context menu command that works everywhere
-    [InteractionAllowedContexts(DiscordInteractionContextType.Guild)]
-    public static async Task MarkdownCommand(SlashCommandContext ctx,
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
+    public static async Task MarkdownCommandAsync(SlashCommandContext ctx,
         [Parameter("message"), Description("The message you want to expose the formatting of. Accepts message IDs and links.")]
         string messageToExpose)
     {
         await ctx.DeferResponseAsync();
 
         DiscordMessage message;
-        if (DiscordUrlPattern().IsMatch(messageToExpose))
+        if (Setup.Constants.RegularExpressions.DiscordUrlPattern.IsMatch(messageToExpose))
         {
             // Assume the user provided a message link. Extract channel and message IDs to get message content.
 
-            // Pattern to extract channel and message IDs from URL
-            var idPattern = IdPattern();
-
             // Get channel ID
-            var targetChannelId =
-                Convert.ToUInt64(idPattern.Match(messageToExpose).Groups[1].ToString().Replace("/", ""));
+            var targetChannelId = Convert.ToUInt64(Setup.Constants.RegularExpressions.DiscordIdPattern
+                .Match(messageToExpose).Groups[1].ToString().Replace("/", ""));
 
             // Try to fetch channel
             DiscordChannel channel;
@@ -39,7 +35,7 @@ public partial class MarkdownCommands
 
             // Get message ID
             var targetMessage =
-                Convert.ToUInt64(idPattern.Match(messageToExpose).Groups[2].ToString().Replace("/", ""));
+                Convert.ToUInt64(Setup.Constants.RegularExpressions.DiscordIdPattern.Match(messageToExpose).Groups[2].ToString().Replace("/", ""));
 
             // Try to fetch message
             try
@@ -96,7 +92,7 @@ public partial class MarkdownCommands
             response.AddEmbed(new DiscordEmbedBuilder()
                 .WithTitle("Message Content")
                 .WithDescription(MarkdownHelpers.Parse(markdown))
-                .WithColor(Program.BotColor));
+                .WithColor(Setup.Constants.BotColor));
 
         if (embeds.Count > 0)
             foreach (var embed in embeds)
@@ -115,7 +111,7 @@ public partial class MarkdownCommands
                         ? "Embed Content"
                         : $"Embed Content: {MarkdownHelpers.Parse(embed.Title)}")
                     .WithDescription(embeds[0].Description is not null ? MarkdownHelpers.Parse(embed.Description) : "")
-                    .WithColor(embed.Color.HasValue == false ? Program.BotColor : embed.Color.Value);
+                    .WithColor(embed.Color.HasValue == false ? Setup.Constants.BotColor : embed.Color.Value);
 
                 if (embed.Fields is not null)
                     foreach (var field in embed.Fields)
@@ -142,11 +138,4 @@ public partial class MarkdownCommands
 
         await ctx.FollowupAsync(response);
     }
-
-    [GeneratedRegex(@".*.discord.com\/channels\/([\d+]*\/)+[\d+]*")]
-    private static partial Regex DiscordUrlPattern();
-    [GeneratedRegex("[A-z]")]
-    private static partial Regex AlphanumericCharacterPatern();
-    [GeneratedRegex(@"(?:.*\/)([0-9]{1,})\/([0-9]{1,})$")]
-    private static partial Regex IdPattern();
 }

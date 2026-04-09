@@ -1,4 +1,15 @@
-﻿[*.cs]
+root = true
 
-# CS1998: Async method lacks 'await' operators and will run synchronously
-dotnet_diagnostic.CS1998.severity = none
+[*.cs]
+
+indent_size = 4
+indent_style = space
+tab_width = 4
+
+end_of_line = lf
+insert_final_newline = true
+
+dotnet_style_require_accessibility_modifiers = always
+
+# IDE0305: Collection initialization can be simplified
+dotnet_diagnostic.IDE0305.severity = none

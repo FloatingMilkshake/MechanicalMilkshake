@@ -1,13 +1,13 @@
 ﻿namespace MechanicalMilkshake.Helpers;
 
-public class KeywordTrackingHelpers
+internal class KeywordTrackingHelpers
 {
-    public static async Task KeywordCheck(DiscordMessage message, bool isEdit = false)
+    internal static async Task KeywordCheck(DiscordMessage message, bool isEdit = false)
     {
         if (message.Author is null || message.Content is null)
             return;
 
-        if (message.Author.Id == Program.Discord.CurrentUser.Id)
+        if (message.Author.Id == Setup.State.Discord.Client.CurrentUser.Id)
             return;
 
         if (message.Channel.IsPrivate)
@@ -16,8 +16,8 @@ public class KeywordTrackingHelpers
         if (isEdit && (message.EditedTimestamp is null || message.CreationTimestamp == message.EditedTimestamp || message.EditedTimestamp.Value.UtcDateTime < (DateTime.UtcNow - TimeSpan.FromMinutes(1))))
             return;
 
-        var fields = await Program.Db.HashGetAllAsync("keywords");
-        var keywordsList = fields.Select(x => JsonConvert.DeserializeObject<TrackedKeyword>(x.Value)).ToList();
+        var fields = await Setup.Storage.Redis.HashGetAllAsync("keywords");
+        var keywordsList = fields.Select(x => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(x.Value)).ToList();
 
         // Stop! Before we make ANY API calls, does this message even contain any keywords?
         if (!keywordsList.Any(x => message.Content.Contains(x.Keyword)))
@@ -45,7 +45,7 @@ public class KeywordTrackingHelpers
         // todo: can we do this later, but without spamming the API (like repeatedly checking the same message for different keywords in the foreach loop below)?
         (ulong messageId, ulong authorId) msgBefore = default;
         var msgFoundInCache = false;
-        if (Program.MessageCache.TryGetMessageByChannel(message.Channel.Id, out var cachedMessage))
+        if (Setup.State.Caches.MessageCache.TryGetMessageByChannel(message.Channel.Id, out var cachedMessage))
         {
             var messageId = cachedMessage.MessageId;
             var authorId = cachedMessage.AuthorId;
@@ -59,7 +59,7 @@ public class KeywordTrackingHelpers
         if (!msgFoundInCache)
         {
             // Avoid fetching messages from channels that are known to be spammy / cause ratelimits
-            if (Program.ConfigJson.RatelimitCautionChannels is not null && !Program.ConfigJson.RatelimitCautionChannels.Contains(message.Channel.Id.ToString()))
+            if (Setup.Configuration.ConfigJson.RatelimitCautionChannels is not null && !Setup.Configuration.ConfigJson.RatelimitCautionChannels.Contains(message.Channel.Id.ToString()))
             {
                 var msgsBefore = await message.Channel.GetMessagesBeforeAsync(message.Id, 1).ToListAsync();
                 if (msgsBefore.Count > 0) msgBefore = (msgsBefore[0].Id, msgsBefore[0].Author.Id);
@@ -70,10 +70,10 @@ public class KeywordTrackingHelpers
         {
             // Checks
 
-            var fieldValue = JsonConvert.DeserializeObject<TrackedKeyword>(field.Value);
+            var fieldValue = JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(field.Value);
 
             // If keyword is set to only match whole word, use regex to check
-            if (fieldValue!.MatchWholeWord)
+            if (fieldValue.MatchWholeWord)
             {
                 if (!Regex.IsMatch(message.Content.ToLower().Replace("\n", " "),
                         $@"\b{field.Name.ToString().Replace("\n", " ")}\b")) continue;
@@ -86,11 +86,11 @@ public class KeywordTrackingHelpers
             }
 
             // If message was sent by (this) bot, ignore
-            if (message.Author.Id == Program.Discord.CurrentUser.Id)
+            if (message.Author.Id == Setup.State.Discord.Client.CurrentUser.Id)
                 break;
 
             // Ignore messages sent by self
-            if (message.Author.Id == fieldValue!.UserId)
+            if (message.Author.Id == fieldValue.UserId)
                 continue;
 
             // If message was sent by a user in the list of users to ignore for this keyword, ignore
@@ -141,10 +141,10 @@ public class KeywordTrackingHelpers
         }
     }
 
-    public static async Task<DiscordEmbedBuilder> GenerateKeywordDetailsEmbed(TrackedKeyword keyword)
+    internal static async Task<DiscordEmbedBuilder> GenerateKeywordDetailsEmbed(Setup.Types.TrackedKeyword keyword)
     {
         var ignoredUserMentions = "\n";
-        foreach (var userToIgnore in keyword!.UserIgnoreList)
+        foreach (var userToIgnore in keyword.UserIgnoreList)
         {
             ignoredUserMentions += $"- <@{userToIgnore}>\n";
         }
@@ -162,7 +162,7 @@ public class KeywordTrackingHelpers
         var ignoredGuildNames = "\n";
         foreach (var guildToIgnore in keyword.GuildIgnoreList)
         {
-            var guild = await Program.Discord.GetGuildAsync(guildToIgnore);
+            var guild = await Setup.State.Discord.Client.GetGuildAsync(guildToIgnore);
             ignoredGuildNames += $"- {guild.Name}\n";
         }
 
@@ -172,12 +172,12 @@ public class KeywordTrackingHelpers
 
         var limitedGuild = keyword.GuildId == default
             ? "None"
-            : (await Program.Discord.GetGuildAsync(keyword.GuildId)).Name;
+            : (await Setup.State.Discord.Client.GetGuildAsync(keyword.GuildId)).Name;
 
         DiscordEmbedBuilder embed = new()
         {
             Title = "Keyword Details",
-            Color = Program.BotColor,
+            Color = Setup.Constants.BotColor,
             Description = keyword.Keyword
         };
 

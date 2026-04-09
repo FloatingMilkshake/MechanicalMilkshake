@@ -3,14 +3,11 @@
 [Command("emoji")]
 [Description("Commands for working with emoji.")]
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-[InteractionAllowedContexts(DiscordInteractionContextType.Guild, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.BotDM)]
-public partial class EmojiCommands
+internal class EmojiCommands
 {
-    private static readonly Regex EmojiRegex = EmojiPattern();
-
     [Command("get")]
     [Description("Get all emoji from a server. I must be in the server for this to work.")]
-    public static async Task GetEmoji(SlashCommandContext ctx,
+    public static async Task EmojiGetCommandAsync(SlashCommandContext ctx,
         [Parameter("server"), Description("The ID of the server to get emoji from. I must be in the server for this to work!")] string server,
         [Parameter("zip"), Description("Whether to include a zip file containing all of the emoji. Defaults to True.")] bool zip = true)
     {
@@ -34,16 +31,6 @@ public partial class EmojiCommands
             var guildId = Convert.ToUInt64(server);
             guild = await ctx.Client.GetGuildAsync(guildId);
         }
-        catch (UnauthorizedException)
-        {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                "I was able to find that server, but I don't have access to its emoji! "
-                + "The most likely reason for this is that I am not in that server; "
-                + "I cannot fetch emoji from a server I am not in."
-                + "\n\nIf you think I am in the server and you're still seeing this, contact a bot owner for "
-                + $"help (if you don't know who that is, see {SlashCmdMentionHelpers.GetSlashCmdMention("about")}!)."));
-            return;
-        }
         catch
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
@@ -60,14 +47,10 @@ public partial class EmojiCommands
         var response = $"Emoji for **{guild.Name}**\n\n";
 
         // Static emoji
-        response += "**Static Emoji**\n";
-        response = foundEmoji.Where(emoji => !emoji.IsAnimated)
-            .Aggregate(response, (current, emoji) => current + $"<:{emoji.Name}:{emoji.Id}> ");
+        response += "**Static Emoji**\n" + string.Join(" ", foundEmoji.Where(emoji => !emoji.IsAnimated).Select(e => $"<:{e.Name}:{e.Id}>"));
 
         // Animated emoji
-        response += "\n\n**Animated Emoji**\n";
-        response = foundEmoji.Where(emoji => emoji.IsAnimated)
-            .Aggregate(response, (current, emoji) => current + $"<a:{emoji.Name}:{emoji.Id}> ");
+        response += "\n\n**Animated Emoji**\n" + string.Join(" ", foundEmoji.Where(emoji => emoji.IsAnimated).Select(e => $"<a:{e.Name}:{e.Id}>"));
 
         // Check response length to ensure the length limit is not hit
         if (response.Length > 2000)
@@ -98,7 +81,7 @@ public partial class EmojiCommands
                     : $"https://cdn.discordapp.com/emojis/{emoji.Id}.png?size=4096";
 
                 HttpRequestMessage httpRequest = new(HttpMethod.Get, emojiUrl);
-                var httpResponse = await Program.HttpClient.SendAsync(httpRequest);
+                var httpResponse = await Setup.Constants.HttpClient.SendAsync(httpRequest);
                 if (!httpResponse.IsSuccessStatusCode)
                 {
                     downloadCompleteSuccess = false;
@@ -150,11 +133,11 @@ public partial class EmojiCommands
 
     [Command("enlarge")]
     [Description("Enlarge an emoji! Only works for custom emoji.")]
-    public static async Task EnlargeEmoji(SlashCommandContext ctx, [Parameter("emoji"), Description("The emoji to enlarge.")] string emoji)
+    public static async Task EmojiEnlargeCommandAsync(SlashCommandContext ctx, [Parameter("emoji"), Description("The emoji to enlarge.")] string emoji)
     {
         await ctx.DeferResponseAsync();
 
-        if (!EmojiRegex.IsMatch(emoji))
+        if (!Setup.Constants.RegularExpressions.EmojiPattern.IsMatch(emoji))
         {
             await ctx.FollowupAsync(
                 new DiscordFollowupMessageBuilder().WithContent(
@@ -162,7 +145,7 @@ public partial class EmojiCommands
             return;
         }
 
-        var matches = EmojiRegex.Matches(emoji);
+        var matches = Setup.Constants.RegularExpressions.EmojiPattern.Matches(emoji);
 
         var response = "";
         foreach (var match in matches.Cast<Match>())
@@ -173,7 +156,7 @@ public partial class EmojiCommands
             : $"https://cdn.discordapp.com/emojis/{groups[3].Value}.png";
 
             HttpRequestMessage httpRequest = new(HttpMethod.Get, emojiUrl);
-            var httpResponse = await Program.HttpClient.SendAsync(httpRequest);
+            var httpResponse = await Setup.Constants.HttpClient.SendAsync(httpRequest);
             response += (httpResponse.IsSuccessStatusCode ? emojiUrl : "[This emoji doesn't seem to exist! Please try again...]") + "\n";
         }
 
@@ -182,7 +165,4 @@ public partial class EmojiCommands
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(response));
     }
-
-    [GeneratedRegex("<(a)?:([A-Za-z0-9_]*):([0-9]*)>")]
-    private static partial Regex EmojiPattern();
 }
