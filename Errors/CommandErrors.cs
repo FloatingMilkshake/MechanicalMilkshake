@@ -91,15 +91,17 @@ internal class CommandErrors
 
     private static async Task LogCommandErrorAsync(CommandErroredEventArgs e)
     {
-        var commandName = e.Context.Command.FullName ?? "<unknown>";
+        var commandName = e.Context.Command?.FullName ?? "<unknown>";
         try
         {
             var embed = new DiscordEmbedBuilder()
             {
                 Title = "An exception occurred during command execution",
+                Color = DiscordColor.Red,
                 Description = $"An exception occurred when {e.Context.User.Username} (`{e.Context.User.Id}`) used `{commandName}`."
                     + $"\n```\n{e.Exception.GetType()}: {e.Exception.Message}\n{e.Exception.StackTrace}\n```".Truncate(3800, "...\n```")
             };
+            await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(embed);
         }
         catch
         {
