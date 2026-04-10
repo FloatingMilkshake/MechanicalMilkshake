@@ -42,13 +42,20 @@ internal class MessageEvents
 
     internal static async Task HandleMessageDeletedEventAsync(DiscordClient _, MessageDeletedEventArgs e)
     {
-        // If message is in cache, remove
-        if (Setup.State.Caches.MessageCache.TryGetMessage(e.Message.Id, out var cachedMessage) && cachedMessage.MessageId == e.Message.Id)
-            Setup.State.Caches.MessageCache.RemoveMessage(cachedMessage.MessageId);
+        try
+        {
+            // If message is in cache, remove
+            if (Setup.State.Caches.MessageCache.TryGetMessage(e.Message.Id, out var cachedMessage) && cachedMessage.MessageId == e.Message.Id)
+                Setup.State.Caches.MessageCache.RemoveMessage(cachedMessage.MessageId);
 
-        // Add most recent message from channel to cache
-        var msg = (await e.Channel.GetMessagesAsync(1).ToListAsync()).First();
-        Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCaching.CachedMessage(msg.Channel.Id, msg.Id, msg.Author.Id));
+            // Add most recent message from channel to cache
+            var msg = (await e.Channel.GetMessagesAsync(1).ToListAsync()).First();
+            Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCaching.CachedMessage(msg.Channel.Id, msg.Id, msg.Author.Id));
+        }
+        catch (Exception ex)
+        {
+            await ThrowMessageExceptionAsync(ex, e.Message, false);
+        }
     }
 
     private static async Task ThrowMessageExceptionAsync(Exception ex, DiscordMessage message, bool isEdit)
