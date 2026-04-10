@@ -148,8 +148,8 @@ internal class EvalCommands
 
         if (osDescription.Contains("Windows"))
         {
-            fileName = @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe";
-            args = $"-Command \"{escapedArgs} 2>&1\"";
+            fileName = @"C:\Program Files\PowerShell\7\pwsh.exe";
+            args = $"-Command \"$PSStyle.OutputRendering = [System.Management.Automation.OutputRendering]::PlainText ; {escapedArgs} 2>&1\"";
         }
         else
         {
