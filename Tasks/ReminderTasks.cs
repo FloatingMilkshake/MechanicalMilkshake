@@ -81,7 +81,7 @@ internal class ReminderTasks
 
             try
             {
-                var msg = await reminderChannel.SendMessageAsync(messageToSend);
+                var msg = await reminderChannel.SendMessageAsync(messageToSend.WithAllowedMentions([new UserMention(reminder.UserId)]));
 
                 if (embed != default)
                 {
