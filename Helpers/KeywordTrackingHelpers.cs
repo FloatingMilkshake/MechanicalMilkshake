@@ -56,14 +56,11 @@ internal class KeywordTrackingHelpers
             }
         }
 
-        if (!msgFoundInCache)
+        if (!msgFoundInCache && !IsChannelInRatelimitCautionList(message.Channel))
         {
-            // Avoid fetching messages from channels that are known to be spammy / cause ratelimits
-            if (Setup.Configuration.ConfigJson.RatelimitCautionChannels is not null && !Setup.Configuration.ConfigJson.RatelimitCautionChannels.Contains(message.Channel.Id.ToString()))
-            {
-                var msgsBefore = await message.Channel.GetMessagesBeforeAsync(message.Id, 1).ToListAsync();
-                if (msgsBefore.Count > 0) msgBefore = (msgsBefore[0].Id, msgsBefore[0].Author.Id);
-            }
+            var msgsBefore = await message.Channel.GetMessagesBeforeAsync(message.Id, 1).ToListAsync();
+            if (msgsBefore.Count > 0)
+                msgBefore = (msgsBefore[0].Id, msgsBefore[0].Author.Id);
         }
 
         foreach (var field in fields)
@@ -230,6 +227,20 @@ internal class KeywordTrackingHelpers
         {
             // User has DMs disabled.
         }
+    }
+
+    private static bool IsChannelInRatelimitCautionList(DiscordChannel channel)
+    {
+        if (Setup.Configuration.ConfigJson.RatelimitCautionChannels.Count == 0)
+            return false;
+
+        if (Setup.Configuration.ConfigJson.RatelimitCautionChannels.Contains(channel.Id.ToString()))
+            return true;
+
+        if (channel.ParentId is not null && Setup.Configuration.ConfigJson.RatelimitCautionChannels.Contains(channel.ParentId.ToString()))
+            return true;
+
+        return false;
     }
 
 }
