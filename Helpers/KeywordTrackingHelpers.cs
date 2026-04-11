@@ -216,8 +216,7 @@ internal class KeywordTrackingHelpers
         embed.AddField("Author ID", $"{message.Author.Id}", true);
         embed.AddField("Author Mention", $"{message.Author.Mention}", true);
 
-        embed.AddField("Channel",
-            $"{message.Channel.Mention} in {message.Channel.Guild.Name} | [Jump Link]({message.JumpLink})");
+        embed.AddField("Context", $"{message.JumpLink}");
 
         try
         {

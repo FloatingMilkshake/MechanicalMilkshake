@@ -249,7 +249,7 @@ internal class ReminderCommands
 
             var jumpLink = $"https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}";
 
-            embed.AddField("Jump Link", jumpLink);
+            embed.AddField("Context", jumpLink);
 
             var setTimeTimestamp = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
             long triggerTimeTimestamp = ((DateTimeOffset)reminder.TriggerTime).ToUnixTimeSeconds();
