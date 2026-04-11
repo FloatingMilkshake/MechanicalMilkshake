@@ -52,7 +52,7 @@ internal class ReminderHelpers
 
     internal static async Task<(Setup.Types.Reminder reminder, string error)> GetReminderAsync(string reminderId, ulong requestingUserId)
     {
-        if (!Setup.Constants.RegularExpressions.DiscordIdPattern.IsMatch(reminderId))
+        if (!Setup.Constants.RegularExpressions.ReminderIdPattern.IsMatch(reminderId))
             return (null, "The reminder ID you provided isn't correct! It should look something like this: `1234`." +
                 $" You can see your reminders and their IDs with {CommandHelpers.GetSlashCmdMention("reminder list")}.");
 
