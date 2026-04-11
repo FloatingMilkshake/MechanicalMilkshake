@@ -353,4 +353,11 @@ internal class Types
         Join = 0,
         Leave = 1
     }
+
+    internal enum MessageEventType
+    {
+        Create = 0,
+        Update = 1,
+        Delete = 2
+    }
 }

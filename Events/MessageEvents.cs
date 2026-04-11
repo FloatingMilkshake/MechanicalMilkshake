@@ -10,7 +10,7 @@ internal class MessageEvents
         }
         catch (Exception ex)
         {
-            await ThrowMessageExceptionAsync(ex, e.Message, true);
+            await ThrowMessageExceptionAsync(ex, e.Message, Setup.Types.MessageEventType.Update);
         }
     }
 
@@ -36,7 +36,7 @@ internal class MessageEvents
         catch (Exception ex)
         {
             Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCaching.CachedMessage(e.Message.Channel.Id, e.Message.Id, e.Message.Author.Id));
-            await ThrowMessageExceptionAsync(ex, e.Message, false);
+            await ThrowMessageExceptionAsync(ex, e.Message, Setup.Types.MessageEventType.Create);
         }
     }
 
@@ -54,25 +54,23 @@ internal class MessageEvents
         }
         catch (Exception ex)
         {
-            await ThrowMessageExceptionAsync(ex, e.Message, false);
+            await ThrowMessageExceptionAsync(ex, e.Message, Setup.Types.MessageEventType.Delete);
         }
     }
 
-    private static async Task ThrowMessageExceptionAsync(Exception ex, DiscordMessage message, bool isEdit)
+    private static async Task ThrowMessageExceptionAsync(Exception ex, DiscordMessage message, Setup.Types.MessageEventType eventType)
     {
         DiscordEmbedBuilder embed = new()
         {
             Color = DiscordColor.Red,
             Description =
                 $"`{ex.GetType()}` occurred when processing [this message]({message.JumpLink}) (message `{message.Id}` in channel `{message.Channel.Id}`).",
-            Title = isEdit
-                ? "An exception occurred when processing a message update event"
-                : "An exception occurred when processing a message create event"
+            Title = $"An exception occurred when processing a {eventType.Humanize()} event"
         };
         embed.AddField("Message", $"{ex.Message}");
 
-        Setup.State.Discord.Client.Logger.LogError("An exception occurred when processing a message {eventType} event!"
-            + "\n{exType}: {exMessage}\n{exStackTrace}", isEdit ? "edit" : "create", ex.GetType(), ex.Message, ex.StackTrace);
+        Setup.State.Discord.Client.Logger.LogError("An exception occurred when processing a {eventType} event!"
+            + "\n{exType}: {exMessage}\n{exStackTrace}", eventType.Humanize(), ex.GetType(), ex.Message, ex.StackTrace);
 
         await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(embed);
     }
