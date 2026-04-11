@@ -49,8 +49,9 @@ internal class MessageEvents
                 Setup.State.Caches.MessageCache.RemoveMessage(cachedMessage.MessageId);
 
             // Add most recent message from channel to cache
-            var msg = (await e.Channel.GetMessagesAsync(1).ToListAsync()).First();
-            Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCaching.CachedMessage(msg.Channel.Id, msg.Id, msg.Author.Id));
+            var msg = (await e.Channel.GetMessagesAsync(1).ToListAsync()).FirstOrDefault();
+            if (msg is not null)
+                Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCaching.CachedMessage(msg.Channel.Id, msg.Id, msg.Author.Id));
         }
         catch (Exception ex)
         {
