@@ -33,7 +33,7 @@ internal class ReminderCommands
         {
             await ctx.DeferResponseAsync();
 
-            var (parsedTime, error) = await ValidateReminderTriggerTimeAsync(time);
+            var (parsedTime, error) = ValidateReminderTriggerTime(time);
             if (parsedTime is null)
             {
                 await ctx.RespondAsync(error, ephemeral: true);
@@ -188,7 +188,7 @@ internal class ReminderCommands
                 return;
             }
 
-            var (triggerTime, error) = await ValidateReminderTriggerTimeAsync(time);
+            var (triggerTime, error) = ValidateReminderTriggerTime(time);
             if (triggerTime is null)
             {
                 await ctx.RespondAsync(error, ephemeral: isPrivate);

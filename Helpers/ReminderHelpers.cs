@@ -28,7 +28,7 @@ internal class ReminderHelpers
             $"Use {CommandHelpers.GetSlashCmdMention("reminder delay")} and set `message` to {id}.");
     }
 
-    internal static async Task<(DateTime? parsedTime, string error)> ValidateReminderTriggerTimeAsync(string triggerTime)
+    internal static (DateTime? parsedTime, string error) ValidateReminderTriggerTime(string triggerTime)
     {
         if (!DateTime.TryParse(triggerTime, out DateTime parsedTime))
         {
