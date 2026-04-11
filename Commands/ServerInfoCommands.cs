@@ -50,7 +50,7 @@ internal class ServerInfoCommands
 
         if (guild.Description is not null) description = guild.Description;
 
-        var createdAt = $"{IdHelpers.GetCreationTimestamp(guild.Id, true)}";
+        var createdAt = $"{DateHelpers.GetUnixTimestamp(guild.Id)}";
 
         var categoryCount = guild.Channels.Count(channel => channel.Value.Type == DiscordChannelType.Category);
 

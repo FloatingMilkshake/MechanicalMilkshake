@@ -76,14 +76,12 @@ internal class TimeoutCommands
             return;
         }
 
-        var dateToConvert = Convert.ToDateTime(expireTime);
-        var unixTime = ((DateTimeOffset)dateToConvert).ToUnixTimeSeconds();
+        var expireTimeTimestamp = DateHelpers.GetUnixTimestamp(expireTime);
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-            .WithContent($"Successfully timed out {user.Mention} until `{expireTime}` (<t:{unixTime}:R>)!")
+            .WithContent($"Successfully timed out {user.Mention} until `{expireTime}` (<t:{expireTimeTimestamp}:R>)!")
             .AsEphemeral(true));
-        await ctx.Channel.SendMessageAsync(
-            $"{user.Mention} has been timed out, expiring <t:{unixTime}:R>: **{reason}**");
+        await ctx.Channel.SendMessageAsync($"{user.Mention} has been timed out, expiring <t:{expireTimeTimestamp}:R>: **{reason}**");
     }
 
     [Command("clear")]

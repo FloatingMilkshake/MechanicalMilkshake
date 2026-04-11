@@ -83,10 +83,8 @@ internal class AboutCommands
             Color = Setup.Constants.BotColor
         };
 
-        var connectUnixTime = ((DateTimeOffset)Setup.State.Discord.ConnectTime).ToUnixTimeSeconds();
-
-        var startTime = Setup.State.Process.ProcessStartTime;
-        var startUnixTime = ((DateTimeOffset)startTime).ToUnixTimeSeconds();
+        var connectUnixTime = DateHelpers.GetUnixTimestamp(Setup.State.Discord.ConnectTime);
+        var startUnixTime = DateHelpers.GetUnixTimestamp(Setup.State.Process.ProcessStartTime);
 
         embed.AddField("Process started at", $"<t:{startUnixTime}:F> (<t:{startUnixTime}:R>)");
         embed.AddField("Last connected to Discord at", $"<t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)");

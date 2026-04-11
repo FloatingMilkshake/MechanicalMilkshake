@@ -5,10 +5,9 @@ internal class UserInfoHelpers
     // Generate embed with extended info when provided with a DiscordMember
     internal static Task<DiscordEmbed> GenerateUserInfoEmbed(DiscordMember member)
     {
-        var registeredAt = $"{IdHelpers.GetCreationTimestamp(member.Id, true)}";
+        var registeredAt = $"{DateHelpers.GetUnixTimestamp(member.Id)}";
 
-        var joinDateTimeOffset = (DateTimeOffset)member.JoinedAt.DateTime;
-        var joinedAtTimestamp = joinDateTimeOffset.ToUnixTimeSeconds();
+        var joinedAtTimestamp = DateHelpers.GetUnixTimestamp(member.JoinedAt.DateTime);
 
         List<string> notablePerms = [];
         if (member.IsOwner)
@@ -115,9 +114,8 @@ internal class UserInfoHelpers
 
         if (member.PremiumSince is not null)
         {
-            var premiumSinceUtc = member.PremiumSince.Value.UtcDateTime;
-            var unixTime = ((DateTimeOffset)premiumSinceUtc).ToUnixTimeSeconds();
-            var boostingSince = $"Boosting since <t:{unixTime}:R> (<t:{unixTime}:F>";
+            var premiumSinceTimestamp = DateHelpers.GetUnixTimestamp(member.PremiumSince.Value.UtcDateTime);
+            var boostingSince = $"Boosting since <t:{premiumSinceTimestamp}:R> (<t:{premiumSinceTimestamp}:F>";
 
             extendedUserInfoEmbed.AddField("Server Booster", boostingSince, true);
         }
@@ -132,7 +130,7 @@ internal class UserInfoHelpers
     // Generate embed with limited info when provided with a DiscordUser
     internal static Task<DiscordEmbed> GenerateUserInfoEmbed(DiscordUser user)
     {
-        var createdAt = IdHelpers.GetCreationTimestamp(user.Id, true);
+        var createdAt = DateHelpers.GetUnixTimestamp(user.Id);
 
         var basicUserInfoEmbed = new DiscordEmbedBuilder()
             .WithThumbnail($"{user.AvatarUrl}")

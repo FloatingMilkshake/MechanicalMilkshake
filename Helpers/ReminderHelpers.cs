@@ -112,8 +112,8 @@ internal class ReminderHelpers
         string embedDescription = "";
         foreach (var reminder in reminders)
         {
-            var reminderSetTimeTimestamp = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
-            var reminderTriggerTimeTimestamp = ((DateTimeOffset)reminder.TriggerTime).ToUnixTimeSeconds();
+            var reminderSetTimeTimestamp = reminder.GetSetTimeTimestamp();
+            var reminderTriggerTimeTimestamp = reminder.GetTriggerTimeTimestamp();
 
             string guildName;
             if (Setup.Constants.RegularExpressions.DiscordIdPattern.IsMatch(reminder.GuildId))
@@ -126,8 +126,6 @@ internal class ReminderHelpers
                 guildName = "DMs";
             }
 
-            var reminderLink = $"<https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}>";
-
             var reminderText = reminder.ReminderText.Truncate(350, " *(truncated)*");
 
             if (guildName != "DMs")
@@ -137,7 +135,7 @@ internal class ReminderHelpers
                       + (string.IsNullOrWhiteSpace(reminderText)
                           ? ""
                           : $"> {reminderText}\n")
-                      + $"[Set <t:{reminderSetTimeTimestamp}:R>]({reminderLink}) to remind you <t:{reminderTriggerTimeTimestamp}:R> in {guildName}\n\n";
+                      + $"[Set <t:{reminderSetTimeTimestamp}:R>]({reminder.GetJumpLink()}) to remind you <t:{reminderTriggerTimeTimestamp}:R> in {guildName}\n\n";
         }
 
         DiscordEmbedBuilder embed = new()
@@ -154,8 +152,8 @@ internal class ReminderHelpers
 
             foreach (var reminder in reminders)
             {
-                var reminderSetTimeTimestamp = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
-                long reminderTriggerTimeTimestamp = ((DateTimeOffset)reminder.TriggerTime).ToUnixTimeSeconds();
+                var reminderSetTimeTimestamp = reminder.GetSetTimeTimestamp();
+                long reminderTriggerTimeTimestamp = reminder.GetTriggerTimeTimestamp();
                 embedDescriptionWithTruncatedReminders += $"\n`{reminder.ReminderId}` - set <t:{reminderSetTimeTimestamp}:R> to remind you <t:{reminderTriggerTimeTimestamp}:R>";
             }
 

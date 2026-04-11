@@ -51,10 +51,10 @@ internal class ReminderCommands
                 SetTime = DateTime.Now
             };
 
-            var unixTime = ((DateTimeOffset)parsedTime.Value).ToUnixTimeSeconds();
+            var reminderTriggerTimeTimestamp = reminder.GetTriggerTimeTimestamp();
 
             var message = await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
+                    .WithContent($"Reminder set for <t:{reminderTriggerTimeTimestamp}:F> (<t:{reminderTriggerTimeTimestamp}:R>)!" +
                                     $"\nReminder ID: `{reminder.ReminderId}`"));
             reminder.MessageId = message.Id;
 
@@ -207,12 +207,11 @@ internal class ReminderCommands
                 SetTime = DateTime.Now
             };
 
-            var unixTime = ((DateTimeOffset)triggerTime).ToUnixTimeSeconds();
-
+            var triggerTimeTimestamp = reminder.GetTriggerTimeTimestamp();
             var response = await ctx.FollowupAsync(
                 new DiscordFollowupMessageBuilder().WithContent(
-                        $"[Reminder](https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId})" +
-                        $" pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
+                        $"[Reminder]({reminder.GetJumpLink()})" +
+                        $" pushed back to <t:{triggerTimeTimestamp}:F> (<t:{triggerTimeTimestamp}:R>)!" +
                         $"\nReminder ID: `{reminder.ReminderId}`")
                     .AsEphemeral(isPrivate));
             reminder.MessageId = response.Id;
@@ -242,17 +241,14 @@ internal class ReminderCommands
 
             if (reminder.GuildId != "@me")
             {
-                embed.AddField("Server",
-                    $"{(await Setup.State.Discord.Client.GetGuildAsync(Convert.ToUInt64(reminder.GuildId))).Name}");
+                embed.AddField("Server", $"{(await Setup.State.Discord.Client.GetGuildAsync(Convert.ToUInt64(reminder.GuildId))).Name}");
                 embed.AddField("Channel", $"<#{reminder.ChannelId}>");
             }
 
-            var jumpLink = $"https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}";
+            embed.AddField("Context", reminder.GetJumpLink());
 
-            embed.AddField("Context", jumpLink);
-
-            var setTimeTimestamp = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
-            long triggerTimeTimestamp = ((DateTimeOffset)reminder.TriggerTime).ToUnixTimeSeconds();
+            var setTimeTimestamp = reminder.GetSetTimeTimestamp();
+            long triggerTimeTimestamp = reminder.GetTriggerTimeTimestamp();
 
             embed.AddField("Set At", $"<t:{setTimeTimestamp}:F> (<t:{setTimeTimestamp}:R>)");
             embed.AddField("Set For", $"<t:{triggerTimeTimestamp}:F> (<t:{triggerTimeTimestamp}:R>)");

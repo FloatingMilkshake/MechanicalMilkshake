@@ -28,7 +28,7 @@ internal class TimestampCommands
             return;
         }
 
-        var timestamp = IdHelpers.GetCreationTimestamp(snowflake, true);
+        var timestamp = DateHelpers.GetUnixTimestamp(snowflake);
         if (string.IsNullOrWhiteSpace(format))
         {
             await ctx.RespondAsync(
@@ -60,8 +60,7 @@ internal class TimestampCommands
         long unixTime;
         try
         {
-            var dateToConvert = Convert.ToDateTime(date);
-            unixTime = ((DateTimeOffset)dateToConvert).ToUnixTimeSeconds();
+            unixTime = DateHelpers.GetUnixTimestamp(date);
         }
         catch
         {

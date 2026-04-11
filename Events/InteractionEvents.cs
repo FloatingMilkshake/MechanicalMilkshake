@@ -435,9 +435,9 @@ internal class InteractionEvents
                     await Setup.Storage.Redis.HashSetAsync("reminders", reminderId.ToString(), JsonConvert.SerializeObject(reminder));
 
                     // Respond
-                    var unixTime = ((DateTimeOffset)time).ToUnixTimeSeconds();
+                    var reminderTriggerTimeTimestamp = reminder.GetTriggerTimeTimestamp();
                     await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent($"Alright, I will remind you about [that message](<{targetMessage.JumpLink}>) on <t:{unixTime}:F> (<t:{unixTime}:R>)."));
+                        .WithContent($"Alright, I will remind you about [that message](<{targetMessage.JumpLink}>) on <t:{reminderTriggerTimeTimestamp}:F> (<t:{reminderTriggerTimeTimestamp}:R>)."));
 
                     break;
                 }
@@ -522,15 +522,15 @@ internal class InteractionEvents
                         {
                             var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
 
-                            var unixTime = ((DateTimeOffset)reminder.TriggerTime).ToUnixTimeSeconds();
+                            var triggerTimeTimestamp = reminder.GetTriggerTimeTimestamp();
 
                             if (reminderMessage.Content.Contains("pushed back"))
                                 await reminderMessage.ModifyAsync(
-                                    $"[Reminder](https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId})" +
-                                    $" pushed back to <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
+                                    $"[Reminder]({reminder.GetJumpLink()})" +
+                                    $" pushed back to <t:{triggerTimeTimestamp}:F> (<t:{triggerTimeTimestamp}:R>)!" +
                                     $"\nReminder ID: `{reminder.ReminderId}`");
                             else
-                                await reminderMessage.ModifyAsync($"Reminder set for <t:{unixTime}:F> (<t:{unixTime}:R>)!" +
+                                await reminderMessage.ModifyAsync($"Reminder set for <t:{triggerTimeTimestamp}:F> (<t:{triggerTimeTimestamp}:R>)!" +
                                                                   $"\nReminder ID: `{reminder.ReminderId}`");
                         }
                     }
@@ -569,7 +569,7 @@ internal class InteractionEvents
                         {
                             var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
 
-                            var unixTime = ((DateTimeOffset)reminder.TriggerTime).ToUnixTimeSeconds();
+                            var unixTime = reminder.GetTriggerTimeTimestamp();
 
                             await reminderMessage.ModifyAsync("This reminder was deleted.");
                         }

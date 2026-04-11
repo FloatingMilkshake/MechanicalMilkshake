@@ -132,8 +132,7 @@ internal class DebugCommands
 
         try
         {
-            embed.WithDescription(
-                $"<t:{((DateTimeOffset)HumanDateParser.HumanDateParser.Parse(date)).ToUnixTimeSeconds()}:F>");
+            embed.WithDescription($"<t:{DateHelpers.GetUnixTimestamp(HumanDateParser.HumanDateParser.Parse(date))}:F>");
         }
         catch (ParseException ex)
         {

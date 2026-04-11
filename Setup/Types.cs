@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake.Setup;
+﻿using static MechanicalMilkshake.Setup.Types;
+
+namespace MechanicalMilkshake.Setup;
 
 internal class Types
 {
@@ -20,7 +22,7 @@ internal class Types
             return "dev";
 #else
             var commitHash = await FileHelpers.ReadFileAsync("CommitHash.txt");
-            var commitTimestamp = $"<t:{((DateTimeOffset)Convert.ToDateTime(await FileHelpers.ReadFileAsync("CommitTime.txt"))).ToUnixTimeSeconds()}:F>";
+            var commitTimestamp = $"<t:{DateHelpers.GetUnixTimestamp(await FileHelpers.ReadFileAsync("CommitTime.txt"))}:F>";
             var commitMessage = await FileHelpers.ReadFileAsync("CommitMessage.txt");
             var remoteUrl = await FileHelpers.ReadFileAsync("RemoteUrl.txt");
 
@@ -291,6 +293,21 @@ internal class Types
         [JsonProperty("reminderTime")] internal DateTime TriggerTime { get; set; }
 
         [JsonProperty("setTime")] internal DateTime SetTime { get; set; }
+
+        internal long GetTriggerTimeTimestamp()
+        {
+            return DateHelpers.GetUnixTimestamp(TriggerTime);
+        }
+
+        internal long GetSetTimeTimestamp()
+        {
+            return DateHelpers.GetUnixTimestamp(SetTime);
+        }
+
+        internal string GetJumpLink()
+        {
+            return $"https://discord.com/channels/{GuildId}/{ChannelId}/{MessageId}";
+        }
     }
 
     internal class ShellCommandResponse

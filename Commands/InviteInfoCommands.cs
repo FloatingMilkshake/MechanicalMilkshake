@@ -53,7 +53,7 @@ internal class InviteInfoCommands
             embed.AddField("Expires At",
                 invite.ExpiresAt is null
                     ? "Invite does not expire."
-                    : $"<t:{((DateTimeOffset)invite.ExpiresAt).ToUnixTimeSeconds()}:F> (<t:{((DateTimeOffset)invite.ExpiresAt).ToUnixTimeSeconds()}:R>)");
+                    : $"<t:{DateHelpers.GetUnixTimestamp(invite.ExpiresAt.Value)}:F> (<t:{DateHelpers.GetUnixTimestamp(invite.ExpiresAt.Value)}:R>)");
         }
 
         var verifLevelDesc = invite.Guild.VerificationLevel switch
@@ -67,14 +67,12 @@ internal class InviteInfoCommands
         };
         embed.AddField("Verification Level", verifLevelDesc);
 
-        embed.AddField("Server Created On",
-            $"<t:{invite.Guild.CreationTimestamp.ToUnixTimeSeconds()}:F> (<t:{invite.Guild.CreationTimestamp.ToUnixTimeSeconds()}:R>)");
+        var guildCreationTimestamp = DateHelpers.GetUnixTimestamp(invite.Guild.CreationTimestamp);
+        embed.AddField("Server Created On", $"<t:{guildCreationTimestamp}:F> (<t:{guildCreationTimestamp}:R>)");
 
-        embed.AddField("Members",
-            invite.ApproximateMemberCount is null ? "unknown" : invite.ApproximateMemberCount.ToString(), true);
+        embed.AddField("Members", invite.ApproximateMemberCount is null ? "unknown" : invite.ApproximateMemberCount.ToString(), true);
 
-        embed.AddField("Online",
-            invite.ApproximatePresenceCount is null ? "unknown" : invite.ApproximatePresenceCount.ToString(), true);
+        embed.AddField("Online", invite.ApproximatePresenceCount is null ? "unknown" : invite.ApproximatePresenceCount.ToString(), true);
 
         embed.WithThumbnail(invite.Guild.IconUrl);
 

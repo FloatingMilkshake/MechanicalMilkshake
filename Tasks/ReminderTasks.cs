@@ -27,74 +27,54 @@ internal class ReminderTasks
             if (reminder.TriggerTime > DateTime.Now)
                 continue;
 
-            var reminderSetTimeTimestamp = ((DateTimeOffset)reminder.SetTime).ToUnixTimeSeconds();
-
             var messageToSend = new DiscordMessageBuilder().WithContent($"<@{reminder.UserId}>, I have a reminder for you:");
+
+            var reminderEmbed = new DiscordEmbedBuilder()
+            {
+                Color = new DiscordColor("#7287fd"),
+                Title = $"Reminder from <t:{reminder.GetSetTimeTimestamp()}:R>",
+                Description = $"{reminder.ReminderText}"
+            };
+
+            string context;
+            if (reminder.ReminderText.Equals("You set this reminder on a message with the \"Remind Me About This\" command."))
+                context =
+                    "This reminder was set privately, so I can't link back to the message where it was set!" +
+                    $" However, [this link]({reminder.GetJumpLink()}) should show you messages around the time that you set the reminder.";
+            else
+                context = reminder.GetJumpLink();
+
+            reminderEmbed.AddField("Context", context);
+            ReminderHelpers.AddReminderDelayEmbedField(reminderEmbed);
 
             DiscordChannel reminderChannel = default;
             try
             {
                 reminderChannel = await Setup.State.Discord.Client.GetChannelAsync(reminder.ChannelId);
-            }
-            catch (Exception ex) when (ex is UnauthorizedException or NotFoundException)
-            {
-                // This is fine, we'll DM the user instead
-            }
-
-            DiscordEmbedBuilder embed = default;
-
-            if (reminderChannel != default &&
+                if (reminderChannel != default &&
                 reminderChannel.PermissionsFor(reminderChannel.Guild.CurrentMember).HasPermission(DiscordPermission.EmbedLinks))
-            {
-                // Construct embed to send
-
-                embed = new()
                 {
-                    Color = new DiscordColor("#7287fd"),
-                    Title = $"Reminder from <t:{reminderSetTimeTimestamp}:R>",
-                    Description = $"{reminder.ReminderText}"
-                };
-
-                string context;
-                if (reminder.ReminderText.Equals("You set this reminder on a message with the \"Remind Me About This\" command."))
-                    context =
-                        "This reminder was set privately, so I can't link back to the message where it was set!" +
-                        $" However, [this link](https://discord.com/channels/{reminder.GuildId}" +
-                        $"/{reminder.ChannelId}/{reminder.MessageId}) should show you messages around the time" +
-                        " that you set the reminder.";
+                    messageToSend.AddEmbed(reminderEmbed);
+                }
                 else
-                    context = $"https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}";
+                {
+                    messageToSend.WithContent(messageToSend.Content
+                        + $"\n> **Reminder from <t:{reminder.GetSetTimeTimestamp()}:R>**"
+                        + (string.IsNullOrWhiteSpace(reminder.ReminderText) ? "" : $"\n> {reminder.ReminderText}")
+                        + $"\n> **Context:** {reminder.GetJumpLink()}");
+                }
 
-                embed.AddField("Context", context);
-
-                ReminderHelpers.AddReminderDelayEmbedField(embed);
-
-                messageToSend.AddEmbed(embed);
-            }
-            else
-            {
-                messageToSend.WithContent(messageToSend.Content
-                    + $"\n> **Reminder from <t:{reminderSetTimeTimestamp}:R>**"
-                    + (string.IsNullOrWhiteSpace(reminder.ReminderText) ? "" : $"\n> {reminder.ReminderText}")
-                    + $"\n> **Context:** https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}");
-            }
-
-            try
-            {
                 var msg = await reminderChannel.SendMessageAsync(messageToSend.WithAllowedMentions([new UserMention(reminder.UserId)]));
 
-                if (embed != default)
-                {
-                    embed.RemoveFieldAt(1);
-                    ReminderHelpers.AddReminderDelayEmbedField(embed, msg.Id);
-                    await msg.ModifyAsync(msg.Content, embed.Build());
-                }
+                reminderEmbed.RemoveFieldAt(1);
+                ReminderHelpers.AddReminderDelayEmbedField(reminderEmbed, msg.Id);
+                await msg.ModifyAsync(msg.Content, reminderEmbed.Build());
 
                 await Setup.Storage.Redis.HashDeleteAsync("reminders", reminder.ReminderId);
 
                 numRemindersSent++;
             }
-            catch
+            catch (Exception e) when (e is UnauthorizedException or NotFoundException)
             {
                 try
                 {
@@ -103,36 +83,12 @@ internal class ReminderTasks
 
                     var user = await Setup.State.Discord.Client.GetUserAsync(reminder.UserId);
 
-                    if (embed == default)
-                    {
-                        embed = new()
-                        {
-                            Color = new DiscordColor("#7287fd"),
-                            Title = $"Reminder from <t:{reminderSetTimeTimestamp}:R>",
-                            Description = $"{reminder.ReminderText}"
-                        };
-
-                        string context;
-                        if (reminder.ReminderText.Equals("You set this reminder on a message with the \"Remind Me About This\" command."))
-                            context =
-                                "This reminder was set privately, so I can't link back to the message where it was set!" +
-                                $" However, [this link](https://discord.com/channels/{reminder.GuildId}" +
-                                $"/{reminder.ChannelId}/{reminder.MessageId}) should show you messages around the time" +
-                                " that you set the reminder.";
-                        else
-                            context = $"https://discord.com/channels/{reminder.GuildId}/{reminder.ChannelId}/{reminder.MessageId}";
-
-                        embed.AddField("Context", context);
-
-                        ReminderHelpers.AddReminderDelayEmbedField(embed);
-                    }
-
-                    var msg = await user.SendMessageAsync( $"<@{reminder.UserId}>, I have a reminder for you:", embed);
+                    var msg = await user.SendMessageAsync( $"<@{reminder.UserId}>, I have a reminder for you:", reminderEmbed);
 
                     // update delay field to include message id
-                    embed.RemoveFieldAt(1);
-                    ReminderHelpers.AddReminderDelayEmbedField(embed, msg.Id);
-                    await msg.ModifyAsync(msg.Content, embed.Build());
+                    reminderEmbed.RemoveFieldAt(1);
+                    ReminderHelpers.AddReminderDelayEmbedField(reminderEmbed, msg.Id);
+                    await msg.ModifyAsync(msg.Content, reminderEmbed.Build());
 
                     await Setup.Storage.Redis.HashDeleteAsync("reminders", reminder.ReminderId);
 
