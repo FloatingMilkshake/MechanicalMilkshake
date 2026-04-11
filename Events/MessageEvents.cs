@@ -65,12 +65,12 @@ internal class MessageEvents
             Color = DiscordColor.Red,
             Description =
                 $"`{ex.GetType()}` occurred when processing [this message]({message.JumpLink}) (message `{message.Id}` in channel `{message.Channel.Id}`).",
-            Title = $"An exception occurred when processing a {eventType.Humanize()} event"
+            Title = $"An exception occurred when processing a Message {eventType} event"
         };
         embed.AddField("Message", $"{ex.Message}");
 
-        Setup.State.Discord.Client.Logger.LogError("An exception occurred when processing a {eventType} event!"
-            + "\n{exType}: {exMessage}\n{exStackTrace}", eventType.Humanize(), ex.GetType(), ex.Message, ex.StackTrace);
+        Setup.State.Discord.Client.Logger.LogError("An exception occurred when processing a Message {eventType} event!"
+            + "\n{exType}: {exMessage}\n{exStackTrace}", eventType, ex.GetType(), ex.Message, ex.StackTrace);
 
         await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(embed);
     }
