@@ -54,7 +54,7 @@ internal class Program
             builder.HandleSessionCreated(ReadyEvent.HandleReadyEventAsync)
                     .HandleMessageCreated(MessageEvents.HandleMessageCreatedEventAsync)
                     .HandleMessageUpdated(MessageEvents.HandleMessageUpdatedEventAsync)
-                    //.HandleMessageDeleted(MessageEvents.HandleMessageDeletedEventAsync)
+                    .HandleMessageDeleted(MessageEvents.HandleMessageDeletedEventAsync)
                     .HandleChannelDeleted(ChannelEvents.HandleChannelDeletedEventAsync)
                     .HandleComponentInteractionCreated(InteractionEvents.HandleComponentInteractionCreatedEventAsync)
                     .HandleModalSubmitted(InteractionEvents.HandleModalSubmittedEventAsync)
