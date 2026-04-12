@@ -20,12 +20,9 @@ internal class ReminderHelpers
         await logChannel.SendMessageAsync(errorEmbed);
     }
 
-    internal static void AddReminderDelayEmbedField(DiscordEmbedBuilder embed, ulong msgId = default)
+    internal static void AddReminderDelayEmbedField(DiscordEmbedBuilder embed, ulong msgId)
     {
-        var id = msgId == default ? "[loading...]" : $"`{msgId}`";
-
-        embed.AddField("Need to delay this reminder?",
-            $"Use {CommandHelpers.GetSlashCmdMention("reminder delay")} and set `message` to {id}.");
+        embed.AddField("Need to delay this reminder?", $"Use {CommandHelpers.GetSlashCmdMention("reminder delay")} and set `message` to `{msgId}`.");
     }
 
     internal static (DateTime? parsedTime, string error) ValidateReminderTriggerTime(string triggerTime)

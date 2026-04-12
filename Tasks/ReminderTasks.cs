@@ -45,7 +45,6 @@ internal class ReminderTasks
                 context = reminder.GetJumpLink();
 
             reminderEmbed.AddField("Context", context);
-            ReminderHelpers.AddReminderDelayEmbedField(reminderEmbed);
 
             DiscordChannel reminderChannel = default;
             try
@@ -66,7 +65,6 @@ internal class ReminderTasks
 
                 var msg = await reminderChannel.SendMessageAsync(messageToSend.WithAllowedMentions([new UserMention(reminder.UserId)]));
 
-                reminderEmbed.RemoveFieldAt(1);
                 ReminderHelpers.AddReminderDelayEmbedField(reminderEmbed, msg.Id);
                 await msg.ModifyAsync(msg.Content, reminderEmbed.Build());
 
@@ -85,8 +83,7 @@ internal class ReminderTasks
 
                     var msg = await user.SendMessageAsync( $"<@{reminder.UserId}>, I have a reminder for you:", reminderEmbed);
 
-                    // update delay field to include message id
-                    reminderEmbed.RemoveFieldAt(1);
+                    // add delay field with message id
                     ReminderHelpers.AddReminderDelayEmbedField(reminderEmbed, msg.Id);
                     await msg.ModifyAsync(msg.Content, reminderEmbed.Build());
 
