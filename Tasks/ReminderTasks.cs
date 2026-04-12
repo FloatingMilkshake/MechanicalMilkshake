@@ -81,7 +81,7 @@ internal class ReminderTasks
 
                     var user = await Setup.State.Discord.Client.GetUserAsync(reminder.UserId);
 
-                    var msg = await user.SendMessageAsync( $"<@{reminder.UserId}>, I have a reminder for you:", reminderEmbed);
+                    var msg = await user.SendMessageAsync($"<@{reminder.UserId}>, I have a reminder for you:", reminderEmbed);
 
                     // add delay field with message id
                     ReminderHelpers.AddReminderDelayEmbedField(reminderEmbed, msg.Id);

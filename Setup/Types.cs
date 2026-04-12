@@ -1,6 +1,4 @@
-﻿using static MechanicalMilkshake.Setup.Types;
-
-namespace MechanicalMilkshake.Setup;
+﻿namespace MechanicalMilkshake.Setup;
 
 internal class Types
 {

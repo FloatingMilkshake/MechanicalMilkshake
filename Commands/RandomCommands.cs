@@ -47,7 +47,7 @@ internal class RandomCommands
 
             return;
         }
-        
+
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(fact.Text));
     }
 
