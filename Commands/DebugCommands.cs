@@ -7,6 +7,27 @@
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
 internal class DebugCommands
 {
+    [Command("uptime")]
+    [Description("Check my uptime!")]
+    public static async Task UptimeCommandAsync(SlashCommandContext ctx)
+    {
+        await ctx.DeferResponseAsync();
+
+        DiscordEmbedBuilder embed = new()
+        {
+            Title = "Uptime",
+            Color = Setup.Constants.BotColor
+        };
+
+        var connectUnixTime = Setup.State.Discord.ConnectTime.ToUnixTimeSeconds();
+        var startUnixTime = Setup.State.Process.ProcessStartTime.ToUnixTimeSeconds();
+
+        embed.AddField("Process started at", $"<t:{startUnixTime}:F> (<t:{startUnixTime}:R>)");
+        embed.AddField("Last connected to Discord at", $"<t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)");
+
+        await ctx.FollowupAsync(embed);
+    }
+
     [Command("timecheck")]
     [Description("Return the current time on the machine the bot is running on.")]
     public static async Task DebugTimeCheckCommandAsync(SlashCommandContext ctx)

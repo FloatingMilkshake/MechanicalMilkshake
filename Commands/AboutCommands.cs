@@ -69,26 +69,4 @@ internal class AboutCommands
             Description = (await Setup.Types.DebugInfo.GetDebugInfoAsync()).CommitInformation
         });
     }
-
-    [Command("uptime")]
-    [Description("Check my uptime!")]
-    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-    public static async Task UptimeCommandAsync(SlashCommandContext ctx)
-    {
-        await ctx.DeferResponseAsync();
-
-        DiscordEmbedBuilder embed = new()
-        {
-            Title = "Uptime",
-            Color = Setup.Constants.BotColor
-        };
-
-        var connectUnixTime = DateHelpers.GetUnixTimestamp(Setup.State.Discord.ConnectTime);
-        var startUnixTime = DateHelpers.GetUnixTimestamp(Setup.State.Process.ProcessStartTime);
-
-        embed.AddField("Process started at", $"<t:{startUnixTime}:F> (<t:{startUnixTime}:R>)");
-        embed.AddField("Last connected to Discord at", $"<t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)");
-
-        await ctx.FollowupAsync(embed);
-    }
 }
