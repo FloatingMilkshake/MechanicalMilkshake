@@ -160,14 +160,9 @@ internal class ReminderCommands
             [Parameter("message"), Description("The message for the reminder to delay. Accepts message IDs.")]
             string msgId,
             [Parameter("time"), Description("When do you want to be reminded?")]
-            string time,
-            [Parameter("private"), Description("Whether to keep this reminder private. It will be sent in DMs.")]
-            bool isPrivate = false)
+            string time)
         {
-            if (ctx.Guild is null)
-                isPrivate = true;
-
-            await ctx.DeferResponseAsync(isPrivate);
+            await ctx.DeferResponseAsync();
 
             DiscordMessage message;
             try
@@ -191,7 +186,7 @@ internal class ReminderCommands
             var (triggerTime, error) = ValidateReminderTriggerTime(time);
             if (triggerTime is null)
             {
-                await ctx.RespondAsync(error, ephemeral: isPrivate);
+                await ctx.RespondAsync(error);
                 return;
             }
 
@@ -213,7 +208,7 @@ internal class ReminderCommands
                         $"[Reminder]({reminder.GetJumpLink()})" +
                         $" pushed back to <t:{triggerTimeTimestamp}:F> (<t:{triggerTimeTimestamp}:R>)!" +
                         $"\nReminder ID: `{reminder.ReminderId}`")
-                    .AsEphemeral(isPrivate));
+                    .AsEphemeral());
             reminder.MessageId = response.Id;
 
             await Setup.Storage.Redis.HashSetAsync("reminders", reminder.ReminderId, JsonConvert.SerializeObject(reminder));
