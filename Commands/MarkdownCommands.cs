@@ -2,140 +2,150 @@ namespace MechanicalMilkshake.Commands;
 
 internal class MarkdownCommands
 {
+    [Command("Show Raw Content")]
+    [Description("Show the raw Markdown formatting behind a message.")]
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu)]
+    public static async Task MarkdownMessageContextMenuCommandAsync(MessageCommandContext ctx, DiscordMessage targetMessage)
+    {
+        await ctx.DeferResponseAsync(true);
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder(GetMarkdownDataForMessage(targetMessage)).AsEphemeral(true));
+    }
+
     [Command("markdown")]
     [Description("Expose the Markdown formatting behind a message!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
     public static async Task MarkdownCommandAsync(SlashCommandContext ctx,
         [Parameter("message"), Description("The message you want to expose the formatting of. Accepts message IDs and links.")]
-        string messageToExpose)
+        string messageIdOrLink)
     {
         await ctx.DeferResponseAsync();
+        await ctx.FollowupAsync(await GetMarkdownDataForMessageAsync(messageIdOrLink, ctx.Channel));
+    }
 
-        DiscordMessage message;
-        if (Setup.Constants.RegularExpressions.DiscordUrlPattern.IsMatch(messageToExpose))
+    private static async Task<DiscordMessageBuilder> GetMarkdownDataForMessageAsync(string messageIdOrLink, DiscordChannel currentChannel)
+    {
+        var response = new DiscordMessageBuilder();
+
+        DiscordMessage message = default;
+        var urlPatternMatch = Setup.Constants.RegularExpressions.DiscordUrlPattern.Match(messageIdOrLink);
+        if (urlPatternMatch.Success)
         {
-            // Assume the user provided a message link. Extract channel and message IDs to get message content.
-
-            // Get channel ID
-            var targetChannelId = Convert.ToUInt64(Setup.Constants.RegularExpressions.DiscordIdPattern
-                .Match(messageToExpose).Groups[1].ToString().Replace("/", ""));
-
-            // Try to fetch channel
-            DiscordChannel channel;
+            DiscordChannel channel = default;
             try
             {
-                channel = await ctx.Client.GetChannelAsync(targetChannelId);
+                if (urlPatternMatch.Groups[2].Value == currentChannel.Id.ToString())
+                    channel = currentChannel;
+                else
+                    channel = await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(urlPatternMatch.Groups[2].Value));
+                message = await channel.GetMessageAsync(Convert.ToUInt64(urlPatternMatch.Groups[3].Value));
             }
             catch
             {
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "I wasn't able to find that message! Make sure I have permission to see the channel it's in."));
-                return;
-            }
-
-            // Get message ID
-            var targetMessage =
-                Convert.ToUInt64(Setup.Constants.RegularExpressions.DiscordIdPattern.Match(messageToExpose).Groups[2].ToString().Replace("/", ""));
-
-            // Try to fetch message
-            try
-            {
-                message = await channel.GetMessageAsync(targetMessage);
-            }
-            catch
-            {
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "I wasn't able to read that message! Make sure I have permission to access it."));
-                return;
+                if (channel != default && channel.Id == currentChannel.Id)
+                    response.WithContent("I wasn't able to read that message! Make sure I have permission to read message history.");
+                else
+                    response.WithContent("I wasn't able to find that message! Make sure I have permission to see the channel it's in.");
             }
         }
         else
         {
-            if (messageToExpose.Length < 17)
+            var idPatternMatch = Setup.Constants.RegularExpressions.DiscordIdPattern.Match(messageIdOrLink);
+            if (!idPatternMatch.Success)
             {
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "Hmm, that doesn't look like a valid message ID or link."));
-                return;
+                response.WithContent("That doesn't look like a valid message ID or link! Please try again.");
             }
-
-            ulong messageId;
-            try
+            else
             {
-                messageId = Convert.ToUInt64(messageToExpose);
-            }
-            catch
-            {
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "Hmm, that doesn't look like a valid message ID or link. I wasn't able to get the Markdown data from it."));
-                return;
-            }
-
-            try
-            {
-                message = await ctx.Channel.GetMessageAsync(messageId);
-            }
-            catch
-            {
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "I wasn't able to read that message! Make sure I have permission to access it."));
-                return;
+                try
+                {
+                    message = await currentChannel.GetMessageAsync(Convert.ToUInt64(idPatternMatch.Value));
+                }
+                catch (UnauthorizedException)
+                {
+                    response.WithContent("I wasn't able to read that message! Make sure I have permission to read message history.");
+                }
+                catch (NotFoundException)
+                {
+                    response.WithContent("I couldn't find that message! If it's in another channel, you'll need to provide a message link.");
+                }
             }
         }
 
-        var markdown = message.Content;
-        var embeds = message.Embeds;
+        if (message != default)
+            response = GetMarkdownDataForMessage(message);
 
-        var response = new DiscordFollowupMessageBuilder()
-            .WithContent($"Here's the Markdown data for [that message]({message.JumpLink}):");
+        return response;
+    }
 
-        if (!string.IsNullOrWhiteSpace(markdown))
+    private static DiscordMessageBuilder GetMarkdownDataForMessage(DiscordMessage message)
+    {
+        var response = new DiscordMessageBuilder();
+
+        if (!string.IsNullOrWhiteSpace(message.Content))
             response.AddEmbed(new DiscordEmbedBuilder()
                 .WithTitle("Message Content")
-                .WithDescription(MarkdownHelpers.Parse(markdown))
+                .WithDescription(EscapeString(message.Content))
                 .WithColor(Setup.Constants.BotColor));
 
-        if (embeds.Count > 0)
-            foreach (var embed in embeds)
+        foreach (var embed in message.Embeds)
+        {
+            if (response.Embeds.Count >= 10 || embed.Type != "rich" ||
+                (string.IsNullOrWhiteSpace(embed.Title) && string.IsNullOrWhiteSpace(embed.Description) &&
+                string.IsNullOrWhiteSpace(embed.Footer?.Text) && string.IsNullOrWhiteSpace(embed.Author?.Name) &&
+                string.IsNullOrWhiteSpace(embed.Fields.ToString())))
             {
-                if (response.Embeds.Count >= 10)
-                    continue;
-                if (embed.Type == "image")
-                    continue;
-                if (string.IsNullOrWhiteSpace(embed.Title) && string.IsNullOrWhiteSpace(embed.Description) &&
-                    string.IsNullOrWhiteSpace(embed.Footer?.Text) && string.IsNullOrWhiteSpace(embed.Author?.Name) &&
-                    string.IsNullOrWhiteSpace(embed.Fields.ToString()))
-                    continue;
-
-                var markdownEmbed = new DiscordEmbedBuilder()
-                    .WithTitle(string.IsNullOrWhiteSpace(embed.Title)
-                        ? "Embed Content"
-                        : $"Embed Content: {MarkdownHelpers.Parse(embed.Title)}")
-                    .WithDescription(embeds[0].Description is not null ? MarkdownHelpers.Parse(embed.Description) : "")
-                    .WithColor(embed.Color.HasValue == false ? Setup.Constants.BotColor : embed.Color.Value);
-
-                if (embed.Fields is not null)
-                    foreach (var field in embed.Fields)
-                        markdownEmbed.AddField(MarkdownHelpers.Parse(field.Name), MarkdownHelpers.Parse(field.Value),
-                            field.Inline);
-                response.AddEmbed(markdownEmbed);
+                continue;
             }
+
+            var markdownEmbed = new DiscordEmbedBuilder()
+                .WithTitle(string.IsNullOrWhiteSpace(embed.Title)
+                    ? "Embed Content"
+                    : $"Embed Content: {EscapeString(embed.Title)}")
+                .WithDescription(message.Embeds[0].Description is not null ? EscapeString(embed.Description) : "")
+                .WithColor(embed.Color.HasValue == false ? default : embed.Color.Value);
+
+            if (embed.Fields is not null)
+                foreach (var field in embed.Fields)
+                    markdownEmbed.AddField(EscapeString(field.Name), EscapeString(field.Value), field.Inline);
+
+            response.AddEmbed(markdownEmbed);
+        }
 
         if (response.Embeds.Count == 0)
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                "That message doesn't have any text content! I can only parse the Markdown data from messages with content."));
-            return;
+            response.WithContent("That message doesn't have any text content! I can only parse the Markdown data from messages with content.");
         }
-
-        // If the embeds have more than 6000 characters, return a kind message instead of a 400 error.
-        if (response.Embeds.Sum(e =>
-                e.Description.Length + e.Title.Length + e.Fields.Sum(f => f.Name.Length + f.Value.Length)) > 6000)
+        else if (response.Embeds.Sum(e => e.Description.Length + e.Title.Length + e.Fields.Sum(f => f.Name.Length + f.Value.Length)) > 6000)
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                "That message is too long! I can only parse the Markdown data from messages shorter than 6000 characters."));
-            return;
+            response.WithContent("Sorry, the output is too long for me to send here!");
+        }
+        else
+        {
+            response.WithContent($"Here's the Markdown data for [that message]({message.JumpLink}):");
         }
 
-        await ctx.FollowupAsync(response);
+        return response;
+    }
+
+    private static string EscapeString(string input)
+    {
+        var output = input
+            .Replace(@"\", @"\\")
+            .Replace("`", @"\`")
+            .Replace("*", @"\*")
+            .Replace("_", @"\_")
+            .Replace("~", @"\~")
+            .Replace(">", @"\>")
+            .Replace("[", @"\[")
+            .Replace("]", @"\]")
+            .Replace("(", @"\(")
+            .Replace(")", @"\)")
+            .Replace("#", @"\#")
+            .Replace("|", @"\|");
+
+        return output.Length > 4000
+            ? "Sorry, the output is too long for me to send here!"
+            : output;
     }
 }
