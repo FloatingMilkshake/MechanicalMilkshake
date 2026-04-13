@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Setup;
 
-internal class Constants
+internal static class Constants
 {
     internal static readonly DiscordColor BotColor = new("#FAA61A");
     internal static readonly HttpClient HttpClient = new();
@@ -20,9 +20,9 @@ internal class Constants
         { "verifiedBot2", 1000229382431977582 },
         { "earlySupporter", 1001317583124971582 }
     };
-    internal class RegularExpressions
+    internal static class RegularExpressions
     {
-#pragma warning disable SYSLIB1045 // Convert to 'GeneratedRegexAttribute'./i
+#pragma warning disable SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
         internal static readonly Regex DiscordUrlPattern = new(@".*discord(?:app)?.com\/channels\/((?:@)?[a-z0-9]*)\/([0-9]*)(?:\/)?([0-9]*)");
         internal static readonly Regex UrlPattern = new(@"(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]");
         internal static readonly Regex EmojiPattern = new("<(a)?:([A-Za-z0-9_]*):([0-9]*)>");

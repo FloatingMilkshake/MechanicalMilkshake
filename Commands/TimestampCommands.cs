@@ -21,14 +21,14 @@ internal class TimestampCommands
         {
             snowflake = Convert.ToUInt64(id);
         }
-        catch
+        catch (FormatException)
         {
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent(
                 "Hmm, that doesn't look like a valid ID/snowflake. I wasn't able to convert it to a timestamp."));
             return;
         }
 
-        var timestamp = DateHelpers.GetUnixTimestamp(snowflake);
+        var timestamp = snowflake.ToUnixTimeSeconds();
         if (string.IsNullOrWhiteSpace(format))
         {
             await ctx.RespondAsync(
@@ -60,9 +60,9 @@ internal class TimestampCommands
         long unixTime;
         try
         {
-            unixTime = DateHelpers.GetUnixTimestamp(date);
+            unixTime = Convert.ToDateTime(date).ToUnixTimeSeconds();
         }
-        catch
+        catch (FormatException)
         {
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent(
                 "Hmm, that doesn't look like a valid date. I wasn't able to convert it to a timestamp."));

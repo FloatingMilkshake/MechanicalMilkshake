@@ -19,11 +19,9 @@ internal class CommandErrors
                     if ((DateTime.Now - Setup.State.Process.ProcessStartTime).TotalMinutes < 2)
                     {
                         if (userIsBotOwner)
-                            await TryToRespondToInteractionAsync(context.Interaction,
-                                "Waiting for command registration, probably rate-limited. Wait a sec and try again.");
+                            await context.Interaction.SmartRespondAsync("Waiting for command registration, probably rate-limited. Wait a sec and try again.");
                         else
-                            await TryToRespondToInteractionAsync(context.Interaction,
-                                "Sorry, I'm waiting for Discord to process my commands! This command will be ready in a moment." +
+                            await context.Interaction.SmartRespondAsync("Sorry, I'm waiting for Discord to process my commands! This command will be ready in a moment." +
                                 " If you keep seeing this, please contact a bot owner for help!");
                     }
                     break;
@@ -32,7 +30,7 @@ internal class CommandErrors
                 {
                     if (checksFailedException.Errors.Any(e => e.ContextCheckAttribute is RequireBotCommanderAttribute or RequireApplicationOwnerAttribute))
                     {
-                        await TryToRespondToInteractionAsync(context.Interaction, "Sorry, you aren't allowed to use this command!");
+                        await context.Interaction.SmartRespondAsync("Sorry, you aren't allowed to use this command!");
                     }
                     else if (checksFailedException.Errors.Any(e => e.ContextCheckAttribute is RequirePermissionsAttribute))
                     {
@@ -48,39 +46,32 @@ internal class CommandErrors
 
                         if (!requiredBotPermissions.HasAllPermissions(currentUserPermissions))
                         {
-                            await TryToRespondToInteractionAsync(context.Interaction,
-                                $"I don't have the right permissions for this command!\nPlease ask a server admin to grant me the following permissions: "
+                            await context.Interaction.SmartRespondAsync($"I don't have the right permissions for this command!"
+                                + $"\nPlease ask a server admin to grant me the following permissions: "
                                     + string.Join(", ", requiredBotPermissions.Except(currentBotPermissions)
                                         .Select(requiredPermission => $"**{requiredPermission.Humanize()}**")));
                         }
                         else if (!requiredBotPermissions.HasAllPermissions(currentUserPermissions))
                         {
-                            await TryToRespondToInteractionAsync(context.Interaction,
-                                $"You don't have permission to use this command!\nYou are missing the following permissions: "
+                            await context.Interaction.SmartRespondAsync($"You don't have permission to use this command!\nYou are missing the following permissions: "
                                     + string.Join(", ", requiredUserPermissions.Except(currentUserPermissions)
                                         .Select(requiredPermission => $"**{requiredPermission.Humanize()}**")));
                         }
                     }
                     else if (checksFailedException.Errors.Any(e => e.ContextCheckAttribute is RequireGuildAttribute))
                     {
-                        await TryToRespondToInteractionAsync(context.Interaction, "This command must be used in a server!");
-                    }
-                    else if (checksFailedException.Errors.Any(e => e.ContextCheckAttribute is RequireHomeServerAttribute))
-                    {
-                        await TryToRespondToInteractionAsync(context.Interaction, "This command can only be used in the home server.");
+                        await context.Interaction.SmartRespondAsync("This command must be used in a server!");
                     }
                     else // Unexpected check failed
                     {
-                        await TryToRespondToInteractionAsync(context.Interaction,
-                            "Sorry, one of the checks for this command failed! Please make sure you are using it correctly." +
+                        await context.Interaction.SmartRespondAsync("Sorry, one of the checks for this command failed! Please make sure you are using it correctly." +
                             " If you keep seeing this, please contact a bot owner for help!");
                     }
                     break;
                 }
             default:
                 {
-                    await TryToRespondToInteractionAsync(context.Interaction,
-                        "An unexpected error occurred while running this command! Please try again." +
+                    await context.Interaction.SmartRespondAsync("An unexpected error occurred while running this command! Please try again." +
                         " If you keep seeing this, please contact a bot owner for help!");
                     break;
                 }
@@ -103,34 +94,12 @@ internal class CommandErrors
             };
             await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(embed);
         }
-        catch
+        catch (Exception)
         {
             // Oh well, still log to console
         }
         Setup.State.Discord.Client.Logger.LogError("An exception occurred during command execution! When {userId} used {commandName}:"
             + "\n{exceptionType}: {exceptionMessage}\n{exceptionStackTrace}", e.Context.User.Id, commandName,
             e.Exception.GetType(), e.Exception.Message, e.Exception.StackTrace);
-    }
-
-    private static async Task TryToRespondToInteractionAsync(DiscordInteraction interaction, string message)
-    {
-        var interactionResponseState = interaction.ResponseState;
-
-        if (interactionResponseState != DiscordInteractionResponseState.Unacknowledged &&
-            interactionResponseState != DiscordInteractionResponseState.Deferred &&
-            interactionResponseState != DiscordInteractionResponseState.Replied)
-        {
-            return;
-        }
-
-        if (interactionResponseState == DiscordInteractionResponseState.Unacknowledged)
-        {
-            await interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder().WithContent(message));
-        }
-        else // Deferred
-        {
-            await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent(message));
-        }
     }
 }

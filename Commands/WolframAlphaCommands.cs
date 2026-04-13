@@ -35,29 +35,28 @@ internal class WolframAlphaCommands
         {
             textResponse = await Setup.Constants.HttpClient.GetStringAsync($"https://api.wolframalpha.com/v1/result?appid={appid}&i={queryEncoded}");
         }
-        catch
+        catch (HttpRequestException)
         {
-            // kaboom
-            // (don't need to do anything here)
+            // WolframAlpha doesn't have a response for this query type or an error occurred
+            // Errors are handled later
         }
 
         // Image response
         MemoryStream imageResponse = default;
         try
         {
-            var data = await Setup.Constants.HttpClient.GetByteArrayAsync($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={queryEncoded}");
-            imageResponse = new MemoryStream(data);
+            imageResponse = new MemoryStream(await Setup.Constants.HttpClient.GetByteArrayAsync($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={queryEncoded}"));
         }
-        catch
+        catch (HttpRequestException)
         {
-            // kaboom
-            // (don't need to do anything here)
+            // WolframAlpha doesn't have a response for this query type or an error occurred
+            // Errors are handled later
         }
 
         if (textResponse == default && imageResponse == default)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                "Hmm, WolframAlpha didn't have an answer to that query! Try rephrasing it, or check your spelling."));
+                "Hmm, WolframAlpha didn't have an answer to that query! Try rephrasing it."));
             return;
         }
 
@@ -68,7 +67,8 @@ internal class WolframAlphaCommands
 
         if (imageResponse != default)
         {
-            if (textResponse != default) response.Content += "\n**Extended answer:**";
+            if (textResponse != default)
+                response.Content += "\n**Extended answer:**";
             response.AddFile("result.gif", imageResponse);
         }
 

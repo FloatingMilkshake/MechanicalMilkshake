@@ -28,165 +28,29 @@ internal class KeywordTrackingCommands
         await ctx.DeferResponseAsync(true);
 
         if (currentGuildOnly && guildIgnoreList is not null &&
-            guildIgnoreList.Split(' ').Any(g => g == ctx.Guild.Id.ToString())) currentGuildOnly = false;
-
-        var fields = await Setup.Storage.Redis.HashGetAllAsync("keywords");
-        foreach (var field in fields)
+            guildIgnoreList.Split(' ').Any(g => g == ctx.Guild.Id.ToString()))
         {
-            var fieldValue = JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(field.Value);
-
-            // If the keyword is already being tracked, delete the current entry
-            // This way we don't end up with duplicate entries for keywords
-            if (fieldValue.Keyword != keyword) continue;
-            await Setup.Storage.Redis.HashDeleteAsync("keywords", fieldValue.Id);
-            break;
+            currentGuildOnly = false;
         }
 
-        List<string> checkedUsers = [];
+        var allKeywords = (await Setup.Storage.Redis.HashGetAllAsync("keywords")).Select(k => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(k.Value));
 
-        List<ulong> usersToIgnore = [];
-        if (userIgnoreList is not null)
+        foreach (var matchingKeyword in allKeywords.Where(k => k.UserId == ctx.User.Id && k.Keyword == keyword))
         {
-            var users = userIgnoreList.Split(' ');
-            foreach (var user in users)
-            {
-                if (string.IsNullOrWhiteSpace(user)) continue;
-                if (checkedUsers.Any(u => u.ToString() == user)) continue;
-                checkedUsers.Add(user);
-
-                var id = user.Contains('@') ? Setup.Constants.RegularExpressions.DiscordIdPattern.Match(user).ToString() : user;
-
-                DiscordUser userToAdd;
-                try
-                {
-                    userToAdd = await Setup.State.Discord.Client.GetUserAsync(Convert.ToUInt64(id));
-                }
-                catch
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent(
-                            $"I wasn't able to parse {user} as a user ID. Make sure it's formatted correctly! If you want to ignore multiple users, separate their mentions or IDs with a space.")
-                        .AsEphemeral(true));
-                    return;
-                }
-
-                usersToIgnore.Add(userToAdd.Id);
-            }
+            await Setup.Storage.Redis.HashDeleteAsync("keywords", matchingKeyword.Id);
         }
 
-        List<string> checkedChannels = [];
-
-        List<ulong> channelsToIgnore = [];
-        if (channelIgnoreList is not null)
-        {
-            var channels = channelIgnoreList.Split(' ');
-            foreach (var channel in channels)
-            {
-                if (string.IsNullOrWhiteSpace(channel)) continue;
-                if (checkedChannels.Any(c => c.ToString() == channel)) continue;
-                checkedChannels.Add(channel);
-
-                var id = Setup.Constants.RegularExpressions.DiscordIdPattern.Match(channel).ToString();
-
-                DiscordChannel channelToAdd;
-                try
-                {
-                    channelToAdd = await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(id));
-                }
-                catch (UnauthorizedException)
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                            $"I wasn't able to fetch the channel {channel}! Discord says I'm not allowed to see it." +
-                            " (I won't be able to track keywords there, so your decision to ignore that channel will still be respected." +
-                            " However, the channel will not appear in this keyword's details.)")
-                        .AsEphemeral(true));
-                    continue;
-                }
-                catch (NotFoundException)
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                            $"I wasn't able to fetch the channel {channel}! Discord says that channel doesn't exist." +
-                            " (I won't be able to track keywords there, so your decision to ignore that channel will still be respected." +
-                            " However, the channel will not appear in this keyword's details.)")
-                        .AsEphemeral(true));
-                    continue;
-                }
-                catch
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent(
-                            $"I wasn't able to parse {channel} as a channel ID. Make sure it's formatted correctly! If you want to ignore multiple channels, please separate their IDs with a space.")
-                        .AsEphemeral(true));
-                    return;
-                }
-
-                channelsToIgnore.Add(channelToAdd.Id);
-            }
-        }
-
-        List<string> checkedGuilds = [];
-
-        List<ulong> guildsToIgnore = [];
-        if (guildIgnoreList is not null)
-        {
-            var guilds = guildIgnoreList.Split(' ');
-            foreach (var guild in guilds)
-            {
-                if (string.IsNullOrWhiteSpace(guild)) continue;
-                if (checkedGuilds.Any(g => g.ToString() == guild)) continue;
-                checkedGuilds.Add(guild);
-
-                var id = Setup.Constants.RegularExpressions.DiscordIdPattern.Match(guild).ToString();
-
-                DiscordGuild guildToAdd;
-                try
-                {
-                    guildToAdd = await Setup.State.Discord.Client.GetGuildAsync(Convert.ToUInt64(id));
-                }
-                catch (UnauthorizedException)
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                            $"I wasn't able to fetch the server {guild}! Discord says I'm not allowed to see it." +
-                            " (I won't be able to track keywords there, so your decision to ignore that server will still be respected." +
-                            " However, the server will not appear in this keyword's details.)")
-                        .AsEphemeral(true));
-                    continue;
-                }
-                catch (NotFoundException)
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                            $"I wasn't able to fetch the server {guild}! Discord says that server doesn't exist." +
-                            " (I won't be able to track keywords there, so your decision to ignore that server will still be respected." +
-                            " However, the server will not appear in this keyword's details.)")
-                        .AsEphemeral(true));
-                    continue;
-                }
-                catch
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent(
-                            $"I wasn't able to parse {guild} as a server ID. Make sure it's formatted correctly! If you want to ignore multiple servers, please separate their IDs with a space.")
-                        .AsEphemeral(true));
-                    return;
-                }
-
-                guildsToIgnore.Add(guildToAdd.Id);
-            }
-        }
-
-        Setup.Types.TrackedKeyword trackedKeyword = new()
-        {
-            Keyword = keyword,
-            UserId = ctx.User.Id,
-            MatchWholeWord = matchWholeWord,
-            IgnoreBots = ignoreBots,
-            AssumePresence = assumePresence,
-            UserIgnoreList = usersToIgnore,
-            ChannelIgnoreList = channelsToIgnore,
-            GuildIgnoreList = guildsToIgnore,
-            Id = ctx.Interaction.Id,
-            GuildId = currentGuildOnly ? ctx.Guild.Id : default
-        };
+        Setup.Types.TrackedKeyword trackedKeyword = new(
+            keyword,
+            ctx.User.Id,
+            matchWholeWord,
+            ignoreBots,
+            assumePresence,
+            await ParseUserIgnoreListAsync(userIgnoreList),
+            await ParseChannelIgnoreListAsync(channelIgnoreList),
+            await ParseGuildIgnoreListAsync(guildIgnoreList),
+            ctx.Interaction.Id,
+            currentGuildOnly ? ctx.Guild.Id : default);
 
         await Setup.Storage.Redis.HashSetAsync("keywords", ctx.Interaction.Id,
             JsonConvert.SerializeObject(trackedKeyword));
@@ -218,25 +82,20 @@ internal class KeywordTrackingCommands
     {
         await ctx.DeferResponseAsync(true);
 
-        var allKeywordsRawData = await Setup.Storage.Redis.HashGetAllAsync("keywords");
+        var allKeywords = (await Setup.Storage.Redis.HashGetAllAsync("keywords")).Select(x =>
+            JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(x.Value)).ToList();
 
-        var userKeywords = allKeywordsRawData.Select(field => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(field.Value))
-            .Where(x => x.UserId == ctx.User.Id).ToList();
-
-        if (userKeywords.Count == 0)
+        if (allKeywords.All(k => k.UserId != ctx.User.Id))
         {
-            var trackAddCommand = CommandHelpers.GetSlashCmdMention("track add");
-
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"You don't have any tracked keywords! Add some with {trackAddCommand}."));
+                .WithContent($"You don't have any tracked keywords! Add some with {"track add".AsSlashCommandMention()}."));
 
             return;
         }
 
-        var thisKeywordRawData = allKeywordsRawData.FirstOrDefault(field =>
-            JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(field.Value).Id.ToString() == keyword).Value;
+        var thisKeyword = allKeywords.FirstOrDefault(k => k.UserId == ctx.User.Id && k.Keyword == keyword);
 
-        if (string.IsNullOrWhiteSpace(thisKeywordRawData))
+        if (thisKeyword == default)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral(true));
             return;
@@ -250,156 +109,19 @@ internal class KeywordTrackingCommands
             return;
         }
 
-        var thisKeywordData = JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(thisKeywordRawData.ToString());
+        var newKeywordObject = new Setup.Types.TrackedKeyword(newKeyword is null ? thisKeyword.Keyword : newKeyword,
+            ctx.User.Id,
+            matchWholeWord is null ? thisKeyword.MatchWholeWord : matchWholeWord.Value,
+            ignoreBots is null ? thisKeyword.IgnoreBots : ignoreBots.Value,
+            assumePresence is null ? thisKeyword.AssumePresence : assumePresence.Value,
+            await ParseUserIgnoreListAsync(userIgnoreList),
+            await ParseChannelIgnoreListAsync(channelIgnoreList),
+            await ParseGuildIgnoreListAsync(guildIgnoreList),
+            thisKeyword.Id,
+            currentGuildOnly.Value ? ctx.Guild.Id : default);
 
-        if (newKeyword is not null)
-            thisKeywordData.Keyword = newKeyword;
-        if (matchWholeWord is not null)
-            thisKeywordData.MatchWholeWord = matchWholeWord.Value;
-        if (ignoreBots is not null)
-            thisKeywordData.IgnoreBots = ignoreBots.Value;
-        if (assumePresence is not null)
-            thisKeywordData.AssumePresence = assumePresence.Value;
+        await Setup.Storage.Redis.HashSetAsync("keywords", thisKeyword.Id, JsonConvert.SerializeObject(newKeywordObject));
 
-        List<string> checkedUsers = [];
-        List<ulong> usersToIgnore = [];
-        if (userIgnoreList is not null)
-        {
-            var users = userIgnoreList.Split(' ');
-            foreach (var user in users)
-            {
-                if (string.IsNullOrWhiteSpace(user)) continue;
-                if (checkedUsers.Any(u => u.ToString() == user)) continue;
-                checkedUsers.Add(user);
-
-                var id = user.Contains('@') ? Setup.Constants.RegularExpressions.DiscordIdPattern.Match(user).ToString() : user;
-
-                DiscordUser userToAdd;
-                try
-                {
-                    userToAdd = await Setup.State.Discord.Client.GetUserAsync(Convert.ToUInt64(id));
-                }
-                catch
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent(
-                            $"I wasn't able to parse {user} as a user ID. Make sure it's formatted correctly! If you want to ignore multiple users, separate their mentions or IDs with a space.")
-                        .AsEphemeral(true));
-                    return;
-                }
-
-                usersToIgnore.Add(userToAdd.Id);
-            }
-        }
-        thisKeywordData.UserIgnoreList = usersToIgnore;
-
-        List<string> checkedChannels = [];
-        List<ulong> channelsToIgnore = [];
-        if (channelIgnoreList is not null)
-        {
-            var channels = channelIgnoreList.Split(' ');
-            foreach (var channel in channels)
-            {
-                if (string.IsNullOrWhiteSpace(channel)) continue;
-                if (checkedChannels.Any(c => c.ToString() == channel)) continue;
-                checkedChannels.Add(channel);
-
-                var id = Setup.Constants.RegularExpressions.DiscordIdPattern.Match(channel).ToString();
-
-                DiscordChannel channelToAdd;
-                try
-                {
-                    channelToAdd = await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(id));
-                }
-                catch (UnauthorizedException)
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                            $"I wasn't able to fetch the channel {channel}! Discord says I'm not allowed to see it." +
-                            " (I won't be able to track keywords there, so your decision to ignore that channel will still be respected." +
-                            " However, the channel will not appear in this keyword's details.)")
-                        .AsEphemeral(true));
-                    continue;
-                }
-                catch (NotFoundException)
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                            $"I wasn't able to fetch the channel {channel}! Discord says that channel doesn't exist." +
-                            " (I won't be able to track keywords there, so your decision to ignore that channel will still be respected." +
-                            " However, the channel will not appear in this keyword's details.)")
-                        .AsEphemeral(true));
-                    continue;
-                }
-                catch
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent(
-                            $"I wasn't able to parse {channel} as a channel ID. Make sure it's formatted correctly! If you want to ignore multiple channels, please separate their IDs with a space.")
-                        .AsEphemeral(true));
-                    return;
-                }
-
-                channelsToIgnore.Add(channelToAdd.Id);
-            }
-        }
-        thisKeywordData.ChannelIgnoreList = channelsToIgnore;
-
-        List<string> checkedGuilds = [];
-        List<ulong> guildsToIgnore = [];
-        if (guildIgnoreList is not null)
-        {
-            var guilds = guildIgnoreList.Split(' ');
-            foreach (var guild in guilds)
-            {
-                if (string.IsNullOrWhiteSpace(guild)) continue;
-                if (checkedGuilds.Any(g => g.ToString() == guild)) continue;
-                checkedGuilds.Add(guild);
-
-                var id = Setup.Constants.RegularExpressions.DiscordIdPattern.Match(guild).ToString();
-
-                DiscordGuild guildToAdd;
-                try
-                {
-                    guildToAdd = await Setup.State.Discord.Client.GetGuildAsync(Convert.ToUInt64(id));
-                }
-                catch (UnauthorizedException)
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                            $"I wasn't able to fetch the server {guild}! Discord says I'm not allowed to see it." +
-                            " (I won't be able to track keywords there, so your decision to ignore that server will still be respected." +
-                            " However, the server will not appear in this keyword's details.)")
-                        .AsEphemeral(true));
-                    continue;
-                }
-                catch (NotFoundException)
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                            $"I wasn't able to fetch the server {guild}! Discord says that server doesn't exist." +
-                            " (I won't be able to track keywords there, so your decision to ignore that server will still be respected." +
-                            " However, the server will not appear in this keyword's details.)")
-                        .AsEphemeral(true));
-                    continue;
-                }
-                catch
-                {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                        .WithContent(
-                            $"I wasn't able to parse {guild} as a server ID. Make sure it's formatted correctly! If you want to ignore multiple servers, please separate their IDs with a space.")
-                        .AsEphemeral(true));
-                    return;
-                }
-
-                guildsToIgnore.Add(guildToAdd.Id);
-            }
-        }
-        thisKeywordData.GuildIgnoreList = guildsToIgnore;
-
-        if (currentGuildOnly is not null)
-            thisKeywordData.GuildId = currentGuildOnly.Value ? ctx.Guild.Id : default;
-
-        // Write back to db
-        await Setup.Storage.Redis.HashSetAsync("keywords", thisKeywordData.Id, JsonConvert.SerializeObject(thisKeywordData));
-
-        // Respond
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("Done!").AsEphemeral(true));
     }
 
@@ -419,9 +141,9 @@ internal class KeywordTrackingCommands
         };
 
         if (string.IsNullOrWhiteSpace(keywordList))
-            embed.WithDescription($"You don't have any tracked keywords! Add some with {CommandHelpers.GetSlashCmdMention("track add")}.");
+            embed.WithDescription($"You don't have any tracked keywords! Add some with {"track add".AsSlashCommandMention()}.");
         else
-            embed.WithDescription($"**To see extended information, use {CommandHelpers.GetSlashCmdMention("track details")}.**\n" +
+            embed.WithDescription($"**To see extended information, use {"track details".AsSlashCommandMention()}.**\n" +
                       $"Keywords are truncated to 45 characters in this list.\n\n{keywordList}");
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral(true));
@@ -434,29 +156,27 @@ internal class KeywordTrackingCommands
     {
         await ctx.DeferResponseAsync(true);
 
-        var keywords = await Setup.Storage.Redis.HashGetAllAsync("keywords");
+        var allKeywords = (await Setup.Storage.Redis.HashGetAllAsync("keywords")).Select(k => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(k.Value));
 
-        var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(field.Value))
-            .Where(x => x.UserId == ctx.User.Id).ToList();
+        var userKeywords = allKeywords.Where(k => k.UserId == ctx.User.Id);
 
-        if (userKeywords.Count == 0)
+        if (!userKeywords.Any())
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"You don't have any tracked keywords! Add some with {CommandHelpers.GetSlashCmdMention("track add")}."));
+                .WithContent($"You don't have any tracked keywords! Add some with {"track add".AsSlashCommandMention()}."));
 
             return;
         }
 
-        var keywordRawData = await Setup.Storage.Redis.HashGetAsync("keywords", keyword);
+        var thisKeyword = allKeywords.FirstOrDefault(k => k.UserId == ctx.User.Id && k.Keyword == keyword);
 
-        if (string.IsNullOrWhiteSpace(keywordRawData))
+        if (thisKeyword == default)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral(true));
             return;
         }
 
-        var keywordData = JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(keywordRawData);
-        var embed = await KeywordTrackingHelpers.GenerateKeywordDetailsEmbed(keywordData);
+        var embed = await thisKeyword.CreateDetailsEmbedAsync();
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral(true));
     }
 
@@ -467,35 +187,132 @@ internal class KeywordTrackingCommands
     {
         await ctx.DeferResponseAsync(true);
 
-        var keywords = await Setup.Storage.Redis.HashGetAllAsync("keywords");
+        var allKeywords = (await Setup.Storage.Redis.HashGetAllAsync("keywords")).Select(k => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(k.Value));
 
-        var userKeywords = keywords.Select(field => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(field.Value))
-            .Where(x => x.UserId == ctx.User.Id).ToList();
+        var userKeywords = allKeywords.Where(k => k.UserId == ctx.User.Id);
 
-        if (userKeywords.Count == 0)
+        if (!userKeywords.Any())
         {
             await ctx.FollowupAsync(
                 new DiscordFollowupMessageBuilder()
-                .WithContent($"You don't have any tracked keywords! Add some with {CommandHelpers.GetSlashCmdMention("track add")}."));
+                .WithContent($"You don't have any tracked keywords! Add some with {"track add".AsSlashCommandMention()}."));
 
             return;
         }
 
-        var keywordRawData = await Setup.Storage.Redis.HashGetAsync("keywords", keyword);
+        var thisKeyword = userKeywords.FirstOrDefault(k => k.Keyword == keyword);
 
-        if (string.IsNullOrWhiteSpace(keywordRawData))
+        if (thisKeyword == default)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral(true));
             return;
         }
 
-        var keywordData = JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(keywordRawData);
-        var embed = (await KeywordTrackingHelpers.GenerateKeywordDetailsEmbed(keywordData))
+        var embed = (await thisKeyword.CreateDetailsEmbedAsync())
             .WithTitle("Are you sure you want to remove this keyword?").WithColor(DiscordColor.Red)
-            .WithDescription(keywordData.Keyword);
+            .WithDescription(thisKeyword.Keyword);
 
         DiscordButtonComponent confirmButton = new(DiscordButtonStyle.Danger, "button-callback-track-remove-confirm", "Remove");
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AddActionRowComponent(confirmButton).AsEphemeral(true));
+    }
+
+    private static async Task<List<ulong>> ParseUserIgnoreListAsync(string input)
+    {
+        List<string> checkedUsers = [];
+        List<ulong> usersToIgnore = [];
+        if (input is not null)
+        {
+            var users = input.Split(' ');
+            foreach (var user in users)
+            {
+                if (string.IsNullOrWhiteSpace(user)) continue;
+                if (checkedUsers.Any(u => u.ToString() == user)) continue;
+                checkedUsers.Add(user);
+
+                var id = user.Contains('@') ? Setup.Constants.RegularExpressions.DiscordIdPattern.Match(user).ToString() : user;
+
+                DiscordUser userToAdd;
+                try
+                {
+                    userToAdd = await Setup.State.Discord.Client.GetUserAsync(Convert.ToUInt64(id));
+                }
+                catch (Exception e) when (e is FormatException or NotFoundException)
+                {
+                    // Couldn't parse or Discord returned an error, skip
+                    continue;
+                }
+
+                usersToIgnore.Add(userToAdd.Id);
+            }
+        }
+
+        return usersToIgnore;
+    }
+
+    private static async Task<List<ulong>> ParseChannelIgnoreListAsync(string input)
+    {
+        List<string> checkedChannels = [];
+        List<ulong> channelsToIgnore = [];
+        if (input is not null)
+        {
+            var channels = input.Split(' ');
+            foreach (var channel in channels)
+            {
+                if (string.IsNullOrWhiteSpace(channel)) continue;
+                if (checkedChannels.Any(c => c.ToString() == channel)) continue;
+                checkedChannels.Add(channel);
+
+                var id = Setup.Constants.RegularExpressions.DiscordIdPattern.Match(channel).ToString();
+
+                DiscordChannel channelToAdd;
+                try
+                {
+                    channelToAdd = await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(id));
+                }
+                catch (Exception e) when (e is FormatException or NotFoundException)
+                {
+                    // Couldn't parse or Discord returned an error, skip
+                    continue;
+                }
+
+                channelsToIgnore.Add(channelToAdd.Id);
+            }
+        }
+
+        return channelsToIgnore;
+    }
+
+    private static async Task<List<ulong>> ParseGuildIgnoreListAsync(string input)
+    {
+        List<string> checkedGuilds = [];
+        List<ulong> guildsToIgnore = [];
+        if (input is not null)
+        {
+            var guilds = input.Split(' ');
+            foreach (var guild in guilds)
+            {
+                if (string.IsNullOrWhiteSpace(guild)) continue;
+                if (checkedGuilds.Any(g => g.ToString() == guild)) continue;
+                checkedGuilds.Add(guild);
+
+                var id = Setup.Constants.RegularExpressions.DiscordIdPattern.Match(guild).ToString();
+
+                DiscordGuild guildToAdd;
+                try
+                {
+                    guildToAdd = Setup.State.Discord.Client.Guilds[Convert.ToUInt64(id)];
+                }
+                catch (Exception e) when (e is FormatException or KeyNotFoundException)
+                {
+                    // Couldn't parse or Discord returned an error, skip
+                    continue;
+                }
+
+                guildsToIgnore.Add(guildToAdd.Id);
+            }
+        }
+
+        return guildsToIgnore;
     }
 }

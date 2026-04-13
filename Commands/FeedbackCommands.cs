@@ -25,7 +25,7 @@ internal class FeedbackCommands
             Color = Setup.Constants.BotColor,
             Description = feedbackMsg
         };
-        embed.AddField("Sent by", $"{UserInfoHelpers.GetFullUsername(ctx.User)} (`{ctx.User.Id}`)");
+        embed.AddField("Sent by", $"{ctx.User.GetFullUsername()} (`{ctx.User.Id}`)");
         if (ctx.Guild is not null)
             embed.AddField("Sent from", $"\"{ctx.Guild.Name}\" (`{ctx.Guild.Id}`)");
         await Setup.Configuration.Discord.Channels.Feedback.SendMessageAsync(embed);

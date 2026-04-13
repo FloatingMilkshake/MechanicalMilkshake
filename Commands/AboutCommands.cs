@@ -28,14 +28,14 @@ internal class AboutCommands
         if (!string.IsNullOrWhiteSpace(privacyPolicyUrl))
             embed.Description += $"\n\nMy Privacy Policy can be found [here]({privacyPolicyUrl})!";
 
-        var remoteUrl = await FileHelpers.ReadFileAsync("RemoteUrl.txt");
+        var remoteUrl = await File.ReadAllTextOrFallbackAsync("RemoteUrl.txt");
         if (remoteUrl != "") embed.AddField("Source Code Repository", remoteUrl);
 
         var botOwners = ctx.Client.CurrentApplication.Owners.ToList();
 
         var ownerOutput = botOwners.Count == 1
-            ? $"The bot owner is @{UserInfoHelpers.GetFullUsername(botOwners.First())}."
-            : "Bot owners are:" + string.Join("\n", botOwners.Select(o => $"- @{UserInfoHelpers.GetFullUsername(o)}"));
+            ? $"The bot owner is @{botOwners.First().GetFullUsername()}."
+            : "Bot owners are:" + string.Join("\n", botOwners.Select(o => $"- @{o.GetFullUsername()}"));
 
         embed.AddField("Owners", ownerOutput);
 
@@ -58,7 +58,7 @@ internal class AboutCommands
 
         if (extended)
         {
-            await ctx.FollowupAsync((await DebugInfoHelpers.GenerateDebugInfoEmbedAsync(false)).WithTitle("Version"));
+            await ctx.FollowupAsync((await Setup.Types.DebugInfo.CreateDebugInfoEmbedAsync(false)).WithTitle("Version"));
             return;
         }
 

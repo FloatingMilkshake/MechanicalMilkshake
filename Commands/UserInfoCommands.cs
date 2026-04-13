@@ -16,21 +16,21 @@ internal class UserInfoCommands
             if (ctx.Guild is not null)
             {
                 var member = await ctx.Guild.GetMemberAsync(targetUser.Id);
-                userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(member);
+                userInfoEmbed = member.CreateUserInfoEmbed();
             }
             else
             {
-                userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(targetUser);
+                userInfoEmbed = targetUser.CreateUserInfoEmbed();
             }
         }
         catch (NotFoundException)
         {
             // Member cannot be fetched (so is probably not in the guild); get user info embed with basic information
-            userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(targetUser);
+            userInfoEmbed = targetUser.CreateUserInfoEmbed();
         }
 
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
-            .WithContent($"User Info for **{UserInfoHelpers.GetFullUsername(targetUser)}**")
+            .WithContent($"User Info for **{targetUser.GetFullUsername()}**")
             .AddEmbed(userInfoEmbed).AsEphemeral(true));
     }
 
@@ -49,19 +49,19 @@ internal class UserInfoCommands
             if (ctx.Guild is not null)
             {
                 var member = await ctx.Guild.GetMemberAsync(user.Id);
-                userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(member);
+                userInfoEmbed = member.CreateUserInfoEmbed();
             }
             else
             {
-                userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(user);
+                userInfoEmbed = user.CreateUserInfoEmbed();
             }
         }
         catch (NotFoundException)
         {
-            userInfoEmbed = await UserInfoHelpers.GenerateUserInfoEmbed(user);
+            userInfoEmbed = user.CreateUserInfoEmbed();
         }
 
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
-            .WithContent($"User Info for **{UserInfoHelpers.GetFullUsername(user)}**").AddEmbed(userInfoEmbed));
+            .WithContent($"User Info for **{user.GetFullUsername()}**").AddEmbed(userInfoEmbed));
     }
 }

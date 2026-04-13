@@ -48,7 +48,7 @@ internal class EvalCommands
             return;
         }
 
-        var splitOutput = await StringHelpers.SplitStringAsync($"```\n{cmdResponse.Output}\n{cmdResponse.Error}\n```");
+        var splitOutput = $"```\n{cmdResponse.Output}\n{cmdResponse.Error}\n```".SplitForDiscord();
 
         foreach (var part in splitOutput)
         {
@@ -115,7 +115,7 @@ internal class EvalCommands
                     return;
                 }
 
-                var splitOutput = await StringHelpers.SplitStringAsync(HideSensitiveInfo(result.ReturnValue.ToString()));
+                var splitOutput = HideSensitiveInfo(result.ReturnValue.ToString()).SplitForDiscord();
 
                 foreach (var part in splitOutput)
                 {

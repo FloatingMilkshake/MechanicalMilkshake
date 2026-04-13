@@ -1,6 +1,4 @@
-﻿using static MechanicalMilkshake.Helpers.ReminderHelpers;
-
-namespace MechanicalMilkshake.Commands;
+﻿namespace MechanicalMilkshake.Commands;
 
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
 internal class ReminderCommands
@@ -33,30 +31,28 @@ internal class ReminderCommands
         {
             await ctx.DeferResponseAsync();
 
-            var (parsedTime, error) = ValidateReminderTriggerTime(time);
+            var (parsedTime, error) = Setup.Types.Reminder.ParseTriggerTime(time);
             if (parsedTime is null)
             {
                 await ctx.RespondAsync(error, ephemeral: true);
                 return;
             }
 
-            Setup.Types.Reminder reminder = new()
-            {
-                UserId = ctx.User.Id,
-                ChannelId = ctx.Channel.Id,
-                GuildId = ctx.Guild is null ? "@me" : ctx.Guild.Id.ToString(),
-                ReminderId = await GenerateUniqueReminderIdAsync(),
-                ReminderText = text,
-                TriggerTime = parsedTime.Value,
-                SetTime = DateTime.Now
-            };
-
-            var reminderTriggerTimeTimestamp = reminder.GetTriggerTimeTimestamp();
+            var reminderId = await Setup.Types.Reminder.GenerateUniqueIdAsync();
+            var reminderTriggerTimeTimestamp = parsedTime.Value.ToUnixTimeSeconds();
 
             var message = await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent($"Reminder set for <t:{reminderTriggerTimeTimestamp}:F> (<t:{reminderTriggerTimeTimestamp}:R>)!" +
-                                    $"\nReminder ID: `{reminder.ReminderId}`"));
-            reminder.MessageId = message.Id;
+                                    $"\nReminder ID: `{reminderId}`"));
+
+            var reminder = new Setup.Types.Reminder(ctx.User.Id,
+                ctx.Channel.Id,
+                ctx.Guild is null ? "@me" : ctx.Guild.Id.ToString(),
+                message.Id,
+                reminderId,
+                text,
+                parsedTime.Value,
+                DateTime.Now);
 
             await Setup.Storage.Redis.HashSetAsync("reminders", reminder.ReminderId, JsonConvert.SerializeObject(reminder));
         }
@@ -67,19 +63,19 @@ internal class ReminderCommands
         {
             await ctx.DeferResponseAsync(true);
 
-            var userReminders = await GetUserRemindersAsync(ctx.User.Id);
+            var userReminders = await Setup.Types.Reminder.GetUserRemindersAsync(ctx.User.Id);
 
             if (userReminders.Count == 0)
             {
 
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent($"You don't have any reminders! Set one with {CommandHelpers.GetSlashCmdMention("reminder set")}.")
+                    .WithContent($"You don't have any reminders! Set one with {"reminder set".AsSlashCommandMention()}.")
                     .AsEphemeral(true));
                 return;
             }
 
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .AddEmbed(await CreateReminderListEmbedAsync(userReminders))
+                .AddEmbed(await userReminders.CreateEmbedAsync())
                 .AsEphemeral(true));
         }
 
@@ -89,18 +85,18 @@ internal class ReminderCommands
         {
             // We can't defer this!! Want to respond with a modal if the user has >25 reminders.
 
-            var userReminders = await GetUserRemindersAsync(ctx.User.Id);
+            var userReminders = await Setup.Types.Reminder.GetUserRemindersAsync(ctx.User.Id);
             if (userReminders.Count == 0)
             {
                 await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
-                    .WithContent($"You don't have any reminders! Set one with {CommandHelpers.GetSlashCmdMention("reminder set")}.")
+                    .WithContent($"You don't have any reminders! Set one with {"reminder set".AsSlashCommandMention()}.")
                     .AsEphemeral(true));
                 return;
             }
             else if (userReminders.Count <= 25)
             {
                 await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent("Please choose a reminder to delete.")
-                    .AddActionRowComponent(CreateSelectComponentFromReminders(userReminders, "selectmenu-callback-reminder-delete"))
+                    .AddActionRowComponent(userReminders.CreateSelectComponent("selectmenu-callback-reminder-delete"))
                     .AsEphemeral(true));
             }
             else
@@ -109,7 +105,7 @@ internal class ReminderCommands
                 // I wanted to paginate a select menu instead, but Discord and D#+ limitations make that really difficult for now. (cba writing my own pagination)
 
                 var modalText = "You have a lot of reminders! Please enter the ID of the reminder you wish to delete." +
-                    $" You can see reminder IDs with {CommandHelpers.GetSlashCmdMention("reminder list")}.";
+                    $" You can see reminder IDs with {"reminder list".AsSlashCommandMention()}.";
 
                 await ctx.RespondWithModalAsync(new DiscordModalBuilder().WithCustomId("modal-callback-reminder-delete").WithTitle("Delete a Reminder")
                     .AddTextDisplay(modalText)
@@ -123,11 +119,11 @@ internal class ReminderCommands
         {
             // We can't defer this!! Want to respond with a modal if the user has >25 reminders.
 
-            var userReminders = await GetUserRemindersAsync(ctx.User.Id);
+            var userReminders = await Setup.Types.Reminder.GetUserRemindersAsync(ctx.User.Id);
             if (userReminders.Count == 0)
             {
                 await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
-                    .WithContent($"You don't have any reminders! Set one with {CommandHelpers.GetSlashCmdMention("reminder set")}.")
+                    .WithContent($"You don't have any reminders! Set one with {"reminder set".AsSlashCommandMention()}.")
                     .AsEphemeral(true));
                 return;
             }
@@ -135,7 +131,7 @@ internal class ReminderCommands
             {
                 await ctx.RespondAsync(
                 new DiscordInteractionResponseBuilder().WithContent("Please choose a reminder to modify.")
-                    .AddActionRowComponent(CreateSelectComponentFromReminders(userReminders, "selectmenu-callback-reminder-modify"))
+                    .AddActionRowComponent(userReminders.CreateSelectComponent("selectmenu-callback-reminder-modify"))
                     .AsEphemeral(true));
             }
             else
@@ -144,7 +140,7 @@ internal class ReminderCommands
                 // I wanted to paginate a select menu instead, but Discord and D#+ limitations make that really difficult for now. (cba writing my own pagination)
 
                 var modalText = "You have a lot of reminders! Please enter the ID of the reminder you wish to modify." +
-                    $" You can see reminder IDs with {CommandHelpers.GetSlashCmdMention("reminder list")}.";
+                    $" You can see reminder IDs with {"reminder list".AsSlashCommandMention()}.";
 
                 await ctx.RespondWithModalAsync(new DiscordModalBuilder().WithCustomId("modal-callback-reminder-modify").WithTitle("Modify a Reminder")
                     .AddTextDisplay(modalText)
@@ -169,9 +165,19 @@ internal class ReminderCommands
             {
                 message = await ctx.Channel.GetMessageAsync(Convert.ToUInt64(msgId));
             }
-            catch
+            catch (FormatException)
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"I couldn't parse \"{msgId}\" as a message ID! Please try again."));
+                return;
+            }
+            catch (NotFoundException)
+            {
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"I couldn't find that message! Please check the message ID you entered and try again."));
+                return;
+            }
+            catch (UnauthorizedException)
+            {
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"I couldn't read that message! Please make sure I have permission to read message history and try again."));
                 return;
             }
 
@@ -183,33 +189,31 @@ internal class ReminderCommands
                 return;
             }
 
-            var (triggerTime, error) = ValidateReminderTriggerTime(time);
+            var (triggerTime, error) = Setup.Types.Reminder.ParseTriggerTime(time);
             if (triggerTime is null)
             {
                 await ctx.RespondAsync(error);
                 return;
             }
 
-            Setup.Types.Reminder reminder = new()
-            {
-                UserId = ctx.User.Id,
-                ChannelId = ctx.Channel.Id,
-                MessageId = message.Id,
-                GuildId = ctx.Guild is null ? "@me" : ctx.Guild.Id.ToString(),
-                ReminderId = await GenerateUniqueReminderIdAsync(),
-                ReminderText = message.Embeds[0].Description,
-                TriggerTime = triggerTime.Value,
-                SetTime = DateTime.Now
-            };
+            var reminderId = await Setup.Types.Reminder.GenerateUniqueIdAsync();
+            var triggerTimeTimestamp = triggerTime.Value.ToUnixTimeSeconds();
 
-            var triggerTimeTimestamp = reminder.GetTriggerTimeTimestamp();
             var response = await ctx.FollowupAsync(
                 new DiscordFollowupMessageBuilder().WithContent(
-                        $"[Reminder]({reminder.GetJumpLink()})" +
+                        $"[Reminder]({message.JumpLink})" +
                         $" pushed back to <t:{triggerTimeTimestamp}:F> (<t:{triggerTimeTimestamp}:R>)!" +
-                        $"\nReminder ID: `{reminder.ReminderId}`")
+                        $"\nReminder ID: `{reminderId}`")
                     .AsEphemeral());
-            reminder.MessageId = response.Id;
+
+            var reminder = new Setup.Types.Reminder(ctx.User.Id,
+                ctx.Channel.Id,
+                ctx.Guild is null ? "@me" : ctx.Guild.Id.ToString(),
+                response.Id,
+                reminderId,
+                message.Embeds[0].Description,
+                triggerTime.Value,
+                DateTime.Now);
 
             await Setup.Storage.Redis.HashSetAsync("reminders", reminder.ReminderId, JsonConvert.SerializeObject(reminder));
         }
@@ -220,7 +224,7 @@ internal class ReminderCommands
         {
             await ctx.DeferResponseAsync(true);
 
-            var (reminder, error) = await GetReminderAsync(id, ctx.User.Id);
+            var (reminder, error) = await Setup.Types.Reminder.GetReminderAsync(id, ctx.User.Id);
             if (reminder is null)
             {
                 await ctx.RespondAsync(error, ephemeral: true);

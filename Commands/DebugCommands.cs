@@ -56,20 +56,10 @@ internal class DebugCommands
     [Description("Restart the bot.")]
     public static async Task DebugRestartCommandAsync(SlashCommandContext ctx)
     {
-        try
-        {
-            var dockerCheckFile = await File.ReadAllTextAsync("/proc/self/cgroup");
-            if (string.IsNullOrWhiteSpace(dockerCheckFile))
-            {
-                await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent(
-                    $"The bot may not be running under Docker; restart is unavailable. Use {CommandHelpers.GetSlashCmdMention("debug shutdown")} if you wish to shut down the bot."));
-                return;
-            }
-        }
-        catch
+        if (!File.Exists("/proc/self/cgroup"))
         {
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent(
-                $"The bot may not be running under Docker; restart is unavailable. Use {CommandHelpers.GetSlashCmdMention("debug shutdown")} if you wish to shut down the bot."));
+                $"The bot may not be running under Docker; restart is unavailable. Use {"debug shutdown".AsSlashCommandMention()} if you wish to shut down the bot."));
             return;
         }
 
@@ -96,8 +86,8 @@ internal class DebugCommands
         foreach (var userId in Setup.Configuration.ConfigJson.BotCommanders)
             BotCommanders.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
 
-        var botOwnerList = string.Join("\n", botOwners.Select(o => $"- @{UserInfoHelpers.GetFullUsername(o)} (`{o.Id}`)"));
-        var botCommanderList = string.Join("\n", BotCommanders.Select(c => $"- @{UserInfoHelpers.GetFullUsername(c)} (`{c.Id}`)"));
+        var botOwnerList = string.Join("\n", botOwners.Select(o => $"- @{o.GetFullUsername()} (`{o.Id}`)"));
+        var botCommanderList = string.Join("\n", BotCommanders.Select(c => $"- @{c.GetFullUsername()} (`{c.Id}`)"));
 
         embed.AddField("Bot Owners", botOwnerList);
         embed.AddField("Bot Commanders",
@@ -153,7 +143,7 @@ internal class DebugCommands
 
         try
         {
-            embed.WithDescription($"<t:{DateHelpers.GetUnixTimestamp(HumanDateParser.HumanDateParser.Parse(date))}:F>");
+            embed.WithDescription($"<t:{HumanDateParser.HumanDateParser.Parse(date).ToUnixTimeSeconds()}:F>");
         }
         catch (ParseException ex)
         {
@@ -239,7 +229,7 @@ internal class DebugCommands
                          select new KeyValuePair<string, int>(cmd.Name, int.Parse(cmd.Value))).ToList();
         cmdCounts.Sort((x, y) => y.Value.CompareTo(x.Value));
 
-        var output = string.Join("\n", cmdCounts.Select(c => $"{CommandHelpers.GetSlashCmdMention(c.Key)}: {c.Value}"));
+        var output = string.Join("\n", cmdCounts.Select(c => $"{c.Key.AsSlashCommandMention()}: {c.Value}"));
 
         if (string.IsNullOrWhiteSpace(output))
             output = "I don't have any command counts saved!";

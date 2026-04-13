@@ -1,14 +1,14 @@
 ﻿namespace MechanicalMilkshake.Setup;
 
-internal class Configuration
+internal static class Configuration
 {
     internal static ConfigJson ConfigJson;
 
-    internal class Discord
+    internal static class Discord
     {
         internal static DiscordGuild HomeServer;
 
-        internal class Channels
+        internal static class Channels
         {
             internal static DiscordChannel Home;
             internal static DiscordChannel GuildLogs;

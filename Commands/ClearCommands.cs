@@ -86,13 +86,8 @@ internal class ClearCommands
             catch (UnauthorizedException)
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent("I don't have permission to read messages in this channel, so I can't find the messages to be deleted! This is necessary to apply any filters you may have set. Make sure I have the `View Channel` and `Read Message History` permissions for this channel.")
+                    .WithContent("I don't have permission to read messages in this channel, so I can't find the messages to be deleted! This is necessary to apply any filters you may have set. Make sure I have the **View Channel** and **Read Message History** permissions for this channel.")
                     .AsEphemeral(true));
-                return;
-            }
-            catch (Exception ex)
-            {
-                await LogClearErrorAsync(ctx, ex);
                 return;
             }
             messagesToClear = messages.ToList();
@@ -151,18 +146,8 @@ internal class ClearCommands
             catch (UnauthorizedException) // User specified a msg the bot can't read
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent("I don't have permission to read the message you provided for `up_to`, or it was not sent in this channel! Please make sure I have the `View Channel` and `Read Message History` permissions in this channel, and that you've provided a message ID or link for a message in this channel.")
+                    .WithContent("I don't have permission to read the message you provided for `up_to`, or it was not sent in this channel! Please make sure I have the **View Channel** and **Read Message History** permissions in this channel, and that you've provided a message ID or link for a message in this channel.")
                     .AsEphemeral(true));
-                return;
-            }
-            catch (Exception ex) // Just catch the rest for clean errors or logging or whatever
-            {
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent($"Something went wrong when I tried to find the message you provided for `up_to`! Please make sure you provided a valid message ID or link. `{ex.GetType()}: {ex.Message}`")
-                    .AsEphemeral(true));
-
-                // Log to home channel
-                await LogClearErrorAsync(ctx, ex);
                 return;
             }
         }
@@ -287,7 +272,7 @@ internal class ClearCommands
                     try
                     {
                         await ctx.Channel.DeleteMessagesAsync(messagesToClear,
-                            $"[Clear by {UserInfoHelpers.GetFullUsername(ctx.User)}]");
+                            $"[Clear by {ctx.User.GetFullUsername()}]");
                     }
                     catch (UnauthorizedException)
                     {
@@ -314,16 +299,5 @@ internal class ClearCommands
                     "There were no messages that matched all of the arguments you provided! Nothing to do."));
                 break;
         }
-    }
-
-    private static async Task LogClearErrorAsync(SlashCommandContext ctx, Exception ex)
-    {
-        await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(new DiscordMessageBuilder().AddEmbed(new DiscordEmbedBuilder()
-        {
-            Color = DiscordColor.Red,
-            Title = "An exception occurred when executing a slash command",
-            Description = $"An exception occurred when {ctx.User.Mention} used `/clear`. Details are below."
-        }
-            .AddField("Exception Details", $"```\n{ex.GetType()}: {ex.Message}\n{ex.StackTrace}\n```")));
     }
 }

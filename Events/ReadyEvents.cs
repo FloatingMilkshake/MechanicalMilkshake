@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Events;
 
-internal class ReadyEvent
+internal class ReadyEvents
 {
     internal static async Task HandleReadyEventAsync(DiscordClient _, SessionCreatedEventArgs __)
     {

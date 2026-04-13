@@ -19,7 +19,7 @@ internal class AvatarCommands
         {
             member = await ctx.Guild.GetMemberAsync(targetUser.Id);
         }
-        catch
+        catch (NotFoundException)
         {
             // User is not in the server, so no guild avatar available
         }
@@ -55,7 +55,7 @@ internal class AvatarCommands
         {
             member = await ctx.Guild.GetMemberAsync(user.Id);
         }
-        catch
+        catch (NotFoundException)
         {
             // User is not in the server, so no guild avatar available
         }

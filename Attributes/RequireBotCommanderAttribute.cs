@@ -2,7 +2,7 @@
 
 internal class RequireBotCommanderAttribute : ContextCheckAttribute;
 
-internal class RequireBotCommanderCheck : IContextCheck<RequireBotCommanderAttribute>
+internal class RequireBotCommanderContextCheck : IContextCheck<RequireBotCommanderAttribute>
 {
     public ValueTask<string> ExecuteCheckAsync(RequireBotCommanderAttribute _, CommandContext ctx) =>
         ValueTask.FromResult(Setup.Configuration.ConfigJson.BotCommanders.Contains(ctx.User.Id.ToString())

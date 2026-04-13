@@ -1,6 +1,6 @@
 ﻿namespace MechanicalMilkshake.Setup;
 
-internal class Storage
+internal static class Storage
 {
 #if DEBUG
     private static readonly ConnectionMultiplexer RedisConnection = ConnectionMultiplexer.Connect("localhost:6379");

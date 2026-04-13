@@ -18,11 +18,18 @@ internal class KickCommands
         {
             memberToKick = await ctx.Guild.GetMemberAsync(userToKick.Id);
         }
-        catch
+        catch (NotFoundException)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent(
-                    $"Hmm, **{UserInfoHelpers.GetFullUsername(userToKick)}** doesn't seem to be in the server.")
+                .WithContent($"Hmm, **{userToKick.GetFullUsername()}** doesn't seem to be in the server.")
+                .AsEphemeral(true));
+            return;
+        }
+
+        if (memberToKick != default && ctx.Member.Hierarchy <= memberToKick.Hierarchy)
+        {
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent($"You don't have permission to ban **{memberToKick.GetFullUsername()}**!")
                 .AsEphemeral(true));
             return;
         }
@@ -31,11 +38,10 @@ internal class KickCommands
         {
             await memberToKick.RemoveAsync(reason);
         }
-        catch
+        catch (UnauthorizedException)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent(
-                    $"Something went wrong. You or I may not be allowed to kick **{UserInfoHelpers.GetFullUsername(userToKick)}**! Please check the role hierarchy and permissions.")
+                .WithContent($"I don't have permission to kick **{userToKick.GetFullUsername()}**! Please check the role hierarchy and permissions.")
                 .AsEphemeral(true));
             return;
         }

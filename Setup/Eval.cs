@@ -1,12 +1,12 @@
 ﻿namespace MechanicalMilkshake.Setup;
 
-public class Eval
+public static class Eval
 {
     internal static readonly List<string> RestrictedTerms = ["poweroff", "shutdown", "reboot", "halt"];
     internal static readonly string[] Imports = ["System", "System.Collections.Generic", "System.Linq",
             "System.Text", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.Commands",
             "DSharpPlus.Interactivity", "DSharpPlus.Entities", "Microsoft.Extensions.Logging",
-            Assembly.GetExecutingAssembly().GetName().Name];
+            "MechanicalMilkshake"];
 
     public class Globals
     {
@@ -21,13 +21,15 @@ public class Eval
             CToken = ctoken;
         }
 
-        public DiscordClient Client { get; set; }
-        public DiscordMessage Message { get; set; }
-        public DiscordChannel Channel { get; set; }
-        public DiscordGuild Guild { get; set; }
-        public DiscordUser User { get; set; }
-        public DiscordMember Member { get; set; }
-        public SlashCommandContext Context { get; set; }
-        public CancellationToken CToken { get; set; }
+        private Globals() { }
+
+        public DiscordClient Client { get; private set; }
+        public DiscordMessage Message { get; private set; }
+        public DiscordChannel Channel { get; private set; }
+        public DiscordGuild Guild { get; private set; }
+        public DiscordUser User { get; private set; }
+        public DiscordMember Member { get; private set; }
+        public SlashCommandContext Context { get; private set; }
+        public CancellationToken CToken { get; private set; }
     }
 }

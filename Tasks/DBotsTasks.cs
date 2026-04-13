@@ -13,7 +13,7 @@ internal class DBotsTasks
         while (true)
         {
             await UpdateStatsAsync();
-            await Task.Delay(TimeSpan.FromHours(1));
+            await Task.Delay(TimeSpan.FromHours(24));
         }
     }
 

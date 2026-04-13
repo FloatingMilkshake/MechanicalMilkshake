@@ -18,15 +18,15 @@ internal class BanCommands
         {
             targetMember = await ctx.Guild.GetMemberAsync(userToBan.Id);
         }
-        catch
+        catch (NotFoundException)
         {
             // not in server
         }
 
-        if (targetMember != default && ctx.Member.Hierarchy < targetMember.Hierarchy)
+        if (targetMember != default && ctx.Member.Hierarchy <= targetMember.Hierarchy)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"You don't have permission to ban **{UserInfoHelpers.GetFullUsername(userToBan)}**!")
+                .WithContent($"You don't have permission to ban **{userToBan.GetFullUsername()}**!")
                 .AsEphemeral(true));
             return;
         }
@@ -38,14 +38,7 @@ internal class BanCommands
         catch (UnauthorizedException)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"I don't have permission to ban **{UserInfoHelpers.GetFullUsername(userToBan)}**! Please check the role hierarchy and permissions.")
-                .AsEphemeral(true));
-            return;
-        }
-        catch (Exception e)
-        {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    $"Hmm, something went wrong while trying to ban that user! Discord says the error was `{e.Message}`.")
+                .WithContent($"I don't have permission to ban **{userToBan.GetFullUsername()}**! Please check the role hierarchy and permissions.")
                 .AsEphemeral(true));
             return;
         }
@@ -70,7 +63,7 @@ internal class BanCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
-                    $"I don't have permission to unban **{UserInfoHelpers.GetFullUsername(userToUnban)}**! Please check the role hierarchy and permissions.")
+                    $"I don't have permission to unban **{userToUnban.GetFullUsername()}**! Please check the role hierarchy and permissions.")
                 .AsEphemeral(true));
             return;
         }
@@ -85,6 +78,6 @@ internal class BanCommands
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent("User unbanned successfully.").AsEphemeral(true));
         await ctx.Channel.SendMessageAsync(
-            $"Successfully unbanned **{UserInfoHelpers.GetFullUsername(userToUnban)}**!");
+            $"Successfully unbanned **{userToUnban.GetFullUsername()}**!");
     }
 }

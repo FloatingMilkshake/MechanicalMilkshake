@@ -7,7 +7,6 @@ internal class CommandTasks
         while (true)
         {
             await PopulateApplicationCommandListAsync();
-            //await Task.Delay(TimeSpan.FromMinutes(1));
             return;
         }
     }

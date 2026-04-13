@@ -6,7 +6,7 @@ internal class MessageEvents
     {
         try
         {
-            await KeywordTrackingHelpers.KeywordCheck(e.Message, true);
+            await e.Message.CheckForTrackedKeywordsAsync(true);
         }
         catch (Exception ex)
         {
@@ -21,7 +21,7 @@ internal class MessageEvents
             if (Setup.Configuration.ConfigJson.UseServerSpecificFeatures)
                 await ServerSpecificFeatures.EventChecks.MessageCreateChecks(e);
 
-            await KeywordTrackingHelpers.KeywordCheck(e.Message);
+            await e.Message.CheckForTrackedKeywordsAsync();
 
             if (e.Channel.IsPrivate)
             {
@@ -67,7 +67,7 @@ internal class MessageEvents
             Color = DiscordColor.Red,
             Description =
                 $"`{ex.GetType()}` occurred when processing [this message]({message.JumpLink}) (message `{message.Id}` in channel `{message.Channel.Id}`).",
-            Title = $"An exception occurred when processing a Message {eventType} event"
+            Title = $"An exception occurred when processing a message {eventType.ToString().ToLower()} event"
         };
         embed.AddField("Message", $"{ex.Message}");
 
@@ -100,7 +100,7 @@ internal class MessageEvents
                 DiscordEmbedBuilder embed = new()
                 {
                     Color = DiscordColor.Yellow,
-                    Title = $"DM received from {UserInfoHelpers.GetFullUsername(e.Author)}!",
+                    Title = $"DM received from {e.Author.GetFullUsername()}!",
                     Description = $"{e.Message.Content}",
                     Timestamp = DateTime.UtcNow
                 };
@@ -214,17 +214,32 @@ internal class MessageEvents
             {
                 targetChannel = await client.GetChannelAsync(Convert.ToUInt64(idMatch.Value));
             }
-            catch
+            catch (NotFoundException)
             {
                 try
                 {
                     targetUser = await client.GetUserAsync(Convert.ToUInt64(idMatch.Value));
                     targetChannel = await targetUser.CreateDmChannelAsync();
                 }
+                catch (FormatException)
+                {
+                    await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                        .WithContent($"Hmm, that doesn't look like a valid ID! Make sure it's a user or channel ID.")
+                        .WithReply(e.Message.Id));
+                    return;
+                }
+                catch (Exception ex) when (ex is UnauthorizedException or NotFoundException)
+                {
+                    await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                        .WithContent($"I can't DM that user!" +
+                                     $"\n```\n{ex.GetType()}: {ex.Message}\n```")
+                        .WithReply(e.Message.Id));
+                    return;
+                }
                 catch (Exception ex)
                 {
                     await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                        .WithContent($"Hmm, that doesn't look like a valid ID! Make sure it's a user or channel ID!" +
+                        .WithContent($"Something went wrong." +
                                      $"\n```\n{ex.GetType()}: {ex.Message}\n```")
                         .WithReply(e.Message.Id));
                     return;

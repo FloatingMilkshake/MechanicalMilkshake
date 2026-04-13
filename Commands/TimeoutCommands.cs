@@ -24,7 +24,7 @@ internal class TimeoutCommands
         {
             member = await ctx.Guild.GetMemberAsync(user.Id);
         }
-        catch
+        catch (NotFoundException)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent("Hmm. It doesn't look like that user is in the server, so I can't time them out.")
@@ -38,7 +38,7 @@ internal class TimeoutCommands
             parsedDuration = HumanDateParser.HumanDateParser.Parse(duration)
                 .Subtract(ctx.Interaction.CreationTimestamp.DateTime);
         }
-        catch
+        catch (HumanDateParser.ParseException)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"I couldn't parse \"{duration}\" as a length of time! Please try again.")
@@ -64,7 +64,7 @@ internal class TimeoutCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
-                    $"Something went wrong. You or I may not be allowed to time out **{UserInfoHelpers.GetFullUsername(user)}**! Please check the role hierarchy and permissions.")
+                    $"Something went wrong. You or I may not be allowed to time out **{user.GetFullUsername()}**! Please check the role hierarchy and permissions.")
                 .AsEphemeral(true));
             return;
         }
@@ -76,7 +76,7 @@ internal class TimeoutCommands
             return;
         }
 
-        var expireTimeTimestamp = DateHelpers.GetUnixTimestamp(expireTime);
+        var expireTimeTimestamp = expireTime.ToUnixTimeSeconds();
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent($"Successfully timed out {user.Mention} until `{expireTime}` (<t:{expireTimeTimestamp}:R>)!")
@@ -98,7 +98,7 @@ internal class TimeoutCommands
         {
             member = await ctx.Guild.GetMemberAsync(user.Id);
         }
-        catch
+        catch (NotFoundException)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
                 "Hmm. It doesn't look like that user is in the server, so I can't remove their timeout."));
@@ -112,7 +112,7 @@ internal class TimeoutCommands
         catch (UnauthorizedException)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                $"Something went wrong. You or I may not be allowed to clear the timeout for **{UserInfoHelpers.GetFullUsername(user)}**! Please check the role hierarchy and permissions."));
+                $"Something went wrong. You or I may not be allowed to clear the timeout for **{user.GetFullUsername()}**! Please check the role hierarchy and permissions."));
             return;
         }
         catch (Exception e)

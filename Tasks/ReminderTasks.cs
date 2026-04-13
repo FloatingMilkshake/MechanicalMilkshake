@@ -65,7 +65,7 @@ internal class ReminderTasks
 
                 var msg = await reminderChannel.SendMessageAsync(messageToSend.WithAllowedMentions([new UserMention(reminder.UserId)]));
 
-                ReminderHelpers.AddReminderDelayEmbedField(reminderEmbed, msg.Id);
+                Setup.Types.Reminder.AddDelayEmbedField(reminderEmbed, msg.Id);
                 await msg.ModifyAsync(msg.Content, reminderEmbed.Build());
 
                 await Setup.Storage.Redis.HashDeleteAsync("reminders", reminder.ReminderId);
@@ -84,7 +84,7 @@ internal class ReminderTasks
                     var msg = await user.SendMessageAsync($"<@{reminder.UserId}>, I have a reminder for you:", reminderEmbed);
 
                     // add delay field with message id
-                    ReminderHelpers.AddReminderDelayEmbedField(reminderEmbed, msg.Id);
+                    Setup.Types.Reminder.AddDelayEmbedField(reminderEmbed, msg.Id);
                     await msg.ModifyAsync(msg.Content, reminderEmbed.Build());
 
                     await Setup.Storage.Redis.HashDeleteAsync("reminders", reminder.ReminderId);
@@ -95,7 +95,7 @@ internal class ReminderTasks
                 {
                     // Couldn't DM user! Log error and delete reminder
 
-                    await ReminderHelpers.LogReminderErrorAsync(Setup.Configuration.Discord.Channels.Home, ex);
+                    await LogExceptionAsync(Setup.Configuration.Discord.Channels.Home, ex);
 
                     await Setup.Storage.Redis.HashDeleteAsync("reminders", reminder.ReminderId);
 
@@ -108,5 +108,23 @@ internal class ReminderTasks
         var numRemindersAfter = reminders.Length;
 
         return (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime);
+    }
+
+    private static async Task LogExceptionAsync(DiscordChannel logChannel, Exception ex)
+    {
+        DiscordEmbedBuilder errorEmbed = new()
+        {
+            Color = DiscordColor.Red,
+            Title = "An exception occurred when checking reminders",
+            Description =
+                $"`{ex.GetType()}` occurred when checking for overdue reminders."
+        };
+        errorEmbed.AddField("Message", $"{ex.Message}");
+        errorEmbed.AddField("Stack Trace", $"```\n{ex.StackTrace}\n```");
+
+        Setup.State.Discord.Client.Logger.LogError("An exception occurred when checking reminders!"
+            + "\n{exType}: {exMessage}\n{exStackTrace}", ex.GetType(), ex.Message, ex.StackTrace);
+
+        await logChannel.SendMessageAsync(errorEmbed);
     }
 }

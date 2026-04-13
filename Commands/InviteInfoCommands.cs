@@ -48,12 +48,12 @@ internal class InviteInfoCommands
             embed.AddField("Inviter",
                 invite.Inviter is null
                     ? "unknown"
-                    : $"{UserInfoHelpers.GetFullUsername(invite.Inviter)} (`{invite.Inviter.Id}`)");
+                    : $"{invite.Inviter.GetFullUsername()} (`{invite.Inviter.Id}`)");
 
             embed.AddField("Expires At",
                 invite.ExpiresAt is null
                     ? "Invite does not expire."
-                    : $"<t:{DateHelpers.GetUnixTimestamp(invite.ExpiresAt.Value)}:F> (<t:{DateHelpers.GetUnixTimestamp(invite.ExpiresAt.Value)}:R>)");
+                    : $"<t:{invite.ExpiresAt.Value.ToUnixTimeSeconds()}:F> (<t:{invite.ExpiresAt.Value.ToUnixTimeSeconds()}:R>)");
         }
 
         var verifLevelDesc = invite.Guild.VerificationLevel switch
@@ -67,7 +67,7 @@ internal class InviteInfoCommands
         };
         embed.AddField("Verification Level", verifLevelDesc);
 
-        var guildCreationTimestamp = DateHelpers.GetUnixTimestamp(invite.Guild.CreationTimestamp);
+        var guildCreationTimestamp = invite.Guild.CreationTimestamp.ToUnixTimeSeconds();
         embed.AddField("Server Created On", $"<t:{guildCreationTimestamp}:F> (<t:{guildCreationTimestamp}:R>)");
 
         embed.AddField("Members", invite.ApproximateMemberCount is null ? "unknown" : invite.ApproximateMemberCount.ToString(), true);

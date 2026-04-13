@@ -50,13 +50,13 @@ internal class ServerInfoCommands
 
         if (guild.Description is not null) description = guild.Description;
 
-        var createdAt = $"{DateHelpers.GetUnixTimestamp(guild.Id)}";
+        var createdAt = $"{guild.Id.ToUnixTimeSeconds()}";
 
         var categoryCount = guild.Channels.Count(channel => channel.Value.Type == DiscordChannelType.Category);
 
         var embed = new DiscordEmbedBuilder()
             .WithColor(Setup.Constants.BotColor)
-            .AddField("Server Owner", $"{UserInfoHelpers.GetFullUsername(await guild.GetGuildOwnerAsync())}")
+            .AddField("Server Owner", $"{(await guild.GetGuildOwnerAsync()).GetFullUsername()}")
             .AddField("Description", $"{description}")
             .AddField("Created on", $"<t:{createdAt}:F> (<t:{createdAt}:R>)")
             .AddField("Channels", $"{guild.Channels.Count - categoryCount}", true)

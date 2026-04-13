@@ -13,12 +13,7 @@ internal class Program
 #else
         const string configFile = "config.json";
 #endif
-        await using (var fs = File.OpenRead(configFile))
-        using (StreamReader sr = new(fs, new UTF8Encoding(false)))
-        {
-            json = await sr.ReadToEndAsync();
-        }
-
+        json = await File.ReadAllTextAsync(configFile);
         Setup.Configuration.ConfigJson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
         if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.HomeChannel) ||
@@ -35,7 +30,7 @@ internal class Program
 
         #region set up Discord client
         var clientBuilder = DiscordClientBuilder.CreateDefault(Setup.Configuration.ConfigJson.BotToken,
-            DiscordIntents.All.RemoveIntent(DiscordIntents.GuildPresences).RemoveIntent(DiscordIntents.GuildMembers));
+            DiscordIntents.AllUnprivileged.AddIntent(DiscordIntents.MessageContents));
 #if DEBUG
         clientBuilder.SetLogLevel(LogLevel.Debug);
 #else
@@ -51,7 +46,7 @@ internal class Program
             config.LogUnknownAuditlogs = false;
         });
         clientBuilder.ConfigureEventHandlers(builder =>
-            builder.HandleSessionCreated(ReadyEvent.HandleReadyEventAsync)
+            builder.HandleSessionCreated(ReadyEvents.HandleReadyEventAsync)
                     .HandleMessageCreated(MessageEvents.HandleMessageCreatedEventAsync)
                     .HandleMessageUpdated(MessageEvents.HandleMessageUpdatedEventAsync)
                     .HandleMessageDeleted(MessageEvents.HandleMessageDeletedEventAsync)
@@ -64,7 +59,6 @@ internal class Program
         );
         clientBuilder.UseInteractivity(new InteractivityConfiguration
         {
-            PollBehaviour = PollBehaviour.KeepEmojis,
             Timeout = TimeSpan.FromSeconds(30)
         });
         clientBuilder.UseCommands((_, extension) =>
@@ -85,8 +79,7 @@ internal class Program
             extension.AddProcessor(slashCommandProcessor);
 
             // Register context checks
-            extension.AddCheck<RequireBotCommanderCheck>();
-            extension.AddCheck<ServerSpecificFeatures.CommandChecks.AllowedServersContextCheck>();
+            extension.AddCheck<RequireBotCommanderContextCheck>();
 
             // Register error handling
             extension.CommandErrored += Errors.CommandErrors.HandleCommandErroredEventAsync;
@@ -94,8 +87,8 @@ internal class Program
             // Register logging
             extension.CommandExecuted += Events.InteractionEvents.HandleCommandExecutedEventAsync;
 
-            // Register interaction commands
-            CommandHelpers.RegisterCommands(extension);
+            // Register commands
+            extension.RegisterCommands();
 
         }, new CommandsConfiguration
         {
@@ -105,7 +98,7 @@ internal class Program
         Setup.State.Discord.Client = clientBuilder.Build();
         #endregion set up Discord client
 
-        await SetupHelpers.CheckConfigurationAsync();
+        await CheckConfigurationAsync();
 
         await Setup.State.Discord.Client.ConnectAsync();
 
@@ -113,7 +106,7 @@ internal class Program
         await Task.Delay(TimeSpan.FromSeconds(3));
 
         #region one-off tasks
-        // Populate BotInformation.ApplicationCommands
+        // Populate list of application commands
         await Task.Run(async () => CommandTasks.ExecuteAsync());
         #endregion one-off tasks
 
@@ -129,9 +122,79 @@ internal class Program
         #endregion recurring tasks
 
         // Send startup message
-        await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(await DebugInfoHelpers.GenerateDebugInfoEmbedAsync(true));
+        await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(await Setup.Types.DebugInfo.CreateDebugInfoEmbedAsync(true));
 
         // Wait indefinitely, let tasks continue running in async threads
         await Task.Delay(Timeout.InfiniteTimeSpan);
+    }
+
+    private static async Task CheckConfigurationAsync()
+    {
+        try
+        {
+            Setup.Configuration.Discord.HomeServer =
+                await Setup.State.Discord.Client.GetGuildAsync(Convert.ToUInt64(Setup.Configuration.ConfigJson.HomeServer));
+            Setup.Configuration.Discord.Channels.Home =
+                await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(Setup.Configuration.ConfigJson.HomeChannel));
+        }
+        catch (Exception)
+        {
+            Setup.State.Discord.Client.Logger.LogCritical("\"homeChannel\" or \"homeServer\" in config.json are misconfigured. Please make sure you have a valid ID for both of these values.");
+            Environment.Exit(1);
+        }
+
+        if (!string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.FeedbackChannel))
+        {
+            try
+            {
+                Setup.Configuration.Discord.Channels.Feedback =
+                    await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(Setup.Configuration.ConfigJson.FeedbackChannel));
+            }
+            catch (Exception)
+            {
+                Setup.State.Discord.Client.Logger.LogWarning("Feedback command disabled due to invalid or missing channel ID.");
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.GuildLogChannel))
+        {
+            try
+            {
+                Setup.Configuration.Discord.Channels.GuildLogs =
+                    await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(Setup.Configuration.ConfigJson.GuildLogChannel));
+            }
+            catch (Exception)
+            {
+                Setup.State.Discord.Client.Logger.LogWarning("Guild join/leave logs disabled due to invalid or missing channel ID.");
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.SlashCommandLogChannel))
+        {
+            try
+            {
+                Setup.Configuration.Discord.Channels.CommandLogs =
+                    await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(Setup.Configuration.ConfigJson.SlashCommandLogChannel));
+            }
+            catch (Exception)
+            {
+                Setup.State.Discord.Client.Logger.LogWarning("Interaction command logs disabled due to invalid or missing channel ID.");
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.WolframAlphaAppId))
+        {
+            Setup.State.Discord.Client.Logger.LogWarning("WolframAlpha commands disabled due to missing App ID.");
+        }
+
+        if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.UptimeKumaHeartbeatUrl))
+        {
+            Setup.State.Discord.Client.Logger.LogWarning("Uptime Kuma heartbeats disabled due to missing push URL.");
+        }
+
+        if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.DbotsApiToken))
+        {
+            Setup.State.Discord.Client.Logger.LogWarning("DBots stats posting disabled due to missing configuration.");
+        }
     }
 }

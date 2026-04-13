@@ -40,7 +40,7 @@ internal class MarkdownCommands
                     channel = await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(urlPatternMatch.Groups[2].Value));
                 message = await channel.GetMessageAsync(Convert.ToUInt64(urlPatternMatch.Groups[3].Value));
             }
-            catch
+            catch (Exception e) when (e is NotFoundException or UnauthorizedException)
             {
                 if (channel != default && channel.Id == currentChannel.Id)
                     response.WithContent("I wasn't able to read that message! Make sure I have permission to read message history.");
@@ -116,7 +116,7 @@ internal class MarkdownCommands
         {
             response.WithContent("That message doesn't have any text content! I can only parse the Markdown data from messages with content.");
         }
-        else if (response.Embeds.Sum(e => e.Description.Length + e.Title.Length + e.Fields.Sum(f => f.Name.Length + f.Value.Length)) > 6000)
+        else if (response.GetTotalEmbedTextContentLength() > 6000)
         {
             response.WithContent("Sorry, the output is too long for me to send here!");
         }
