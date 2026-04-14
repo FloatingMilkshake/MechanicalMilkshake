@@ -7,14 +7,12 @@ internal class Program
         Setup.Constants.HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("MechanicalMilkshake (https://github.com/FloatingMilkshake/MechanicalMilkshake)");
 
         #region read config.json
-        string json;
 #if DEBUG
         const string configFile = "config.dev.json";
 #else
         const string configFile = "config.json";
 #endif
-        json = await File.ReadAllTextAsync(configFile);
-        Setup.Configuration.ConfigJson = JsonConvert.DeserializeObject<ConfigJson>(json);
+        Setup.Configuration.ConfigJson = JsonConvert.DeserializeObject<Setup.Types.ConfigJson>(await File.ReadAllTextAsync(configFile));
 
         if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.HomeChannel) ||
             string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.HomeServer) ||
