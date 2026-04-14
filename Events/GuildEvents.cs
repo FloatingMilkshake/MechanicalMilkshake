@@ -42,7 +42,7 @@ internal class GuildEvents
         try
         {
             var owner = await guild.GetGuildOwnerAsync();
-            userInfoEmbed = new DiscordEmbedBuilder(owner.CreateUserInfoEmbed());
+            userInfoEmbed = new DiscordEmbedBuilder((owner as DiscordUser).CreateUserInfoEmbed());
             userInfoEmbed.WithColor(Setup.Constants.BotColor);
             userInfoEmbed.WithTitle("User Info for Server Owner");
             userInfoEmbed.WithDescription($"{owner.GetFullUsername()}");
