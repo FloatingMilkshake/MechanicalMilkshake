@@ -90,7 +90,7 @@ internal class CommandErrors
                 Title = "An exception occurred during command execution",
                 Color = DiscordColor.Red,
                 Description = $"An exception occurred when {e.Context.User.Username} (`{e.Context.User.Id}`) used `{commandName}`."
-                    + $"\n```\n{e.Exception.GetType()}: {e.Exception.Message}\n{e.Exception.StackTrace}\n```".Truncate(3800, "...\n```")
+                    + $"\n`{e.Exception.GetType()}: {e.Exception.Message}`"
             };
             await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(embed);
         }
@@ -98,8 +98,7 @@ internal class CommandErrors
         {
             // Oh well, still log to console
         }
-        Setup.State.Discord.Client.Logger.LogError("An exception occurred during command execution! When {userId} used {commandName}:"
-            + "\n{exceptionType}: {exceptionMessage}\n{exceptionStackTrace}", e.Context.User.Id, commandName,
-            e.Exception.GetType(), e.Exception.Message, e.Exception.StackTrace);
+        Setup.State.Discord.Client.Logger.LogError(e.Exception, "An exception occurred during command execution! When {userId} used {commandName}:",
+            e.Context.User.Id, commandName);
     }
 }

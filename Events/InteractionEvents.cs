@@ -391,11 +391,11 @@ internal class InteractionEvents
                 Title = "An exception occurred during an interaction event",
                 Color = DiscordColor.Red,
                 Description = $"An exception occurred when {e.User.Username} (`{e.User.Id}`) submitted an interaction with ID `{e.Id}`."
-                    + $"\n```\n{ex.GetType()}: {ex.Message}\n{ex.StackTrace}\n```".Truncate(3800, "...\n```")
+                    + $"\n`{ex.GetType()}: {ex.Message}`"
             });
 
-            Setup.State.Discord.Client.Logger.LogError("An exception occurred during an interaction event! When {userId} submitted an interaction with ID {id}:"
-                + "\n{exceptionType}: {exceptionMessage}\n{exceptionStackTrace}", e.User.Id, e.Id, ex.GetType(), ex.Message, ex.StackTrace);
+            Setup.State.Discord.Client.Logger.LogError(ex, "An exception occurred during an interaction event! When {userId} submitted an interaction with ID {id}:",
+                e.User.Id, e.Id);
         }
     }
 
@@ -620,11 +620,11 @@ internal class InteractionEvents
                 Title = "An exception occurred during a modal submit event",
                 Color = DiscordColor.Red,
                 Description = $"An exception occurred when {e.Interaction.User.Username} (`{e.Interaction.User.Id}`) submitted a modal with ID `{e.Id}`."
-                    + $"\n```\n{ex.GetType()}: {ex.Message}\n{ex.StackTrace}\n```".Truncate(3800, "...\n```")
+                    + $"\n`{ex.GetType()}: {ex.Message}`"
             });
 
-            Setup.State.Discord.Client.Logger.LogError("An exception occurred during a modal submit event! When {userId} submitted a modal with ID {id}:"
-                + "\n{exceptionType}: {exceptionMessage}\n{exceptionStackTrace}", e.Interaction.User.Id, e.Id, ex.GetType(), ex.Message, ex.StackTrace);
+            Setup.State.Discord.Client.Logger.LogError(ex, "An exception occurred during a modal submit event! When {userId} submitted a modal with ID {id}:",
+                e.Interaction.User.Id, e.Id);
         }
     }
 
@@ -685,13 +685,15 @@ internal class InteractionEvents
             {
                 Title = "An exception was thrown when logging a slash command",
                 Description =
-                    $"An exception was thrown when {context.User.Mention} used `/{context.Command.FullName}`. Details are below.",
+                    $"An exception was thrown when {context.User.Mention} used `/{context.Command.FullName}`:"
+                        + $"`{ex.GetType()}: {ex.Message}`",
                 Color = DiscordColor.Red
             };
-            embed.AddField("Exception Details",
-                $"```{ex.GetType()}: {ex.Message}:\n{ex.StackTrace}".Truncate(1020) + "\n```");
 
             await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(embed);
+
+            Setup.State.Discord.Client.Logger.LogError(ex, "An exception was thrown when logging a slash command! When {user} used {command}:",
+                context.User.Id, context.Command.FullName);
         }
 
     }

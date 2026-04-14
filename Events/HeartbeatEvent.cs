@@ -18,9 +18,9 @@ internal class HeartbeatEvent
         catch (Exception ex)
         {
             if (ex is HttpRequestException hrex)
-                Setup.State.Discord.Client.Logger.LogWarning("Uptime Kuma heartbeat failed with status code {statusCode}: {exType}: {exMessage}\n{stackTrace}", hrex.StatusCode, hrex.GetType(), hrex.Message, hrex.StackTrace);
+                Setup.State.Discord.Client.Logger.LogWarning(ex, "Uptime Kuma heartbeat failed with status code {statusCode}:", hrex.StatusCode);
             else
-                Setup.State.Discord.Client.Logger.LogWarning("Uptime Kuma heartbeat failed: {exType}: {exMessage}\n{stackTrace}", ex.GetType(), ex.Message, ex.StackTrace);
+                Setup.State.Discord.Client.Logger.LogWarning(ex, "Uptime Kuma heartbeat failed:");
 
             Setup.State.Process.LastUptimeKumaHeartbeatStatus = "failed";
         }

@@ -116,14 +116,10 @@ internal class ReminderTasks
         {
             Color = DiscordColor.Red,
             Title = "An exception occurred when checking reminders",
-            Description =
-                $"`{ex.GetType()}` occurred when checking for overdue reminders."
+            Description = $"`{ex.GetType()}: {ex.Message}`"
         };
-        errorEmbed.AddField("Message", $"{ex.Message}");
-        errorEmbed.AddField("Stack Trace", $"```\n{ex.StackTrace}\n```");
 
-        Setup.State.Discord.Client.Logger.LogError("An exception occurred when checking reminders!"
-            + "\n{exType}: {exMessage}\n{exStackTrace}", ex.GetType(), ex.Message, ex.StackTrace);
+        Setup.State.Discord.Client.Logger.LogError(ex, "An exception occurred when checking reminders!");
 
         await logChannel.SendMessageAsync(errorEmbed);
     }

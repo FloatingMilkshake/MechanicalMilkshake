@@ -71,10 +71,9 @@ internal class MessageEvents
         };
         embed.AddField("Message", $"{ex.Message}");
 
-        Setup.State.Discord.Client.Logger.LogError("An exception occurred when processing a Message {eventType} event!"
-            + "\n{exType}: {exMessage}\n{exStackTrace}", eventType, ex.GetType(), ex.Message, ex.StackTrace);
-
         await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(embed);
+
+        Setup.State.Discord.Client.Logger.LogError(ex, "An exception occurred when processing a message {eventType} event!", eventType.ToString().ToLower());
     }
 
     private static async Task HandleDirectMessageAsync(DiscordClient client, MessageCreatedEventArgs e)
@@ -132,8 +131,8 @@ internal class MessageEvents
         catch (Exception ex)
         {
             // Some part of the above process failed; the DM was not forwarded. Log to console & home channel if possible
-            Setup.State.Discord.Client.Logger.LogError("A DM was received, but could not be forwarded!\nMessage Content: {MessageContent}\nException Details: {ex.GetType()}: {ExMessage}\n{exStackTrace}",
-                e.Message.Content, ex.GetType(), ex.Message, ex.StackTrace);
+            Setup.State.Discord.Client.Logger.LogError(ex, "A DM was received, but could not be forwarded!\nMessage Content: {MessageContent}",
+                e.Message.Content);
 
             try
             {
@@ -144,12 +143,11 @@ internal class MessageEvents
                     Description = $"An exception was thrown when trying to forward a DM from {e.Message.Author.Mention} (`{e.Message.Author.Id}`) to a bot owner!"
                 }
                 .AddField("Message Content", string.IsNullOrWhiteSpace(e.Message.Content) ? "No content" : e.Message.Content)
-                .AddField("Exception Details", $"```\n{ex.GetType()}: {ex.Message}\n{ex.StackTrace}\n```"));
+                .AddField("Exception", $"`{ex.GetType()}: {ex.Message}`"));
             }
             catch (Exception ex2)
             {
-                Setup.State.Discord.Client.Logger.LogError("An exception occurred while forwarding a DM, and I was unable to properly log it!" +
-                    "\n{ex2Type}: {ex2Message}\n{ex2StackTrace}", ex2.GetType(), ex2.Message, ex2.StackTrace);
+                Setup.State.Discord.Client.Logger.LogError(ex2, "An exception occurred while forwarding a DM, and I was unable to properly log it!");
                 await Setup.Configuration.Discord.Channels.Home.SendMessageAsync("An exception occurred while forwarding a DM, and I was unable to properly log it here! Please check the console for details.");
             }
         }

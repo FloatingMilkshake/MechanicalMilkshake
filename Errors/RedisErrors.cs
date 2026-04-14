@@ -16,7 +16,8 @@ internal class RedisErrors
             // db ping failed
 
             // if exceptions are already suppressed, don't report
-            if (Setup.State.Process.RedisExceptionsSuppressed) return;
+            if (Setup.State.Process.RedisExceptionsSuppressed)
+                return;
 
             // report and suppress further timeout exceptions
 
@@ -32,8 +33,10 @@ internal class RedisErrors
                 {
                     Color = DiscordColor.Red,
                     Title = "A redis error occurred",
-                    Description = $"```{ex.GetType()}: {ex.Message}\n{ex.StackTrace}```".Truncate(4096),
+                    Description = $"`{ex.GetType()}: {ex.Message}`"
                 });
+
+            Setup.State.Discord.Client.Logger.LogError(ex, "A redis error occurred!");
 
             Setup.State.Process.RedisExceptionsSuppressed = true;
         }
