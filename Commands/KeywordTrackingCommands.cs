@@ -132,7 +132,8 @@ internal class KeywordTrackingCommands
         await ctx.DeferResponseAsync(true);
 
         var keywords = (await Setup.Storage.Redis.HashGetAllAsync("keywords")).Select(x => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(x.Value));
-        var keywordList = string.Join("\n", keywords.Select(k => $"- {k.Keyword.Truncate(45)}"));
+        var userKeywords = keywords.Where(k => k.UserId == ctx.User.Id);
+        var keywordList = string.Join("\n", userKeywords.Select(k => $"- {k.Keyword.Truncate(45)}"));
 
         DiscordEmbedBuilder embed = new()
         {
@@ -168,7 +169,7 @@ internal class KeywordTrackingCommands
             return;
         }
 
-        var thisKeyword = allKeywords.FirstOrDefault(k => k.UserId == ctx.User.Id && k.Keyword == keyword);
+        var thisKeyword = allKeywords.FirstOrDefault(k => k.UserId == ctx.User.Id && k.Id.ToString() == keyword);
 
         if (thisKeyword == default)
         {
