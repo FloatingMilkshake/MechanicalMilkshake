@@ -93,7 +93,7 @@ internal class KeywordTrackingCommands
             return;
         }
 
-        var thisKeyword = allKeywords.FirstOrDefault(k => k.UserId == ctx.User.Id && k.Keyword == keyword);
+        var thisKeyword = allKeywords.FirstOrDefault(k => k.UserId == ctx.User.Id && k.Id.ToString() == keyword);
 
         if (thisKeyword == default)
         {
@@ -118,7 +118,7 @@ internal class KeywordTrackingCommands
             await ParseChannelIgnoreListAsync(channelIgnoreList),
             await ParseGuildIgnoreListAsync(guildIgnoreList),
             thisKeyword.Id,
-            currentGuildOnly.Value ? ctx.Guild.Id : default);
+            currentGuildOnly is null ? default : currentGuildOnly.Value ? ctx.Guild.Id : default);
 
         await Setup.Storage.Redis.HashSetAsync("keywords", thisKeyword.Id, JsonConvert.SerializeObject(newKeywordObject));
 
@@ -201,7 +201,7 @@ internal class KeywordTrackingCommands
             return;
         }
 
-        var thisKeyword = userKeywords.FirstOrDefault(k => k.Keyword == keyword);
+        var thisKeyword = userKeywords.FirstOrDefault(k => k.Id.ToString() == keyword);
 
         if (thisKeyword == default)
         {
