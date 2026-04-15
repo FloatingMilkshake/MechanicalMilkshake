@@ -109,7 +109,14 @@ internal static class Types
                 var userKeywords = allKeywordRawData.Select(field => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(field.Value))
                     .Where(keyword => keyword.UserId == ctx.User.Id).ToList();
 
-                return userKeywords.Select(keyword => new DiscordAutoCompleteChoice(keyword.Keyword, keyword.Id.ToString())).ToList();
+                var focusedOption = ctx.Options.FirstOrDefault(x => x.Focused);
+
+                if (focusedOption is not null)
+                {
+                    return userKeywords.Where(k => k.Keyword.Contains(focusedOption.Value.ToString()))
+                        .Select(keyword => new DiscordAutoCompleteChoice(keyword.Keyword, keyword.Id.ToString())).ToList();
+                }
+                return default;
             }
         }
     }
