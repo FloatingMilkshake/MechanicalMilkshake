@@ -55,7 +55,7 @@ internal class KeywordTrackingCommands
         await Setup.Storage.Redis.HashSetAsync("keywords", ctx.Interaction.Id,
             JsonConvert.SerializeObject(trackedKeyword));
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-            .WithContent("Done!").AsEphemeral(true));
+            .WithContent($"Now tracking mentions of `{trackedKeyword.Keyword}`!").AsEphemeral(true));
     }
 
     [Command("edit")]
@@ -122,7 +122,7 @@ internal class KeywordTrackingCommands
 
         await Setup.Storage.Redis.HashSetAsync("keywords", thisKeyword.Id, JsonConvert.SerializeObject(newKeywordObject));
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("Done!").AsEphemeral(true));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"Successfully edited keyword `{newKeywordObject.Keyword}`!").AsEphemeral(true));
     }
 
     [Command("list")]
@@ -201,21 +201,27 @@ internal class KeywordTrackingCommands
             return;
         }
 
-        var thisKeyword = userKeywords.FirstOrDefault(k => k.Id.ToString() == keyword);
+        var keywordToDelete = userKeywords.FirstOrDefault(k => k.Id.ToString() == keyword);
 
-        if (thisKeyword == default)
+        if (keywordToDelete == default)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral(true));
             return;
         }
 
-        var embed = (await thisKeyword.CreateDetailsEmbedAsync())
-            .WithTitle("Are you sure you want to remove this keyword?").WithColor(DiscordColor.Red)
-            .WithDescription(thisKeyword.Keyword);
+        await Setup.Storage.Redis.HashDeleteAsync("keywords", keywordToDelete.Id);
 
-        DiscordButtonComponent confirmButton = new(DiscordButtonStyle.Danger, "button-callback-track-remove-confirm", "Remove");
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"No longer tracking mentions of `{keywordToDelete.Keyword}`.").AsEphemeral(true));
+    }
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AddActionRowComponent(confirmButton).AsEphemeral(true));
+    [Command("clear")]
+    [Description("Clear your list of tracked keywords.")]
+    public static async Task TrackClearCommandAsync(SlashCommandContext ctx)
+    {
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+            .WithContent("Are you sure you want to clear your list of tracked keywords? This cannot be undone!")
+            .AddActionRowComponent([new DiscordButtonComponent(DiscordButtonStyle.Danger, "button-callback-track-clear-confirm", "Clear Tracked Keywords")])
+            .AsEphemeral(true));
     }
 
     private static async Task<List<ulong>> ParseUserIgnoreListAsync(string input)

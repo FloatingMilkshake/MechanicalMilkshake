@@ -226,53 +226,24 @@ internal class InteractionEvents
                             .AsEphemeral(true));
                         break;
                     }
-                case "button-callback-track-remove-confirm":
+                case "button-callback-track-clear-confirm":
                     {
-                        await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource,
-                            new DiscordInteractionResponseBuilder().AsEphemeral(true));
+                        await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.DeferredMessageUpdate);
 
-                        var keywordToDelete = e.Message.Embeds[0].Description;
+                        var allKeywords = (await Setup.Storage.Redis.HashGetAllAsync("keywords"))
+                            .Select(k => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(k.Value));
 
-                        var keywords = await Setup.Storage.Redis.HashGetAllAsync("keywords");
-                        var keywordFound = false;
-                        Setup.Types.TrackedKeyword keyword = default;
-                        foreach (var item in keywords)
+                        var userKeywords = allKeywords.Where(k => k.UserId == e.Interaction.User.Id);
+
+                        foreach (var keyword in userKeywords)
                         {
-                            keyword = JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(item.Value);
-                            if (keyword.Keyword != keywordToDelete) continue;
-                            keywordFound = true;
-                            break;
+                            await Setup.Storage.Redis.HashDeleteAsync("keywords", keyword.Id);
                         }
 
-                        if (keywordFound)
-                        {
-                            try
-                            {
-                                await Setup.Storage.Redis.HashDeleteAsync("keywords", keyword.Id);
-                            }
-                            catch (Exception ex)
-                            {
-                                await e.Interaction.CreateFollowupMessageAsync(
-                                    new DiscordFollowupMessageBuilder().WithContent(
-                                        $"I ran into an error trying to delete that keyword!\n\"{ex.GetType()}: {ex.Message}\""));
-                                return;
-                            }
+                        await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder()
+                            .WithContent("Tracked keywords cleared.")
+                            .AddActionRowComponent([new DiscordButtonComponent(DiscordButtonStyle.Danger, "button-callback-track-clear-confirm", "Clear Tracked Keywords", disabled: true)]));
 
-                            await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
-                                .WithContent("Keyword removed.").AsEphemeral(true));
-
-                            DiscordMessageBuilder message = new();
-                            message.AddEmbed(e.Message.Embeds[0]);
-                            message.AddActionRowComponent(new DiscordButtonComponent(DiscordButtonStyle.Danger,
-                                "button-callback-track-remove-confirm",
-                                "Remove", true));
-                        }
-                        else
-                        {
-                            await e.Interaction.CreateFollowupMessageAsync(
-                                new DiscordFollowupMessageBuilder().WithContent(
-                                    "It doesn't look like you're tracking that keyword!"));
-                        }
                         break;
                     }
                 case "button-callback-eval-cancel":
