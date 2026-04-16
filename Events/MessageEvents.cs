@@ -10,7 +10,7 @@ internal class MessageEvents
         }
         catch (Exception ex)
         {
-            await ThrowMessageExceptionAsync(ex, e.Message, Setup.Types.MessageEventType.Update);
+            await LogMessageEventExceptionAsync(ex, e.Message, Setup.Types.MessageEventType.Update);
         }
     }
 
@@ -36,7 +36,7 @@ internal class MessageEvents
         catch (Exception ex)
         {
             Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCaching.CachedMessage(e.Message.Channel.Id, e.Message.Id, e.Message.Author.Id));
-            await ThrowMessageExceptionAsync(ex, e.Message, Setup.Types.MessageEventType.Create);
+            await LogMessageEventExceptionAsync(ex, e.Message, Setup.Types.MessageEventType.Create);
         }
     }
 
@@ -56,11 +56,11 @@ internal class MessageEvents
         }
         catch (Exception ex)
         {
-            await ThrowMessageExceptionAsync(ex, e.Message, Setup.Types.MessageEventType.Delete);
+            await LogMessageEventExceptionAsync(ex, e.Message, Setup.Types.MessageEventType.Delete);
         }
     }
 
-    private static async Task ThrowMessageExceptionAsync(Exception ex, DiscordMessage message, Setup.Types.MessageEventType eventType)
+    private static async Task LogMessageEventExceptionAsync(Exception ex, DiscordMessage message, Setup.Types.MessageEventType eventType)
     {
         DiscordEmbedBuilder embed = new()
         {
