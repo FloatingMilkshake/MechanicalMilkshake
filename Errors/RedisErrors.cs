@@ -33,7 +33,7 @@ internal class RedisErrors
                 {
                     Color = DiscordColor.Red,
                     Title = "A redis error occurred",
-                    Description = $"`{ex.GetType()}: {ex.Message}`"
+                    Description = $"```\n{ex.GetType()}: {ex.Message}\n```"
                 });
 
             Setup.State.Discord.Client.Logger.LogError(ex, "A redis error occurred!");

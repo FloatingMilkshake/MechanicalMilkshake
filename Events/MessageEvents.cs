@@ -64,12 +64,11 @@ internal class MessageEvents
     {
         DiscordEmbedBuilder embed = new()
         {
-            Color = DiscordColor.Red,
-            Description =
-                $"`{ex.GetType()}` occurred when processing [this message]({message.JumpLink}) (message `{message.Id}` in channel `{message.Channel.Id}`).",
-            Title = $"An exception occurred when processing a message {eventType.ToString().ToLower()} event"
+            Title = $"An exception occurred when processing a message {eventType.ToString().ToLower()} event",
+            Color = DiscordColor.Red
         };
-        embed.AddField("Message", $"{ex.Message}");
+        embed.AddField("Message", message.JumpLink.ToString());
+        embed.AddField("Exception", $"```\n{ex.GetType()}: {ex.Message}\n```");
 
         await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(embed);
 
@@ -142,7 +141,7 @@ internal class MessageEvents
                     Color = DiscordColor.Red,
                     Description = $"An exception was thrown when trying to forward a DM from {e.Message.Author.Mention} (`{e.Message.Author.Id}`) to a bot owner!"
                 }
-                .AddField("Message Content", string.IsNullOrWhiteSpace(e.Message.Content) ? "No content" : e.Message.Content)
+                .AddField("Message Content", string.IsNullOrWhiteSpace(e.Message.Content) ? "No content" : e.Message.Content.Truncate(1024, " [truncated]"))
                 .AddField("Exception", $"`{ex.GetType()}: {ex.Message}`"));
             }
             catch (Exception ex2)

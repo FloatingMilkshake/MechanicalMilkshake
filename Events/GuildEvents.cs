@@ -51,7 +51,7 @@ internal class GuildEvents
         {
             userInfoEmbed = new DiscordEmbedBuilder().WithTitle("User Info for Server Owner")
                 .WithDescription("Failed to fetch server owner.")
-                .AddField("Exception", $"{ex.GetType()}: {ex.Message}");
+                .AddField("Exception", $"```\n{ex.GetType()}: {ex.Message}\n```");
         }
 
         var msg = new DiscordMessageBuilder().AddEmbed(embed);

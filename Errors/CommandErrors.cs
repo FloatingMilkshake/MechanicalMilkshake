@@ -90,7 +90,7 @@ internal class CommandErrors
                 Title = "An exception occurred during command execution",
                 Color = DiscordColor.Red,
                 Description = $"An exception occurred when {e.Context.User.Username} (`{e.Context.User.Id}`) used `{commandName}`."
-                    + $"\n`{e.Exception.GetType()}: {e.Exception.Message}`"
+                    + $"\n```\n{e.Exception.GetType()}: {e.Exception.Message}\n```"
             };
             await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(embed);
         }

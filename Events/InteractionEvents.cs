@@ -362,7 +362,7 @@ internal class InteractionEvents
                 Title = "An exception occurred during an interaction event",
                 Color = DiscordColor.Red,
                 Description = $"An exception occurred when {e.User.Username} (`{e.User.Id}`) submitted an interaction with ID `{e.Id}`."
-                    + $"\n`{ex.GetType()}: {ex.Message}`"
+                    + $"\n```\n{ex.GetType()}: {ex.Message}\n```"
             });
 
             Setup.State.Discord.Client.Logger.LogError(ex, "An exception occurred during an interaction event! When {userId} submitted an interaction with ID {id}:",
@@ -591,7 +591,7 @@ internal class InteractionEvents
                 Title = "An exception occurred during a modal submit event",
                 Color = DiscordColor.Red,
                 Description = $"An exception occurred when {e.Interaction.User.Username} (`{e.Interaction.User.Id}`) submitted a modal with ID `{e.Id}`."
-                    + $"\n`{ex.GetType()}: {ex.Message}`"
+                    + $"\n```\n{ex.GetType()}: {ex.Message}\n```"
             });
 
             Setup.State.Discord.Client.Logger.LogError(ex, "An exception occurred during a modal submit event! When {userId} submitted a modal with ID {id}:",
@@ -654,16 +654,16 @@ internal class InteractionEvents
         {
             DiscordEmbedBuilder embed = new()
             {
-                Title = "An exception was thrown when logging a slash command",
+                Title = "An exception was thrown when logging command usage",
                 Description =
-                    $"An exception was thrown when {context.User.Mention} used `/{context.Command.FullName}`:"
-                        + $"`{ex.GetType()}: {ex.Message}`",
+                    $"An exception was thrown when {context.User.Mention} used `{context.Command.FullName}`:"
+                        + $"```\n{ex.GetType()}: {ex.Message}\n```",
                 Color = DiscordColor.Red
             };
 
             await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(embed);
 
-            Setup.State.Discord.Client.Logger.LogError(ex, "An exception was thrown when logging a slash command! When {user} used {command}:",
+            Setup.State.Discord.Client.Logger.LogError(ex, "An exception was thrown when logging command usage! When {user} used {command}:",
                 context.User.Id, context.Command.FullName);
         }
 
