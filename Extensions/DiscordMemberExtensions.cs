@@ -4,6 +4,14 @@ internal static class DiscordMemberExtensions
 {
     extension(DiscordMember member)
     {
+        internal bool CanModerate(DiscordMember targetMember)
+        {
+            if (member == default)
+                return false;
+
+            return targetMember == default || member.Hierarchy > targetMember.Hierarchy;
+        }
+
         internal DiscordEmbed CreateUserInfoEmbed()
         {
             var registeredAt = $"{member.Id.ToUnixTimeSeconds()}";

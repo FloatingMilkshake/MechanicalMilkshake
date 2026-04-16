@@ -13,30 +13,30 @@ internal class KickCommands
     {
         await ctx.DeferResponseAsync(true);
 
-        DiscordMember memberToKick;
+        DiscordMember targetMember;
         try
         {
-            memberToKick = await ctx.Guild.GetMemberAsync(userToKick.Id);
+            targetMember = await ctx.Guild.GetMemberAsync(userToKick.Id);
         }
         catch (NotFoundException)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"Hmm, **{userToKick.GetFullUsername()}** doesn't seem to be in the server.")
+                .WithContent($"**{userToKick.GetFullUsername()}** doesn't seem to be in the server!")
                 .AsEphemeral(true));
             return;
         }
 
-        if (memberToKick != default && ctx.Member.Hierarchy <= memberToKick.Hierarchy)
+        if (!ctx.Member.CanModerate(targetMember))
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"You don't have permission to ban **{memberToKick.GetFullUsername()}**!")
+                .WithContent($"You don't have permission to kick **{targetMember.GetFullUsername()}**!")
                 .AsEphemeral(true));
             return;
         }
 
         try
         {
-            await memberToKick.RemoveAsync(reason);
+            await targetMember.RemoveAsync($"Kicked by {ctx.User.Username}: {reason}");
         }
         catch (UnauthorizedException)
         {
