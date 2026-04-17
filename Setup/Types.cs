@@ -502,7 +502,7 @@ internal static class Types
             };
 
             string context;
-            if (ReminderText.Equals("You set this reminder on a message with the \"Remind Me About This\" command."))
+            if (GuildId == "@me")
             {
                 context = "This reminder was set privately, so I can't link back to the message where it was set!" +
                     $" However, [this link]({GetJumpLink()}) should show you messages around the time that you set the reminder.";
