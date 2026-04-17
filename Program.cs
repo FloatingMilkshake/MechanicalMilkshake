@@ -106,6 +106,9 @@ internal class Program
         #region one-off tasks
         // Populate list of application commands
         await Task.Run(async () => CommandTasks.ExecuteAsync());
+
+        // Populate list of application emoji
+        await Task.Run(async () => EmojiTasks.ExecuteAsync());
         #endregion one-off tasks
 
         #region recurring tasks

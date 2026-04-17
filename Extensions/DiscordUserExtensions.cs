@@ -20,55 +20,81 @@ internal static class DiscordUserExtensions
         {
             var badges = "";
 
-            if (user.Flags is null) return "";
+            if (user.Flags is null)
+                return string.Empty;
 
             if (user.Flags.Value.HasFlag(DiscordUserFlags.VerifiedBotDeveloper))
-                badges +=
-                    $"<:earlyVerifiedBotDeveloper:{Setup.Constants.UserFlagEmoji.GetValueOrDefault("earlyVerifiedBotDeveloper")}> Early Verified Bot Developer\n";
+            {
+                var emoji = Setup.State.Discord.ApplicationEmoji.First(e => e.Name == "earlyVerifiedBotDeveloper");
+                badges += $"<:{emoji.Name}:{emoji.Id}> Early Verified Bot Developer\n";
+            }
 
             if (user.Flags.Value.HasFlag(DiscordUserFlags.DiscordEmployee))
-                badges += $"<:discordStaff:{Setup.Constants.UserFlagEmoji.GetValueOrDefault("discordStaff")}> Discord Staff\n";
+            {
+                var emoji = Setup.State.Discord.ApplicationEmoji.First(e => e.Name == "discordStaff");
+                badges += $"<:{emoji.Name}:{emoji.Id}> Discord Staff\n";
+            }
 
             if (user.Flags.Value.HasFlag(DiscordUserFlags.HouseBalance))
-                badges +=
-                    $"<:hypesquadBalance:{Setup.Constants.UserFlagEmoji.GetValueOrDefault("hypesquadBalance")}> HypeSquad Balance\n";
+            {
+                var emoji = Setup.State.Discord.ApplicationEmoji.First(e => e.Name == "hypesquadBalance");
+                badges += $"<:{emoji.Name}:{emoji.Id}> HypeSquad Balance\n";
+            }
 
             if (user.Flags.Value.HasFlag(DiscordUserFlags.HouseBravery))
-                badges +=
-                    $"<:hypesquadBravery:{Setup.Constants.UserFlagEmoji.GetValueOrDefault("hypesquadBravery")}> HypeSquad Bravery\n";
+            {
+                var emoji = Setup.State.Discord.ApplicationEmoji.First(e => e.Name == "hypesquadBravery");
+                badges += $"<:{emoji.Name}:{emoji.Id}> HypeSquad Bravery\n";
+            }
 
             if (user.Flags.Value.HasFlag(DiscordUserFlags.HouseBrilliance))
-                badges +=
-                    $"<:hypesquadBrilliance:{Setup.Constants.UserFlagEmoji.GetValueOrDefault("hypesquadBrilliance")}> HypeSquad Brilliance\n";
+            {
+                var emoji = Setup.State.Discord.ApplicationEmoji.First(e => e.Name == "hypesquadBrilliance");
+                badges += $"<:{emoji.Name}:{emoji.Id}> HypeSquad Brilliance\n";
+            }
 
             if (user.Flags.Value.HasFlag(DiscordUserFlags.HypeSquadEvents))
-                badges +=
-                    $"<:hypesquadEvents:{Setup.Constants.UserFlagEmoji.GetValueOrDefault("hypesquadEvents")}> HypeSquad Events\n";
+            {
+                var emoji = Setup.State.Discord.ApplicationEmoji.First(e => e.Name == "hypesquadEvents");
+                badges += $"<:{emoji.Name}:{emoji.Id}> HypeSquad Events\n";
+            }
 
             if (user.Flags.Value.HasFlag(DiscordUserFlags.BugHunterLevelOne))
-                badges +=
-                    $"<:bugHunterLevelOne:{Setup.Constants.UserFlagEmoji.GetValueOrDefault("bugHunterLevelOne")}> Bug Hunter Level One\n";
+            {
+                var emoji = Setup.State.Discord.ApplicationEmoji.First(e => e.Name == "bugHunterLevelOne");
+                badges += $"<:{emoji.Name}:{emoji.Id}> Bug Hunter Level One\n";
+            }
 
             if (user.Flags.Value.HasFlag(DiscordUserFlags.BugHunterLevelTwo))
-                badges +=
-                    $"<:bugHunterLevelTwo:{Setup.Constants.UserFlagEmoji.GetValueOrDefault("bugHunterLevelTwo")}> Bug Hunter Level Two\n";
+            {
+                var emoji = Setup.State.Discord.ApplicationEmoji.First(e => e.Name == "bugHunterLevelTwo");
+                badges += $"<:{emoji.Name}:{emoji.Id}> Bug Hunter Level Two\n";
+            }
 
             if (user.Flags.Value.HasFlag(DiscordUserFlags.DiscordCertifiedModerator))
-                badges +=
-                    $"<:certifiedModerator:{Setup.Constants.UserFlagEmoji.GetValueOrDefault("certifiedModerator")}> Discord Certified Moderator\n";
+            {
+                var emoji = Setup.State.Discord.ApplicationEmoji.First(e => e.Name == "certifiedModerator");
+                badges += $"<:{emoji.Name}:{emoji.Id}> Discord Certified Moderator\n";
+            }
 
             if (user.Flags.Value.HasFlag(DiscordUserFlags.DiscordPartner))
-                badges +=
-                    $"<:partneredServerOwner:{Setup.Constants.UserFlagEmoji.GetValueOrDefault("partneredServerOwner")}> Partnered Server Owner\n";
+            {
+                var emoji = Setup.State.Discord.ApplicationEmoji.First(e => e.Name == "partneredServerOwner");
+                badges += $"<:{emoji.Name}:{emoji.Id}> Partnered Server Owner\n";
+            }
 
             if (user.Flags.Value.HasFlag(DiscordUserFlags.VerifiedBot))
-                badges +=
-                    $"<:verifiedBot1:{Setup.Constants.UserFlagEmoji.GetValueOrDefault("verifiedBot1")}><:verifiedBot2:{Setup.Constants.UserFlagEmoji.GetValueOrDefault("verifiedBot2")}> Verified Bot\n";
+            {
+                var emoji1 = Setup.State.Discord.ApplicationEmoji.First(e => e.Name == "verifiedBot1");
+                var emoji2 = Setup.State.Discord.ApplicationEmoji.First(e => e.Name == "verifiedBot2");
+                badges += $"<:{emoji1.Name}:{emoji1.Id}><:{emoji2.Name}:{emoji2.Id}> Verified Bot\n";
+            }
 
             if (user.Flags.Value.HasFlag(DiscordUserFlags.EarlySupporter))
-                badges +=
-                    $"<:earlySupporter:{Setup.Constants.UserFlagEmoji.GetValueOrDefault("earlySupporter")}> Early Supporter\n";
-
+            {
+                var emoji = Setup.State.Discord.ApplicationEmoji.First(e => e.Name == "earlySupporter");
+                badges += $"<:{emoji.Name}:{emoji.Id}> Early Supporter\n";
+            }
 
             return badges.Trim();
         }

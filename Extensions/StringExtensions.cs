@@ -11,10 +11,10 @@ internal static class StringExtensions
                 // Return it in inline code instead of a command mention.
                 return $"`{str}`";
 
-            if (Setup.State.Commands.ApplicationCommands is null)
+            if (Setup.State.Discord.ApplicationCommands is null)
                 return $"`{string.Join(' ', str)}`";
 
-            var command = Setup.State.Commands.ApplicationCommands.FirstOrDefault(c => c.Name == str.Split(' ').First());
+            var command = Setup.State.Discord.ApplicationCommands.FirstOrDefault(c => c.Name == str.Split(' ').First());
 
             if (command is null)
                 return $"`/{string.Join(' ', str)}`";

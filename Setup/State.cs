@@ -14,11 +14,8 @@ internal static class State
         internal static DiscordClient Client;
         internal static DateTime ConnectTime;
         internal static bool GuildDownloadCompleted = false;
-    }
-
-    internal static class Commands
-    {
         internal static readonly List<DiscordApplicationCommand> ApplicationCommands = [];
+        internal static readonly List<DiscordEmoji> ApplicationEmoji = [];
     }
 
     internal static class Caches

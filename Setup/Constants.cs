@@ -4,22 +4,38 @@ internal static class Constants
 {
     internal static readonly DiscordColor BotColor = new("#FAA61A");
     internal static readonly HttpClient HttpClient = new();
-    internal static readonly Dictionary<string, ulong> UserFlagEmoji = new()
-    {
-        { "earlyVerifiedBotDeveloper", 1000168738970144779 },
-        { "discordStaff", 1000168738022228088 },
-        { "hypesquadBalance", 1000168740073242756 },
-        { "hypesquadBravery", 1000168740991811704 },
-        { "hypesquadBrilliance", 1000168741973266462 },
-        { "hypesquadEvents", 1000168742535303312 },
-        { "bugHunterLevelOne", 1000168734666793001 },
-        { "bugHunterLevelTwo", 1000168735740526732 },
-        { "certifiedModerator", 1000168736789118976 },
-        { "partneredServerOwner", 1000168744192053298 },
-        { "verifiedBot1", 1000229381563744397 },
-        { "verifiedBot2", 1000229382431977582 },
-        { "earlySupporter", 1001317583124971582 }
-    };
+    internal static readonly List<ulong> UserFlagEmoji =
+    [
+#if DEBUG
+        1494525865013415956, // bugHunterLevelOne
+        1494525866393206795, // bugHunterLevelTwo
+        1494525868381442220, // certifiedModerator
+        1494525870197444648, // discordStaff
+        1494525871652868106, // earlySupporter
+        1494525873049571440, // earlyVerifiedBotDeveloper
+        1494525874488217720, // hypesquadBalance
+        1494525876426113054, // hypesquadBravery
+        1494525877680078959, // hypesquadBrilliance
+        1494525878774923344, // hypesquadEvents
+        1494525883489190041, // partneredServerOwner
+        1494525884357672991, // verifiedBot1
+        1494525886093856788  // verifiedBot2
+#else
+        1494525865013415956, // bugHunterLevelOne
+        1494525866393206795, // bugHunterLevelTwo
+        1494525868381442220, // certifiedModerator
+        1494525870197444648, // discordStaff
+        1494525871652868106, // earlySupporter
+        1494525873049571440, // earlyVerifiedBotDeveloper
+        1494525874488217720, // hypesquadBalance
+        1494525876426113054, // hypesquadBravery
+        1494525877680078959, // hypesquadBrilliance
+        1494525878774923344, // hypesquadEvents
+        1494525883489190041, // partneredServerOwner
+        1494525884357672991, // verifiedBot1
+        1494525886093856788  // verifiedBot2
+#endif
+    ];
     internal static class RegularExpressions
     {
 #pragma warning disable SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.

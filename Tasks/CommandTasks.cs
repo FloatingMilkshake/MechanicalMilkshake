@@ -14,7 +14,7 @@ internal class CommandTasks
         applicationCommands.AddRange(await Setup.State.Discord.Client.GetGuildApplicationCommandsAsync(Setup.Configuration.Discord.HomeServer.Id) as List<DiscordApplicationCommand> ?? []);
         applicationCommands = applicationCommands.Distinct().ToList();
 
-        Setup.State.Commands.ApplicationCommands.AddRange(applicationCommands);
+        Setup.State.Discord.ApplicationCommands.AddRange(applicationCommands);
     }
 
     private static async Task RunApplicationCommandRegistrationWatchdogAsync()
@@ -23,7 +23,7 @@ internal class CommandTasks
         // Registration should happen well before this, this is a bit generous
         await Task.Delay(300000);
 
-        if (Setup.State.Commands.ApplicationCommands.Count == 0)
+        if (Setup.State.Discord.ApplicationCommands.Count == 0)
         {
             if (!File.Exists("/proc/self/cgroup"))
             {

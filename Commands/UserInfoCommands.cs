@@ -9,6 +9,8 @@ internal class UserInfoCommands
     [SlashCommandTypes(DiscordApplicationCommandType.UserContextMenu)]
     public static async Task UserInfoUserContextMenuCommandAsync(UserCommandContext ctx, DiscordUser targetUser)
     {
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+
         DiscordEmbed userInfoEmbed;
 
         try
@@ -30,7 +32,7 @@ internal class UserInfoCommands
             userInfoEmbed = targetUser.CreateUserInfoEmbed();
         }
 
-        await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent($"User Info for **{targetUser.GetFullUsername()}**")
             .AddEmbed(userInfoEmbed).AsEphemeral(true)
             .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
@@ -42,6 +44,8 @@ internal class UserInfoCommands
         [Parameter("user"), Description("The user to look up information for. Defaults to yourself.")]
         DiscordUser user = null)
     {
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+
         DiscordEmbed userInfoEmbed;
 
         user ??= ctx.User;
@@ -63,7 +67,7 @@ internal class UserInfoCommands
             userInfoEmbed = user.CreateUserInfoEmbed();
         }
 
-        await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent($"User Info for **{user.GetFullUsername()}**")
             .AddEmbed(userInfoEmbed)
             .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));

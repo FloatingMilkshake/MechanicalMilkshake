@@ -24,7 +24,7 @@ internal class AboutCommands
         };
 
         embed.AddField("Servers", ctx.Client.Guilds.Count.ToString(), true);
-        embed.AddField("Commands", Setup.State.Commands.ApplicationCommands.Count.ToString(), true);
+        embed.AddField("Commands", Setup.State.Discord.ApplicationCommands.Count.ToString(), true);
 
         if (!string.IsNullOrWhiteSpace(privacyPolicyUrl))
             embed.Description += $"\n\nMy Privacy Policy can be found [here]({privacyPolicyUrl})!";
