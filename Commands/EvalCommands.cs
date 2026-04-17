@@ -45,7 +45,7 @@ internal class EvalCommands
 
         if (cancellationToken.IsCancellationRequested)
         {
-            await msg.ModifyAsync(new DiscordMessageBuilder().WithContent("The operation was cancelled."));
+            await ctx.EditResponseAsync(new DiscordMessageBuilder().WithContent("The operation was cancelled."));
             Setup.State.Caches.CancellationTokens.Remove(msg.Id);
             return;
         }
@@ -56,7 +56,7 @@ internal class EvalCommands
         {
             await ctx.Channel.SendMessageAsync(part);
         }
-        await msg.ModifyAsync(new DiscordMessageBuilder().WithContent($"\nFinished with exit code `{cmdResponse.ExitCode}`."));
+        await ctx.EditResponseAsync(new DiscordMessageBuilder().WithContent($"\nFinished with exit code `{cmdResponse.ExitCode}`."));
 
         Setup.State.Caches.CancellationTokens.Remove(msg.Id);
     }
@@ -77,7 +77,7 @@ internal class EvalCommands
 
         if (Setup.Eval.RestrictedTerms.Any(code.Contains))
         {
-            await msg.ModifyAsync(new DiscordMessageBuilder().WithContent("You can't do that."));
+            await ctx.EditResponseAsync(new DiscordMessageBuilder().WithContent("You can't do that."));
             return;
         }
 
@@ -100,21 +100,21 @@ internal class EvalCommands
                 Setup.State.Caches.CancellationTokens.Add(msg.Id, new CancellationTokenSource());
                 cancellationToken = Setup.State.Caches.CancellationTokens[msg.Id].Token;
 
-                await msg.ModifyAsync(builder);
+                await ctx.EditResponseAsync(builder);
             }
 
             var result = await script.RunAsync(new Setup.Eval.Globals(Setup.State.Discord.Client, ctx, cancellationToken), cancellationToken).ConfigureAwait(false);
 
             if (result?.ReturnValue is null)
             {
-                await msg.ModifyAsync(new DiscordMessageBuilder().WithContent("null"));
+                await ctx.EditResponseAsync(new DiscordMessageBuilder().WithContent("null"));
             }
             else
             {
                 if (string.IsNullOrWhiteSpace(result.ReturnValue.ToString()))
                 {
                     // Isn't null, so it has to be whitespace
-                    await msg.ModifyAsync(new DiscordMessageBuilder().WithContent($"\"{result.ReturnValue}\""));
+                    await ctx.EditResponseAsync(new DiscordMessageBuilder().WithContent($"\"{result.ReturnValue}\""));
                     return;
                 }
 
@@ -126,17 +126,17 @@ internal class EvalCommands
                 }
 
                 if (cancellationToken.IsCancellationRequested)
-                    await msg.ModifyAsync(new DiscordMessageBuilder().WithContent("The operation was cancelled."));
+                    await ctx.EditResponseAsync(new DiscordMessageBuilder().WithContent("The operation was cancelled."));
                 else
-                    await msg.ModifyAsync(new DiscordMessageBuilder().WithContent("Done!"));
+                    await ctx.EditResponseAsync(new DiscordMessageBuilder().WithContent("Done!"));
             }
         }
         catch (Exception e)
         {
             if (cancellationToken.IsCancellationRequested)
-                await msg.ModifyAsync(new DiscordMessageBuilder().WithContent("The operation was cancelled."));
+                await ctx.EditResponseAsync(new DiscordMessageBuilder().WithContent("The operation was cancelled."));
             else
-                await msg.ModifyAsync(new DiscordMessageBuilder().WithContent(e.GetType() + ": " + e.Message));
+                await ctx.EditResponseAsync(new DiscordMessageBuilder().WithContent(e.GetType() + ": " + e.Message));
         }
 
         Setup.State.Caches.CancellationTokens.Remove(msg.Id);
