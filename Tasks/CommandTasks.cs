@@ -4,8 +4,8 @@ internal class CommandTasks
 {
     internal static async Task ExecuteAsync()
     {
+        await Task.Run(async () => RunApplicationCommandRegistrationWatchdogAsync());
         await PopulateApplicationCommandListAsync();
-        await RunApplicationCommandRegistrationWatchdogAsync();
     }
 
     private static async Task PopulateApplicationCommandListAsync()
