@@ -25,5 +25,22 @@ internal static class DiscordInteractionExtensions
                 await interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent(message));
             }
         }
+
+        internal bool ShouldUseEphemeralResponse(bool preferEphemeral)
+            => preferEphemeral || IsUserInstallContext(interaction);
+
+        internal bool IsUserInstallContext()
+        {
+            if (interaction.GuildId is not null && !Setup.State.Discord.Client.Guilds.ContainsKey(interaction.GuildId.Value))
+                return true;
+
+            if (interaction.Context == DiscordInteractionContextType.BotDM)
+                return false;
+
+            if (interaction.Context != DiscordInteractionContextType.Guild)
+                return true;
+
+            return false;
+        }
     }
 }

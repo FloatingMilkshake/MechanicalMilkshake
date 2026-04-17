@@ -10,7 +10,7 @@ internal class InviteInfoCommands
         [Parameter("invite"), Description("The invite to return information about. Accepts an invite link or code.")]
         string targetInvite)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         var inviteMatch = Setup.Constants.RegularExpressions.DiscordInvitePattern.Match(targetInvite);
         if (!inviteMatch.Success)
@@ -20,7 +20,7 @@ internal class InviteInfoCommands
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("That's not a valid invite!")
-                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
                 return;
             }
         }
@@ -34,7 +34,7 @@ internal class InviteInfoCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent("That's not a valid invite!")
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
             return;
         }
 
@@ -83,6 +83,6 @@ internal class InviteInfoCommands
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .AddEmbed(embed)
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 }

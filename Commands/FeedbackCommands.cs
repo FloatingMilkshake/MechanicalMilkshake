@@ -10,13 +10,13 @@ internal class FeedbackCommands
         [Parameter("message"), Description("Your feedback message.")] [MinMaxLength(maxLength: 4000)]
         string feedbackMsg)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true));
 
         if (Setup.Configuration.Discord.Channels.Feedback == default)
         {
             await ctx.FollowupAsync(new DiscordInteractionResponseBuilder()
                 .WithContent("Sorry, this command is unavailable! Please contact a bot owner for help.")
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -36,6 +36,6 @@ internal class FeedbackCommands
             Title = "Thank you!",
             Color = Setup.Constants.BotColor,
             Description = $"Your feedback has been sent."
-        }).AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
+        }).AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
     }
 }

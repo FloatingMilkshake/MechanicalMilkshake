@@ -26,7 +26,7 @@ internal class TimestampCommands
         {
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent("Hmm, that doesn't look like a valid ID/snowflake. I wasn't able to convert it to a timestamp.")
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
             return;
         }
 
@@ -35,18 +35,18 @@ internal class TimestampCommands
         {
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent($"{timestamp}")
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
         }
         else
         {
             if (includeCode)
                 await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                     .WithContent($"<t:{timestamp}:{format}> (`<t:{timestamp}:{format}>`)")
-                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
             else
                 await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                     .WithContent($"<t:{timestamp}:{format}>")
-                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
         }
     }
 
@@ -70,7 +70,7 @@ internal class TimestampCommands
         {
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent("Hmm, that doesn't look like a valid date. I wasn't able to convert it to a timestamp.")
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
             return;
         }
 
@@ -78,18 +78,18 @@ internal class TimestampCommands
         {
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent($"{unixTime}")
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
         }
         else
         {
             if (includeCode)
                 await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                     .WithContent($"<t:{unixTime}:{format}> (`<t:{unixTime}:{format}>`)")
-                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
             else
                 await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                     .WithContent($"<t:{unixTime}:{format}>")
-                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
         }
     }
 }

@@ -9,9 +9,9 @@ internal class MarkdownCommands
     [SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu)]
     public static async Task MarkdownMessageContextMenuCommandAsync(MessageCommandContext ctx, DiscordMessage targetMessage)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true));
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder(GetMarkdownDataForMessage(targetMessage))
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
     }
 
     [Command("markdown")]
@@ -21,9 +21,9 @@ internal class MarkdownCommands
         [Parameter("message"), Description("The message you want to expose the formatting of. Accepts message IDs and links.")]
         string messageIdOrLink)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder(await GetMarkdownDataForMessageAsync(messageIdOrLink, ctx.Channel))
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 
     private static async Task<DiscordMessageBuilder> GetMarkdownDataForMessageAsync(string messageIdOrLink, DiscordChannel currentChannel)

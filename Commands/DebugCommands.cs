@@ -11,7 +11,7 @@ internal class DebugCommands
     [Description("Check my uptime!")]
     public static async Task UptimeCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         DiscordEmbedBuilder embed = new()
         {
@@ -25,7 +25,7 @@ internal class DebugCommands
         embed.AddField("Process started at", $"<t:{startUnixTime}:F> (<t:{startUnixTime}:R>)");
         embed.AddField("Last connected to Discord at", $"<t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)");
 
-        await ctx.FollowupAsync(embed, ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.FollowupAsync(embed, ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
     }
 
     [Command("timecheck")]
@@ -37,7 +37,7 @@ internal class DebugCommands
             Title = "Time Check",
             Color = Setup.Constants.BotColor,
             Description = $"Seems to me like it's currently `{DateTime.Now:s}`."
-        }).AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+        }).AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("shutdown")]
@@ -50,7 +50,7 @@ internal class DebugCommands
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
             .WithContent("Are you sure you want to shut down the bot? This action cannot be undone.")
             .AddActionRowComponent(shutdownButton, cancelButton)
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("restart")]
@@ -61,13 +61,13 @@ internal class DebugCommands
         {
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent($"The bot may not be running under Docker; restart is unavailable. Use {"debug shutdown".AsSlashCommandMention()} if you wish to shut down the bot.")
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
             return;
         }
 
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
             .WithContent("Restarting...")
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
         Environment.Exit(1);
     }
 
@@ -75,7 +75,7 @@ internal class DebugCommands
     [Description("Show the bot's owners.")]
     public static async Task DebugOwnersCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         DiscordEmbedBuilder embed = new()
         {
@@ -99,7 +99,7 @@ internal class DebugCommands
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .AddEmbed(embed)
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("guilds")]
@@ -110,7 +110,7 @@ internal class DebugCommands
         [SlashChoiceProvider(typeof(Setup.Types.ChoiceProviders.GuildsListSortDirectionChoiceProvider))]
         [Parameter("sort_direction"), Description("Which direction to sort the list of guilds.")] string sortDirection = "asc")
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         DiscordEmbedBuilder embed = new()
         {
@@ -132,7 +132,7 @@ internal class DebugCommands
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .AddEmbed(embed)
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("humandateparser")]
@@ -141,7 +141,7 @@ internal class DebugCommands
         [Parameter("date"), Description("The date (or time) for HumanDateParser to parse.")]
         string date)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         DiscordEmbedBuilder embed = new()
         {
@@ -160,7 +160,7 @@ internal class DebugCommands
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .AddEmbed(embed)
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("checks")]
@@ -170,7 +170,7 @@ internal class DebugCommands
         [SlashChoiceProvider(typeof(Setup.Types.ChoiceProviders.ChecksChoiceProvider))]
         string checksToRun)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         // declare variables for check results
         int numRemindersBefore = default;
@@ -226,14 +226,14 @@ internal class DebugCommands
         // send response
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent(response)
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("usage")]
     [Description("Show which commands are used the most.")]
     public static async Task DebugUsageCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         var cmdCounts = (from cmd in await Setup.Storage.Redis.HashGetAllAsync("commandCounts")
                          select new KeyValuePair<string, int>(cmd.Name, int.Parse(cmd.Value))).ToList();
@@ -246,7 +246,7 @@ internal class DebugCommands
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent(output.Trim())
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("throw")]
@@ -265,7 +265,7 @@ internal class DebugCommands
         };
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
             .WithContent($"Throwing {exceptionFullName}...")
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
 
         switch (exceptionType)
         {

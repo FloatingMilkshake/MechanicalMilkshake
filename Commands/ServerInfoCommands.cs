@@ -9,7 +9,7 @@ internal class ServerInfoCommands
         [Parameter("server"), Description("The ID of the server to look up. Defaults to the current server if you're not using this in DMs.")]
         string guildId = default)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         DiscordGuild guild;
 
@@ -17,7 +17,7 @@ internal class ServerInfoCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("You can't use this command in DMs without specifying a server ID! Please try again.")
-                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
             return;
         }
 
@@ -35,14 +35,14 @@ internal class ServerInfoCommands
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("Sorry, I can't read the details for that server because I'm not in it or it doesn't exist!")
-                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
                 return;
             }
             catch (FormatException)
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("That doesn't look like a valid server ID! Please try again.")
-                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
                 return;
             }
         }
@@ -70,6 +70,6 @@ internal class ServerInfoCommands
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent($"Server Info for **{guild.Name}**")
             .AddEmbed(embed)
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 }

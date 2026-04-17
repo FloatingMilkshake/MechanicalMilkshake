@@ -10,13 +10,13 @@ internal class EmojiCommands
     [Description("Get the link for an emoji! Only works for custom emoji.")]
     public static async Task EmojiLinkCommandAsync(SlashCommandContext ctx, [Parameter("emoji"), Description("The emoji to get the link for. Accepts one or more custom emoji.")] string emoji)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         if (!Setup.Constants.RegularExpressions.EmojiPattern.IsMatch(emoji))
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent("That doesn't look like an emoji! Please try again.")
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
             return;
         }
 
@@ -37,6 +37,6 @@ internal class EmojiCommands
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent(response)
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 }

@@ -11,7 +11,7 @@ internal class KickCommands
         [Parameter("reason"), Description("The reason for the kick.")] [MinMaxLength(maxLength: 1500)]
         string reason = "No reason provided.")
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true));
 
         DiscordMember targetMember;
         try
@@ -22,7 +22,7 @@ internal class KickCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"**{userToKick.GetFullUsername()}** doesn't seem to be in the server!")
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -30,7 +30,7 @@ internal class KickCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"You don't have permission to kick **{targetMember.GetFullUsername()}**!")
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -42,13 +42,13 @@ internal class KickCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"I don't have permission to kick **{userToKick.GetFullUsername()}**! Please check the role hierarchy and permissions.")
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
             return;
         }
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent("User kicked successfully.")
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
 
         await ctx.Channel.SendMessageAsync($"{userToKick.Mention} has been kicked: **{reason}**");
     }

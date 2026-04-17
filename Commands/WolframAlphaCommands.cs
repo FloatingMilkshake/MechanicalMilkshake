@@ -10,11 +10,11 @@ internal class WolframAlphaCommands
         [Parameter("query"), Description("What to search for.")]
         string query)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.WolframAlphaAppId))
         {
-            await ctx.FollowupAsync("Sorry, this command is unavailable! Please contact a bot owner for help.", ephemeral: ctx.ShouldUseEphemeralResponse(false));
+            await ctx.FollowupAsync("Sorry, this command is unavailable! Please contact a bot owner for help.", ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
             return;
         }
 
@@ -45,7 +45,7 @@ internal class WolframAlphaCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent("Hmm, WolframAlpha didn't have an answer to that query! Try rephrasing it.")
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
             return;
         }
 
@@ -61,6 +61,6 @@ internal class WolframAlphaCommands
             response.AddFile("result.gif", image);
         }
 
-        await ctx.FollowupAsync(response.AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+        await ctx.FollowupAsync(response.AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 }

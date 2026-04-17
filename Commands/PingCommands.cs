@@ -10,7 +10,7 @@ internal class PingCommands
     {
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
             .WithContent("Ping!")
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
 
         var websocketPing = ctx.Client.GetConnectionLatency(
             ctx.Channel.IsPrivate

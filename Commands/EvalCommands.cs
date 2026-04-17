@@ -18,7 +18,7 @@ internal class EvalCommands
             .AddActionRowComponent(new DiscordActionRowComponent(
                 [new DiscordButtonComponent(DiscordButtonStyle.Danger, "button-callback-eval-cancel", "Cancel")]
             ))
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false))
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false))
         );
 
         if (Setup.Eval.RestrictedTerms.Any(command.Contains))
@@ -72,7 +72,7 @@ internal class EvalCommands
         var builder = new DiscordMessageBuilder().WithContent("Working on it...");
 
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder(builder)
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
         var msg = await ctx.GetResponseAsync();
 
         if (Setup.Eval.RestrictedTerms.Any(code.Contains))

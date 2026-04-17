@@ -19,21 +19,21 @@ internal class RandomCommands
             await ctx.RespondAsync(
                 new DiscordInteractionResponseBuilder()
                 .WithContent("The minimum number cannot be greater than the maximum number!")
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
             return;
         }
 
         Random random = new();
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
             .WithContent($"Your random number is **{random.NextInt64(min, max)}**!")
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("fact")]
     [Description("Get a random fact.")]
     public static async Task RandomFactCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         Setup.Types.Apis.FactApi.Fact fact;
         try
@@ -46,25 +46,25 @@ internal class RandomCommands
             if (ex.StatusCode is HttpStatusCode.TooManyRequests)
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("You're going too fast! Try again in a few seconds.")
-                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
             else
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent($"Something went wrong! Error code {(int)ex.StatusCode}. Try again in a bit, or contact a bot owner if this persists.")
-                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
 
             return;
         }
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent(fact.Text)
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("cat")]
     [Description("Get a random cat picture from the internet.")]
     public static async Task RandomCatCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         List<Setup.Types.Apis.CatDogApi.CatDogImage> images;
         try
@@ -77,25 +77,25 @@ internal class RandomCommands
             if (ex.StatusCode is HttpStatusCode.TooManyRequests)
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("You're going too fast! Try again in a few seconds.")
-                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
             else
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent($"Something went wrong! Error code {(int)ex.StatusCode}. Try again in a bit, or contact a bot owner if this persists.")
-                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
 
             return;
         }
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent(images.First().Url)
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("dog")]
     [Description("Get a random dog picture from the internet.")]
     public static async Task RandomDogCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         List<Setup.Types.Apis.CatDogApi.CatDogImage> images;
         try
@@ -108,17 +108,17 @@ internal class RandomCommands
             if (ex.StatusCode is HttpStatusCode.TooManyRequests)
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("You're going too fast! Try again in a few seconds.")
-                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
             else
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent($"Something went wrong! Error code {(int)ex.StatusCode}. Try again in a bit, or contact a bot owner if this persists.")
-                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
 
             return;
         }
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent(images.First().Url)
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 }

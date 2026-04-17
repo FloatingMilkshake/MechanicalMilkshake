@@ -12,6 +12,6 @@ internal class CharacterCountCommands
     {
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
             .WithContent(chars.Length.ToString())
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 }

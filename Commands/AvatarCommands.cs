@@ -29,14 +29,14 @@ internal class AvatarCommands
             // User is not in the server or has no guild avatar; show global avatar
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent($"{targetUser.AvatarUrl}".Replace("size=1024", "size=4096"))
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
         else
             // User is in the server and has a guild avatar; show buttons to select which avatar to get
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent(
                     $"You requested the avatar for {targetUser.Mention}. Please choose one of the options below.")
                 .AddActionRowComponent(serverAvatarButton, userAvatarButton)
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
     }
 
     [Command("avatar")]
@@ -68,12 +68,12 @@ internal class AvatarCommands
             await ctx.RespondAsync(
                 new DiscordInteractionResponseBuilder().WithContent(
                     $"{user.AvatarUrl}".Replace("size=1024", "size=4096"))
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
         else
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent(
                     $"You requested the avatar for {user.Mention}. Please choose one of the options below.")
                 .AddActionRowComponent(serverAvatarButton, userAvatarButton)
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
     }
 }

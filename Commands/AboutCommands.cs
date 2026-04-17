@@ -8,7 +8,7 @@ internal class AboutCommands
     [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
     public static async Task AboutCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         const string privacyPolicyUrl = "https://floatingmilkshake.com/privacy#MechanicalMilkshake";
 
@@ -46,7 +46,7 @@ internal class AboutCommands
         + "\n- DM the bot itself (DMs are forwarded to owners!)"
         + "\n- DM a bot owner (see above for a list!)");
 
-        await ctx.FollowupAsync(embed, ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.FollowupAsync(embed, ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
     }
 
     [Command("version")]
@@ -56,12 +56,12 @@ internal class AboutCommands
     public static async Task VersionCommandAsync(SlashCommandContext ctx,
         [Parameter("extended"), Description("Whether to show extended info. Defaults to False.")] bool extended = false)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
         if (extended)
         {
             await ctx.FollowupAsync((await Setup.Types.DebugInfo.CreateDebugInfoEmbedAsync(false)).WithTitle("Version"),
-                ephemeral: ctx.ShouldUseEphemeralResponse(false));
+                ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
             return;
         }
 
@@ -70,6 +70,6 @@ internal class AboutCommands
             Title = "Version",
             Color = Setup.Constants.BotColor,
             Description = (await Setup.Types.DebugInfo.GetDebugInfoAsync()).CommitInformation
-        }, ephemeral: ctx.ShouldUseEphemeralResponse(false));
+        }, ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
     }
 }

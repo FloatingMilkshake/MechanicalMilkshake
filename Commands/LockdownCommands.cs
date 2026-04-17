@@ -11,7 +11,7 @@ internal class LockdownCommands
     [Description("Lock a channel to prevent members from sending messages.")]
     public static async Task LockdownLockCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true));
 
         // Get the permissions that are already on the channel, so that we can make sure they are kept when we adjust overwrites for lockdown
         DiscordOverwrite[] existingOverwrites = ctx.Channel.PermissionOverwrites.ToArray();
@@ -74,14 +74,14 @@ internal class LockdownCommands
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent("Channel locked successfully.")
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
     }
 
     [Command("unlock")]
     [Description("Unlock a locked channel to allow members to send messages again.")]
     public static async Task LockdownUnlockCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true));
 
         // Checking <2 because there will always be 1 overwrite for @everyone permissions
         if (ctx.Channel.PermissionOverwrites.ToArray().Length < 2
@@ -90,7 +90,7 @@ internal class LockdownCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent("This channel is not locked!")
-                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -165,6 +165,6 @@ internal class LockdownCommands
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent("Channel unlocked successfully.")
-            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
     }
 }
