@@ -30,31 +30,18 @@ internal class WolframAlphaCommands
 
         var response = new DiscordFollowupMessageBuilder();
 
-        // Text response
-        string textResponse = default;
-        try
-        {
-            textResponse = await Setup.Constants.HttpClient.GetStringAsync($"https://api.wolframalpha.com/v1/result?appid={appid}&i={queryEncoded}");
-        }
-        catch (HttpRequestException)
-        {
-            // WolframAlpha doesn't have a response for this query type or an error occurred
-            // Errors are handled later
-        }
+        string text = default;
+        var textApiResponse = await Setup.Constants.HttpClient.GetAsync($"https://api.wolframalpha.com/v1/result?appid={appid}&i={queryEncoded}");
+        if (textApiResponse.IsSuccessStatusCode)
+            text = await textApiResponse.Content.ReadAsStringAsync();
 
-        // Image response
-        MemoryStream imageResponse = default;
-        try
-        {
-            imageResponse = new MemoryStream(await Setup.Constants.HttpClient.GetByteArrayAsync($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={queryEncoded}"));
-        }
-        catch (HttpRequestException)
-        {
-            // WolframAlpha doesn't have a response for this query type or an error occurred
-            // Errors are handled later
-        }
+        MemoryStream image = default;
+        var imageApiResponse = await Setup.Constants.HttpClient.GetAsync($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={queryEncoded}");
+        if (imageApiResponse.IsSuccessStatusCode)
+            image = new MemoryStream(await imageApiResponse.Content.ReadAsByteArrayAsync());
+        
 
-        if (textResponse == default && imageResponse == default)
+        if (text == default && image == default)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent("Hmm, WolframAlpha didn't have an answer to that query! Try rephrasing it.")
@@ -64,14 +51,14 @@ internal class WolframAlphaCommands
 
         response.Content += $"> {queryEscaped}";
 
-        if (textResponse != default)
-            response.Content += $"\n{(imageResponse != default ? "**Simple answer:** " : "")}{textResponse}";
+        if (text != default)
+            response.Content += $"\n{(image != default ? "**Simple answer:** " : "")}{text}";
 
-        if (imageResponse != default)
+        if (image != default)
         {
-            if (textResponse != default)
+            if (text != default)
                 response.Content += "\n**Extended answer:**";
-            response.AddFile("result.gif", imageResponse);
+            response.AddFile("result.gif", image);
         }
 
         await ctx.FollowupAsync(response.AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
