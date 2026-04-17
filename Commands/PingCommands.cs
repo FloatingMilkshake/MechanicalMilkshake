@@ -5,9 +5,12 @@ internal class PingCommands
     [Command("ping")]
     [Description("Pong!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
     public static async Task PingCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent("Ping!"));
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+            .WithContent("Ping!")
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
 
         var websocketPing = ctx.Client.GetConnectionLatency(
             ctx.Channel.IsPrivate

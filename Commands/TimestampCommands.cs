@@ -3,6 +3,7 @@
 [Command("timestamp")]
 [Description("Returns the Unix timestamp of a given date.")]
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+[InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
 internal class TimestampCommands
 {
     [Command("id")]
@@ -23,26 +24,29 @@ internal class TimestampCommands
         }
         catch (FormatException)
         {
-            await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent(
-                "Hmm, that doesn't look like a valid ID/snowflake. I wasn't able to convert it to a timestamp."));
+            await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+                .WithContent("Hmm, that doesn't look like a valid ID/snowflake. I wasn't able to convert it to a timestamp.")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
             return;
         }
 
         var timestamp = snowflake.ToUnixTimeSeconds();
         if (string.IsNullOrWhiteSpace(format))
         {
-            await ctx.RespondAsync(
-                new DiscordInteractionResponseBuilder().WithContent($"{timestamp}"));
+            await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+                .WithContent($"{timestamp}")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
         }
         else
         {
             if (includeCode)
-                await ctx.RespondAsync(
-                    new DiscordInteractionResponseBuilder().WithContent(
-                        $"<t:{timestamp}:{format}> (`<t:{timestamp}:{format}>`)"));
+                await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+                    .WithContent($"<t:{timestamp}:{format}> (`<t:{timestamp}:{format}>`)")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
             else
-                await ctx.RespondAsync(
-                    new DiscordInteractionResponseBuilder().WithContent($"<t:{timestamp}:{format}>"));
+                await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+                    .WithContent($"<t:{timestamp}:{format}>")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
         }
     }
 
@@ -64,24 +68,28 @@ internal class TimestampCommands
         }
         catch (FormatException)
         {
-            await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent(
-                "Hmm, that doesn't look like a valid date. I wasn't able to convert it to a timestamp."));
+            await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+                .WithContent("Hmm, that doesn't look like a valid date. I wasn't able to convert it to a timestamp.")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
             return;
         }
 
         if (string.IsNullOrWhiteSpace(format))
         {
-            await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent($"{unixTime}"));
+            await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+                .WithContent($"{unixTime}")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
         }
         else
         {
             if (includeCode)
-                await ctx.RespondAsync(
-                    new DiscordInteractionResponseBuilder().WithContent(
-                        $"<t:{unixTime}:{format}> (`<t:{unixTime}:{format}>`)"));
+                await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+                    .WithContent($"<t:{unixTime}:{format}> (`<t:{unixTime}:{format}>`)")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
             else
-                await ctx.RespondAsync(
-                    new DiscordInteractionResponseBuilder().WithContent($"<t:{unixTime}:{format}>"));
+                await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+                    .WithContent($"<t:{unixTime}:{format}>")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
         }
     }
 }

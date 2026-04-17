@@ -5,9 +5,10 @@ internal class AboutCommands
     [Command("about")]
     [Description("View information about me!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
     public static async Task AboutCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync();
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
         const string privacyPolicyUrl = "https://floatingmilkshake.com/privacy#MechanicalMilkshake";
 
@@ -45,20 +46,22 @@ internal class AboutCommands
         + "\n- DM the bot itself (DMs are forwarded to owners!)"
         + "\n- DM a bot owner (see above for a list!)");
 
-        await ctx.FollowupAsync(embed);
+        await ctx.FollowupAsync(embed, ephemeral: ctx.ShouldUseEphemeralResponse(false));
     }
 
     [Command("version")]
     [Description("Show my version information.")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
     public static async Task VersionCommandAsync(SlashCommandContext ctx,
         [Parameter("extended"), Description("Whether to show extended info. Defaults to False.")] bool extended = false)
     {
-        await ctx.DeferResponseAsync();
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
         if (extended)
         {
-            await ctx.FollowupAsync((await Setup.Types.DebugInfo.CreateDebugInfoEmbedAsync(false)).WithTitle("Version"));
+            await ctx.FollowupAsync((await Setup.Types.DebugInfo.CreateDebugInfoEmbedAsync(false)).WithTitle("Version"),
+                ephemeral: ctx.ShouldUseEphemeralResponse(false));
             return;
         }
 
@@ -67,6 +70,6 @@ internal class AboutCommands
             Title = "Version",
             Color = Setup.Constants.BotColor,
             Description = (await Setup.Types.DebugInfo.GetDebugInfoAsync()).CommitInformation
-        });
+        }, ephemeral: ctx.ShouldUseEphemeralResponse(false));
     }
 }

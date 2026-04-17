@@ -9,14 +9,15 @@ internal class ServerInfoCommands
         [Parameter("server"), Description("The ID of the server to look up. Defaults to the current server if you're not using this in DMs.")]
         string guildId = default)
     {
-        await ctx.DeferResponseAsync();
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
         DiscordGuild guild;
 
         if (ctx.Channel.IsPrivate && guildId == default)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent("You can't use this command in DMs without specifying a server ID! Please try again."));
+                    .WithContent("You can't use this command in DMs without specifying a server ID! Please try again.")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
             return;
         }
 
@@ -33,15 +34,15 @@ internal class ServerInfoCommands
             catch (Exception ex) when (ex is UnauthorizedException or NotFoundException)
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent(
-                        "Sorry, I can't read the details for that server because I'm not in it or it doesn't exist!"));
+                    .WithContent("Sorry, I can't read the details for that server because I'm not in it or it doesn't exist!")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
                 return;
             }
             catch (FormatException)
             {
-                await ctx.FollowupAsync(
-                    new DiscordFollowupMessageBuilder().WithContent(
-                        "That doesn't look like a valid server ID! Please try again."));
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("That doesn't look like a valid server ID! Please try again.")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
                 return;
             }
         }
@@ -66,9 +67,9 @@ internal class ServerInfoCommands
             .WithThumbnail($"{guild.IconUrl}")
             .WithFooter($"Server ID: {guild.Id}");
 
-        var response = new DiscordFollowupMessageBuilder()
-            .WithContent($"Server Info for **{guild.Name}**").AddEmbed(embed);
-
-        await ctx.FollowupAsync(response);
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .WithContent($"Server Info for **{guild.Name}**")
+            .AddEmbed(embed)
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 }

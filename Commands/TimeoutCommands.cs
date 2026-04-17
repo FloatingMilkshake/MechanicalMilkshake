@@ -16,7 +16,7 @@ internal class TimeoutCommands
         [Parameter("reason"), Description("The reason for the timeout.")]
         string reason = "No reason provided.")
     {
-        await ctx.DeferResponseAsync(true);
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
 
         DiscordMember targetMember;
 
@@ -28,7 +28,7 @@ internal class TimeoutCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"It doesn't look like **{user.Username}** is in the server, so I can't time them out!")
-                .AsEphemeral(true));
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -36,7 +36,7 @@ internal class TimeoutCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"You don't have permission to time out **{user.GetFullUsername()}**!")
-                .AsEphemeral(true));
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -44,7 +44,7 @@ internal class TimeoutCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"**{user.GetFullUsername()}** is an Administrator and can't be timed out!")
-                .AsEphemeral(true));
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -58,7 +58,7 @@ internal class TimeoutCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"I couldn't parse \"{duration}\" as a length of time! Please try again.")
-                .AsEphemeral(true));
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -76,7 +76,7 @@ internal class TimeoutCommands
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("Due to Discord limitations, timeouts can only be set for up to 28 days! Please set a shorter duration.")
-                    .AsEphemeral(true));
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                 return;
             }
         }
@@ -86,7 +86,7 @@ internal class TimeoutCommands
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
                     $"I don't have permission to time out **{user.GetFullUsername()}**! Please check the role hierarchy and permissions.")
-                .AsEphemeral(true));
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -96,7 +96,7 @@ internal class TimeoutCommands
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent($"Successfully timed out **{user.Mention}** until <t:{expireTimeTimestamp}:f> (<t:{expireTimeTimestamp}:R>)!")
-            .AsEphemeral(true));
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
 
         await ctx.Channel.SendMessageAsync($"{user.Mention} has been timed out, expiring <t:{expireTimeTimestamp}:R>: **{reason}**");
     }
@@ -107,7 +107,7 @@ internal class TimeoutCommands
         [Parameter("member"), Description("The member whose timeout to clear.")]
         DiscordUser user)
     {
-        await ctx.DeferResponseAsync();
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
         DiscordMember targetMember;
 
@@ -126,7 +126,7 @@ internal class TimeoutCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"You don't have permission to clear the timeout for **{user.GetFullUsername()}**!")
-                .AsEphemeral(true));
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
             return;
         }
 
@@ -134,7 +134,7 @@ internal class TimeoutCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"**{user.GetFullUsername()}** isn't timed out!")
-                .AsEphemeral(true));
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
             return;
         }
 
@@ -144,11 +144,14 @@ internal class TimeoutCommands
         }
         catch (UnauthorizedException)
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                $"I don't have permission to clear the timeout for **{user.GetFullUsername()}**! Please check the role hierarchy and permissions."));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent($"I don't have permission to clear the timeout for **{user.GetFullUsername()}**! Please check the role hierarchy and permissions.")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
             return;
         }
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"Successfully cleared the timeout for {user.Mention}!"));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .WithContent($"Successfully cleared the timeout for {user.Mention}!")
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 }

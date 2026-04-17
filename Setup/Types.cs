@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake.Setup;
+﻿using static MechanicalMilkshake.Setup.Types;
+
+namespace MechanicalMilkshake.Setup;
 
 internal static class Types
 {
@@ -490,9 +492,28 @@ internal static class Types
             return $"https://discord.com/channels/{GuildId}/{ChannelId}/{MessageId}";
         }
 
-        internal static void AddDelayEmbedField(DiscordEmbedBuilder embed, ulong msgId)
+        internal DiscordEmbedBuilder CreateEmbed()
         {
-            embed.AddField("Need to delay this reminder?", $"Use {"reminder delay".AsSlashCommandMention()} and set `message` to `{msgId}`.");
+            var reminderEmbed = new DiscordEmbedBuilder()
+            {
+                Color = new DiscordColor("#7287fd"),
+                Title = $"Reminder from <t:{GetSetTimeTimestamp()}:R>",
+                Description = ReminderText
+            };
+
+            string context;
+            if (ReminderText.Equals("You set this reminder on a message with the \"Remind Me About This\" command."))
+            {
+                context = "This reminder was set privately, so I can't link back to the message where it was set!" +
+                    $" However, [this link]({GetJumpLink()}) should show you messages around the time that you set the reminder.";
+            }
+            else
+            {
+                context = GetJumpLink();
+            }
+            reminderEmbed.AddField("Context", context);
+
+            return reminderEmbed;
         }
 
         internal static (DateTime? parsedTime, string error) ParseTriggerTime(string triggerTime)

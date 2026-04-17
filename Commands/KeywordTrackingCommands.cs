@@ -25,7 +25,7 @@ internal class KeywordTrackingCommands
         [Parameter("this_server_only"), Description("Whether to only notify you if the keyword is mentioned in this server. Defaults to True.")]
         bool currentGuildOnly = true)
     {
-        await ctx.DeferResponseAsync(true);
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
 
         if (currentGuildOnly && guildIgnoreList is not null &&
             guildIgnoreList.Split(' ').Any(g => g == ctx.Guild.Id.ToString()))
@@ -55,7 +55,8 @@ internal class KeywordTrackingCommands
         await Setup.Storage.Redis.HashSetAsync("keywords", ctx.Interaction.Id,
             JsonConvert.SerializeObject(trackedKeyword));
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-            .WithContent($"Now tracking mentions of `{trackedKeyword.Keyword}`!").AsEphemeral(true));
+            .WithContent($"Now tracking mentions of `{trackedKeyword.Keyword}`!")
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
     }
 
     [Command("edit")]
@@ -80,7 +81,7 @@ internal class KeywordTrackingCommands
         [Parameter("this_server_only"), Description("Whether to only notify you if the keyword is mentioned in this server.")]
         bool? currentGuildOnly = null)
     {
-        await ctx.DeferResponseAsync(true);
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
 
         var allKeywords = (await Setup.Storage.Redis.HashGetAllAsync("keywords")).Select(x =>
             JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(x.Value)).ToList();
@@ -88,7 +89,8 @@ internal class KeywordTrackingCommands
         if (allKeywords.All(k => k.UserId != ctx.User.Id))
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"You don't have any tracked keywords! Add some with {"track add".AsSlashCommandMention()}."));
+                .WithContent($"You don't have any tracked keywords! Add some with {"track add".AsSlashCommandMention()}.")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
 
             return;
         }
@@ -97,7 +99,9 @@ internal class KeywordTrackingCommands
 
         if (thisKeyword == default)
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral(true));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("I couldn't find that keyword! Please try again.")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -105,7 +109,9 @@ internal class KeywordTrackingCommands
             userIgnoreList is null && channelIgnoreList is null && guildIgnoreList is null &&
             currentGuildOnly is null)
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("You didn't change anything! Nothing to do.").AsEphemeral(true));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("You didn't change anything! Nothing to do.")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -122,14 +128,16 @@ internal class KeywordTrackingCommands
 
         await Setup.Storage.Redis.HashSetAsync("keywords", thisKeyword.Id, JsonConvert.SerializeObject(newKeywordObject));
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"Successfully edited keyword `{newKeywordObject.Keyword}`!").AsEphemeral(true));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .WithContent($"Successfully edited keyword `{newKeywordObject.Keyword}`!")
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
     }
 
     [Command("list")]
     [Description("List tracked keywords.")]
     public static async Task TrackListCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync(true);
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
 
         var keywords = (await Setup.Storage.Redis.HashGetAllAsync("keywords")).Select(x => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(x.Value));
         var userKeywords = keywords.Where(k => k.UserId == ctx.User.Id);
@@ -147,7 +155,9 @@ internal class KeywordTrackingCommands
             embed.WithDescription($"**To see extended information, use {"track details".AsSlashCommandMention()}.**\n" +
                       $"Keywords are truncated to 45 characters in this list.\n\n{keywordList}");
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral(true));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .AddEmbed(embed)
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
     }
 
     [Command("details")]
@@ -155,7 +165,7 @@ internal class KeywordTrackingCommands
     public static async Task TrackDetailsCommandAsync(SlashCommandContext ctx,
         [SlashAutoCompleteProvider(typeof(Setup.Types.AutoCompleteProviders.TrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to show details for.")] string keyword)
     {
-        await ctx.DeferResponseAsync(true);
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
 
         var allKeywords = (await Setup.Storage.Redis.HashGetAllAsync("keywords")).Select(k => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(k.Value));
 
@@ -173,12 +183,16 @@ internal class KeywordTrackingCommands
 
         if (thisKeyword == default)
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral(true));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("I couldn't find that keyword! Please try again.")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             return;
         }
 
         var embed = await thisKeyword.CreateDetailsEmbedAsync();
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral(true));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .AddEmbed(embed)
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
     }
 
     [Command("remove")]
@@ -186,7 +200,7 @@ internal class KeywordTrackingCommands
     public static async Task TrackRemoveCommandAsync(SlashCommandContext ctx,
         [SlashAutoCompleteProvider(typeof(Setup.Types.AutoCompleteProviders.TrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to untrack.")] string keyword)
     {
-        await ctx.DeferResponseAsync(true);
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
 
         var allKeywords = (await Setup.Storage.Redis.HashGetAllAsync("keywords")).Select(k => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(k.Value));
 
@@ -194,9 +208,9 @@ internal class KeywordTrackingCommands
 
         if (!userKeywords.Any())
         {
-            await ctx.FollowupAsync(
-                new DiscordFollowupMessageBuilder()
-                .WithContent($"You don't have any tracked keywords! Add some with {"track add".AsSlashCommandMention()}."));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent($"You don't have any tracked keywords! Add some with {"track add".AsSlashCommandMention()}.")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
 
             return;
         }
@@ -205,13 +219,17 @@ internal class KeywordTrackingCommands
 
         if (keywordToDelete == default)
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("I couldn't find that keyword! Please try again.").AsEphemeral(true));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("I couldn't find that keyword! Please try again.")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             return;
         }
 
         await Setup.Storage.Redis.HashDeleteAsync("keywords", keywordToDelete.Id);
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"No longer tracking mentions of `{keywordToDelete.Keyword}`.").AsEphemeral(true));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .WithContent($"No longer tracking mentions of `{keywordToDelete.Keyword}`.")
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
     }
 
     [Command("clear")]
@@ -221,7 +239,7 @@ internal class KeywordTrackingCommands
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
             .WithContent("Are you sure you want to clear your list of tracked keywords? This cannot be undone!")
             .AddActionRowComponent([new DiscordButtonComponent(DiscordButtonStyle.Danger, "button-callback-track-clear-confirm", "Clear Tracked Keywords")])
-            .AsEphemeral(true));
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
     }
 
     private static async Task<List<ulong>> ParseUserIgnoreListAsync(string input)

@@ -5,13 +5,16 @@ internal class HttpCatCommands
     [Command("httpcat")]
     [Description("Get an http.cat image!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
     public static async Task HttpCatCommandAsync(SlashCommandContext ctx,
         [Parameter("code"), Description("The code to get the http.cat image for.")] [MinMaxValue(100, 599)]
         int? code = null)
     {
-        await ctx.DeferResponseAsync();
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(await GetHttpImageAsync(code, "cat")));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .WithContent(await GetHttpImageAsync(code, "cat"))
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 
     private static async Task<string> GetHttpImageAsync(int? code, string tld)

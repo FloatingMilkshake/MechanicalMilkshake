@@ -1,6 +1,7 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+[InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
 internal class ReminderCommands
 {
     [Command("Remind Me About This")]
@@ -29,12 +30,12 @@ internal class ReminderCommands
             [Parameter("text"), Description("What should the reminder say?")] [MinMaxLength(maxLength: 1000)]
             string text = "")
         {
-            await ctx.DeferResponseAsync();
+            await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
             var (parsedTime, error) = Setup.Types.Reminder.ParseTriggerTime(time);
             if (parsedTime is null)
             {
-                await ctx.RespondAsync(error, ephemeral: true);
+                await ctx.FollowupAsync(error, ephemeral: ctx.ShouldUseEphemeralResponse(true));
                 return;
             }
 
@@ -43,7 +44,8 @@ internal class ReminderCommands
 
             var message = await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent($"Reminder set for <t:{reminderTriggerTimeTimestamp}:F> (<t:{reminderTriggerTimeTimestamp}:R>)!" +
-                                    $"\nReminder ID: `{reminderId}`"));
+                                    $"\nReminder ID: `{reminderId}`")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
 
             var reminder = new Setup.Types.Reminder(ctx.User.Id,
                 ctx.Channel.Id,
@@ -61,7 +63,7 @@ internal class ReminderCommands
         [Description("List your reminders.")]
         public static async Task ReminderListCommandAsync(SlashCommandContext ctx)
         {
-            await ctx.DeferResponseAsync(true);
+            await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
 
             var userReminders = await Setup.Types.Reminder.GetUserRemindersAsync(ctx.User.Id);
 
@@ -76,7 +78,7 @@ internal class ReminderCommands
 
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .AddEmbed(await userReminders.CreateEmbedAsync())
-                .AsEphemeral(true));
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
         }
 
         [Command("delete")]
@@ -90,14 +92,14 @@ internal class ReminderCommands
             {
                 await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                     .WithContent($"You don't have any reminders! Set one with {"reminder set".AsSlashCommandMention()}.")
-                    .AsEphemeral(true));
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                 return;
             }
             else if (userReminders.Count <= 25)
             {
                 await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent("Please choose a reminder to delete.")
                     .AddActionRowComponent(userReminders.CreateSelectComponent("selectmenu-callback-reminder-delete"))
-                    .AsEphemeral(true));
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             }
             else
             {
@@ -124,7 +126,7 @@ internal class ReminderCommands
             {
                 await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                     .WithContent($"You don't have any reminders! Set one with {"reminder set".AsSlashCommandMention()}.")
-                    .AsEphemeral(true));
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                 return;
             }
             else if (userReminders.Count <= 25)
@@ -132,7 +134,7 @@ internal class ReminderCommands
                 await ctx.RespondAsync(
                 new DiscordInteractionResponseBuilder().WithContent("Please choose a reminder to modify.")
                     .AddActionRowComponent(userReminders.CreateSelectComponent("selectmenu-callback-reminder-modify"))
-                    .AsEphemeral(true));
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             }
             else
             {
@@ -158,7 +160,7 @@ internal class ReminderCommands
             [Parameter("time"), Description("When do you want to be reminded?")]
             string time)
         {
-            await ctx.DeferResponseAsync();
+            await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
             DiscordMessage message;
             try
@@ -167,17 +169,23 @@ internal class ReminderCommands
             }
             catch (FormatException)
             {
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"I couldn't parse \"{msgId}\" as a message ID! Please try again."));
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent($"I couldn't parse \"{msgId}\" as a message ID! Please try again.")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
                 return;
             }
             catch (NotFoundException)
             {
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"I couldn't find that message! Please check the message ID you entered and try again."));
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent($"I couldn't find that message! Please check the message ID you entered and try again.")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
                 return;
             }
             catch (UnauthorizedException)
             {
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"I couldn't read that message! Please make sure I have permission to read message history and try again."));
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent($"I couldn't read that message! Please make sure I have permission to read message history and try again.")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
                 return;
             }
 
@@ -185,14 +193,16 @@ internal class ReminderCommands
                 !message.Content.Contains("I have a reminder for you") ||
                 message.Embeds.Count < 1)
             {
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("That message doesn't look like a reminder! Please try again."));
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("That message doesn't look like a reminder! Please try again.")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
                 return;
             }
 
             var (triggerTime, error) = Setup.Types.Reminder.ParseTriggerTime(time);
             if (triggerTime is null)
             {
-                await ctx.RespondAsync(error);
+                await ctx.FollowupAsync(error, ephemeral: ctx.ShouldUseEphemeralResponse(false));
                 return;
             }
 
@@ -204,7 +214,7 @@ internal class ReminderCommands
                         $"[Reminder]({message.JumpLink})" +
                         $" pushed back to <t:{triggerTimeTimestamp}:F> (<t:{triggerTimeTimestamp}:R>)!" +
                         $"\nReminder ID: `{reminderId}`")
-                    .AsEphemeral());
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
 
             var reminder = new Setup.Types.Reminder(ctx.User.Id,
                 ctx.Channel.Id,
@@ -222,12 +232,12 @@ internal class ReminderCommands
         [Description("Show the details for a reminder.")]
         public static async Task ReminderShowCommandAsync(SlashCommandContext ctx, [Parameter("id"), Description("The ID of the reminder to show.")] string id)
         {
-            await ctx.DeferResponseAsync(true);
+            await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
 
             var (reminder, error) = await Setup.Types.Reminder.GetReminderAsync(id, ctx.User.Id);
             if (reminder is null)
             {
-                await ctx.RespondAsync(error, ephemeral: true);
+                await ctx.FollowupAsync(error, ephemeral: ctx.ShouldUseEphemeralResponse(true));
                 return;
             }
 
@@ -252,7 +262,9 @@ internal class ReminderCommands
             embed.AddField("Set At", $"<t:{setTimeTimestamp}:F> (<t:{setTimeTimestamp}:R>)");
             embed.AddField("Set For", $"<t:{triggerTimeTimestamp}:F> (<t:{triggerTimeTimestamp}:R>)");
 
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed).AsEphemeral(true));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .AddEmbed(embed)
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
         }
     }
 }

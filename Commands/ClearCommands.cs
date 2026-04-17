@@ -41,26 +41,26 @@ internal class ClearCommands
                         dryRun == false:
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("You must provide at least one argument! I need to know which messages to delete.")
-                    .AsEphemeral(true));
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                 return;
             case 0 when upTo == "":
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         "I need to know how many messages to delete! Please provide a value for `count` or `up_to`.")
-                    .AsEphemeral(true));
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                 return;
             // If count is too low or too high, refuse the request
             case < 0:
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         "I can't delete a negative number of messages! Try setting `count` to a positive number.")
-                    .AsEphemeral(true));
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                 return;
             case >= 1000:
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent(
                         "Deleting that many messages poses a risk of something disastrous happening, so I'm refusing your request, sorry.")
-                    .AsEphemeral(true));
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                 return;
         }
 
@@ -71,7 +71,7 @@ internal class ClearCommands
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent(
                     "You can't provide both a count of messages and a message to delete up to! Please only provide one of the two arguments.")
-                .AsEphemeral(true));
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -87,7 +87,7 @@ internal class ClearCommands
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("I don't have permission to read messages in this channel, so I can't find the messages to be deleted! This is necessary to apply any filters you may have set. Make sure I have the **View Channel** and **Read Message History** permissions for this channel.")
-                    .AsEphemeral(true));
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                 return;
             }
             messagesToClear = messages.ToList();
@@ -99,8 +99,9 @@ internal class ClearCommands
             {
                 if (!ulong.TryParse(upTo, out messageId))
                 {
-                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                        "That doesn't look like a valid message ID or link! Please try again."));
+                    await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                        .WithContent("That doesn't look like a valid message ID or link! Please try again.")
+                        .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                     return;
                 }
             }
@@ -113,7 +114,7 @@ internal class ClearCommands
                 {
                     await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                         .WithContent("Please provide a valid link to a message in this channel!")
-                        .AsEphemeral(true));
+                        .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                     return;
                 }
             }
@@ -140,14 +141,14 @@ internal class ClearCommands
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("I couldn't find the message you provided for `up_to`! Please provide a valid message ID or link; the message must be in this channel.")
-                    .AsEphemeral(true));
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                 return;
             }
             catch (UnauthorizedException) // User specified a msg the bot can't read
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("I don't have permission to read the message you provided for `up_to`, or it was not sent in this channel! Please make sure I have the **View Channel** and **Read Message History** permissions in this channel, and that you've provided a message ID or link for a message in this channel.")
-                    .AsEphemeral(true));
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                 return;
             }
         }
@@ -190,9 +191,8 @@ internal class ClearCommands
             if (humansOnly)
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent(
-                        "You can't use `bots_only` and `humans_only` together! Pick one or the other please.")
-                    .AsEphemeral(true));
+                    .WithContent("You can't use `bots_only` and `humans_only` together! Pick one or the other please.")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                 return;
             }
 
@@ -211,9 +211,8 @@ internal class ClearCommands
             if (linksOnly)
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent(
-                        "You can't use `images_only` and `links_only` together! Pick one or the other please.")
-                    .AsEphemeral(true));
+                    .WithContent("You can't use `images_only` and `links_only` together! Pick one or the other please.")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                 return;
             }
 
@@ -242,7 +241,7 @@ internal class ClearCommands
             case 0 when skipped:
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("All of the messages to delete are older than 2 weeks, so I can't delete them!")
-                    .AsEphemeral(true));
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                 return;
             // All filters checked. 'messages' is now our final list of messages to delete.
             // Warn if we're going to be deleting 50 or more messages.
@@ -254,7 +253,8 @@ internal class ClearCommands
                         .WithContent(dryRun ? $"You would be about to delete {messagesToClear.Count} messages, but since "
                                                 + "you used `dry_run = True`, I won't do anything."
                                             : $"You're about to delete {messagesToClear.Count} messages. Are you sure?")
-                        .AddActionRowComponent(confirmButton).AsEphemeral(true));
+                        .AddActionRowComponent(confirmButton)
+                        .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
 
                     Setup.State.Caches.ClearCache.Add(confirmationMessage.Id, messagesToClear);
                     break;
@@ -264,8 +264,9 @@ internal class ClearCommands
                     if (dryRun)
                     {
                         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent($"You would be about to"
-                        + $" delete {messagesToClear.Count} messages, but since you used `dry_run = True`,"
-                        + " I won't do anything.").AsEphemeral(true));
+                                + $" delete {messagesToClear.Count} messages, but since you used `dry_run = True`,"
+                                + " I won't do anything.")
+                            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                         break;
                     }
 
@@ -277,8 +278,8 @@ internal class ClearCommands
                     catch (UnauthorizedException)
                     {
                         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                            .WithContent("I don't have permission to delete messages in this channel! Make sure I have the `Manage Messages` permission.")
-                            .AsEphemeral(true));
+                            .WithContent("I don't have permission to delete messages in this channel! Make sure I have the **Manage Messages** permission.")
+                            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                         return;
                     }
                     // not catching other exceptions because they are handled by generic slash error handler, but this one deserves a clear message
@@ -287,16 +288,17 @@ internal class ClearCommands
                         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                             .WithContent(
                                 $"Cleared **{messagesToClear.Count}** messages from {ctx.Channel.Mention}!\nSome messages were not deleted because they are older than 2 weeks.")
-                            .AsEphemeral(true));
+                            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                     else
                         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                             .WithContent($"Cleared **{messagesToClear.Count}** messages from {ctx.Channel.Mention}!")
-                            .AsEphemeral(true));
+                            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                     break;
                 }
             default:
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                    "There were no messages that matched all of the arguments you provided! Nothing to do."));
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("There were no messages that matched all of the arguments you provided! Nothing to do.")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
                 break;
         }
     }

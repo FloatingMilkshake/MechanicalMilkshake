@@ -5,11 +5,12 @@ internal class InviteInfoCommands
     [Command("inviteinfo")]
     [Description("Return information about a Discord invite.")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
     public static async Task InviteInfoCommandAsync(SlashCommandContext ctx,
         [Parameter("invite"), Description("The invite to return information about. Accepts an invite link or code.")]
         string targetInvite)
     {
-        await ctx.DeferResponseAsync();
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
         var inviteMatch = Setup.Constants.RegularExpressions.DiscordInvitePattern.Match(targetInvite);
         if (!inviteMatch.Success)
@@ -17,7 +18,9 @@ internal class InviteInfoCommands
             inviteMatch = Setup.Constants.RegularExpressions.DiscordInvitePattern.Match($"discord.gg/{targetInvite}");
             if (!inviteMatch.Success)
             {
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("That's not a valid invite!"));
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("That's not a valid invite!")
+                    .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
                 return;
             }
         }
@@ -29,7 +32,9 @@ internal class InviteInfoCommands
         }
         catch (NotFoundException)
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("That's not a valid invite!"));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("That's not a valid invite!")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
             return;
         }
 
@@ -76,6 +81,8 @@ internal class InviteInfoCommands
 
         embed.WithThumbnail(invite.Guild.IconUrl);
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .AddEmbed(embed)
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 }

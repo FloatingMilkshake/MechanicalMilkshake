@@ -11,7 +11,7 @@ internal class BanCommands
         [Parameter("reason"), Description("The reason for the ban.")] [MinMaxLength(maxLength: 1500)]
         string reason = "No reason provided.")
     {
-        await ctx.DeferResponseAsync(true);
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
 
         DiscordMember targetMember = default;
         try
@@ -27,7 +27,7 @@ internal class BanCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"You don't have permission to ban **{userToBan.GetFullUsername()}**!")
-                .AsEphemeral(true));
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -35,7 +35,7 @@ internal class BanCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"I don't have permission to ban **{userToBan.GetFullUsername()}**! Please check the role hierarchy and permissions.")
-                .AsEphemeral(true));
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -60,7 +60,9 @@ internal class BanCommands
 
         await ctx.Guild.BanMemberAsync(userToBan.Id, TimeSpan.Zero, $"Banned by {ctx.User.Username}: {reason}");
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("User banned successfully.").AsEphemeral(true));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .WithContent("User banned successfully.")
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
 
         await ctx.Channel.SendMessageAsync($"{userToBan.Mention} has been banned: **{reason}**");
     }
@@ -80,12 +82,13 @@ internal class BanCommands
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"**{userToUnban.GetFullUsername()}** isn't banned!")
-                .AsEphemeral(true));
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             return;
         }
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-            .WithContent("User unbanned successfully.").AsEphemeral(true));
+            .WithContent("User unbanned successfully.")
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
         await ctx.Channel.SendMessageAsync(
             $"Successfully unbanned **{userToUnban.GetFullUsername()}**!");
     }

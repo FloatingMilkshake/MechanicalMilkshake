@@ -1,12 +1,13 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+[InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
 internal class UserInfoCommands
 {
     [Command("User Info")]
     [AllowedProcessors(typeof(UserCommandProcessor))]
     [SlashCommandTypes(DiscordApplicationCommandType.UserContextMenu)]
-    public static async Task UserInfoUserContextMenuCommandAsync(CommandContext ctx, DiscordUser targetUser)
+    public static async Task UserInfoUserContextMenuCommandAsync(UserCommandContext ctx, DiscordUser targetUser)
     {
         DiscordEmbed userInfoEmbed;
 
@@ -31,7 +32,8 @@ internal class UserInfoCommands
 
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
             .WithContent($"User Info for **{targetUser.GetFullUsername()}**")
-            .AddEmbed(userInfoEmbed).AsEphemeral(true));
+            .AddEmbed(userInfoEmbed).AsEphemeral(true)
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("userinfo")]
@@ -62,6 +64,8 @@ internal class UserInfoCommands
         }
 
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
-            .WithContent($"User Info for **{user.GetFullUsername()}**").AddEmbed(userInfoEmbed));
+            .WithContent($"User Info for **{user.GetFullUsername()}**")
+            .AddEmbed(userInfoEmbed)
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 }

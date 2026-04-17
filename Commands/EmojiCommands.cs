@@ -3,17 +3,20 @@
 [Command("emoji")]
 [Description("Commands for working with emoji.")]
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+[InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
 internal class EmojiCommands
 {
     [Command("link")]
     [Description("Get the link for an emoji! Only works for custom emoji.")]
     public static async Task EmojiLinkCommandAsync(SlashCommandContext ctx, [Parameter("emoji"), Description("The emoji to get the link for. Accepts one or more custom emoji.")] string emoji)
     {
-        await ctx.DeferResponseAsync();
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
         if (!Setup.Constants.RegularExpressions.EmojiPattern.IsMatch(emoji))
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("That doesn't look like an emoji! Please try again."));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("That doesn't look like an emoji! Please try again.")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
             return;
         }
 
@@ -32,6 +35,8 @@ internal class EmojiCommands
         if (response.Length > 4000)
             response = "It looks like this message is too long to send! Try entering less emoji.";
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(response));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .WithContent(response)
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 }

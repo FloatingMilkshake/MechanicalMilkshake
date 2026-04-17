@@ -11,7 +11,7 @@ internal class LockdownCommands
     [Description("Lock a channel to prevent members from sending messages.")]
     public static async Task LockdownLockCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync(true);
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
 
         // Get the permissions that are already on the channel, so that we can make sure they are kept when we adjust overwrites for lockdown
         DiscordOverwrite[] existingOverwrites = ctx.Channel.PermissionOverwrites.ToArray();
@@ -72,15 +72,16 @@ internal class LockdownCommands
 
         await ctx.Channel.SendMessageAsync("This channel has been locked.");
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent("Channel locked successfully.")
-            .AsEphemeral(true));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .WithContent("Channel locked successfully.")
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
     }
 
     [Command("unlock")]
     [Description("Unlock a locked channel to allow members to send messages again.")]
     public static async Task LockdownUnlockCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync(true);
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(true));
 
         // Checking <2 because there will always be 1 overwrite for @everyone permissions
         if (ctx.Channel.PermissionOverwrites.ToArray().Length < 2
@@ -88,7 +89,8 @@ internal class LockdownCommands
                 !o.Denied.HasPermission(DiscordPermission.SendMessages)))
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent("This channel is not locked!").AsEphemeral(true));
+                .WithContent("This channel is not locked!")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
             return;
         }
 
@@ -160,7 +162,9 @@ internal class LockdownCommands
             await ctx.Channel.AddOverwriteAsync(ctx.Member, invokerAllowedPermissions, invokerDeniedPermissionsBeforeUnlock, "Resetting Lockdown failsafe 2 for unlock");
 
         await ctx.Channel.SendMessageAsync("This channel has been unlocked.");
+
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-            .WithContent("Channel unlocked successfully.").AsEphemeral(true));
+            .WithContent("Channel unlocked successfully.")
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
     }
 }

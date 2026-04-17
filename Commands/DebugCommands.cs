@@ -11,7 +11,7 @@ internal class DebugCommands
     [Description("Check my uptime!")]
     public static async Task UptimeCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync();
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
         DiscordEmbedBuilder embed = new()
         {
@@ -25,7 +25,7 @@ internal class DebugCommands
         embed.AddField("Process started at", $"<t:{startUnixTime}:F> (<t:{startUnixTime}:R>)");
         embed.AddField("Last connected to Discord at", $"<t:{connectUnixTime}:F> (<t:{connectUnixTime}:R>)");
 
-        await ctx.FollowupAsync(embed);
+        await ctx.FollowupAsync(embed, ephemeral: ctx.ShouldUseEphemeralResponse(false));
     }
 
     [Command("timecheck")]
@@ -37,7 +37,7 @@ internal class DebugCommands
             Title = "Time Check",
             Color = Setup.Constants.BotColor,
             Description = $"Seems to me like it's currently `{DateTime.Now:s}`."
-        }));
+        }).AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("shutdown")]
@@ -49,7 +49,8 @@ internal class DebugCommands
 
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
             .WithContent("Are you sure you want to shut down the bot? This action cannot be undone.")
-            .AddActionRowComponent(shutdownButton, cancelButton));
+            .AddActionRowComponent(shutdownButton, cancelButton)
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("restart")]
@@ -58,12 +59,15 @@ internal class DebugCommands
     {
         if (!File.Exists("/proc/self/cgroup"))
         {
-            await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent(
-                $"The bot may not be running under Docker; restart is unavailable. Use {"debug shutdown".AsSlashCommandMention()} if you wish to shut down the bot."));
+            await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+                .WithContent($"The bot may not be running under Docker; restart is unavailable. Use {"debug shutdown".AsSlashCommandMention()} if you wish to shut down the bot.")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
             return;
         }
 
-        await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent("Restarting..."));
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+            .WithContent("Restarting...")
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
         Environment.Exit(1);
     }
 
@@ -71,7 +75,7 @@ internal class DebugCommands
     [Description("Show the bot's owners.")]
     public static async Task DebugOwnersCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync();
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
         DiscordEmbedBuilder embed = new()
         {
@@ -93,7 +97,9 @@ internal class DebugCommands
         embed.AddField("Bot Commanders",
             $"These users are authorized to use owner-level commands.\n{botCommanderList}");
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .AddEmbed(embed)
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("guilds")]
@@ -104,7 +110,7 @@ internal class DebugCommands
         [SlashChoiceProvider(typeof(Setup.Types.ChoiceProviders.GuildsListSortDirectionChoiceProvider))]
         [Parameter("sort_direction"), Description("Which direction to sort the list of guilds.")] string sortDirection = "asc")
     {
-        await ctx.DeferResponseAsync();
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
         DiscordEmbedBuilder embed = new()
         {
@@ -124,7 +130,9 @@ internal class DebugCommands
         foreach (var guild in Setup.State.Discord.Client.Guilds)
             embed.Description += $"- {guild.Value.Name}\n";
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .AddEmbed(embed)
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("humandateparser")]
@@ -133,7 +141,7 @@ internal class DebugCommands
         [Parameter("date"), Description("The date (or time) for HumanDateParser to parse.")]
         string date)
     {
-        await ctx.DeferResponseAsync();
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
         DiscordEmbedBuilder embed = new()
         {
@@ -150,7 +158,9 @@ internal class DebugCommands
             embed.WithDescription($"{ex.Message}");
         }
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().AddEmbed(embed));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .AddEmbed(embed)
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("checks")]
@@ -160,25 +170,24 @@ internal class DebugCommands
         [SlashChoiceProvider(typeof(Setup.Types.ChoiceProviders.ChecksChoiceProvider))]
         string checksToRun)
     {
-        await ctx.DeferResponseAsync();
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
         // declare variables for check results
         int numRemindersBefore = default;
         int numRemindersAfter = default;
         int numRemindersSent = default;
         int numRemindersFailed = default;
-        int numRemindersWithNullTime = default;
         double redisPing = default;
 
         switch (checksToRun)
         {
             case "all":
-                (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime) =
+                (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed) =
                     await ReminderTasks.CheckRemindersAsync();
                 redisPing = await RedisTasks.CheckRedisConnectionAsync();
                 break;
             case "reminders":
-                (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed, numRemindersWithNullTime) =
+                (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed) =
                     await ReminderTasks.CheckRemindersAsync();
                 break;
             case "redisConnection":
@@ -193,8 +202,7 @@ internal class DebugCommands
                                     + $"Before: `{numRemindersBefore}`; "
                                     + $"After: `{numRemindersAfter}`; "
                                     + $"Sent: `{numRemindersSent}`; "
-                                    + $"Failed: `{numRemindersFailed}`; "
-                                    + $"Null Time: `{numRemindersWithNullTime}`";
+                                    + $"Failed: `{numRemindersFailed}`";
 
         // redis ping
         var redisPingResultMessage = $"**Redis ping:** {(double.IsNaN(redisPing) ? "Unreachable!" : $"`{redisPing}ms`")}";
@@ -216,14 +224,16 @@ internal class DebugCommands
         }
 
         // send response
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(response));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .WithContent(response)
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("usage")]
     [Description("Show which commands are used the most.")]
     public static async Task DebugUsageCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.DeferResponseAsync();
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
         var cmdCounts = (from cmd in await Setup.Storage.Redis.HashGetAllAsync("commandCounts")
                          select new KeyValuePair<string, int>(cmd.Name, int.Parse(cmd.Value))).ToList();
@@ -234,7 +244,9 @@ internal class DebugCommands
         if (string.IsNullOrWhiteSpace(output))
             output = "I don't have any command counts saved!";
 
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(output.Trim()));
+        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+            .WithContent(output.Trim())
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 
     [Command("throw")]
@@ -251,8 +263,9 @@ internal class DebugCommands
             "checksfailed" => "ChecksFailedException",
             _ => throw new NotSupportedException()
         };
-        await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent(
-            $"Throwing {exceptionFullName}..."));
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+            .WithContent($"Throwing {exceptionFullName}...")
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
 
         switch (exceptionType)
         {

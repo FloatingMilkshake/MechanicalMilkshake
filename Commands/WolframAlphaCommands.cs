@@ -5,15 +5,16 @@ internal class WolframAlphaCommands
     [Command("wolframalpha")]
     [Description("Search WolframAlpha without leaving Discord!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
     public static async Task WolframAlphaCommandAsync(SlashCommandContext ctx,
         [Parameter("query"), Description("What to search for.")]
         string query)
     {
-        await ctx.DeferResponseAsync();
+        await ctx.DeferResponseAsync(ephemeral: ctx.ShouldUseEphemeralResponse(false));
 
         if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.WolframAlphaAppId))
         {
-            await ctx.FollowupAsync("Sorry, this command is unavailable! Please contact a bot owner for help.");
+            await ctx.FollowupAsync("Sorry, this command is unavailable! Please contact a bot owner for help.", ephemeral: ctx.ShouldUseEphemeralResponse(false));
             return;
         }
 
@@ -27,7 +28,7 @@ internal class WolframAlphaCommands
             .Replace("~", @"\~")
             .Replace(">", @"\>");
 
-        var response = new DiscordMessageBuilder();
+        var response = new DiscordFollowupMessageBuilder();
 
         // Text response
         string textResponse = default;
@@ -55,8 +56,9 @@ internal class WolframAlphaCommands
 
         if (textResponse == default && imageResponse == default)
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder().WithContent(
-                "Hmm, WolframAlpha didn't have an answer to that query! Try rephrasing it."));
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("Hmm, WolframAlpha didn't have an answer to that query! Try rephrasing it.")
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
             return;
         }
 
@@ -72,6 +74,6 @@ internal class WolframAlphaCommands
             response.AddFile("result.gif", imageResponse);
         }
 
-        await ctx.FollowupAsync(response);
+        await ctx.FollowupAsync(response.AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 }

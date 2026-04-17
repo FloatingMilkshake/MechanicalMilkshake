@@ -6,7 +6,8 @@ internal class AvatarCommands
     [AllowedProcessors(typeof(UserCommandProcessor))]
     [SlashCommandTypes(DiscordApplicationCommandType.UserContextMenu)]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-    public static async Task AvatarUserContextMenuCommandAsync(CommandContext ctx, DiscordUser targetUser)
+    [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
+    public static async Task AvatarUserContextMenuCommandAsync(UserCommandContext ctx, DiscordUser targetUser)
     {
         // Buttons shown to user to select which avatar to get if the target user has a server avatar set
         DiscordButtonComponent serverAvatarButton =
@@ -27,18 +28,21 @@ internal class AvatarCommands
         if (member == default || member.GuildAvatarUrl is null)
             // User is not in the server or has no guild avatar; show global avatar
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
-                .WithContent($"{targetUser.AvatarUrl}".Replace("size=1024", "size=4096")).AsEphemeral(true));
+                .WithContent($"{targetUser.AvatarUrl}".Replace("size=1024", "size=4096"))
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
         else
             // User is in the server and has a guild avatar; show buttons to select which avatar to get
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent(
                     $"You requested the avatar for {targetUser.Mention}. Please choose one of the options below.")
-                .AddActionRowComponent(serverAvatarButton, userAvatarButton).AsEphemeral(true));
+                .AddActionRowComponent(serverAvatarButton, userAvatarButton)
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(true)));
     }
 
     [Command("avatar")]
     [Description("Returns the avatar of the provided user. Defaults to yourself if no user is provided.")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
     public static async Task AvatarCommandAsync(SlashCommandContext ctx,
         [Parameter("user"), Description("The user whose avatar to get.")]
         DiscordUser user = null)
@@ -63,12 +67,13 @@ internal class AvatarCommands
         if (member == default || member.GuildAvatarUrl is null)
             await ctx.RespondAsync(
                 new DiscordInteractionResponseBuilder().WithContent(
-                    $"{user.AvatarUrl}".Replace("size=1024", "size=4096")));
+                    $"{user.AvatarUrl}".Replace("size=1024", "size=4096"))
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
         else
             await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
                 .WithContent(
                     $"You requested the avatar for {user.Mention}. Please choose one of the options below.")
                 .AddActionRowComponent(serverAvatarButton, userAvatarButton)
-                .AsEphemeral(ctx.Interaction.Context is not DiscordInteractionContextType.Guild));
+                .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
     }
 }

@@ -13,10 +13,12 @@ internal class EvalCommands
         [Parameter("command"), Description("The command to run, including any arguments.")]
         string command)
     {
-        await ctx.RespondAsync(new DiscordMessageBuilder().WithContent("Working on it...")
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+            .WithContent("Working on it...")
             .AddActionRowComponent(new DiscordActionRowComponent(
                 [new DiscordButtonComponent(DiscordButtonStyle.Danger, "button-callback-eval-cancel", "Cancel")]
             ))
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false))
         );
 
         if (Setup.Eval.RestrictedTerms.Any(command.Contains))
@@ -69,7 +71,8 @@ internal class EvalCommands
 
         var builder = new DiscordMessageBuilder().WithContent("Working on it...");
 
-        await ctx.RespondAsync(builder);
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder(builder)
+            .AsEphemeral(ephemeral: ctx.ShouldUseEphemeralResponse(false)));
         var msg = await ctx.GetResponseAsync();
 
         if (Setup.Eval.RestrictedTerms.Any(code.Contains))
