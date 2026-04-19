@@ -3,7 +3,6 @@
 [Command("debug")]
 [Description("Commands for checking if the bot is working properly.")]
 [RequireBotCommander]
-[RequireHomeServer]
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
 internal class DebugCommands
 {
