@@ -15,23 +15,10 @@ internal static class ServerSpecificFeatures
             {
                 #region &caption -> #captions
                 if (e.Message.Author.Id == 1031968180974927903 &&
-                    (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1).ToListAsync())[0].Content.Contains("caption"))
+                    (e.Message.ReferencedMessage is not null && e.Message.ReferencedMessage.Content.Contains("caption")
+                    || (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1).ToListAsync())[0].Content.Contains("caption")))
                 {
-                    var chan = await Setup.State.Discord.Client.GetChannelAsync(1048242806486999092);
-                    if (e.Message.Flags?.HasFlag(DiscordMessageFlags.IsComponentsV2) ?? false)
-                    {
-                        var mediaGalleryComponent = e.Message.Components[0] as DiscordMediaGalleryComponent;
-                        var mediaUrl = mediaGalleryComponent.Items[0].Media.Url;
-                        await chan.SendMessageAsync($"{mediaUrl} ({e.Message.JumpLink})");
-                    }
-                    else if (string.IsNullOrWhiteSpace(e.Message.Content))
-                    {
-                        await chan.SendMessageAsync($"{e.Message.Attachments[0].Url} ({e.Message.JumpLink})");
-                    }
-                    else if (e.Message.Content.Contains("http"))
-                    {
-                        await chan.SendMessageAsync(e.Message.Content);
-                    }
+                    await e.Message.ForwardAsync(1048242806486999092);
                 }
                 #endregion &caption -> #captions
             }
