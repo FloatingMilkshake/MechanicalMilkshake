@@ -10,9 +10,21 @@ internal static class CommandsExtensionExtensions
                 t.IsClass && !t.IsNested && t.Namespace is not null && t.Namespace == "MechanicalMilkshake.Commands" &&
                 t != typeof(Commands.DebugCommands)).ToList();
 
-            commandsExtension.AddCommands(commandClasses);
+            commandsExtension.RecursiveAddCommands(commandClasses);
         
             RegisterPrivateCommands(commandsExtension);
+        }
+
+        private void RecursiveAddCommands(List<Type> commandClasses)
+        {
+            foreach (var commandClass in commandClasses)
+            {
+                commandsExtension.AddCommands(commandClass);
+                foreach (var nestedClass in commandClass.GetNestedTypes())
+                {
+                    commandsExtension.AddCommands(nestedClass);
+                }
+            }
         }
 
         private void RegisterPrivateCommands()
