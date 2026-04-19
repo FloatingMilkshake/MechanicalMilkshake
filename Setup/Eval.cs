@@ -6,7 +6,7 @@ public static class Eval
     internal static readonly string[] Imports = ["System", "System.Collections.Generic", "System.Linq",
             "System.Text", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.Commands",
             "DSharpPlus.Interactivity", "DSharpPlus.Entities", "Microsoft.Extensions.Logging",
-            "MechanicalMilkshake"];
+            "MechanicalMilkshake", "MechanicalMilkshake.Setup.Eval", "MechanicalMilkshake.Setup.Eval.Utilities"];
 
     public class Globals
     {
@@ -21,8 +21,6 @@ public static class Eval
             CToken = ctoken;
         }
 
-        private Globals() { }
-
         public DiscordClient Client { get; private set; }
         public DiscordMessage Message { get; private set; }
         public DiscordChannel Channel { get; private set; }
@@ -31,5 +29,15 @@ public static class Eval
         public DiscordMember Member { get; private set; }
         public SlashCommandContext Context { get; private set; }
         public CancellationToken CToken { get; private set; }
+    }
+
+    public static class Utilities
+    {
+        public static string Jsonify(object input)
+        {
+            if (input is null)
+                return null;
+            return $"```json\n{JsonConvert.SerializeObject(input, Formatting.Indented)}\n```";
+        }
     }
 }
