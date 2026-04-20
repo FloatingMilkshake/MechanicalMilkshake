@@ -7,7 +7,7 @@
 internal class WolframAlphaCommands
 {
     [Command("simple")]
-    [Description("Get a simple text-only response from WolframAlpha. Fastest, supports many queries.")]
+    [Description("Get a simple text-only response from WolframAlpha. Supports many queries.")]
     public static async Task WolframAlphaSimpleCommandAsync(SlashCommandContext ctx,
         [Parameter("query"), Description("What do you want to know?")] string query)
     {
@@ -29,7 +29,7 @@ internal class WolframAlphaCommands
     }
 
     [Command("detailed")]
-    [Description("Get a more-detailed image response from WolframAlpha. A bit slower, but supports almost all queries.")]
+    [Description("Get a more-detailed image response from WolframAlpha. Supports almost all queries.")]
     public static async Task WolframAlphaDetailedCommandAsync(SlashCommandContext ctx,
         [Parameter("query"), Description("Wht do you want to know?")] string query)
     {
