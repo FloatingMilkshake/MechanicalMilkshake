@@ -6,6 +6,78 @@
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
 internal static class DebugCommands
 {
+    [Command("messagecache")]
+    [Description("Get information about the in-memory message cache.")]
+    public static class DebugCachedMessageCommands
+    {
+        [Command("channel")]
+        [Description("Get the last cached message for a channel.")]
+        public static async Task DebugCachedMessageChannelCommandAsync(SlashCommandContext ctx,
+            [Parameter("channel"), Description("The channel to get the cached message for.")] ulong channelId)
+        {
+            await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
+
+            var success = Setup.State.Caches.MessageCache.TryGetMessageByChannel(channelId, out var message);
+            if (success)
+                await ctx.RespondAsync(message.ToString());
+            else
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("No message cached for that channel")
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+
+        [Command("message")]
+        [Description("Get a cached message by its ID.")]
+        public static async Task DebugCachedMessageMessageCommandAsync(SlashCommandContext ctx,
+            [Parameter("message"), Description("The message to get the cached message for.")] ulong messageId)
+        {
+            await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
+
+            var success = Setup.State.Caches.MessageCache.TryGetMessage(messageId, out var message);
+            if (success)
+                await ctx.RespondAsync(message.ToString());
+            else
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("No message cached with that ID")
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+
+        [Command("author")]
+        [Description("Get a cached message by its author's ID.")]
+        public static async Task DebugCachedMessageAuthorCommandAsync(SlashCommandContext ctx,
+            [Parameter("author"), Description("The author to get the cached message for.")] ulong authorId)
+        {
+            await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
+
+            var success = Setup.State.Caches.MessageCache.TryGetMessageByAuthor(authorId, out var message);
+            if (success)
+                await ctx.RespondAsync(message.ToString());
+            else
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("No message cached by that author")
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+
+        [Command("stats")]
+        [Description("Get statistics about the in-memory message cache.")]
+        public static async Task DebugCachedMessageStatsCommandAsync(SlashCommandContext ctx)
+        {
+            await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
+
+            var cachedMessagesCount = Setup.State.Caches.MessageCache.Count();
+            var uniqueChannelsCount = Setup.State.Caches.MessageCache.GetUniqueChannelCount();
+            var uniqueAuthorsCount = Setup.State.Caches.MessageCache.GetUniqueAuthorCount();
+            var newestCachedMessage = Setup.State.Caches.MessageCache.GetNewestMessage();
+            var oldestCachedMessage = Setup.State.Caches.MessageCache.GetOldestMessage();
+
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent($"{cachedMessagesCount} messages in cache, from {uniqueAuthorsCount} author{(uniqueAuthorsCount == 1 ? "" : "s")} across {uniqueChannelsCount} channels."
+                    + $"\nNewest message ({newestCachedMessage.GetTimestamp()}): {newestCachedMessage} {await newestCachedMessage.GetMessageLinkAsync()}"
+                    + $"\nOldest message ({oldestCachedMessage.GetTimestamp()}): {oldestCachedMessage} {await oldestCachedMessage.GetMessageLinkAsync()}")
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+    }
+
     [Command("uptime")]
     [Description("Check my uptime!")]
     public static async Task UptimeCommandAsync(SlashCommandContext ctx)

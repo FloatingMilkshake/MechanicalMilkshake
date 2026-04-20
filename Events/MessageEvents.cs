@@ -30,12 +30,12 @@ internal class MessageEvents
             else
             {
                 // Add message to cache
-                Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCache.CachedMessage(e.Message.Channel.Id, e.Message.Id, e.Message.Author.Id));
+                Setup.State.Caches.MessageCache.AddMessage(e.Message);
             }
         }
         catch (Exception ex)
         {
-            Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCache.CachedMessage(e.Message.Channel.Id, e.Message.Id, e.Message.Author.Id));
+            Setup.State.Caches.MessageCache.AddMessage(e.Message);
             await LogMessageEventExceptionAsync(ex, e.Message, MessageEventType.Create);
         }
     }
@@ -51,7 +51,7 @@ internal class MessageEvents
 
                 var msg = (await e.Channel.GetMessagesAsync(1).ToListAsync()).FirstOrDefault();
                 if (msg is not null)
-                    Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCache.CachedMessage(msg.Channel.Id, msg.Id, msg.Author.Id));
+                    Setup.State.Caches.MessageCache.AddMessage(e.Message);
             }
         }
         catch (Exception ex)

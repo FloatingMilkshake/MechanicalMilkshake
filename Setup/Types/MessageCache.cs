@@ -40,6 +40,16 @@ internal sealed class MessageCache
         return Messages.Find(x => x.AuthorId == authorId);
     }
 
+    internal CachedMessage GetNewestMessage()
+    {
+        return GetAllMessages().OrderByDescending(m => m.MessageId).First();
+    }
+
+    internal CachedMessage GetOldestMessage()
+    {
+        return GetAllMessages().OrderBy(m => m.MessageId).First();
+    }
+
     internal List<CachedMessage> GetAllMessages()
     {
         return Messages;
@@ -55,12 +65,38 @@ internal sealed class MessageCache
         return Messages.Count(predicate);
     }
 
-    internal void AddMessage(CachedMessage message)
+    internal int GetUniqueChannelCount()
+    {
+        List<ulong> uniqueChannelIds = [];
+
+        foreach (var cachedMessage in GetAllMessages())
+        {
+            if (!uniqueChannelIds.Contains(cachedMessage.ChannelId))
+                uniqueChannelIds.Add(cachedMessage.ChannelId);
+        }
+
+        return uniqueChannelIds.Count;
+    }
+
+    internal int GetUniqueAuthorCount()
+    {
+        List<ulong> uniqueAuthorIds = [];
+
+        foreach (var cachedMessage in GetAllMessages())
+        {
+            if (!uniqueAuthorIds.Contains(cachedMessage.AuthorId))
+                uniqueAuthorIds.Add(cachedMessage.AuthorId);
+        }
+
+        return uniqueAuthorIds.Count;
+    }
+
+    internal void AddMessage(DiscordMessage message)
     {
         if (TryGetMessageByChannel(message.ChannelId, out var _))
             RemoveChannel(message.ChannelId);
 
-        Messages.Add(message);
+        Messages.Add(new CachedMessage(message));
     }
 
     internal void RemoveMessage(ulong messageId)
@@ -86,11 +122,27 @@ internal sealed class MessageCache
         internal ulong MessageId { get; private set; }
         internal ulong AuthorId { get; private set; }
 
-        internal CachedMessage(ulong channelId, ulong messageId, ulong authorId)
+        internal CachedMessage(DiscordMessage message)
         {
-            ChannelId = channelId;
-            MessageId = messageId;
-            AuthorId = authorId;
+            ChannelId = message.ChannelId;
+            MessageId = message.Id;
+            AuthorId = message.Author.Id;
+        }
+
+        internal string GetTimestamp()
+        {
+            return $"<t:{MessageId.ToUnixTimeSeconds()}:f>";
+        }
+
+        internal async Task<string> GetMessageLinkAsync()
+        {
+            var guildId = (await Setup.State.Discord.Client.GetChannelAsync(ChannelId)).GuildId;
+            return $"https://discord.com/channels/{guildId}/{ChannelId}/{MessageId}";
+        }
+
+        public override string ToString()
+        {
+            return $"Message {MessageId} by user {AuthorId} in channel {ChannelId}";
         }
     }
 }
