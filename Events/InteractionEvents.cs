@@ -512,7 +512,7 @@ internal class InteractionEvents
                             {
                                 var reminderMessage = await reminderChannel.GetMessageAsync(reminder.MessageId);
 
-                                var triggerTimeTimestamp = reminder.GetTriggerTimeTimestamp();
+                                var triggerTimeTimestamp = newReminder.GetTriggerTimeTimestamp();
 
                                 if (reminderMessage.Content.Contains("pushed back"))
                                     await reminderMessage.ModifyAsync(
