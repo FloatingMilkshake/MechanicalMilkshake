@@ -18,6 +18,7 @@ internal sealed class Reminder
 
     [JsonProperty("setTime")] internal DateTime SetTime { get; private set; }
 
+    [JsonConstructor]
     internal Reminder(ulong userId, ulong channelId, string guildId, ulong messageId, int reminderId,
         string reminderText, DateTime triggerTime, DateTime setTime)
     {

@@ -22,6 +22,7 @@ internal sealed class TrackedKeyword
 
     [JsonProperty("guildId")] internal ulong GuildId { get; private set; }
 
+    [JsonConstructor]
     internal TrackedKeyword(string keyword, ulong userId, bool matchWholeWord, bool ignoreBots, bool assumePresence,
         List<ulong> userIgnoreList, List<ulong> channelIgnoreList, List<ulong> guildIgnoreList, ulong id, ulong guildId)
     {
