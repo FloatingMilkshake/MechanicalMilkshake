@@ -45,7 +45,7 @@ internal class WolframAlphaCommands
         else
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent("It looks like WolframAlpha didn't have a simple answer for that query!")
+                .WithContent("It looks like WolframAlpha didn't have a detailed answer for that query!")
                 .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
         }
     }
