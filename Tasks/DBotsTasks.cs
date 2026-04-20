@@ -4,10 +4,10 @@ internal class DBotsTasks
 {
     internal static async Task ExecuteAsync()
     {
-        if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.DbotsApiToken))
+        if (string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.DbotsApiToken))
             return;
 
-        if (!Setup.Configuration.ConfigJson.DoDbotsStatsPosting)
+        if (!Setup.State.Process.Configuration.DoDbotsStatsPosting)
             return;
 
         while (true)
@@ -20,7 +20,7 @@ internal class DBotsTasks
     private static async Task UpdateStatsAsync()
     {
         using var requestMessage = new HttpRequestMessage(HttpMethod.Post, $"https://discord.bots.gg/api/v1/bots/{Setup.State.Discord.Client.CurrentUser.Id}/stats");
-        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(Setup.Configuration.ConfigJson.DbotsApiToken);
+        requestMessage.Headers.Authorization = new AuthenticationHeaderValue(Setup.State.Process.Configuration.DbotsApiToken);
         requestMessage.Content = JsonContent.Create(new { guildCount = Setup.State.Discord.Client.Guilds.Count });
 
         using var response = await Setup.Constants.HttpClient.SendAsync(requestMessage);

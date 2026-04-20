@@ -14,8 +14,8 @@ internal class PingCommands
 
         var websocketPing = ctx.Client.GetConnectionLatency(
             ctx.Channel.IsPrivate
-                ? ctx.Guild?.Id ?? Setup.Configuration.Discord.HomeServer.Id
-                : Setup.Configuration.Discord.HomeServer.Id
+                ? ctx.Guild?.Id ?? Setup.State.Discord.HomeServer.Id
+                : Setup.State.Discord.HomeServer.Id
             ).TotalMilliseconds;
         var msg = await ctx.Interaction.GetOriginalResponseAsync();
         var interactionLatency = Math.Round((DateTime.UtcNow - msg.CreationTimestamp.UtcDateTime).TotalMilliseconds);
@@ -26,7 +26,7 @@ internal class PingCommands
             + $"Websocket ping: `{websocketPing}ms`\n"
             + $"Interaction latency: `{interactionLatency}ms`\n";
 
-        if (Setup.Configuration.ConfigJson.BotCommanders.Contains(ctx.User.Id.ToString()))
+        if (Setup.State.Process.Configuration.BotCommanders.Contains(ctx.User.Id.ToString()))
             response += $"Redis ping: {(double.IsNaN(redisPing) ? "Unreachable!" : $"`{redisPing}ms`")}\n"
             + $"Heartbeat: `{Setup.State.Process.LastUptimeKumaHeartbeatStatus}`";
 

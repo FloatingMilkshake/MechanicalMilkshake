@@ -4,11 +4,11 @@ internal class HeartbeatEvent
 {
     internal static async Task HandleHeartbeatEventAsync(IGatewayClient client)
     {
-        if (Setup.Configuration.ConfigJson.UptimeKumaHeartbeatUrl is null or "") return;
+        if (Setup.State.Process.Configuration.UptimeKumaHeartbeatUrl is null or "") return;
 
         try
         {
-            var heartbeatResponse = await Setup.Constants.HttpClient.GetAsync($"{Setup.Configuration.ConfigJson.UptimeKumaHeartbeatUrl}{client.Ping.TotalMilliseconds}");
+            var heartbeatResponse = await Setup.Constants.HttpClient.GetAsync($"{Setup.State.Process.Configuration.UptimeKumaHeartbeatUrl}{client.Ping.TotalMilliseconds}");
             if (heartbeatResponse.IsSuccessStatusCode && Setup.State.Discord.Client.Logger.IsEnabled(LogLevel.Debug))
                 Setup.State.Discord.Client.Logger.LogDebug("Successfully sent Uptime Kuma heartbeat with ping {ping}ms", client.Ping.TotalMilliseconds);
             else if (!heartbeatResponse.IsSuccessStatusCode)

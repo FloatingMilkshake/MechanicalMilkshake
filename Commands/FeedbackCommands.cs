@@ -12,7 +12,7 @@ internal class FeedbackCommands
     {
         await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true));
 
-        if (Setup.Configuration.Discord.Channels.Feedback == default)
+        if (Setup.State.Discord.Channels.Feedback == default)
         {
             await ctx.FollowupAsync(new DiscordInteractionResponseBuilder()
                 .WithContent("Sorry, this command is unavailable! Please contact a bot owner for help.")
@@ -29,7 +29,7 @@ internal class FeedbackCommands
         embed.AddField("Sent by", $"{ctx.User.GetFullUsername()} (`{ctx.User.Id}`)");
         if (ctx.Guild is not null)
             embed.AddField("Sent from", $"\"{ctx.Guild.Name}\" (`{ctx.Guild.Id}`)");
-        await Setup.Configuration.Discord.Channels.Feedback.SendMessageAsync(embed);
+        await Setup.State.Discord.Channels.Feedback.SendMessageAsync(embed);
 
         await ctx.FollowupAsync(new DiscordInteractionResponseBuilder().AddEmbed(new DiscordEmbedBuilder
         {

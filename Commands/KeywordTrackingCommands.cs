@@ -3,7 +3,7 @@
 [Command("track")]
 [Description("Track or untrack keywords.")]
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
-internal class KeywordTrackingCommands
+internal static class KeywordTrackingCommands
 {
     [Command("add")]
     [Description("Track a new keyword.")]
@@ -62,7 +62,7 @@ internal class KeywordTrackingCommands
     [Command("edit")]
     [Description("Edit a tracked keyword.")]
     public static async Task TrackEditCommandAsync(SlashCommandContext ctx,
-        [SlashAutoCompleteProvider(typeof(Setup.Types.AutoCompleteProviders.TrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to edit.")]
+        [SlashAutoCompleteProvider(typeof(KeywordTrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to edit.")]
         string keyword,
         [Parameter("new_keyword"), Description("The new keyword or phrase to use instead.")]
         string newKeyword = null,
@@ -163,7 +163,7 @@ internal class KeywordTrackingCommands
     [Command("details")]
     [Description("Show details about a tracked keyword.")]
     public static async Task TrackDetailsCommandAsync(SlashCommandContext ctx,
-        [SlashAutoCompleteProvider(typeof(Setup.Types.AutoCompleteProviders.TrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to show details for.")] string keyword)
+        [SlashAutoCompleteProvider(typeof(KeywordTrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to show details for.")] string keyword)
     {
         await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true));
 
@@ -198,7 +198,7 @@ internal class KeywordTrackingCommands
     [Command("remove")]
     [Description("Untrack a keyword.")]
     public static async Task TrackRemoveCommandAsync(SlashCommandContext ctx,
-        [SlashAutoCompleteProvider(typeof(Setup.Types.AutoCompleteProviders.TrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to untrack.")] string keyword)
+        [SlashAutoCompleteProvider(typeof(KeywordTrackingAutocompleteProvider)), Parameter("keyword"), Description("The keyword or phrase to untrack.")] string keyword)
     {
         await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true));
 
@@ -340,4 +340,24 @@ internal class KeywordTrackingCommands
 
         return guildsToIgnore;
     }
+
+    private class KeywordTrackingAutocompleteProvider : IAutoCompleteProvider
+    {
+        public async ValueTask<IEnumerable<DiscordAutoCompleteChoice>> AutoCompleteAsync(AutoCompleteContext ctx)
+        {
+            var allKeywordRawData = await Setup.Storage.Redis.HashGetAllAsync("keywords");
+            var userKeywords = allKeywordRawData.Select(field => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(field.Value))
+                .Where(keyword => keyword.UserId == ctx.User.Id).ToList();
+
+            var focusedOption = ctx.Options.FirstOrDefault(x => x.Focused);
+
+            if (focusedOption is not null)
+            {
+                return userKeywords.Where(k => k.Keyword.Contains(focusedOption.Value.ToString()))
+                    .Select(keyword => new DiscordAutoCompleteChoice(keyword.Keyword, keyword.Id.ToString())).ToList();
+            }
+            return default;
+        }
+    }
+
 }

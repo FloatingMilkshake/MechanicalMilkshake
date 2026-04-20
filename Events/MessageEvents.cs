@@ -10,7 +10,7 @@ internal class MessageEvents
         }
         catch (Exception ex)
         {
-            await LogMessageEventExceptionAsync(ex, e.Message, Setup.Types.MessageEventType.Update);
+            await LogMessageEventExceptionAsync(ex, e.Message, MessageEventType.Update);
         }
     }
 
@@ -18,7 +18,7 @@ internal class MessageEvents
     {
         try
         {
-            if (Setup.Configuration.ConfigJson.UseServerSpecificFeatures)
+            if (Setup.State.Process.Configuration.UseServerSpecificFeatures)
                 await ServerSpecificFeatures.EventChecks.MessageCreateChecks(e);
 
             await e.Message.CheckForTrackedKeywordsAsync();
@@ -30,13 +30,13 @@ internal class MessageEvents
             else
             {
                 // Add message to cache
-                Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCaching.CachedMessage(e.Message.Channel.Id, e.Message.Id, e.Message.Author.Id));
+                Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCache.CachedMessage(e.Message.Channel.Id, e.Message.Id, e.Message.Author.Id));
             }
         }
         catch (Exception ex)
         {
-            Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCaching.CachedMessage(e.Message.Channel.Id, e.Message.Id, e.Message.Author.Id));
-            await LogMessageEventExceptionAsync(ex, e.Message, Setup.Types.MessageEventType.Create);
+            Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCache.CachedMessage(e.Message.Channel.Id, e.Message.Id, e.Message.Author.Id));
+            await LogMessageEventExceptionAsync(ex, e.Message, MessageEventType.Create);
         }
     }
 
@@ -51,16 +51,16 @@ internal class MessageEvents
 
                 var msg = (await e.Channel.GetMessagesAsync(1).ToListAsync()).FirstOrDefault();
                 if (msg is not null)
-                    Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCaching.CachedMessage(msg.Channel.Id, msg.Id, msg.Author.Id));
+                    Setup.State.Caches.MessageCache.AddMessage(new Setup.Types.MessageCache.CachedMessage(msg.Channel.Id, msg.Id, msg.Author.Id));
             }
         }
         catch (Exception ex)
         {
-            await LogMessageEventExceptionAsync(ex, e.Message, Setup.Types.MessageEventType.Delete);
+            await LogMessageEventExceptionAsync(ex, e.Message, MessageEventType.Delete);
         }
     }
 
-    private static async Task LogMessageEventExceptionAsync(Exception ex, DiscordMessage message, Setup.Types.MessageEventType eventType)
+    private static async Task LogMessageEventExceptionAsync(Exception ex, DiscordMessage message, MessageEventType eventType)
     {
         DiscordEmbedBuilder embed = new()
         {
@@ -70,7 +70,7 @@ internal class MessageEvents
         embed.AddField("Message", message.JumpLink.ToString());
         embed.AddField("Exception", $"```\n{ex.GetType()}: {ex.Message}\n```");
 
-        await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(embed);
+        await Setup.State.Discord.Channels.Home.SendMessageAsync(embed);
 
         Setup.State.Discord.Client.Logger.LogError(ex, "An exception occurred when processing a message {eventType} event!", eventType.ToString().ToLower());
     }
@@ -135,7 +135,7 @@ internal class MessageEvents
 
             try
             {
-                await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(new DiscordEmbedBuilder()
+                await Setup.State.Discord.Channels.Home.SendMessageAsync(new DiscordEmbedBuilder()
                 {
                     Title = "An exception occurred while forwarding a DM",
                     Color = DiscordColor.Red,
@@ -147,7 +147,7 @@ internal class MessageEvents
             catch (Exception ex2)
             {
                 Setup.State.Discord.Client.Logger.LogError(ex2, "An exception occurred while forwarding a DM, and I was unable to properly log it!");
-                await Setup.Configuration.Discord.Channels.Home.SendMessageAsync("An exception occurred while forwarding a DM, and I was unable to properly log it here! Please check the console for details.");
+                await Setup.State.Discord.Channels.Home.SendMessageAsync("An exception occurred while forwarding a DM, and I was unable to properly log it here! Please check the console for details.");
             }
         }
     }
@@ -282,5 +282,12 @@ internal class MessageEvents
         await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
             .WithContent($"Sent! (`{message.Id}` in `{message.Channel.Id}`)")
             .WithReply(e.Message.Id));
+    }
+
+    private enum MessageEventType
+    {
+        Create = 0,
+        Update = 1,
+        Delete = 2
     }
 }

@@ -26,7 +26,7 @@ internal class RedisErrors
             var pingMsg = double.IsNaN(dbPing)
                 ? "I couldn't ping redis."
                 : $"Redis is reachable, and took {dbPing}ms to respond.";
-            await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(
+            await Setup.State.Discord.Channels.Home.SendMessageAsync(
                 $"{ownerMention} Redis is timing out! {pingMsg}" +
                 $" Redis exceptions will be suppressed until the next check.",
                 embed: new DiscordEmbedBuilder

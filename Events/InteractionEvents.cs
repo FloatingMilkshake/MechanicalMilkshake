@@ -10,7 +10,7 @@ internal class InteractionEvents
             {
                 case "button-callback-debug-shutdown":
                     {
-                        if (!Setup.Configuration.ConfigJson.BotCommanders.Contains(e.User.Id.ToString()))
+                        if (!Setup.State.Process.Configuration.BotCommanders.Contains(e.User.Id.ToString()))
                         {
                             await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                             new DiscordInteractionResponseBuilder()
@@ -42,7 +42,7 @@ internal class InteractionEvents
                     }
                 case "button-callback-debug-shutdown-cancel":
                     {
-                        if (!Setup.Configuration.ConfigJson.BotCommanders.Contains(e.User.Id.ToString()))
+                        if (!Setup.State.Process.Configuration.BotCommanders.Contains(e.User.Id.ToString()))
                         {
                             await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
                             new DiscordInteractionResponseBuilder()
@@ -357,7 +357,7 @@ internal class InteractionEvents
         {
             await e.Interaction.SmartRespondAsync($"An unexpected error occurred! Please try again, or contact a bot owner for help if you keep seeing this.");
 
-            await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(new DiscordEmbedBuilder()
+            await Setup.State.Discord.Channels.Home.SendMessageAsync(new DiscordEmbedBuilder()
             {
                 Title = "An exception occurred during an interaction event",
                 Color = DiscordColor.Red,
@@ -586,7 +586,7 @@ internal class InteractionEvents
         {
             await e.Interaction.SmartRespondAsync($"An unexpected error occurred! Please try again, or contact a bot owner for help if you keep seeing this.");
 
-            await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(new DiscordEmbedBuilder()
+            await Setup.State.Discord.Channels.Home.SendMessageAsync(new DiscordEmbedBuilder()
             {
                 Title = "An exception occurred during a modal submit event",
                 Color = DiscordColor.Red,
@@ -609,9 +609,9 @@ internal class InteractionEvents
         try
         {
             // Ignore home server, excluded servers, and authorized users
-            if (context.Guild is not null && (context.Guild.Id == Setup.Configuration.Discord.HomeServer.Id || context.Guild.Id == 1342179809618559026 ||
-                Setup.Configuration.ConfigJson.SlashCommandLogExcludedGuilds.Contains(context.Guild.Id.ToString())) ||
-                Setup.Configuration.ConfigJson.BotCommanders.Contains(context.User.Id.ToString()))
+            if (context.Guild is not null && (context.Guild.Id == Setup.State.Discord.HomeServer.Id || context.Guild.Id == 1342179809618559026 ||
+                Setup.State.Process.Configuration.SlashCommandLogExcludedGuilds.Contains(context.Guild.Id.ToString())) ||
+                Setup.State.Process.Configuration.BotCommanders.Contains(context.User.Id.ToString()))
                 return;
 
             // Increment count
@@ -621,7 +621,7 @@ internal class InteractionEvents
                 await Setup.Storage.Redis.HashSetAsync("commandCounts", context.Command.FullName, 1);
 
             // Log to log channel if configured
-            if (Setup.Configuration.ConfigJson.SlashCommandLogChannel is not null)
+            if (Setup.State.Process.Configuration.SlashCommandLogChannel is not null)
             {
                 var description = context.Channel.IsPrivate
                     ? $"{context.User.Username} (`{context.User.Id}`) used {context.Command.GetSlashCommandMention()} in DMs."
@@ -636,7 +636,7 @@ internal class InteractionEvents
                 try
                 {
                     await (await context.Client.GetChannelAsync(
-                        Convert.ToUInt64(Setup.Configuration.ConfigJson.SlashCommandLogChannel))).SendMessageAsync(embed);
+                        Convert.ToUInt64(Setup.State.Process.Configuration.SlashCommandLogChannel))).SendMessageAsync(embed);
                 }
                 catch (Exception ex) when (ex is UnauthorizedException or NotFoundException)
                 {
@@ -661,7 +661,7 @@ internal class InteractionEvents
                 Color = DiscordColor.Red
             };
 
-            await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(embed);
+            await Setup.State.Discord.Channels.Home.SendMessageAsync(embed);
 
             Setup.State.Discord.Client.Logger.LogError(ex, "An exception was thrown when logging command usage! When {user} used {command}:",
                 context.User.Id, context.Command.FullName);

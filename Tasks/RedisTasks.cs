@@ -27,7 +27,7 @@ internal class RedisTasks
         if (Setup.State.Process.RedisExceptionsSuppressed && !double.IsNaN(dbPing))
         {
             Setup.State.Process.RedisExceptionsSuppressed = false;
-            await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(
+            await Setup.State.Discord.Channels.Home.SendMessageAsync(
                 "Redis was previously unreachable but is now reachable." +
                 $" Exceptions will no longer be suppressed. Current ping: `{dbPing}ms`.");
         }

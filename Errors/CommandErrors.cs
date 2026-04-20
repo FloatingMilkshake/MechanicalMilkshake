@@ -92,7 +92,7 @@ internal class CommandErrors
                 Description = $"An exception occurred when {e.Context.User.Username} (`{e.Context.User.Id}`) used `{commandName}`."
                     + $"\n```\n{e.Exception.GetType()}: {e.Exception.Message}\n```"
             };
-            await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(embed);
+            await Setup.State.Discord.Channels.Home.SendMessageAsync(embed);
         }
         catch (Exception)
         {

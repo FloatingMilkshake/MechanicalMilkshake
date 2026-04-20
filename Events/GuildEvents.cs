@@ -4,18 +4,18 @@ internal class GuildEvents
 {
     internal static async Task HandleGuildCreatedEventAsync(DiscordClient _, GuildCreatedEventArgs e)
     {
-        if (Setup.Configuration.Discord.Channels.GuildLogs is null)
+        if (Setup.State.Discord.Channels.GuildLogs is null)
             return;
 
-        await SendGuildEventLogEmbed(Setup.Configuration.Discord.Channels.GuildLogs, e.Guild, Setup.Types.GuildEventType.Join);
+        await SendGuildEventLogEmbed(Setup.State.Discord.Channels.GuildLogs, e.Guild, GuildEventType.Join);
     }
 
     internal static async Task HandleGuildDeletedEventAsync(DiscordClient _, GuildDeletedEventArgs e)
     {
-        if (Setup.Configuration.Discord.Channels.GuildLogs is null)
+        if (Setup.State.Discord.Channels.GuildLogs is null)
             return;
 
-        await SendGuildEventLogEmbed(Setup.Configuration.Discord.Channels.GuildLogs, e.Guild, Setup.Types.GuildEventType.Leave);
+        await SendGuildEventLogEmbed(Setup.State.Discord.Channels.GuildLogs, e.Guild, GuildEventType.Leave);
     }
 
     internal static async Task HandleGuildDownloadCompletedEventAsync(DiscordClient _, GuildDownloadCompletedEventArgs __)
@@ -23,11 +23,11 @@ internal class GuildEvents
         Setup.State.Discord.GuildDownloadCompleted = true;
     }
 
-    private static async Task SendGuildEventLogEmbed(DiscordChannel channel, DiscordGuild guild, Setup.Types.GuildEventType eventType)
+    private static async Task SendGuildEventLogEmbed(DiscordChannel channel, DiscordGuild guild, GuildEventType eventType)
     {
         DiscordEmbedBuilder embed = new()
         {
-            Title = eventType == Setup.Types.GuildEventType.Join
+            Title = eventType == GuildEventType.Join
                 ? "I've been added to a server!"
                 : "I've been removed from a server!",
             Color = Setup.Constants.BotColor
@@ -57,9 +57,15 @@ internal class GuildEvents
         var msg = new DiscordMessageBuilder().AddEmbed(embed);
 
         // Only send owner info on join; will fail to fetch on leave
-        if (eventType == Setup.Types.GuildEventType.Join)
+        if (eventType == GuildEventType.Join)
             msg.AddEmbed(userInfoEmbed);
 
         await channel.SendMessageAsync(msg);
+    }
+
+    private enum GuildEventType
+    {
+        Join = 0,
+        Leave = 1
     }
 }

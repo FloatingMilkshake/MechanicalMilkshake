@@ -11,7 +11,7 @@ internal static class CommandsExtensionExtensions
                 t != typeof(Commands.DebugCommands)).ToList();
 
             commandsExtension.RecursiveAddCommands(commandClasses);
-        
+
             RegisterPrivateCommands(commandsExtension);
         }
 
@@ -29,13 +29,13 @@ internal static class CommandsExtensionExtensions
 
         private void RegisterPrivateCommands()
         {
-            commandsExtension.AddCommands(typeof(Commands.DebugCommands), Setup.Configuration.Discord.HomeServer.Id);
+            commandsExtension.AddCommands(typeof(Commands.DebugCommands), Setup.State.Discord.HomeServer.Id);
 
-            if (Setup.Configuration.ConfigJson.UseServerSpecificFeatures)
+            if (Setup.State.Process.Configuration.UseServerSpecificFeatures)
             {
                 // Commands specified in server-specific features
                 // Register in home server when debugging, or home server + respective servers otherwise
-                commandsExtension.AddCommands(typeof(ServerSpecificFeatures.Commands.MessageCommands), Setup.Configuration.Discord.HomeServer.Id);
+                commandsExtension.AddCommands(typeof(ServerSpecificFeatures.Commands.MessageCommands), Setup.State.Discord.HomeServer.Id);
             }
         }
     }

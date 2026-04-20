@@ -12,22 +12,22 @@ internal class Program
 #else
         const string configFile = "config.json";
 #endif
-        Setup.Configuration.ConfigJson = JsonConvert.DeserializeObject<Setup.Types.ConfigJson>(await File.ReadAllTextAsync(configFile));
+        Setup.State.Process.Configuration = JsonConvert.DeserializeObject<Setup.Types.ConfigJson>(await File.ReadAllTextAsync(configFile));
 
-        if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.HomeChannel) ||
-            string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.HomeServer) ||
-            string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.BotToken))
+        if (string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.HomeChannel) ||
+            string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.HomeServer) ||
+            string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.BotToken))
         {
             Console.WriteLine("You are missing required values in your config.json file! Please ensure 'botToken', 'homeServer' and 'homeChannel' are set.");
             Environment.Exit(1);
         }
 
-        if (string.IsNullOrEmpty(Setup.Configuration.ConfigJson.UptimeKumaHeartbeatUrl))
+        if (string.IsNullOrEmpty(Setup.State.Process.Configuration.UptimeKumaHeartbeatUrl))
             Setup.State.Process.LastUptimeKumaHeartbeatStatus = "disabled";
         #endregion read config.json
 
         #region set up Discord client
-        var clientBuilder = DiscordClientBuilder.CreateDefault(Setup.Configuration.ConfigJson.BotToken,
+        var clientBuilder = DiscordClientBuilder.CreateDefault(Setup.State.Process.Configuration.BotToken,
             DiscordIntents.AllUnprivileged.AddIntent(DiscordIntents.MessageContents));
 #if DEBUG
         clientBuilder.SetLogLevel(LogLevel.Debug);
@@ -123,7 +123,7 @@ internal class Program
         #endregion recurring tasks
 
         // Send startup message
-        await Setup.Configuration.Discord.Channels.Home.SendMessageAsync(await Setup.Types.DebugInfo.CreateDebugInfoEmbedAsync(true));
+        await Setup.State.Discord.Channels.Home.SendMessageAsync(await Setup.Types.DebugInfo.CreateDebugInfoEmbedAsync(true));
 
         // Wait indefinitely, let tasks continue running in async threads
         await Task.Delay(Timeout.InfiniteTimeSpan);
@@ -133,10 +133,10 @@ internal class Program
     {
         try
         {
-            Setup.Configuration.Discord.HomeServer =
-                await Setup.State.Discord.Client.GetGuildAsync(Convert.ToUInt64(Setup.Configuration.ConfigJson.HomeServer));
-            Setup.Configuration.Discord.Channels.Home =
-                await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(Setup.Configuration.ConfigJson.HomeChannel));
+            Setup.State.Discord.HomeServer =
+                await Setup.State.Discord.Client.GetGuildAsync(Convert.ToUInt64(Setup.State.Process.Configuration.HomeServer));
+            Setup.State.Discord.Channels.Home =
+                await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(Setup.State.Process.Configuration.HomeChannel));
         }
         catch (Exception)
         {
@@ -144,12 +144,12 @@ internal class Program
             Environment.Exit(1);
         }
 
-        if (!string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.FeedbackChannel))
+        if (!string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.FeedbackChannel))
         {
             try
             {
-                Setup.Configuration.Discord.Channels.Feedback =
-                    await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(Setup.Configuration.ConfigJson.FeedbackChannel));
+                Setup.State.Discord.Channels.Feedback =
+                    await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(Setup.State.Process.Configuration.FeedbackChannel));
             }
             catch (Exception)
             {
@@ -157,12 +157,12 @@ internal class Program
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.GuildLogChannel))
+        if (!string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.GuildLogChannel))
         {
             try
             {
-                Setup.Configuration.Discord.Channels.GuildLogs =
-                    await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(Setup.Configuration.ConfigJson.GuildLogChannel));
+                Setup.State.Discord.Channels.GuildLogs =
+                    await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(Setup.State.Process.Configuration.GuildLogChannel));
             }
             catch (Exception)
             {
@@ -170,12 +170,12 @@ internal class Program
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.SlashCommandLogChannel))
+        if (!string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.SlashCommandLogChannel))
         {
             try
             {
-                Setup.Configuration.Discord.Channels.CommandLogs =
-                    await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(Setup.Configuration.ConfigJson.SlashCommandLogChannel));
+                Setup.State.Discord.Channels.CommandLogs =
+                    await Setup.State.Discord.Client.GetChannelAsync(Convert.ToUInt64(Setup.State.Process.Configuration.SlashCommandLogChannel));
             }
             catch (Exception)
             {
@@ -183,17 +183,17 @@ internal class Program
             }
         }
 
-        if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.WolframAlphaAppId))
+        if (string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.WolframAlphaAppId))
         {
             Setup.State.Discord.Client.Logger.LogWarning("WolframAlpha commands disabled due to missing App ID.");
         }
 
-        if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.UptimeKumaHeartbeatUrl))
+        if (string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.UptimeKumaHeartbeatUrl))
         {
             Setup.State.Discord.Client.Logger.LogWarning("Uptime Kuma heartbeats disabled due to missing push URL.");
         }
 
-        if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.DbotsApiToken))
+        if (string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.DbotsApiToken))
         {
             Setup.State.Discord.Client.Logger.LogWarning("DBots stats posting disabled due to missing configuration.");
         }

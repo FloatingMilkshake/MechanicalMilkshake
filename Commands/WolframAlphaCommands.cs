@@ -13,7 +13,7 @@ internal class WolframAlphaCommands
     {
         await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
-        var (success, result, _) = await SendWolframAlphaQueryAsync(query, Setup.Types.WolframAlphaQueryType.Text);
+        var (success, result, _) = await SendWolframAlphaQueryAsync(query, WolframAlphaQueryType.Text);
         if (success)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
@@ -35,7 +35,7 @@ internal class WolframAlphaCommands
     {
         await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
-        var (success, _, result) = await SendWolframAlphaQueryAsync(query, Setup.Types.WolframAlphaQueryType.Image);
+        var (success, _, result) = await SendWolframAlphaQueryAsync(query, WolframAlphaQueryType.Image);
         if (success)
         {
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
@@ -50,7 +50,7 @@ internal class WolframAlphaCommands
         }
     }
 
-    private static async Task<(bool success, string textResult, MemoryStream imageResult)> SendWolframAlphaQueryAsync(string query, Setup.Types.WolframAlphaQueryType queryType)
+    private static async Task<(bool success, string textResult, MemoryStream imageResult)> SendWolframAlphaQueryAsync(string query, WolframAlphaQueryType queryType)
     {
         var queryEncoded = HttpUtility.UrlEncode(query)
             .Replace("(", "%28")
@@ -62,19 +62,19 @@ internal class WolframAlphaCommands
             .Replace("~", @"\~")
             .Replace(">", @"\>");
 
-        if (queryType == Setup.Types.WolframAlphaQueryType.Text)
+        if (queryType == WolframAlphaQueryType.Text)
         {
             var textApiResponse = await Setup.Constants.HttpClient
-                .GetAsync($"https://api.wolframalpha.com/v1/result?appid={Setup.Configuration.ConfigJson.WolframAlphaAppId}&i={queryEncoded}");
+                .GetAsync($"https://api.wolframalpha.com/v1/result?appid={Setup.State.Process.Configuration.WolframAlphaAppId}&i={queryEncoded}");
             if (textApiResponse.IsSuccessStatusCode)
                 return (true, await textApiResponse.Content.ReadAsStringAsync(), null);
             else
                 return (false, null, null);
         }
-        else if (queryType == Setup.Types.WolframAlphaQueryType.Image)
+        else if (queryType == WolframAlphaQueryType.Image)
         {
             var imageApiResponse = await Setup.Constants.HttpClient
-                .GetAsync($"https://api.wolframalpha.com/v1/simple?appid={Setup.Configuration.ConfigJson.WolframAlphaAppId}&i={queryEncoded}");
+                .GetAsync($"https://api.wolframalpha.com/v1/simple?appid={Setup.State.Process.Configuration.WolframAlphaAppId}&i={queryEncoded}");
             if (imageApiResponse.IsSuccessStatusCode)
                 return (true, null, new MemoryStream(await imageApiResponse.Content.ReadAsByteArrayAsync()));
             else
@@ -84,5 +84,11 @@ internal class WolframAlphaCommands
         {
             throw new ArgumentException("Invalid WolframAlpha query type");
         }
+    }
+
+    private enum WolframAlphaQueryType
+    {
+        Text = 0,
+        Image = 1
     }
 }

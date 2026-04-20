@@ -2,7 +2,7 @@
 
 internal static class DiscordInteractionExtensions
 {
-    extension (DiscordInteraction interaction)
+    extension(DiscordInteraction interaction)
     {
         internal async Task SmartRespondAsync(string message)
         {

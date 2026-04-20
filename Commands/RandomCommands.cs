@@ -35,11 +35,11 @@ internal class RandomCommands
     {
         await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
-        Setup.Types.Apis.FactApi.Fact fact;
+        FactApiResponse fact;
         try
         {
             var data = await Setup.Constants.HttpClient.GetStringAsync("https://uselessfacts.jsph.pl/api/v2/facts/random?language=en");
-            fact = JsonConvert.DeserializeObject<Setup.Types.Apis.FactApi.Fact>(data);
+            fact = JsonConvert.DeserializeObject<FactApiResponse>(data);
         }
         catch (HttpRequestException ex)
         {
@@ -66,11 +66,11 @@ internal class RandomCommands
     {
         await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
-        List<Setup.Types.Apis.CatDogApi.CatDogImage> images;
+        List<CatDogApiResponse> images;
         try
         {
             var data = await Setup.Constants.HttpClient.GetStringAsync("https://api.thecatapi.com/v1/images/search");
-            images = JsonConvert.DeserializeObject<List<Setup.Types.Apis.CatDogApi.CatDogImage>>(data);
+            images = JsonConvert.DeserializeObject<List<CatDogApiResponse>>(data);
         }
         catch (HttpRequestException ex)
         {
@@ -97,11 +97,11 @@ internal class RandomCommands
     {
         await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
-        List<Setup.Types.Apis.CatDogApi.CatDogImage> images;
+        List<CatDogApiResponse> images;
         try
         {
             var data = await Setup.Constants.HttpClient.GetStringAsync("https://api.thedogapi.com/v1/images/search");
-            images = JsonConvert.DeserializeObject<List<Setup.Types.Apis.CatDogApi.CatDogImage>>(data);
+            images = JsonConvert.DeserializeObject<List<CatDogApiResponse>>(data);
         }
         catch (HttpRequestException ex)
         {
@@ -120,5 +120,23 @@ internal class RandomCommands
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent(images.First().Url)
             .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+    }
+
+    internal class CatDogApiResponse
+    {
+        [JsonProperty("id")] internal string Id { get; private set; }
+        [JsonProperty("url")] internal string Url { get; private set; }
+        [JsonProperty("width")] internal int Width { get; private set; }
+        [JsonProperty("height")] internal int Height { get; private set; }
+    }
+
+    internal class FactApiResponse
+    {
+        [JsonProperty("id")] internal string Id { get; private set; }
+        [JsonProperty("text")] internal string Text { get; private set; }
+        [JsonProperty("source")] internal string Source { get; private set; }
+        [JsonProperty("source_url")] internal string SourceUrl { get; private set; }
+        [JsonProperty("language")] internal string Language { get; private set; }
+        [JsonProperty("permalink")] internal string Permalink { get; private set; }
     }
 }

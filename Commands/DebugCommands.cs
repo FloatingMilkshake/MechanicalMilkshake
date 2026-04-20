@@ -4,7 +4,7 @@
 [Description("Commands for checking if the bot is working properly.")]
 [RequireBotCommander]
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
-internal class DebugCommands
+internal static class DebugCommands
 {
     [Command("uptime")]
     [Description("Check my uptime!")]
@@ -86,7 +86,7 @@ internal class DebugCommands
 
         var botOwners = ctx.Client.CurrentApplication.Owners.ToList();
 
-        foreach (var userId in Setup.Configuration.ConfigJson.BotCommanders)
+        foreach (var userId in Setup.State.Process.Configuration.BotCommanders)
             BotCommanders.Add(await ctx.Client.GetUserAsync(Convert.ToUInt64(userId)));
 
         var botOwnerList = string.Join("\n", botOwners.Select(o => $"- @{o.GetFullUsername()} (`{o.Id}`)"));
@@ -104,9 +104,9 @@ internal class DebugCommands
     [Command("guilds")]
     [Description("Show the guilds that the bot is in.")]
     public static async Task DebugGuildsCommandAsync(SlashCommandContext ctx,
-        [SlashChoiceProvider(typeof(Setup.Types.ChoiceProviders.GuildsListSortChoiceProvider))]
+        [SlashChoiceProvider(typeof(DebugGuildsSortTypeChoiceProvider))]
         [Parameter("sort_by"), Description("What to sort the list of guilds by.")] string sortBy = "",
-        [SlashChoiceProvider(typeof(Setup.Types.ChoiceProviders.GuildsListSortDirectionChoiceProvider))]
+        [SlashChoiceProvider(typeof(DebugGuildsSortDirectionChoiceProvider))]
         [Parameter("sort_direction"), Description("Which direction to sort the list of guilds.")] string sortDirection = "asc")
     {
         await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
@@ -166,7 +166,7 @@ internal class DebugCommands
     [Description("Run the bot's timed checks manually.")]
     public static async Task DebugChecksCommandAsync(SlashCommandContext ctx,
         [Parameter("checks"), Description("The checks that should be run.")]
-        [SlashChoiceProvider(typeof(Setup.Types.ChoiceProviders.ChecksChoiceProvider))]
+        [SlashChoiceProvider(typeof(DebugChecksChoiceProvider))]
         string checksToRun)
     {
         await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
@@ -252,7 +252,7 @@ internal class DebugCommands
     [Description("Intentionally throw an exception for debugging.")]
     public static async Task DebugThrowCommandAsync(SlashCommandContext ctx,
         [Parameter("exception"), Description("The type of exception to throw.")]
-        [SlashChoiceProvider(typeof(Setup.Types.ChoiceProviders.TestExceptionChoiceProvider))]
+        [SlashChoiceProvider(typeof(DebugThrowExceptionChoiceProvider))]
         string exceptionType)
     {
         var exceptionFullName = exceptionType switch
@@ -277,5 +277,51 @@ internal class DebugCommands
                 Command fakeCommand = default;
                 throw new ChecksFailedException(fakeErrorData, fakeCommand, "This is a test exception");
         }
+    }
+
+    private class DebugGuildsSortTypeChoiceProvider : IChoiceProvider
+    {
+        private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
+        [
+            new("Name", "name"),
+            new("Join Date", "joinDate")
+        ];
+
+        public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
+    }
+
+    private class DebugGuildsSortDirectionChoiceProvider : IChoiceProvider
+    {
+        private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
+        [
+            new("Ascending", "asc"),
+            new("Descending", "desc")
+        ];
+
+        public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
+    }
+
+    private class DebugChecksChoiceProvider : IChoiceProvider
+    {
+        private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
+        [
+            new("All", "all"),
+            new("Reminders", "reminders"),
+            new("Redis Connection", "redisConnection")
+        ];
+
+        public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
+    }
+
+    private class DebugThrowExceptionChoiceProvider : IChoiceProvider
+    {
+        private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
+        [
+            new("NullReferenceException", "nullref"),
+            new("InvalidOperationException", "invalidop"),
+            new("ChecksFailedException", "checksfailed")
+        ];
+
+        public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
     }
 }

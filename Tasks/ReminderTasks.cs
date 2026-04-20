@@ -57,7 +57,7 @@ internal class ReminderTasks
                 {
                     // Couldn't DM user! Log error and delete reminder
 
-                    await LogExceptionAsync(Setup.Configuration.Discord.Channels.Home, ex);
+                    await LogExceptionAsync(Setup.State.Discord.Channels.Home, ex);
 
                     await Setup.Storage.Redis.HashDeleteAsync("reminders", reminder.ReminderId);
 
@@ -68,7 +68,7 @@ internal class ReminderTasks
             {
                 // Unexpected exception! Log error and delete reminder
 
-                await LogExceptionAsync(Setup.Configuration.Discord.Channels.Home, ex);
+                await LogExceptionAsync(Setup.State.Discord.Channels.Home, ex);
 
                 await Setup.Storage.Redis.HashDeleteAsync("reminders", reminder.ReminderId);
 

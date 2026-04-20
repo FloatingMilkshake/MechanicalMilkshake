@@ -4,14 +4,14 @@
 [Description("Returns the Unix timestamp of a given date.")]
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
 [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
-internal class TimestampCommands
+internal static class TimestampCommands
 {
     [Command("id")]
     [Description("Returns the Unix timestamp of a given Discord ID/snowflake.")]
     public static async Task TimestampIdCommandAsync(SlashCommandContext ctx,
         [Parameter("snowflake"), Description("The ID/snowflake to fetch the Unix timestamp for.")]
         string id,
-        [SlashChoiceProvider(typeof(Setup.Types.ChoiceProviders.TimestampFormatChoiceProvider))]
+        [SlashChoiceProvider(typeof(TimestampFormatChoiceProvider))]
         [Parameter("format"), Description("The format to convert the timestamp to.")]
         string format = "",
         [Parameter("include_code"), Description("Whether to include the code for the timestamp.")]
@@ -55,7 +55,7 @@ internal class TimestampCommands
     public static async Task TimestampDateCommandAsync(SlashCommandContext ctx,
         [Parameter("date"), Description("The date to fetch the Unix timestamp for.")]
         string date,
-        [SlashChoiceProvider(typeof(Setup.Types.ChoiceProviders.TimestampFormatChoiceProvider))]
+        [SlashChoiceProvider(typeof(TimestampFormatChoiceProvider))]
         [Parameter("format"), Description("The format to convert the timestamp to. Options are F/D/T/R/f/d/t.")]
         string format = "",
         [Parameter("include_code"), Description("Whether to include the code for the timestamp.")]
@@ -91,5 +91,22 @@ internal class TimestampCommands
                     .WithContent($"<t:{unixTime}:{format}>")
                     .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
         }
+    }
+
+    private class TimestampFormatChoiceProvider : IChoiceProvider
+    {
+        private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
+        [
+            new("Short Time", "t"),
+            new("Long Time", "T"),
+            new("Short Date", "d"),
+            new("Long Date", "D"),
+            new("Short Date/Time", "f"),
+            new("Long Date/Time", "F"),
+            new("Relative Time", "R"),
+            new("Raw Timestamp", "")
+        ];
+
+        public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
     }
 }
