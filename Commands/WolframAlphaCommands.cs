@@ -1,26 +1,60 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
+[Command("wolframalpha")]
+[Description("Search WolframAlpha without leaving Discord!")]
+[InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+[InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
 internal class WolframAlphaCommands
 {
-    [Command("wolframalpha")]
-    [Description("Search WolframAlpha without leaving Discord!")]
-    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-    [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
-    public static async Task WolframAlphaCommandAsync(SlashCommandContext ctx,
-        [Parameter("query"), Description("What to search for.")]
-        string query)
+    [Command("simple")]
+    [Description("Get a simple text-only response from WolframAlpha. Fastest, supports many queries.")]
+    public static async Task WolframAlphaSimpleCommandAsync(SlashCommandContext ctx,
+        [Parameter("query"), Description("What do you want to know?")] string query)
     {
         await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
-        if (string.IsNullOrWhiteSpace(Setup.Configuration.ConfigJson.WolframAlphaAppId))
+        var (success, result, _) = await SendWolframAlphaQueryAsync(query, Setup.Types.WolframAlphaQueryType.Text);
+        if (success)
         {
-            await ctx.FollowupAsync("Sorry, this command is unavailable! Please contact a bot owner for help.", ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
-            return;
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent(result)
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
         }
+        else
+        {
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("It looks like WolframAlpha didn't have a simple answer for that query!")
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+    }
 
-        var queryEncoded = HttpUtility.UrlEncode(query).Replace("(", "%28").Replace(")", "%29");
+    [Command("detailed")]
+    [Description("Get a more-detailed image response from WolframAlpha. A bit slower, but supports almost all queries.")]
+    public static async Task WolframAlphaDetailedCommandAsync(SlashCommandContext ctx,
+        [Parameter("query"), Description("Wht do you want to know?")] string query)
+    {
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
-        var appid = Setup.Configuration.ConfigJson.WolframAlphaAppId;
+        var (success, _, result) = await SendWolframAlphaQueryAsync(query, Setup.Types.WolframAlphaQueryType.Image);
+        if (success)
+        {
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .AddFile("result.gif", result)
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+        else
+        {
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent("It looks like WolframAlpha didn't have a simple answer for that query!")
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+    }
+
+    private static async Task<(bool success, string textResult, MemoryStream imageResult)> SendWolframAlphaQueryAsync(string query, Setup.Types.WolframAlphaQueryType queryType)
+    {
+        var queryEncoded = HttpUtility.UrlEncode(query)
+            .Replace("(", "%28")
+            .Replace(")", "%29");
 
         var queryEscaped = query.Replace("`", @"\`")
             .Replace("*", @"\*")
@@ -28,39 +62,27 @@ internal class WolframAlphaCommands
             .Replace("~", @"\~")
             .Replace(">", @"\>");
 
-        var response = new DiscordFollowupMessageBuilder();
-
-        string text = default;
-        var textApiResponse = await Setup.Constants.HttpClient.GetAsync($"https://api.wolframalpha.com/v1/result?appid={appid}&i={queryEncoded}");
-        if (textApiResponse.IsSuccessStatusCode)
-            text = await textApiResponse.Content.ReadAsStringAsync();
-
-        MemoryStream image = default;
-        var imageApiResponse = await Setup.Constants.HttpClient.GetAsync($"https://api.wolframalpha.com/v1/simple?appid={appid}&i={queryEncoded}");
-        if (imageApiResponse.IsSuccessStatusCode)
-            image = new MemoryStream(await imageApiResponse.Content.ReadAsByteArrayAsync());
-        
-
-        if (text == default && image == default)
+        if (queryType == Setup.Types.WolframAlphaQueryType.Text)
         {
-            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent("Hmm, WolframAlpha didn't have an answer to that query! Try rephrasing it.")
-                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
-            return;
+            var textApiResponse = await Setup.Constants.HttpClient
+                .GetAsync($"https://api.wolframalpha.com/v1/result?appid={Setup.Configuration.ConfigJson.WolframAlphaAppId}&i={queryEncoded}");
+            if (textApiResponse.IsSuccessStatusCode)
+                return (true, await textApiResponse.Content.ReadAsStringAsync(), null);
+            else
+                return (false, null, null);
         }
-
-        response.Content += $"> {queryEscaped}";
-
-        if (text != default)
-            response.Content += $"\n{(image != default ? "**Simple answer:** " : "")}{text}";
-
-        if (image != default)
+        else if (queryType == Setup.Types.WolframAlphaQueryType.Image)
         {
-            if (text != default)
-                response.Content += "\n**Extended answer:**";
-            response.AddFile("result.gif", image);
+            var imageApiResponse = await Setup.Constants.HttpClient
+                .GetAsync($"https://api.wolframalpha.com/v1/simple?appid={Setup.Configuration.ConfigJson.WolframAlphaAppId}&i={queryEncoded}");
+            if (imageApiResponse.IsSuccessStatusCode)
+                return (true, null, new MemoryStream(await imageApiResponse.Content.ReadAsByteArrayAsync()));
+            else
+                return (false, null, null);
         }
-
-        await ctx.FollowupAsync(response.AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        else
+        {
+            throw new ArgumentException("Invalid WolframAlpha query type");
+        }
     }
 }

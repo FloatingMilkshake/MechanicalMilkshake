@@ -1,6 +1,4 @@
-﻿using static MechanicalMilkshake.Setup.Types;
-
-namespace MechanicalMilkshake.Setup;
+﻿namespace MechanicalMilkshake.Setup;
 
 internal static class Types
 {
@@ -653,5 +651,11 @@ internal static class Types
         Create = 0,
         Update = 1,
         Delete = 2
+    }
+
+    internal enum WolframAlphaQueryType
+    {
+        Text = 0,
+        Image = 1
     }
 }
