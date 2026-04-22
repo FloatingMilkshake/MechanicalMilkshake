@@ -40,14 +40,14 @@ internal sealed class MessageCache
         return Messages.Find(x => x.AuthorId == authorId);
     }
 
-    internal CachedMessage GetNewestMessage()
+    internal CachedMessage GetNewestMessage(int skip = 0)
     {
-        return GetAllMessages().OrderByDescending(m => m.MessageId).First();
+        return GetAllMessages().OrderByDescending(m => m.MessageId).Skip(skip).First();
     }
 
-    internal CachedMessage GetOldestMessage()
+    internal CachedMessage GetOldestMessage(int skip = 0)
     {
-        return GetAllMessages().OrderBy(m => m.MessageId).First();
+        return GetAllMessages().OrderBy(m => m.MessageId).Skip(skip).First();
     }
 
     internal List<CachedMessage> GetAllMessages()
@@ -140,14 +140,36 @@ internal sealed class MessageCache
             return $"https://discord.com/channels/{guildId}/{ChannelId}/{MessageId}";
         }
 
-        internal async Task<string> ToFancyStringAsync()
+        internal async Task<string> GetInformationAsync()
         {
-            return $"({GetTimestamp()}) {ToString()} {await GetMessageLinkAsync()}";
-        }
+            DiscordChannel channel = default;
+            DiscordUser author = default;
+            try
+            {
+                channel = await Setup.State.Discord.Client.GetChannelAsync(ChannelId);
+                author = await Setup.State.Discord.Client.GetUserAsync(AuthorId);
+            }
+            catch (Exception ex) when (ex is NotFoundException or UnauthorizedException)
+            {
+                // Don't care
+            }
+            string channelInformation = "**Channel:** ";
+            if (channel == default)
+                channelInformation += ChannelId;
+            else
+                channelInformation += $"{channel.Name} {channel.Id}";
+            string authorInformation = "**Author:** ";
+            if (author == default)
+                authorInformation += AuthorId;
+            else
+                authorInformation += $"{author.Username} {author.Id}";
 
-        public override string ToString()
-        {
-            return $"Message {MessageId} by user {AuthorId} in channel {ChannelId}";
+
+            return $"**Timestamp:** {GetTimestamp()}"
+                + $"\n**Message ID:** {MessageId}"
+                + $"\n{channelInformation}"
+                + $"\n{authorInformation}"
+                + $"\n{await GetMessageLinkAsync()}";
         }
     }
 }

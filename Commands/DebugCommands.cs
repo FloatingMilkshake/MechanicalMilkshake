@@ -19,7 +19,7 @@ internal static class DebugCommands
 
             var success = Setup.State.Caches.MessageCache.TryGetMessageByChannel(channelId, out var message);
             if (success)
-                await ctx.RespondAsync(await message.ToFancyStringAsync());
+                await ctx.RespondAsync(await message.GetInformationAsync());
             else
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("No message cached for that channel")
@@ -35,7 +35,7 @@ internal static class DebugCommands
 
             var success = Setup.State.Caches.MessageCache.TryGetMessage(messageId, out var message);
             if (success)
-                await ctx.RespondAsync(await message.ToFancyStringAsync());
+                await ctx.RespondAsync(await message.GetInformationAsync());
             else
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("No message cached with that ID")
@@ -51,7 +51,7 @@ internal static class DebugCommands
 
             var success = Setup.State.Caches.MessageCache.TryGetMessageByAuthor(authorId, out var message);
             if (success)
-                await ctx.RespondAsync(await message.ToFancyStringAsync());
+                await ctx.RespondAsync(await message.GetInformationAsync());
             else
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("No message cached by that author")
@@ -67,14 +67,32 @@ internal static class DebugCommands
             var cachedMessagesCount = Setup.State.Caches.MessageCache.Count();
             var uniqueChannelsCount = Setup.State.Caches.MessageCache.GetUniqueChannelCount();
             var uniqueAuthorsCount = Setup.State.Caches.MessageCache.GetUniqueAuthorCount();
-            var newestCachedMessage = Setup.State.Caches.MessageCache.GetNewestMessage();
-            var oldestCachedMessage = Setup.State.Caches.MessageCache.GetOldestMessage();
 
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"{cachedMessagesCount} messages in cache, from {uniqueAuthorsCount} author{(uniqueAuthorsCount == 1 ? "" : "s")} across {uniqueChannelsCount} channels."
-                    + $"\nNewest message: {await newestCachedMessage.ToFancyStringAsync()}"
-                    + $"\nOldest message: {await oldestCachedMessage.ToFancyStringAsync()}")
+                .WithContent($"{cachedMessagesCount} messages in cache, from {uniqueAuthorsCount} author{(uniqueAuthorsCount == 1 ? "" : "s")} across {uniqueChannelsCount} channels.")
                 .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+
+        [Command("newest")]
+        [Description("Get the newest message from the message cache.")]
+        public static async Task DebugCachedMessageNewestCommandAsync(SlashCommandContext ctx,
+            [Parameter("skip"), Description("The number of messages to skip over.")] int skip = 0)
+        {
+            await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
+
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent(await (Setup.State.Caches.MessageCache.GetNewestMessage(skip)).GetInformationAsync()));
+        }
+
+        [Command("oldest")]
+        [Description("Get the oldest message from the message cache.")]
+        public static async Task DebugCachedMessageOldestCommandAsync(SlashCommandContext ctx,
+            [Parameter("skip"), Description("The number of messages to skip over.")] int skip = 0)
+        {
+            await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
+
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent(await (Setup.State.Caches.MessageCache.GetOldestMessage(skip)).GetInformationAsync()));
         }
     }
 
