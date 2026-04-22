@@ -4,23 +4,28 @@ internal class GuildEvents
 {
     internal static async Task HandleGuildCreatedEventAsync(DiscordClient _, GuildCreatedEventArgs e)
     {
-        if (Setup.State.Discord.Channels.GuildLogs is null)
-            return;
+        if (Setup.State.Discord.Channels.GuildLogs is not null)
+            await SendGuildEventLogEmbed(Setup.State.Discord.Channels.GuildLogs, e.Guild, GuildEventType.Join);
 
-        await SendGuildEventLogEmbed(Setup.State.Discord.Channels.GuildLogs, e.Guild, GuildEventType.Join);
+        await CheckAndLeaveBlacklistedGuild(e.Guild);
     }
 
     internal static async Task HandleGuildDeletedEventAsync(DiscordClient _, GuildDeletedEventArgs e)
     {
-        if (Setup.State.Discord.Channels.GuildLogs is null)
-            return;
-
-        await SendGuildEventLogEmbed(Setup.State.Discord.Channels.GuildLogs, e.Guild, GuildEventType.Leave);
+        if (Setup.State.Discord.Channels.GuildLogs is not null)
+            await SendGuildEventLogEmbed(Setup.State.Discord.Channels.GuildLogs, e.Guild, GuildEventType.Leave);
     }
 
     internal static async Task HandleGuildDownloadCompletedEventAsync(DiscordClient _, GuildDownloadCompletedEventArgs __)
     {
         Setup.State.Discord.GuildDownloadCompleted = true;
+    }
+
+    private static async Task CheckAndLeaveBlacklistedGuild(DiscordGuild guild)
+    {
+        var blacklist = await Setup.Storage.Redis.HashGetAllAsync("blacklistedGuilds");
+        if (blacklist.Any(g => g.Name == guild.Id))
+            await guild.LeaveAsync();
     }
 
     private static async Task SendGuildEventLogEmbed(DiscordChannel channel, DiscordGuild guild, GuildEventType eventType)

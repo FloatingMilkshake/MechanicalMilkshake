@@ -6,6 +6,171 @@
 [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
 internal static class DebugCommands
 {
+    [Command("blacklist")]
+    [RequireApplicationOwner]
+    public static class DebugBlacklistCommands
+    {
+        [Command("add")]
+        [Description("Add a guild to the blacklist.")]
+        public static async Task DebugBlacklistAddCommandAsync(SlashCommandContext ctx,
+            [Parameter("guild"), Description("The ID of the guild to add to the blacklist.")] string guild,
+            [Parameter("reason"), Description("The reason for blacklisting.")] string reason)
+        {
+            await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
+
+            ulong guildId;
+            try
+            {
+                guildId = Convert.ToUInt64(guild);
+            }
+            catch (FormatException)
+            {
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("I couldn't parse that guild ID!")
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+                return;
+            }
+
+            var blacklistedGuilds = await Setup.Storage.Redis.HashGetAllAsync("blacklistedGuilds");
+
+            if (blacklistedGuilds.Any(g => g.Name == guildId && g.Value == reason))
+            {
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("That guild is already blacklisted!")
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+                return;
+            }
+
+            await Setup.Storage.Redis.HashSetAsync("blacklistedGuilds", guildId, reason);
+
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent($"Blacklisted guild {guildId}.")
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+
+        [Command("remove")]
+        [Description("Remove a guild from the blacklist.")]
+        public static async Task DebugBlacklistRemoveCommandAsync(SlashCommandContext ctx,
+            [Parameter("guild"), Description("The ID of the guild to remove from the blacklist.")] string guild)
+        {
+            await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
+
+            ulong guildId;
+            try
+            {
+                guildId = Convert.ToUInt64(guild);
+            }
+            catch (FormatException)
+            {
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("I couldn't parse that guild ID!")
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+                return;
+            }
+
+            var blacklistedGuilds = await Setup.Storage.Redis.HashGetAllAsync("blacklistedGuilds");
+
+            if (blacklistedGuilds.All(g => g.Name != guildId))
+            {
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("That guild is not blacklisted!")
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+                return;
+            }
+
+            await Setup.Storage.Redis.HashDeleteAsync("blacklistedGuilds", guildId);
+
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent($"Removed guild {guildId} from the blacklist.")
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+
+        [Command("list")]
+        [Description("List blacklisted guilds.")]
+        public static async Task DebugBlacklistListCommandAsync(SlashCommandContext ctx)
+        {
+            await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
+
+            var blacklistedGuilds = await Setup.Storage.Redis.HashGetAllAsync("blacklistedGuilds");
+
+            string list;
+            var blacklist = string.Join("\n", blacklistedGuilds.Select(g => $"{g.Name}: {g.Value}"));
+            if (!string.IsNullOrWhiteSpace(blacklist))
+                list = blacklist;
+            else
+                list = "No guilds are currently blacklisted.";
+
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent(list)
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+    }
+
+    [Command("guilds")]
+    [Description("Commands for managing which guilds the bot is in.")]
+    public static class DebugGuildsCommands
+    {
+
+        [Command("leave")]
+        [Description("Makes the bot leave a guild. This cannot be undone!")]
+        [RequireApplicationOwner]
+        public static async Task DebugGuildsLeaveCommandAsync(SlashCommandContext ctx,
+            [Parameter("guild"), Description("The ID of the guild to leave.")] string guildId)
+        {
+            await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
+
+            DiscordGuild guild = default;
+            try
+            {
+                guild = ctx.Client.Guilds[Convert.ToUInt64(guildId)];
+                await guild.LeaveAsync();
+            }
+            catch (FormatException)
+            {
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("I couldn't parse that guild ID!")
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+            }
+
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .WithContent($"Successfully left guild **{guild.Name}** ({guild.Id}).")
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+
+        [Command("list")]
+        [Description("Show the guilds that the bot is in.")]
+        public static async Task DebugGuildsListCommandAsync(SlashCommandContext ctx,
+        [SlashChoiceProvider(typeof(DebugGuildsSortTypeChoiceProvider))]
+        [Parameter("sort_by"), Description("What to sort the list of guilds by.")] string sortBy = "",
+        [SlashChoiceProvider(typeof(DebugGuildsSortDirectionChoiceProvider))]
+        [Parameter("sort_direction"), Description("Which direction to sort the list of guilds.")] string sortDirection = "asc")
+        {
+            await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
+
+            DiscordEmbedBuilder embed = new()
+            {
+                Title = $"Joined Guilds - {Setup.State.Discord.Client.Guilds.Count}",
+                Color = Setup.Constants.BotColor
+            };
+            IReadOnlyList<DiscordGuild> sortedGuilds = sortBy switch
+            {
+                "name" => sortDirection == "asc"
+                    ? Setup.State.Discord.Client.Guilds.Values.OrderBy(g => g.Name).ToList()
+                    : Setup.State.Discord.Client.Guilds.Values.OrderByDescending(g => g.Name).ToList(),
+                "joinDate" => sortDirection == "asc"
+                    ? Setup.State.Discord.Client.Guilds.Values.OrderBy(g => g.JoinedAt).ToList()
+                    : Setup.State.Discord.Client.Guilds.Values.OrderByDescending(g => g.JoinedAt).ToList(),
+                _ => Setup.State.Discord.Client.Guilds.Values.ToList(),
+            };
+            foreach (var guild in Setup.State.Discord.Client.Guilds)
+                embed.Description += $"- {guild.Value.Name}\n";
+
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                .AddEmbed(embed)
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+    }
+
     [Command("messagecache")]
     [Description("Get information about the in-memory message cache.")]
     public static class DebugCachedMessageCommands
@@ -185,39 +350,6 @@ internal static class DebugCommands
         embed.AddField("Bot Owners", botOwnerList);
         embed.AddField("Bot Commanders",
             $"These users are authorized to use owner-level commands.\n{botCommanderList}");
-
-        await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-            .AddEmbed(embed)
-            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
-    }
-
-    [Command("guilds")]
-    [Description("Show the guilds that the bot is in.")]
-    public static async Task DebugGuildsCommandAsync(SlashCommandContext ctx,
-        [SlashChoiceProvider(typeof(DebugGuildsSortTypeChoiceProvider))]
-        [Parameter("sort_by"), Description("What to sort the list of guilds by.")] string sortBy = "",
-        [SlashChoiceProvider(typeof(DebugGuildsSortDirectionChoiceProvider))]
-        [Parameter("sort_direction"), Description("Which direction to sort the list of guilds.")] string sortDirection = "asc")
-    {
-        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
-
-        DiscordEmbedBuilder embed = new()
-        {
-            Title = $"Joined Guilds - {Setup.State.Discord.Client.Guilds.Count}",
-            Color = Setup.Constants.BotColor
-        };
-        IReadOnlyList<DiscordGuild> sortedGuilds = sortBy switch
-        {
-            "name" => sortDirection == "asc"
-                ? Setup.State.Discord.Client.Guilds.Values.OrderBy(g => g.Name).ToList()
-                : Setup.State.Discord.Client.Guilds.Values.OrderByDescending(g => g.Name).ToList(),
-            "joinDate" => sortDirection == "asc"
-                ? Setup.State.Discord.Client.Guilds.Values.OrderBy(g => g.JoinedAt).ToList()
-                : Setup.State.Discord.Client.Guilds.Values.OrderByDescending(g => g.JoinedAt).ToList(),
-            _ => Setup.State.Discord.Client.Guilds.Values.ToList(),
-        };
-        foreach (var guild in Setup.State.Discord.Client.Guilds)
-            embed.Description += $"- {guild.Value.Name}\n";
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .AddEmbed(embed)
