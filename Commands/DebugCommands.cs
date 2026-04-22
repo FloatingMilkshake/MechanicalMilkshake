@@ -140,6 +140,7 @@ internal static class DebugCommands
         [Command("list")]
         [Description("Show the guilds that the bot is in.")]
         public static async Task DebugGuildsListCommandAsync(SlashCommandContext ctx,
+        [Parameter("filter"), Description("A space-separated list of guild IDs to filter to.")] string filter = "",
         [SlashChoiceProvider(typeof(DebugGuildsSortTypeChoiceProvider))]
         [Parameter("sort_by"), Description("What to sort the list of guilds by.")] string sortBy = "",
         [SlashChoiceProvider(typeof(DebugGuildsSortDirectionChoiceProvider))]
@@ -147,26 +148,51 @@ internal static class DebugCommands
         {
             await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
+            List<DiscordGuild> guilds = [];
+            if (filter == "")
+            {
+                guilds = ctx.Client.Guilds.Values.ToList();
+            }
+            else
+            {
+                var guildIds = filter.Split(' ');
+                foreach (var guild in ctx.Client.Guilds.Values)
+                {
+                    if (guildIds.Contains(guild.Id.ToString()))
+                        guilds.Add(guild);
+                }
+            }
+
+
             DiscordEmbedBuilder embed = new()
             {
-                Title = $"Joined Guilds - {Setup.State.Discord.Client.Guilds.Count}",
+                Title = $"Joined Guilds - {guilds.Count}",
                 Color = Setup.Constants.BotColor
             };
             IReadOnlyList<DiscordGuild> sortedGuilds = sortBy switch
             {
                 "name" => sortDirection == "asc"
-                    ? Setup.State.Discord.Client.Guilds.Values.OrderBy(g => g.Name).ToList()
-                    : Setup.State.Discord.Client.Guilds.Values.OrderByDescending(g => g.Name).ToList(),
+                    ? guilds.OrderBy(g => g.Name).ToList()
+                    : guilds.OrderByDescending(g => g.Name).ToList(),
                 "joinDate" => sortDirection == "asc"
-                    ? Setup.State.Discord.Client.Guilds.Values.OrderBy(g => g.JoinedAt).ToList()
-                    : Setup.State.Discord.Client.Guilds.Values.OrderByDescending(g => g.JoinedAt).ToList(),
-                _ => Setup.State.Discord.Client.Guilds.Values.ToList(),
+                    ? guilds.OrderBy(g => g.JoinedAt).ToList()
+                    : guilds.OrderByDescending(g => g.JoinedAt).ToList(),
+                _ => guilds.ToList(),
             };
-            foreach (var guild in Setup.State.Discord.Client.Guilds)
-                embed.Description += $"- {guild.Value.Name}\n";
+            foreach (var guild in guilds)
+                embed.Description += $"- {guild.Name}\n";
 
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .AddEmbed(embed)
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+
+        [Command("count")]
+        [Description("Get the number of guilds the bot is in.")]
+        public static async Task DebugGuildsCountCommandAsync(SlashCommandContext ctx)
+        {
+            await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+                .WithContent(ctx.Client.Guilds.Count().ToString())
                 .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
         }
     }
