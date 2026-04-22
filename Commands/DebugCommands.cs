@@ -19,7 +19,7 @@ internal static class DebugCommands
 
             var success = Setup.State.Caches.MessageCache.TryGetMessageByChannel(channelId, out var message);
             if (success)
-                await ctx.RespondAsync(message.ToString());
+                await ctx.RespondAsync(await message.ToFancyStringAsync());
             else
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("No message cached for that channel")
@@ -35,7 +35,7 @@ internal static class DebugCommands
 
             var success = Setup.State.Caches.MessageCache.TryGetMessage(messageId, out var message);
             if (success)
-                await ctx.RespondAsync(message.ToString());
+                await ctx.RespondAsync(await message.ToFancyStringAsync());
             else
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("No message cached with that ID")
@@ -51,7 +51,7 @@ internal static class DebugCommands
 
             var success = Setup.State.Caches.MessageCache.TryGetMessageByAuthor(authorId, out var message);
             if (success)
-                await ctx.RespondAsync(message.ToString());
+                await ctx.RespondAsync(await message.ToFancyStringAsync());
             else
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                     .WithContent("No message cached by that author")
@@ -72,8 +72,8 @@ internal static class DebugCommands
 
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
                 .WithContent($"{cachedMessagesCount} messages in cache, from {uniqueAuthorsCount} author{(uniqueAuthorsCount == 1 ? "" : "s")} across {uniqueChannelsCount} channels."
-                    + $"\nNewest message ({newestCachedMessage.GetTimestamp()}): {newestCachedMessage} {await newestCachedMessage.GetMessageLinkAsync()}"
-                    + $"\nOldest message ({oldestCachedMessage.GetTimestamp()}): {oldestCachedMessage} {await oldestCachedMessage.GetMessageLinkAsync()}")
+                    + $"\nNewest message: {await newestCachedMessage.ToFancyStringAsync()}"
+                    + $"\nOldest message: {await oldestCachedMessage.ToFancyStringAsync()}")
                 .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
         }
     }

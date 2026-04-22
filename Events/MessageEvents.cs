@@ -4,6 +4,12 @@ internal class MessageEvents
 {
     internal static async Task HandleMessageUpdatedEventAsync(DiscordClient _, MessageUpdatedEventArgs e)
     {
+        if (e.Message is null)
+        {
+            Setup.State.Discord.Client.Logger.LogWarning("Got a message updated event with a null message!");
+            return;
+        }
+
         try
         {
             await e.Message.CheckForTrackedKeywordsAsync(true);
@@ -16,6 +22,12 @@ internal class MessageEvents
 
     internal static async Task HandleMessageCreatedEventAsync(DiscordClient client, MessageCreatedEventArgs e)
     {
+        if (e.Message is null)
+        {
+            Setup.State.Discord.Client.Logger.LogWarning("Got a message created event with a null message!");
+            return;
+        }
+
         try
         {
             if (Setup.State.Process.Configuration.UseServerSpecificFeatures)
@@ -42,6 +54,12 @@ internal class MessageEvents
 
     internal static async Task HandleMessageDeletedEventAsync(DiscordClient _, MessageDeletedEventArgs e)
     {
+        if (e.Message is null)
+        {
+            Setup.State.Discord.Client.Logger.LogWarning("Got a message deleted event with a null message!");
+            return;
+        }
+
         try
         {
             // If message is in cache, remove and add most recent message from channel to cache

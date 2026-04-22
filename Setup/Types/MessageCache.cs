@@ -140,6 +140,11 @@ internal sealed class MessageCache
             return $"https://discord.com/channels/{guildId}/{ChannelId}/{MessageId}";
         }
 
+        internal async Task<string> ToFancyStringAsync()
+        {
+            return $"({GetTimestamp()}) {ToString()} {await GetMessageLinkAsync()}";
+        }
+
         public override string ToString()
         {
             return $"Message {MessageId} by user {AuthorId} in channel {ChannelId}";
