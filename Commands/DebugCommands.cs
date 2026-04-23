@@ -110,6 +110,44 @@ internal static class DebugCommands
     [Description("Commands for managing which guilds the bot is in.")]
     public static class DebugGuildsCommands
     {
+        [Command("info")]
+        [Description("Get information about a guild.")]
+        public static async Task DebugGuildsInfoCommandAsync(SlashCommandContext ctx,
+            [Parameter("guild"), Description("The ID of the guild to get info for.")] string guildId)
+        {
+            await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
+
+            DiscordGuild guild;
+
+            try
+            {
+                guild = await ctx.Client.GetGuildAsync(Convert.ToUInt64(guildId));
+            }
+            catch (FormatException)
+            {
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("Couldn't parse that guild ID.")
+                    .AsEphemeral(ctx.Interaction.ShouldUseEphemeralResponse(false)));
+                return;
+            }
+            catch (NotFoundException)
+            {
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("I'm not in that server. There's nothing I can show you.")
+                    .AsEphemeral(ctx.Interaction.ShouldUseEphemeralResponse(false)));
+                return;
+            }
+            catch (Exception ex)
+            {
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent($"Something went wrong...\n```\n{ex.GetType()}: {ex.Message}\n```")
+                    .AsEphemeral(ctx.Interaction.ShouldUseEphemeralResponse(false)));
+                return;
+            }
+
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder(await guild.CreateInfoMessageAsync())
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
 
         [Command("leave")]
         [Description("Makes the bot leave a guild. This cannot be undone!")]
