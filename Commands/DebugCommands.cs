@@ -351,7 +351,7 @@ internal static class DebugCommands
                     : guilds.OrderByDescending(g => g.JoinedAt).ToList(),
                 _ => guilds.ToList(),
             };
-            foreach (var guild in guilds)
+            foreach (var guild in sortedGuilds)
                 embed.Description += $"- {guild.Name}\n";
 
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
