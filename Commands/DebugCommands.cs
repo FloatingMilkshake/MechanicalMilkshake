@@ -295,10 +295,11 @@ internal static class DebugCommands
 
             var cachedMessagesCount = Setup.State.Caches.MessageCache.Count();
             var uniqueChannelsCount = Setup.State.Caches.MessageCache.GetUniqueChannelCount();
+            var uniqueGuildsCount = Setup.State.Caches.MessageCache.GetUniqueGuildCount();
             var uniqueAuthorsCount = Setup.State.Caches.MessageCache.GetUniqueAuthorCount();
 
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                .WithContent($"{cachedMessagesCount} messages in cache, from {uniqueAuthorsCount} author{(uniqueAuthorsCount == 1 ? "" : "s")} across {uniqueChannelsCount} channels.")
+                .WithContent($"{cachedMessagesCount} messages in cache, from {uniqueAuthorsCount} author{(uniqueAuthorsCount == 1 ? "" : "s")}, {uniqueChannelsCount} channel{(uniqueChannelsCount == 1 ? "" : "s")}, {uniqueGuildsCount} guild{(uniqueGuildsCount == 1 ? "" : "s")}.")
                 .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
         }
 

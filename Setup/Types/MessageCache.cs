@@ -78,6 +78,20 @@ internal sealed class MessageCache
         return uniqueChannelIds.Count;
     }
 
+    internal int GetUniqueGuildCount()
+    {
+        List<ulong> uniqueGuildIds = [];
+
+        foreach (var cachedMessage in GetAllMessages())
+        {
+            var guildId = Setup.State.Discord.Client.Guilds.Values.First(g => g.Channels.Any(c => c.Value.Id == cachedMessage.ChannelId)).Id;
+            if (!uniqueGuildIds.Contains(guildId))
+                uniqueGuildIds.Add(guildId);
+        }
+
+        return uniqueGuildIds.Count;
+    }
+
     internal int GetUniqueAuthorCount()
     {
         List<ulong> uniqueAuthorIds = [];
