@@ -39,5 +39,32 @@ public static class Eval
                 return null;
             return $"```json\n{JsonConvert.SerializeObject(input, Formatting.Indented)}\n```";
         }
+
+        public static async Task<string> ListGuildRolesAsync(DiscordGuild guild)
+        {
+            return string.Join("\n", guild.Roles.Values.OrderByDescending(r => r.Position).Select(r => r.Name));
+        }
+
+        public static async Task<string> ListGuildChannelsAsync(DiscordGuild guild)
+        {
+            var sortedChannelsWithoutCategories = guild.Channels.Values.Where(ch => !ch.IsCategory).OrderBy(ch => ch.Position);
+
+            List<long> listedParents = [];
+            string output = "";
+            foreach (DiscordChannel channel in sortedChannelsWithoutCategories)
+            {
+                long parentId = channel.ParentId is null ? -1 : (long)channel.ParentId.Value;
+                if (!listedParents.Contains(parentId))
+                {
+                    listedParents.Add(parentId);
+                    if (parentId != -1)
+                        output += $"**{guild.Channels[(ulong)parentId]}**\n";
+                }
+
+                output += channel.ToString() + "\n";
+            }
+
+            return output;
+        }
     }
 }
