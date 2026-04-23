@@ -113,35 +113,28 @@ internal static class DebugCommands
         [Command("info")]
         [Description("Get information about a guild.")]
         public static async Task DebugGuildsInfoCommandAsync(SlashCommandContext ctx,
-            [Parameter("guild"), Description("The ID of the guild to get info for.")] string guildId)
+            [SlashAutoCompleteProvider(typeof(DebugGuildsGuildSearchAutoCompleteProvider))]
+            [Parameter("guild"), Description("The guild to get info for. Accepts names or IDs.")] string guildId)
         {
             await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
             DiscordGuild guild;
-
             try
             {
-                guild = await ctx.Client.GetGuildAsync(Convert.ToUInt64(guildId));
+                guild = ctx.Client.Guilds[Convert.ToUInt64(guildId)];
             }
             catch (FormatException)
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent("Couldn't parse that guild ID.")
-                    .AsEphemeral(ctx.Interaction.ShouldUseEphemeralResponse(false)));
+                    .WithContent("I couldn't parse that guild. I need to be in the guild and you must provide a name (choose from AutoComplete) or ID.")
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
                 return;
             }
-            catch (NotFoundException)
+            catch (KeyNotFoundException)
             {
                 await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent("I'm not in that server. There's nothing I can show you.")
-                    .AsEphemeral(ctx.Interaction.ShouldUseEphemeralResponse(false)));
-                return;
-            }
-            catch (Exception ex)
-            {
-                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
-                    .WithContent($"Something went wrong...\n```\n{ex.GetType()}: {ex.Message}\n```")
-                    .AsEphemeral(ctx.Interaction.ShouldUseEphemeralResponse(false)));
+                    .WithContent("Your guild ID was invalid, or I'm not in the guild. I need to be in the guild and you must provide a name (choose from AutoComplete) or ID.")
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
                 return;
             }
 
@@ -610,5 +603,21 @@ internal static class DebugCommands
         ];
 
         public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
+    }
+
+    private class DebugGuildsGuildSearchAutoCompleteProvider : IAutoCompleteProvider
+    {
+        public async ValueTask<IEnumerable<DiscordAutoCompleteChoice>> AutoCompleteAsync(AutoCompleteContext ctx)
+        {
+            var focusedOption = ctx.Options.FirstOrDefault(x => x.Focused);
+
+            if (focusedOption is not null)
+            {
+                return ctx.Client.Guilds.Values.Where(g => g.Name.Contains(focusedOption.Value.ToString(), StringComparison.OrdinalIgnoreCase)
+                        || g.Id.ToString().Contains(focusedOption.Value.ToString()))
+                    .Select(guild => new DiscordAutoCompleteChoice(guild.Name, guild.Id.ToString())).Take(25).ToList();
+            }
+            return default;
+        }
     }
 }
