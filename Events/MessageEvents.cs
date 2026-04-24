@@ -1,4 +1,4 @@
-﻿namespace MechanicalMilkshake.Events;
+namespace MechanicalMilkshake.Events;
 
 internal class MessageEvents
 {
@@ -69,7 +69,7 @@ internal class MessageEvents
 
                 var msg = (await e.Channel.GetMessagesAsync(1).ToListAsync()).FirstOrDefault();
                 if (msg is not null)
-                    Setup.State.Caches.MessageCache.AddMessage(e.Message);
+                    Setup.State.Caches.MessageCache.AddMessage(msg);
             }
         }
         catch (Exception ex)
