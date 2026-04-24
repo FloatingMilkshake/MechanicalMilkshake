@@ -602,6 +602,13 @@ internal class InteractionEvents
     internal static async Task HandleCommandExecutedEventAsync(CommandsExtension _, CommandExecutedEventArgs e)
     {
         await LogInteractionCommandUsageAsync(e.Context);
+        if (e.Context.Guild is not null)
+            await SaveGuildLastCommandUseAsync(e.Context.Guild.Id);
+    }
+
+    private static async Task SaveGuildLastCommandUseAsync(ulong guildId)
+    {
+        await Setup.Storage.Redis.HashSetAsync("lastCommandUse", guildId.ToString(), JsonConvert.SerializeObject(DateTime.UtcNow));
     }
 
     private static async Task LogInteractionCommandUsageAsync(CommandContext context)

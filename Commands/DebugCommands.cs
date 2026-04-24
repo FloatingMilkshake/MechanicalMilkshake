@@ -251,6 +251,28 @@ internal static class DebugCommands
     [Description("Commands for managing which guilds the bot is in.")]
     public static class DebugGuildsCommands
     {
+        [Command("lastuse")]
+        [Description("Show the last time one of the bot's commands was used in a guild.")]
+        public static async Task DebugGuildsLastUseCommandAsync(SlashCommandContext ctx,
+            [SlashAutoCompleteProvider(typeof(DebugGuildsGuildSearchAutoCompleteProvider))]
+            [Parameter("guild"), Description("The guild to show the last use time for. Accepts names or IDs.")] string guildId)
+        {
+            await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
+
+            var lastUse = await Setup.Storage.Redis.HashGetAsync("lastCommandUse", guildId);
+            if (!lastUse.HasValue)
+            {
+                await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent("Nothing stored for that guild.")
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+                return;
+            }
+
+            await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
+                    .WithContent($"<t:{JsonConvert.DeserializeObject<DateTime>(lastUse).ToUnixTimeSeconds()}:F>")
+                    .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+        }
+
         [Command("info")]
         [Description("Get information about a guild.")]
         public static async Task DebugGuildsInfoCommandAsync(SlashCommandContext ctx,
