@@ -13,7 +13,9 @@ internal static class DebugCommands
     // https://github.com/DSharpPlus/DSharpPlus/blob/3a50fb3/DSharpPlus.Test/TestBotEvalCommands.cs
     [Command("eval")]
     [Description("Evaluate C# code!")]
-    public static async Task DebugEvalCommandAsync(SlashCommandContext ctx, [Parameter("code"), Description("The code to evaluate.")] string code)
+    public static async Task DebugEvalCommandAsync(SlashCommandContext ctx,
+        [SlashAutoCompleteProvider(typeof(DebugHistoryAutoCompleteProvider))]
+        [Parameter("code"), Description("The code to evaluate.")] string code)
     {
         CancellationToken cancellationToken = default;
 
@@ -28,6 +30,8 @@ internal static class DebugCommands
             await ctx.EditResponseAsync(new DiscordMessageBuilder().WithContent("You can't do that."));
             return;
         }
+
+        await Setup.Storage.Redis.HashSetAsync("evalHistory", DateTime.UtcNow.ToString(), code);
 
         try
         {
@@ -96,6 +100,7 @@ internal static class DebugCommands
     [Command("shell")]
     [Description("Run a shell command on the machine the bot's running on!")]
     public static async Task DebugShellCommandAsync(SlashCommandContext ctx,
+        [SlashAutoCompleteProvider(typeof(DebugHistoryAutoCompleteProvider))]
         [Parameter("command"), Description("The command to run, including any arguments.")]
         string command)
     {
@@ -122,6 +127,8 @@ internal static class DebugCommands
             await ctx.EditResponseAsync(new DiscordFollowupMessageBuilder().WithContent("You can't do that."));
             return;
         }
+
+        await Setup.Storage.Redis.HashSetAsync("shellHistory", DateTime.UtcNow.ToString(), command);
 
         var msg = await ctx.GetResponseAsync();
         Setup.State.Caches.CancellationTokens.Add(msg.Id, new CancellationTokenSource());
@@ -874,6 +881,30 @@ internal static class DebugCommands
                 return ctx.Client.Guilds.Values.Where(g => g.Name.Contains(focusedOption.Value.ToString(), StringComparison.OrdinalIgnoreCase)
                         || g.Id.ToString().Contains(focusedOption.Value.ToString()))
                     .Select(guild => new DiscordAutoCompleteChoice(guild.Name, guild.Id.ToString())).Take(25).ToList();
+            }
+            return default;
+        }
+    }
+
+    private class DebugHistoryAutoCompleteProvider : IAutoCompleteProvider
+    {
+        public async ValueTask<IEnumerable<DiscordAutoCompleteChoice>> AutoCompleteAsync(AutoCompleteContext ctx)
+        {
+            var focusedOption = ctx.Options.FirstOrDefault(x => x.Focused);
+
+            if (focusedOption is not null)
+            {
+                HashEntry[] historyEntries;
+                if (ctx.Command.Name == "eval")
+                    historyEntries = await Setup.Storage.Redis.HashGetAllAsync("evalHistory");
+                else if (ctx.Command.Name == "shell")
+                    historyEntries = await Setup.Storage.Redis.HashGetAllAsync("shellHistory");
+                else
+                    return default;
+                return historyEntries.Where(x => x.Value.ToString().Contains(focusedOption.Value.ToString(), StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(x => Convert.ToDateTime(x.Name.ToString()))
+                    .Select(x => new DiscordAutoCompleteChoice(x.Value.ToString(), x.Value.ToString()))
+                    .Take(25).ToList();
             }
             return default;
         }
