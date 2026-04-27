@@ -31,7 +31,17 @@ internal static class DebugCommands
             return;
         }
 
-        await Setup.Storage.Redis.HashSetAsync("evalHistory", DateTime.UtcNow.ToString(), code);
+        var currentHistoryEntries = await Setup.Storage.Redis.HashGetAllAsync("evalHistory");
+        var matchingEntry = currentHistoryEntries.FirstOrDefault(x => x.Value == code);
+        if (matchingEntry == default)
+        {
+            await Setup.Storage.Redis.HashSetAsync("evalHistory", DateTime.UtcNow.ToString(), code);
+        }
+        else
+        {
+            await Setup.Storage.Redis.HashDeleteAsync("evalHistory", matchingEntry.Name);
+            await Setup.Storage.Redis.HashSetAsync("evalHistory", DateTime.UtcNow.ToString(), matchingEntry.Value);
+        }
 
         try
         {
@@ -128,7 +138,17 @@ internal static class DebugCommands
             return;
         }
 
-        await Setup.Storage.Redis.HashSetAsync("shellHistory", DateTime.UtcNow.ToString(), command);
+        var currentHistoryEntries = await Setup.Storage.Redis.HashGetAllAsync("shellHistory");
+        var matchingEntry = currentHistoryEntries.FirstOrDefault(x => x.Value == command);
+        if (matchingEntry == default)
+        {
+            await Setup.Storage.Redis.HashSetAsync("shellHistory", DateTime.UtcNow.ToString(), command);
+        }
+        else
+        {
+            await Setup.Storage.Redis.HashDeleteAsync("shellHistory", matchingEntry.Name);
+            await Setup.Storage.Redis.HashSetAsync("shellHistory", DateTime.UtcNow.ToString(), matchingEntry.Value);
+        }
 
         var msg = await ctx.GetResponseAsync();
         Setup.State.Caches.CancellationTokens.Add(msg.Id, new CancellationTokenSource());
