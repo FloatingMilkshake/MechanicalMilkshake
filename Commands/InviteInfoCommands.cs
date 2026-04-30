@@ -40,24 +40,27 @@ internal class InviteInfoCommands
 
         var embed = new DiscordEmbedBuilder
         {
-            Title = invite.Guild.VanityUrlCode is null
-                ? $"Invite Info for {invite.Guild.Name}"
-                : $"Invite info for {invite.Guild.Name}\n(discord.gg/{invite.Guild.VanityUrlCode})",
-            //Title = $"Invite Info for {invite.Guild.Name}",
+            Title = $"Invite Info for {invite.Guild.Name}",
             Description = invite.Guild.Description,
             Color = Setup.Constants.BotColor
         };
 
-        if (invite.Guild.VanityUrlCode is null || invite.Code != invite.Guild.VanityUrlCode)
+        if (invite.Guild.VanityUrlCode is not null && invite.Code == invite.Guild.VanityUrlCode)
         {
+            embed.AddField("Expires At", "This is a vanity invite. It never expires.");
+        }
+        else
+        {
+            embed.AddField("This server has a vanity invite!", $"discord.gg/{invite.Guild.VanityUrlCode}");
+
             embed.AddField("Inviter",
                 invite.Inviter is null
                     ? "unknown"
                     : $"{invite.Inviter.GetFullUsername()} (`{invite.Inviter.Id}`)");
 
-            embed.AddField("Expires At",
+            embed.AddField("Invite expires At",
                 invite.ExpiresAt is null
-                    ? "Invite does not expire."
+                    ? "This invite does not expire."
                     : $"<t:{invite.ExpiresAt.Value.ToUnixTimeSeconds()}:F> (<t:{invite.ExpiresAt.Value.ToUnixTimeSeconds()}:R>)");
         }
 
