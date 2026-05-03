@@ -7,7 +7,7 @@ config.dev.json
 db/*
 CommitHash.txt
 CommitMessage.txt
-CommitTime.txt
+CommitTimestamp.txt
 RemoteUrl.txt
 
 .DS_STORE
