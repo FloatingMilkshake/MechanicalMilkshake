@@ -15,7 +15,7 @@ internal static class DebugCommands
     [Description("Evaluate C# code!")]
     public static async Task DebugEvalCommandAsync(SlashCommandContext ctx,
         [SlashAutoCompleteProvider(typeof(DebugHistoryAutoCompleteProvider))]
-        [Parameter("code"), Description("The code to evaluate.")] string code)
+        [Parameter("code"), Description("The code to evaluate.")] string codeOrHistoryEntryId)
     {
         CancellationToken cancellationToken = default;
 
@@ -25,23 +25,15 @@ internal static class DebugCommands
             .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
         var msg = await ctx.GetResponseAsync();
 
+        string code = await ResolveInputAsync(codeOrHistoryEntryId, EvaluatorInputType.CSharp);
+
         if (Setup.Eval.RestrictedTerms.Any(code.Contains))
         {
             await ctx.EditResponseAsync(new DiscordMessageBuilder().WithContent("You can't do that."));
             return;
         }
 
-        var currentHistoryEntries = await Setup.Storage.Redis.HashGetAllAsync("evalHistory");
-        var matchingEntry = currentHistoryEntries.FirstOrDefault(x => x.Value == code);
-        if (matchingEntry == default)
-        {
-            await Setup.Storage.Redis.HashSetAsync("evalHistory", DateTime.UtcNow.ToString(), code);
-        }
-        else
-        {
-            await Setup.Storage.Redis.HashDeleteAsync("evalHistory", matchingEntry.Name);
-            await Setup.Storage.Redis.HashSetAsync("evalHistory", DateTime.UtcNow.ToString(), matchingEntry.Value);
-        }
+        await StoreHistoryEntryAsync(code, EvaluatorInputType.CSharp);
 
         try
         {
@@ -112,7 +104,7 @@ internal static class DebugCommands
     public static async Task DebugShellCommandAsync(SlashCommandContext ctx,
         [SlashAutoCompleteProvider(typeof(DebugHistoryAutoCompleteProvider))]
         [Parameter("command"), Description("The command to run, including any arguments.")]
-        string command)
+        string commandOrHistoryEntryId)
     {
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
             .WithContent("Working on it...")
@@ -121,6 +113,8 @@ internal static class DebugCommands
             ))
             .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false))
         );
+
+        var command = await ResolveInputAsync(commandOrHistoryEntryId, EvaluatorInputType.Shell);
 
         if (Setup.Eval.RestrictedTerms.Any(command.Contains))
             if (!Setup.State.Discord.Client.CurrentApplication.Owners.Contains(ctx.User))
@@ -138,17 +132,7 @@ internal static class DebugCommands
             return;
         }
 
-        var currentHistoryEntries = await Setup.Storage.Redis.HashGetAllAsync("shellHistory");
-        var matchingEntry = currentHistoryEntries.FirstOrDefault(x => x.Value == command);
-        if (matchingEntry == default)
-        {
-            await Setup.Storage.Redis.HashSetAsync("shellHistory", DateTime.UtcNow.ToString(), command);
-        }
-        else
-        {
-            await Setup.Storage.Redis.HashDeleteAsync("shellHistory", matchingEntry.Name);
-            await Setup.Storage.Redis.HashSetAsync("shellHistory", DateTime.UtcNow.ToString(), matchingEntry.Value);
-        }
+        await StoreHistoryEntryAsync(command, EvaluatorInputType.Shell);
 
         var msg = await ctx.GetResponseAsync();
         Setup.State.Caches.CancellationTokens.Add(msg.Id, new CancellationTokenSource());
@@ -751,7 +735,7 @@ internal static class DebugCommands
 
     #endregion commands
 
-    #region '/debug shell' utilities
+    #region eval and shell utilities
 
     private static async Task<ShellCommandResult> RunShellCommandAsync(string command, CancellationToken cancellationToken)
     {
@@ -840,7 +824,60 @@ internal static class DebugCommands
         internal string Error { get; private set; }
     }
 
-    #endregion '/debug shell' utilities
+    private static async Task<string> ResolveInputAsync(string input, EvaluatorInputType inputType)
+    {
+        if (!Setup.Constants.RegularExpressions.DiscordIdPattern.IsMatch(input))
+            return input;
+
+        string redisHashName;
+        if (inputType == EvaluatorInputType.CSharp)
+            redisHashName = "evalHistory";
+        else if (inputType == EvaluatorInputType.Shell)
+            redisHashName = "shellHistory";
+        else
+            throw new ArgumentException("Invalid input type. Unable to read from history.");
+
+        Dictionary<ulong, string> historyEntries = (await Setup.Storage.Redis.HashGetAllAsync(redisHashName))
+            .ToDictionary(x => Convert.ToUInt64(x.Name), x => x.Value.ToString());
+
+        if (historyEntries.TryGetValue(Convert.ToUInt64(input), out string historyEntry))
+            return historyEntry;
+        else
+            return input;
+    }
+
+    private static async Task StoreHistoryEntryAsync(string input, EvaluatorInputType inputType)
+    {
+        string redisHashName;
+        if (inputType == EvaluatorInputType.CSharp)
+            redisHashName = "evalHistory";
+        else if (inputType == EvaluatorInputType.Shell)
+            redisHashName = "shellHistory";
+        else
+            throw new ArgumentException("Invalid input type. Unable to store history entry.");
+
+        HashEntry[] currentHistoryEntries = await Setup.Storage.Redis.HashGetAllAsync(redisHashName);
+        var matchingEntry = currentHistoryEntries.FirstOrDefault(x => x.Value == input);
+        if (matchingEntry == default)
+        {
+            await Setup.Storage.Redis.HashSetAsync(redisHashName, DSharpPlus.Utilities.CreateSnowflake(DateTime.UtcNow), input);
+        }
+        else
+        {
+            await Setup.Storage.Redis.HashDeleteAsync(redisHashName, matchingEntry.Name);
+            await Setup.Storage.Redis.HashSetAsync(redisHashName, DSharpPlus.Utilities.CreateSnowflake(DateTime.UtcNow), matchingEntry.Value);
+        }
+    }
+
+    #endregion eval and shell utilities
+
+    #region enums
+    private enum EvaluatorInputType
+    {
+        CSharp,
+        Shell
+    }
+    #endregion enums
 
     #region choice/autocomplete providers
 
@@ -922,8 +959,8 @@ internal static class DebugCommands
                 else
                     return default;
                 return historyEntries.Where(x => x.Value.ToString().Contains(focusedOption.Value.ToString(), StringComparison.OrdinalIgnoreCase))
-                    .OrderByDescending(x => Convert.ToDateTime(x.Name.ToString()))
-                    .Select(x => new DiscordAutoCompleteChoice(x.Value.ToString(), x.Value.ToString()))
+                    .OrderByDescending(x => x.Name)
+                    .Select(x => new DiscordAutoCompleteChoice(x.Value.ToString().Truncate(100), x.Name.ToString()))
                     .Take(25).ToList();
             }
             return default;
