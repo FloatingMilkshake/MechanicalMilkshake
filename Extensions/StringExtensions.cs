@@ -6,7 +6,7 @@ internal static class StringExtensions
     {
         internal string AsSlashCommandMention()
         {
-            if (char.IsUpper(str[0]) && !str.Contains(' '))
+            if (char.IsUpper(str[0]))
                 // This is probably a context menu command.
                 // Return it in inline code instead of a command mention.
                 return $"`{str}`";
