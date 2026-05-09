@@ -1,11 +1,11 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-[InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-[InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
 internal class UserInfoCommands
 {
     [Command("User Info")]
     [AllowedProcessors(typeof(UserCommandProcessor))]
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
     [SlashCommandTypes(DiscordApplicationCommandType.UserContextMenu)]
     public static async Task UserInfoUserContextMenuCommandAsync(UserCommandContext ctx, DiscordUser targetUser)
     {
@@ -40,6 +40,8 @@ internal class UserInfoCommands
 
     [Command("userinfo")]
     [Description("Returns information about the provided user.")]
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
     public static async Task UserInfoCommandAsync(SlashCommandContext ctx,
         [Parameter("user"), Description("The user to look up information for. Defaults to yourself.")]
         DiscordUser user = null)
