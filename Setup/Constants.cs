@@ -44,6 +44,7 @@ internal static class Constants
         internal static readonly Regex EmojiPattern = new("<(a)?:([A-Za-z0-9_]*):([0-9]*)>");
         internal static readonly Regex DiscordInvitePattern = new(@"discord(?:app)?\.(?:gg|com\/invite)\/([\w+-]+)");
         internal static readonly Regex DiscordIdPattern = new("[0-9]{15,19}");
+        internal static readonly Regex DiscordIdPatternAnchored = new("^[0-9]{15,19}$");
         internal static readonly Regex ReminderIdPattern = new("[0-9]{4}");
 #pragma warning restore SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
     }

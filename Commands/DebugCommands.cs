@@ -826,7 +826,7 @@ internal static class DebugCommands
 
     private static async Task<string> ResolveInputAsync(string input, EvaluatorInputType inputType)
     {
-        if (!Setup.Constants.RegularExpressions.DiscordIdPattern.IsMatch(input))
+        if (!Setup.Constants.RegularExpressions.DiscordIdPatternAnchored.IsMatch(input))
             return input;
 
         string redisHashName;
