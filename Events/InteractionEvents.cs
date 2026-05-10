@@ -630,8 +630,8 @@ internal class InteractionEvents
             // Log to log channel if configured
             if (Setup.State.Process.Configuration.SlashCommandLogChannel is not null)
             {
-                var description = context.Channel.IsPrivate
-                    ? $"{context.User.Username} (`{context.User.Id}`) used {context.Command.GetSlashCommandMention()} in DMs."
+                var description = context.Guild is null
+                    ? $"{context.User.Username} (`{context.User.Id}`) used {context.Command.GetSlashCommandMention()} in DMs or as a user-install command."
                     : $"{context.User.Username} (`{context.User.Id}`) used {context.Command.GetSlashCommandMention()} in `{context.Channel.Name}` (`{context.Channel.Id}`) in \"{context.Guild.Name}\" (`{context.Guild.Id}`).";
 
                 var embed = new DiscordEmbedBuilder()
