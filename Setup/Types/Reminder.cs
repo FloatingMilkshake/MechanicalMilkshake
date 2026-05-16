@@ -90,7 +90,7 @@ internal sealed class Reminder
             return (null, "You can't set a reminder for a time in the past!");
         }
 
-        return (parsedTime, null);
+        return (parsedTime.ToUniversalTime(), null);
     }
 
     internal static async Task<(Setup.Types.Reminder reminder, string error)> GetReminderAsync(string reminderId, ulong requestingUserId)
