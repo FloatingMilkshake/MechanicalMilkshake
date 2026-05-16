@@ -111,7 +111,13 @@ internal class InviteInfoCommands
 
         embed.AddField("Online", invite.ApproximatePresenceCount is null ? "unknown" : invite.ApproximatePresenceCount.ToString(), true);
 
-        embed.WithThumbnail(invite.Guild.IconUrl);
+        string iconUrl;
+        if (invite.Guild.IconUrl.Contains("a_"))
+            iconUrl = invite.Guild.IconUrl.Replace(".jpg", ".gif") + "?size=4096";
+        else
+            iconUrl = invite.Guild.IconUrl + "?size=4096";
+
+        embed.WithThumbnail(iconUrl);
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .AddEmbed(embed)
