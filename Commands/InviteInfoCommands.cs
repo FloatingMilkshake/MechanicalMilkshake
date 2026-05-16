@@ -38,6 +38,22 @@ internal class InviteInfoCommands
             return;
         }
 
+        if (invite.Guild is null)
+        {
+            // thanks Discord...
+
+            if (invite.Code == "discord")
+            {
+                await ctx.FollowupAsync("???");
+            }
+            else
+            {
+                await ctx.FollowupAsync("Congratulations, you win! Where does this invite go? Seriously, please tell me. (Send me a DM!)");
+            }
+
+            return;
+        }
+
         var embed = new DiscordEmbedBuilder
         {
             Title = $"Invite Info for {invite.Guild.Name}",
