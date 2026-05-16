@@ -67,14 +67,17 @@ internal class InviteInfoCommands
         }
         else
         {
-            embed.AddField("This server has a vanity invite!", $"discord.gg/{invite.Guild.VanityUrlCode}");
+            if (invite.Guild.VanityUrlCode is not null)
+            {
+                embed.AddField("This server has a vanity invite!", $"discord.gg/{invite.Guild.VanityUrlCode}");
+            }
 
             embed.AddField("Inviter",
                 invite.Inviter is null
                     ? "unknown"
                     : $"{invite.Inviter.GetFullUsername()} (`{invite.Inviter.Id}`)");
 
-            embed.AddField("Invite expires At",
+            embed.AddField("Expires At",
                 invite.ExpiresAt is null
                     ? "This invite does not expire."
                     : $"<t:{invite.ExpiresAt.Value.ToUnixTimeSeconds()}:F> (<t:{invite.ExpiresAt.Value.ToUnixTimeSeconds()}:R>)");
@@ -90,6 +93,16 @@ internal class InviteInfoCommands
             _ => "unknown"
         };
         embed.AddField("Verification Level", verifLevelDesc);
+
+        var guildFeatures = invite.Guild.Features;
+        if (guildFeatures.Contains("DISCOVERABLE"))
+        {
+            embed.AddField("This server is Discoverable!", "It will appear in [Server Discovery](<https://discord.com/servers/discovery>).");
+        }
+        if (guildFeatures.Contains("MEMBER_VERIFICATION_MANUAL_APPROVAL"))
+        {
+            embed.AddField("This server has Apply to Join enabled!", "New members will need to submit an application and wait for approval before they can join the server.");
+        }
 
         var guildCreationTimestamp = invite.Guild.CreationTimestamp.ToUnixTimeSeconds();
         embed.AddField("Server Created On", $"<t:{guildCreationTimestamp}:F> (<t:{guildCreationTimestamp}:R>)");
