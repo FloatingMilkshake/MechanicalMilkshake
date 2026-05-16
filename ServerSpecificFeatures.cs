@@ -14,7 +14,7 @@ internal static class ServerSpecificFeatures
             if (e.Guild.Id == 799644062973427743)
             {
                 #region &caption -> #captions
-                if (e.Message.Author.Id == 1031968180974927903 &&
+                if (e.Message.Author.Id == 1031968180974927903 && string.IsNullOrEmpty(e.Message.Content) &&
                     (e.Message.ReferencedMessage is not null && e.Message.ReferencedMessage.Content.Contains("caption")
                     || (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1).ToListAsync())[0].Content.Contains("caption")))
                 {
