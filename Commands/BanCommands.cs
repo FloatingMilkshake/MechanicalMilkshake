@@ -9,7 +9,10 @@ internal class BanCommands
     public static async Task BanCommandAsync(SlashCommandContext ctx,
         [Parameter("user"), Description("The user to ban.")] DiscordUser userToBan,
         [Parameter("reason"), Description("The reason for the ban.")] [MinMaxLength(maxLength: 1500)]
-        string reason = "No reason provided.")
+        string reason = "No reason provided.",
+        [SlashChoiceProvider(typeof(BanDeleteMessagesChoiceProvider))]
+        [Parameter("delete_messages"), Description("How much of the user's message history to delete. Default: Keep Messages")]
+        string deleteMessages = "0")
     {
         await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true));
 
@@ -58,7 +61,19 @@ internal class BanCommands
             await ctx.Guild.UnbanMemberAsync(userToBan, "Unbanning to ban with new reason");
         }
 
-        await ctx.Guild.BanMemberAsync(userToBan.Id, TimeSpan.Zero, $"Banned by {ctx.User.Username}: {reason}");
+        TimeSpan msgDeleteTimeSpan = deleteMessages switch
+        {
+            "0" => TimeSpan.Zero,
+            "1h" => TimeSpan.FromHours(1),
+            "6h" => TimeSpan.FromHours(6),
+            "12h" => TimeSpan.FromHours(12),
+            "24h" => TimeSpan.FromHours(24),
+            "3d" => TimeSpan.FromDays(3),
+            "7d" => TimeSpan.FromDays(7),
+            _ => TimeSpan.Zero // this should never happen because we use a choice provider, but whatever
+        };
+
+        await ctx.Guild.BanMemberAsync(userToBan.Id, msgDeleteTimeSpan, $"Banned by {ctx.User.Username}: {reason}");
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent("User banned successfully.")
@@ -91,5 +106,21 @@ internal class BanCommands
             .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
         await ctx.Channel.SendMessageAsync(
             $"Successfully unbanned **{userToUnban.GetFullUsername()}**!");
+    }
+
+    private class BanDeleteMessagesChoiceProvider : IChoiceProvider
+    {
+        private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
+        [
+            new("Keep Messages", "0"),
+            new("1 hour", "1h"),
+            new("6 hours", "6h"),
+            new("12 hours", "12h"),
+            new("24 hours", "24h"),
+            new("3 days", "3d"),
+            new("7 days", "7d")
+        ];
+
+        public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
     }
 }
