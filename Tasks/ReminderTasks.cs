@@ -23,7 +23,7 @@ internal class ReminderTasks
 
         foreach (var reminder in reminders.Select(r => JsonConvert.DeserializeObject<Setup.Types.Reminder>(r.Value)))
         {
-            if (reminder.TriggerTime > DateTime.Now)
+            if (reminder.TriggerTime > DateTime.UtcNow)
                 continue;
 
             DiscordChannel reminderChannel = default;
