@@ -2,7 +2,7 @@
 
 internal class UserInfoCommands
 {
-    [Command("User Info")]
+    [Command("Show User Info")]
     [AllowedProcessors(typeof(UserCommandProcessor))]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
     [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]

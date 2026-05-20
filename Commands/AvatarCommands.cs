@@ -2,7 +2,7 @@
 
 internal class AvatarCommands
 {
-    [Command("Avatar")]
+    [Command("Show Avatar")]
     [AllowedProcessors(typeof(UserCommandProcessor))]
     [SlashCommandTypes(DiscordApplicationCommandType.UserContextMenu)]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
@@ -41,6 +41,7 @@ internal class AvatarCommands
 
     [Command("avatar")]
     [Description("Returns the avatar of the provided user. Defaults to yourself if no user is provided.")]
+    [AllowedProcessors(typeof(SlashCommandProcessor))]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
     [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
     public static async Task AvatarCommandAsync(SlashCommandContext ctx,
