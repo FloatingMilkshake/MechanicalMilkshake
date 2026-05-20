@@ -9,7 +9,7 @@ internal class UserInfoCommands
     [SlashCommandTypes(DiscordApplicationCommandType.UserContextMenu)]
     public static async Task UserInfoUserContextMenuCommandAsync(UserCommandContext ctx, DiscordUser targetUser)
     {
-        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
+        await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true));
 
         DiscordEmbed userInfoEmbed;
 
@@ -34,8 +34,8 @@ internal class UserInfoCommands
 
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
             .WithContent($"User Info for **{targetUser.GetFullUsername()}**")
-            .AddEmbed(userInfoEmbed).AsEphemeral(true)
-            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
+            .AddEmbed(userInfoEmbed)
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
     }
 
     [Command("userinfo")]
