@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake.Events;
+﻿using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace MechanicalMilkshake.Events;
 
 internal class InteractionEvents
 {
@@ -475,20 +477,15 @@ internal class InteractionEvents
                             return;
                         }
 
-                        DateTime newTriggerTime = default;
+                        DateTime? newTriggerTime = default;
                         if (!string.IsNullOrWhiteSpace(time))
                         {
-                            try
+                            (newTriggerTime, var error) = Setup.Types.Reminder.ParseTriggerTime(time);
+                            if (newTriggerTime is null)
                             {
-                                newTriggerTime = HumanDateParser.HumanDateParser.Parse(time);
-                            }
-                            catch (HumanDateParser.ParseException)
-                            {
-                                // Parse error, either because the user did it wrong or because HumanDateParser is weird
-
-                                await e.Interaction.CreateFollowupMessageAsync(
-                                    new DiscordFollowupMessageBuilder().WithContent(
-                                        $"I couldn't parse \"{time}\" as a time! Please try again."));
+                                await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
+                                    .WithContent(error)
+                                    .AsEphemeral(ephemeral: e.Interaction.ShouldUseEphemeralResponse(true)));
                                 return;
                             }
                         }
@@ -499,7 +496,7 @@ internal class InteractionEvents
                             reminder.MessageId,
                             reminder.ReminderId,
                             string.IsNullOrWhiteSpace(text) ? reminder.ReminderText : text,
-                            newTriggerTime == default ? reminder.TriggerTime : newTriggerTime,
+                            newTriggerTime == default ? reminder.TriggerTime : newTriggerTime.Value,
                             reminder.SetTime);
 
                         await Setup.Storage.Redis.HashSetAsync("reminders", reminder.ReminderId, JsonConvert.SerializeObject(newReminder));
