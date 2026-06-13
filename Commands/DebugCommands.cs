@@ -783,10 +783,12 @@ internal static class DebugCommands
             result = "The operation was cancelled.";
         }
         if (cancellationToken.IsCancellationRequested)
+        {
             proc.Kill();
 
-        // Wait a bit for the process to be killed
-        await Task.Delay(5000, CancellationToken.None);
+            // Wait a bit for the process to be killed
+            await Task.Delay(5000, CancellationToken.None);
+        }
 
         return new ShellCommandResult(proc.ExitCode, HideSensitiveInfo(result));
     }
