@@ -20,11 +20,7 @@ internal static class DiscordMessageExtensions
 
             var allKeywords = (await Setup.Storage.Redis.HashGetAllAsync("keywords")).Select(k => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(k.Value));
 
-            // Stop! Before we make ANY API calls, does this message even contain any keywords?
-            if (!allKeywords.Any(x => message.Content.Contains(x.Keyword)))
-                return;
-
-            // It does. For any matched keywords, is the target user in the guild?
+            // For any matched keywords, is the target user in teh guild?
             foreach (var matchedKeyword in allKeywords.Where(x => message.Content.Contains(x.Keyword, StringComparison.OrdinalIgnoreCase)))
             {
                 try
