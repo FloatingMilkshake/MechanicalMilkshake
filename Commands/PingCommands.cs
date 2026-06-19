@@ -12,13 +12,12 @@ internal class PingCommands
             .WithContent("Ping!")
             .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
 
-        var websocketPing = ctx.Client.GetConnectionLatency(
-            ctx.Channel.IsPrivate
-                ? ctx.Guild?.Id ?? Setup.State.Discord.HomeServer.Id
-                : Setup.State.Discord.HomeServer.Id
-            ).TotalMilliseconds;
+        var now = DateTime.UtcNow;
+
         var msg = await ctx.Interaction.GetOriginalResponseAsync();
-        var interactionLatency = Math.Round((DateTime.UtcNow - msg.CreationTimestamp.UtcDateTime).TotalMilliseconds);
+
+        var websocketPing = ctx.Client.GetConnectionLatency(0).TotalMilliseconds;
+        var interactionLatency = Math.Round((now - msg.CreationTimestamp.UtcDateTime).TotalMilliseconds);
 
         var redisPing = await RedisTasks.CheckRedisConnectionAsync();
 
