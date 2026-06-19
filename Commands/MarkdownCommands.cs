@@ -14,6 +14,33 @@ internal class MarkdownCommands
             .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
     }
 
+    [Command("Show Embed Footer")]
+    [Description("Show the text in an embed's footer.")]
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
+    [SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu)]
+    public static async Task ShowEmbedFooterMessageContextMenuCommandAsync(MessageCommandContext ctx, DiscordMessage targetMessage)
+    {
+        if (targetMessage.Embeds.Count == 0)
+        {
+            await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+                .WithContent("That message doesn't have any embeds!")
+                .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
+            return;
+        }
+
+        var response = "";
+
+        foreach (var embed in targetMessage.Embeds)
+        {
+            response += embed.Footer.Text + "\n";
+        }
+
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
+            .WithContent(response)
+            .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(true)));
+    }
+
     [Command("markdown")]
     [Description("Expose the Markdown formatting behind a message!")]
     [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall)]
