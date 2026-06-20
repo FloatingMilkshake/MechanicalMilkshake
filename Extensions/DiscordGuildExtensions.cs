@@ -9,7 +9,7 @@ internal static class DiscordGuildExtensions
             var message = new DiscordMessageBuilder().WithContent($"Server Info for **{guild.Name}**");
 
             var description = "None";
-            if (guild.Description is not null)
+            if (!string.IsNullOrWhiteSpace(guild.Description))
                 description = guild.Description;
 
             var createdAt = $"{guild.Id.ToUnixTimeSeconds()}";
