@@ -618,10 +618,7 @@ internal static class DebugCommands
 
     [Command("checks")]
     [Description("Run the bot's timed checks manually.")]
-    public static async Task DebugChecksCommandAsync(SlashCommandContext ctx,
-        [Parameter("checks"), Description("The checks that should be run.")]
-        [SlashChoiceProvider(typeof(DebugChecksChoiceProvider))]
-        string checksToRun)
+    public static async Task DebugChecksCommandAsync(SlashCommandContext ctx)
     {
         await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
@@ -632,21 +629,7 @@ internal static class DebugCommands
         int numRemindersFailed = default;
         double redisPing = default;
 
-        switch (checksToRun)
-        {
-            case "all":
-                (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed) =
-                    await ReminderTasks.CheckRemindersAsync();
-                redisPing = await RedisTasks.CheckRedisConnectionAsync();
-                break;
-            case "reminders":
-                (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed) =
-                    await ReminderTasks.CheckRemindersAsync();
-                break;
-            case "redisConnection":
-                redisPing = await RedisTasks.CheckRedisConnectionAsync();
-                break;
-        }
+        (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed) = await ReminderTasks.CheckRemindersAsync();
 
         // templates for check result messages
 
@@ -657,24 +640,9 @@ internal static class DebugCommands
                                     + $"Sent: `{numRemindersSent}`; "
                                     + $"Failed: `{numRemindersFailed}`";
 
-        // redis ping
-        var redisPingResultMessage = $"**Redis ping:** {(double.IsNaN(redisPing) ? "Unreachable!" : $"`{redisPing}ms`")}";
-
         // set up response msg content
         // include relevant check results (see variables)
-        var response = "Done!\n";
-        switch (checksToRun)
-        {
-            case "all":
-                response += $"{reminderCheckResultMessage}\n{redisPingResultMessage}";
-                break;
-            case "reminders":
-                response += reminderCheckResultMessage;
-                break;
-            case "redisConnection":
-                response += redisPingResultMessage;
-                break;
-        }
+        var response = $"Done!\n{reminderCheckResultMessage}";
 
         // send response
         await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()
@@ -900,18 +868,6 @@ internal static class DebugCommands
         [
             new("Ascending", "asc"),
             new("Descending", "desc")
-        ];
-
-        public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;
-    }
-
-    private class DebugChecksChoiceProvider : IChoiceProvider
-    {
-        private static readonly IReadOnlyList<DiscordApplicationCommandOptionChoice> Choices =
-        [
-            new("All", "all"),
-            new("Reminders", "reminders"),
-            new("Redis Connection", "redisConnection")
         ];
 
         public async ValueTask<IEnumerable<DiscordApplicationCommandOptionChoice>> ProvideAsync(CommandParameter parameter) => Choices;

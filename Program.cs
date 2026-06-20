@@ -115,9 +115,6 @@ internal class Program
         // Reminder check
         await Task.Run(async () => ReminderTasks.ExecuteAsync());
 
-        // Redis connection check
-        await Task.Run(async () => RedisTasks.ExecuteAsync());
-
         // DBots stats update
         await Task.Run(async () => DBotsTasks.ExecuteAsync());
         #endregion recurring tasks

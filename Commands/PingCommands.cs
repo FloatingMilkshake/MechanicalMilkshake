@@ -19,15 +19,12 @@ internal class PingCommands
         var websocketPing = ctx.Client.GetConnectionLatency(0).TotalMilliseconds;
         var interactionLatency = Math.Round((now - msg.CreationTimestamp.UtcDateTime).TotalMilliseconds);
 
-        var redisPing = await RedisTasks.CheckRedisConnectionAsync();
-
         var response = $"Pong!\n"
             + $"Websocket ping: `{websocketPing}ms`\n"
             + $"Interaction latency: `{interactionLatency}ms`\n";
 
         if (Setup.State.Process.Configuration.BotCommanders.Contains(ctx.User.Id.ToString()))
-            response += $"Redis ping: {(double.IsNaN(redisPing) ? "Unreachable!" : $"`{redisPing}ms`")}\n"
-            + $"Heartbeat: `{Setup.State.Process.LastUptimeKumaHeartbeatStatus}`";
+            response += $"Heartbeat: `{Setup.State.Process.LastUptimeKumaHeartbeatStatus}`";
 
         await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(response));
     }
