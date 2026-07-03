@@ -172,7 +172,9 @@ internal class MarkdownCommands
             .Replace("(", @"\(")
             .Replace(")", @"\)")
             .Replace("#", @"\#")
-            .Replace("|", @"\|");
+            .Replace("|", @"\|")
+            .Replace("<", @"\<")
+            .Replace(">", @"\>");
 
         return output.Length > 4000
             ? "Sorry, the output is too long for me to send here!"
