@@ -263,8 +263,7 @@ internal class InteractionEvents
 
                         if (e.User.Id != e.Message.Interaction.User.Id)
                         {
-                            await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
-                                new DiscordInteractionResponseBuilder().WithContent(
+                            await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent(
                                     "Only the person that used this command can cancel it!").AsEphemeral(true));
                             return;
                         }
