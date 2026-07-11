@@ -32,7 +32,7 @@ internal class Program
 #if DEBUG
         clientBuilder.SetLogLevel(LogLevel.Debug);
 #else
-        clientBuilder.SetLogLevel(LogLevel.Information);
+        clientBuilder.SetLogLevel(LogLevel.Debug);
 #endif
         clientBuilder.ConfigureServices(services =>
         {
