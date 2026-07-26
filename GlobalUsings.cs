@@ -17,8 +17,6 @@ global using DSharpPlus.Entities;
 global using DSharpPlus.EventArgs;
 global using DSharpPlus.Exceptions;
 global using DSharpPlus.Extensions;
-global using DSharpPlus.Interactivity;
-global using DSharpPlus.Interactivity.Extensions;
 global using DSharpPlus.Net.Gateway;
 global using HumanDateParser;
 global using Humanizer;

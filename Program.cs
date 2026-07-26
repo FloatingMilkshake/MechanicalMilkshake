@@ -55,10 +55,6 @@ internal class Program
                     .HandleGuildDeleted(GuildEvents.HandleGuildDeletedEventAsync)
                     .HandleGuildDownloadCompleted(GuildEvents.HandleGuildDownloadCompletedEventAsync)
         );
-        clientBuilder.UseInteractivity(new InteractivityConfiguration
-        {
-            Timeout = TimeSpan.FromSeconds(30)
-        });
         clientBuilder.UseCommands((_, extension) =>
         {
             // Use custom TextCommandProcessor to set custom prefixes & disable CommandNotFoundExceptions
