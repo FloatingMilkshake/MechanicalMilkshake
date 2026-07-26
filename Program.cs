@@ -34,6 +34,10 @@ internal class Program
 #else
         clientBuilder.SetLogLevel(LogLevel.Debug);
 #endif
+        clientBuilder.ConfigureServices(services =>
+        {
+            services.Replace<IGatewayController, GatewayController>();
+        });
         clientBuilder.ConfigureExtraFeatures(config =>
         {
             config.LogUnknownEvents = false;
@@ -104,9 +108,6 @@ internal class Program
         #endregion one-off tasks
 
         #region recurring tasks
-        // Uptime Kuma heartbeat
-        await Task.Run(async () => HeartbeatTasks.ExecuteAsync());
-
         // Reminder check
         await Task.Run(async () => ReminderTasks.ExecuteAsync());
 
