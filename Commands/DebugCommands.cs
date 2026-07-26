@@ -611,14 +611,7 @@ internal static class DebugCommands
     {
         await ctx.DeferResponseAsync(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false));
 
-        // declare variables for check results
-        int numRemindersBefore = default;
-        int numRemindersAfter = default;
-        int numRemindersSent = default;
-        int numRemindersFailed = default;
-        double redisPing = default;
-
-        (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed) = await ReminderTasks.CheckRemindersAsync();
+        var (numRemindersBefore, numRemindersAfter, numRemindersSent, numRemindersFailed) = await ReminderTasks.CheckRemindersAsync();
 
         // templates for check result messages
 
