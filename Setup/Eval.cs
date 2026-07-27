@@ -5,7 +5,7 @@ public static class Eval
     internal static readonly List<string> RestrictedTerms = ["poweroff", "shutdown", "reboot", "halt"];
     internal static readonly string[] Imports = ["System", "System.Collections.Generic", "System.Linq",
             "System.Text", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.Commands",
-            "DSharpPlus.Interactivity", "DSharpPlus.Entities", "Microsoft.Extensions.Logging",
+            "DSharpPlus.Entities", "Microsoft.Extensions.Logging",
             "MechanicalMilkshake", "MechanicalMilkshake.Setup.Eval", "MechanicalMilkshake.Setup.Eval.Utilities"];
 
     public class Globals
