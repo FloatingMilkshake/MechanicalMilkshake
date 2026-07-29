@@ -2,6 +2,7 @@
   "botToken": "blahblahblahblahblah",
   "homeChannel": "886067494069100544",
   "homeServer": "799644062973427743",
+  "grafanaLokiUrl": "http://loki:3100",
   "wolframAlphaAppId": "blah-blahblah",
   "botCommanders": [
     "455432936339144705",

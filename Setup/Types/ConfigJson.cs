@@ -8,6 +8,8 @@ internal sealed class ConfigJson
 
     [JsonProperty("homeServer")] internal string HomeServer { get; private set; }
 
+    [JsonProperty("grafanaLokiUrl")] internal string GrafanaLokiUrl { get; private set; }
+
     [JsonProperty("wolframAlphaAppId")] internal string WolframAlphaAppId { get; private set; }
 
     [JsonProperty("botCommanders")] internal string[] BotCommanders { get; private set; }
