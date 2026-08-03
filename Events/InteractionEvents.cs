@@ -1,6 +1,4 @@
-﻿using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace MechanicalMilkshake.Events;
+﻿namespace MechanicalMilkshake.Events;
 
 internal class InteractionEvents
 {
@@ -273,6 +271,25 @@ internal class InteractionEvents
                                 [new DiscordButtonComponent(DiscordButtonStyle.Danger, "button-callback-eval-cancel", "Cancelling...", true)]
                             )));
                         cancellationTokenSource.Cancel();
+
+                        break;
+                    }
+                case "button-callback-reminder-snooze":
+                    {
+                        Setup.State.Caches.ReminderInteractionCache[e.User.Id] = e.Message;
+
+                        if (!e.Message.MentionedUsers.Contains(e.User))
+                        {
+                            await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                                .WithContent("Only the person who set that reminder can snooze it!")
+                                .AsEphemeral(true));
+                            return;
+                        }
+
+                        await e.Interaction.CreateResponseAsync(DiscordInteractionResponseType.Modal, new DiscordModalBuilder()
+                            .WithTitle("Snooze")
+                            .WithCustomId("modal-callback-reminder-snooze")
+                            .AddTextInput(new DiscordTextInputComponent("text-input-callback-reminder-snooze-time"), "Snooze for how long?"));
 
                         break;
                     }
@@ -567,6 +584,53 @@ internal class InteractionEvents
 
                         await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder()
                             .WithContent("Reminder deleted successfully."));
+
+                        break;
+                    }
+                case "modal-callback-reminder-snooze":
+                    {
+                        await e.Interaction.DeferAsync(ephemeral: true);
+
+                        // Parse new time
+                        var (parsedTime, error) = Setup.Types.Reminder.ParseTriggerTime((e.Values["text-input-callback-reminder-snooze-time"] as TextInputModalSubmission).Value);
+                        if (parsedTime is null)
+                        {
+                            await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent(error).AsEphemeral(true));
+                            return;
+                        }
+
+                        // Retrieve reminder data from embed
+                        var reminderMessage = Setup.State.Caches.ReminderInteractionCache[e.Interaction.User.Id];
+                        if (reminderMessage is null)
+                        {
+                            await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent("Something went wrong! Please try again."));
+                            return;
+                        }
+                        var embed = reminderMessage.Embeds[0];
+                        var reminderText = embed.Description;
+                        var reminderContext = embed.Fields.First(x => x.Name == "Context").Value;
+
+                        // Parse out parts of message link
+                        var contextLink = Setup.Constants.RegularExpressions.DiscordUrlPattern.Match(reminderContext);
+                        var guildId = contextLink.Groups[1].Value;
+                        var channelId = Convert.ToUInt64(contextLink.Groups[2].Value);
+                        var messageId = Convert.ToUInt64(contextLink.Groups[3].Value);
+
+                        // Construct new reminder
+                        var reminderId = await Setup.Types.Reminder.GenerateUniqueIdAsync();
+                        var reminder = new Setup.Types.Reminder(e.Interaction.User.Id, channelId, guildId, messageId, reminderId, reminderText, parsedTime.Value, DateTime.UtcNow);
+
+                        await Setup.Storage.Redis.HashSetAsync("reminders", reminderId, JsonConvert.SerializeObject(reminder));
+
+                        await reminderMessage.ModifyAsync(new DiscordMessageBuilder()
+                            .WithContent(reminderMessage.Content)
+                            .AddEmbed(reminderMessage.Embeds[0])
+                            .AddActionRowComponent([new DiscordButtonComponent(DiscordButtonStyle.Secondary, "button-callback-reminder-snooze", "Snoozed", true)])
+                            .WithAllowedMentions([new UserMention(reminder.UserId)]));
+
+                        await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent($"Reminder snoozed for {TimeSpan.FromSeconds(Math.Ceiling((parsedTime.Value - DateTime.UtcNow).TotalSeconds)).Humanize(minUnit: TimeUnit.Second)}!"));
+
+                        Setup.State.Caches.ReminderInteractionCache.Remove(e.Interaction.User.Id);
 
                         break;
                     }

@@ -7,7 +7,7 @@ internal static class Caches
     // <user ID, reminder>; used to pass context between reminder modify interactions
     internal static Dictionary<ulong, Setup.Types.Reminder> ReminderModifyCache = [];
 
-    // <user ID, message from context>; used to pass context to modal handling (from "Remind Me About This" ctx menu cmd)
+    // <user ID, message from context>; used to pass context to modal handling
     internal static Dictionary<ulong, DiscordMessage> ReminderInteractionCache = [];
 
     // <confirmation message ID, messages to clear>; used to apss context between /clear and confirmation button

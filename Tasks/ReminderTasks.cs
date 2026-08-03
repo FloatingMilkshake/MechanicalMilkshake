@@ -95,7 +95,9 @@ internal class ReminderTasks
                 + (string.IsNullOrWhiteSpace(reminder.ReminderText) ? "" : $"\n> {reminder.ReminderText}")
                 + $"\n> **Context:** {reminder.GetJumpLink()}");
         }
-        await channel.SendMessageAsync(messageToSend.WithAllowedMentions([new UserMention(reminder.UserId)]));
+        await channel.SendMessageAsync(messageToSend
+            .AddActionRowComponent([new DiscordButtonComponent(DiscordButtonStyle.Secondary, "button-callback-reminder-snooze", "Snooze")])
+            .WithAllowedMentions([new UserMention(reminder.UserId)]));
     }
 
     private static async Task SendReminderToDmAsync(Setup.Types.Reminder reminder)
