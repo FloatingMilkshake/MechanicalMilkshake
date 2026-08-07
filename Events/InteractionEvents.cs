@@ -628,7 +628,7 @@ internal class InteractionEvents
                             .AddActionRowComponent([new DiscordButtonComponent(DiscordButtonStyle.Secondary, "button-callback-reminder-snooze", "Snoozed", true)])
                             .WithAllowedMentions([new UserMention(reminder.UserId)]));
 
-                        await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent($"Reminder snoozed for {TimeSpan.FromSeconds(Math.Ceiling((parsedTime.Value - DateTime.UtcNow).TotalSeconds)).Humanize(minUnit: TimeUnit.Second)}!"));
+                        await e.Interaction.CreateFollowupMessageAsync(new DiscordFollowupMessageBuilder().WithContent($"Reminder snoozed for {TimeSpan.FromSeconds(Math.Ceiling((parsedTime.Value - DateTime.UtcNow).TotalSeconds)).Humanize()}!"));
 
                         Setup.State.Caches.ReminderInteractionCache.Remove(e.Interaction.User.Id);
 

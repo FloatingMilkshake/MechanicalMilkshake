@@ -4,6 +4,17 @@ internal static class StringExtensions
 {
     extension(string str)
     {
+        internal string Truncate(int length, string truncator = "…")
+        {
+            if (string.IsNullOrEmpty(str))
+                return string.Empty;
+
+            if (str.Length < length - truncator.Length)
+                return str;
+
+            return str[.. (length - truncator.Length)] + truncator;
+        }
+
         internal string AsSlashCommandMention()
         {
             if (char.IsUpper(str[0]))
