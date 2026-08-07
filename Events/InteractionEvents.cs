@@ -406,7 +406,7 @@ internal class InteractionEvents
                         DateTime time;
                         try
                         {
-                            time = HumanDateParser.HumanDateParser.Parse(timeInput);
+                            time = HumanDateParser.HumanDateParser.Parse(timeInput).ToUniversalTime();
                         }
                         catch (HumanDateParser.ParseException)
                         {
