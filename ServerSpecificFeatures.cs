@@ -28,7 +28,7 @@ internal static class ServerSpecificFeatures
 #if DEBUG
             if (e.Guild.Id == 799644062973427743) // my server
             {
-                await PatchTuesdayAnnouncementCheck(e, 455432936339144705, 1409289579139305573);
+                await PatchTuesdayAnnouncementCheck(e, 944784076735414342, 1409289579139305573);
             }
 #else
             if (e.Guild.Id == 438781053675634713) // not my server
