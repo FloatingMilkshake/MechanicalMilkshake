@@ -6,13 +6,24 @@ internal static class StringExtensions
     {
         internal string Truncate(int length, string truncator = "…")
         {
+            string truncated;
+
             if (string.IsNullOrEmpty(str))
-                return string.Empty;
-
-            if (str.Length < length - truncator.Length)
-                return str;
-
-            return str[.. (length - truncator.Length)] + truncator;
+            {
+                truncated = string.Empty;
+            }
+            else if (str.Length < length - truncator.Length)
+            {
+                truncated = str;
+            }
+            else
+            {
+                truncated = str[.. (length - truncator.Length)];
+                if (str.Trim().EndsWith("```"))
+                    truncated = truncated[.. (truncated.Length - 4)] + "\n```";
+            }
+            
+            return truncated;
         }
 
         internal string AsSlashCommandMention()

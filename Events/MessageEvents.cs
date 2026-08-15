@@ -86,7 +86,7 @@ internal class MessageEvents
             Color = DiscordColor.Red
         };
         embed.AddField("Message", message.JumpLink.ToString());
-        embed.AddField("Exception", $"```\n{ex.GetType()}: {ex.Message}\n```");
+        embed.AddField("Exception", $"```\n{ex.GetType()}: {ex.Message}\n```".Truncate(1024));
 
         await Setup.State.Discord.Channels.Home.SendMessageAsync(embed);
 
