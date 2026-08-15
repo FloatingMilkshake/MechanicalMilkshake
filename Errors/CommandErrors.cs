@@ -71,8 +71,11 @@ internal class CommandErrors
                 }
             default:
                 {
-                    await context.Interaction.SmartRespondAsync("An unexpected error occurred while running this command! Please try again." +
-                        " If you keep seeing this, please contact a bot owner for help!");
+                    if (Setup.State.Discord.Client.CurrentApplication.Owners.Contains(e.Context.User))
+                        await context.Interaction.SmartRespondAsync($"Command threw exception:\n```\n{e.Exception.GetType()}: {e.Exception.Message}\n```".Truncate(2000));
+                    else
+                        await context.Interaction.SmartRespondAsync("An unexpected error occurred while running this command! Please try again." +
+                            " If you keep seeing this, please contact a bot owner for help!");
                     break;
                 }
         }
