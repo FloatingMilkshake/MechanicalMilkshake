@@ -1,71 +1,71 @@
 ﻿namespace MechanicalMilkshake.Setup.Types;
 
-internal sealed class MessageCache
+public sealed class MessageCache
 {
-    internal MessageCache()
+    public MessageCache()
     {
         Messages = [];
     }
 
-    internal bool TryGetMessage(ulong messageId, out CachedMessage message)
+    public bool TryGetMessage(ulong messageId, out CachedMessage message)
     {
         message = GetMessage(messageId);
         return message != null;
     }
 
-    internal bool TryGetMessageByChannel(ulong channelId, out CachedMessage message)
+    public bool TryGetMessageByChannel(ulong channelId, out CachedMessage message)
     {
         message = GetMessageByChannel(channelId);
         return message != null;
     }
 
-    internal bool TryGetMessageByAuthor(ulong authorId, out CachedMessage message)
+    public bool TryGetMessageByAuthor(ulong authorId, out CachedMessage message)
     {
         message = GetMessageByAuthor(authorId);
         return message != null;
     }
 
-    internal CachedMessage GetMessage(ulong messageId)
+    public CachedMessage GetMessage(ulong messageId)
     {
         return Messages.Find(x => x.MessageId == messageId);
     }
 
-    internal CachedMessage GetMessageByChannel(ulong channelId)
+    public CachedMessage GetMessageByChannel(ulong channelId)
     {
         return Messages.Find(x => x.ChannelId == channelId);
     }
 
-    internal CachedMessage GetMessageByAuthor(ulong authorId)
+    public CachedMessage GetMessageByAuthor(ulong authorId)
     {
         return Messages.Find(x => x.AuthorId == authorId);
     }
 
-    internal CachedMessage GetNewestMessage(int skip = 0)
+    public CachedMessage GetNewestMessage(int skip = 0)
     {
         return GetAllMessages().OrderByDescending(m => m.MessageId).Skip(skip).First();
     }
 
-    internal CachedMessage GetOldestMessage(int skip = 0)
+    public CachedMessage GetOldestMessage(int skip = 0)
     {
         return GetAllMessages().OrderBy(m => m.MessageId).Skip(skip).First();
     }
 
-    internal List<CachedMessage> GetAllMessages()
+    public List<CachedMessage> GetAllMessages()
     {
         return Messages;
     }
 
-    internal int Count()
+    public int Count()
     {
         return Messages.Count;
     }
 
-    internal int Count(Func<CachedMessage, bool> predicate)
+    public int Count(Func<CachedMessage, bool> predicate)
     {
         return Messages.Count(predicate);
     }
 
-    internal int GetUniqueChannelCount()
+    public int GetUniqueChannelCount()
     {
         List<ulong> uniqueChannelIds = [];
 
@@ -78,7 +78,7 @@ internal sealed class MessageCache
         return uniqueChannelIds.Count;
     }
 
-    internal int GetUniqueGuildCount()
+    public int GetUniqueGuildCount()
     {
         List<ulong> uniqueGuildIds = [];
 
@@ -92,7 +92,7 @@ internal sealed class MessageCache
         return uniqueGuildIds.Count;
     }
 
-    internal int GetUniqueAuthorCount()
+    public int GetUniqueAuthorCount()
     {
         List<ulong> uniqueAuthorIds = [];
 
@@ -105,7 +105,7 @@ internal sealed class MessageCache
         return uniqueAuthorIds.Count;
     }
 
-    internal void AddMessage(DiscordMessage message)
+    public void AddMessage(DiscordMessage message)
     {
         if (TryGetMessageByChannel(message.ChannelId, out var _))
             RemoveChannel(message.ChannelId);
@@ -113,48 +113,48 @@ internal sealed class MessageCache
         Messages.Add(new CachedMessage(message));
     }
 
-    internal void RemoveMessage(ulong messageId)
+    public void RemoveMessage(ulong messageId)
     {
         Messages.RemoveAll(x => x.MessageId == messageId);
     }
 
-    internal void RemoveChannel(ulong channelId)
+    public void RemoveChannel(ulong channelId)
     {
         Messages.RemoveAll(x => x.ChannelId == channelId);
     }
 
-    internal void RemoveAuthor(ulong authorId)
+    public void RemoveAuthor(ulong authorId)
     {
         Messages.RemoveAll(x => x.AuthorId == authorId);
     }
 
-    private List<CachedMessage> Messages { get; }
+    public List<CachedMessage> Messages { get; }
 
-    internal sealed class CachedMessage
+    public sealed class CachedMessage
     {
-        internal ulong ChannelId { get; private set; }
-        internal ulong MessageId { get; private set; }
-        internal ulong AuthorId { get; private set; }
+        public ulong ChannelId { get; set; }
+        public ulong MessageId { get; set; }
+        public ulong AuthorId { get; set; }
 
-        internal CachedMessage(DiscordMessage message)
+        public CachedMessage(DiscordMessage message)
         {
             ChannelId = message.ChannelId;
             MessageId = message.Id;
             AuthorId = message.Author.Id;
         }
 
-        internal string GetTimestamp()
+        public string GetTimestamp()
         {
             return $"<t:{MessageId.ToUnixTimeSeconds()}:f>";
         }
 
-        internal async Task<string> GetMessageLinkAsync()
+        public async Task<string> GetMessageLinkAsync()
         {
             var guildId = (await Setup.State.Discord.Client.GetChannelAsync(ChannelId)).GuildId;
             return $"https://discord.com/channels/{guildId}/{ChannelId}/{MessageId}";
         }
 
-        internal async Task<string> GetInformationAsync()
+        public async Task<string> GetInformationAsync()
         {
             DiscordChannel channel = default;
             DiscordUser author = default;
