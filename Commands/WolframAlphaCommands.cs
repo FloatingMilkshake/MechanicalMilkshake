@@ -65,7 +65,7 @@ internal class WolframAlphaCommands
         if (queryType == WolframAlphaQueryType.Text)
         {
             var textApiResponse = await Setup.Constants.HttpClient
-                .GetAsync($"https://api.wolframalpha.com/v1/result?appid={Setup.State.Process.Configuration.WolframAlphaAppId}&i={queryEncoded}");
+                .GetAsync($"https://api.wolframalpha.com/v1/result?appid={Environment.GetEnvironmentVariable("WOLFRAM_ALPHA_APP_ID")}&i={queryEncoded}");
             if (textApiResponse.IsSuccessStatusCode)
                 return (true, await textApiResponse.Content.ReadAsStringAsync(), null);
             else
@@ -74,7 +74,7 @@ internal class WolframAlphaCommands
         else if (queryType == WolframAlphaQueryType.Image)
         {
             var imageApiResponse = await Setup.Constants.HttpClient
-                .GetAsync($"https://api.wolframalpha.com/v1/simple?appid={Setup.State.Process.Configuration.WolframAlphaAppId}&i={queryEncoded}");
+                .GetAsync($"https://api.wolframalpha.com/v1/simple?appid={Environment.GetEnvironmentVariable("WOLFRAM_ALPHA_APP_ID")}&i={queryEncoded}");
             if (imageApiResponse.IsSuccessStatusCode)
                 return (true, null, new MemoryStream(await imageApiResponse.Content.ReadAsByteArrayAsync()));
             else

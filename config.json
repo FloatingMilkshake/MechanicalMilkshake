@@ -1,0 +1,22 @@
+{
+  "homeChannel": "1493428035574042764",
+  "homeServer": "799644062973427743",
+  "grafanaLokiUrl": "http://100.91.126.77:3100",
+  "botCommanders": [
+    "455432936339144705",
+    "795484125184131073",
+    "455428041586376729"
+  ],
+  "useServerSpecificFeatures": true,
+  "feedbackChannel": "1493380989421097031",
+  "ratelimitCautionChannels": [
+    "356555058197823488",
+    "799644063443845180"
+  ],
+  "slashCommandLogChannel": "1037044194860085318",
+  "slashCommandLogExcludedGuilds": [
+    "1007457740655968327"
+  ],
+  "guildLogChannel": "1493380759531290754",
+  "doDbotsStatsPosting": true
+}

@@ -4,7 +4,7 @@ internal class HeartbeatTasks
 {
     internal static async Task ExecuteAsync()
     {
-        if (Setup.State.Process.Configuration.UptimeKumaHeartbeatUrl is null or "") return;
+        if (Environment.GetEnvironmentVariable("UPTIME_KUMA_HEARTBEAT_URL") is null or "") return;
 
         while (true)
         {
@@ -21,7 +21,7 @@ internal class HeartbeatTasks
                 return;
 
             var ping = Setup.State.Discord.Client.GetConnectionLatency(0).Milliseconds;
-            var heartbeatResponse = await Setup.Constants.HttpClient.GetAsync($"{Setup.State.Process.Configuration.UptimeKumaHeartbeatUrl}{ping}");
+            var heartbeatResponse = await Setup.Constants.HttpClient.GetAsync($"{Environment.GetEnvironmentVariable("UPTIME_KUMA_HEARTBEAT_URL")}{ping}");
             if (heartbeatResponse.IsSuccessStatusCode && Setup.State.Discord.Client.Logger.IsEnabled(LogLevel.Debug))
                 Setup.State.Discord.Client.Logger.LogDebug("Successfully sent Uptime Kuma heartbeat with ping {ping}ms", ping);
             else if (!heartbeatResponse.IsSuccessStatusCode)

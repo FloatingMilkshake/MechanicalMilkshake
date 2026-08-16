@@ -746,11 +746,11 @@ internal static class DebugCommands
     private static string HideSensitiveInfo(string input)
     {
         const string redacted = "[redacted]";
-        var output = input.Replace(Setup.State.Process.Configuration.BotToken, redacted);
-        if (!string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.WolframAlphaAppId))
-            output = output.Replace(Setup.State.Process.Configuration.WolframAlphaAppId, redacted);
-        if (!string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.DbotsApiToken))
-            output = output.Replace(Setup.State.Process.Configuration.DbotsApiToken, redacted);
+        var output = input.Replace(Environment.GetEnvironmentVariable("BOT_TOKEN"), redacted);
+        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("WOLFRAM_ALPHA_APP_ID")))
+            output = output.Replace(Environment.GetEnvironmentVariable("WOLFRAM_ALPHA_APP_ID"), redacted);
+        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DBOTS_API_TOKEN")))
+            output = output.Replace(Environment.GetEnvironmentVariable("DBOTS_API_TOKEN"), redacted);
 
         return output;
     }

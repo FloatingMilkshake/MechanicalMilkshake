@@ -22,8 +22,8 @@ This is the easiest way to run the bot yourself if you just want to run it and d
 First, you must have Docker installed. If you do not have it installed already, follow the instructions [here](https://docs.docker.com/engine/install/) to install Docker. Once Docker is installed:
 
 - Clone the repo
-- Copy `config.example.json` to `config.json`
-- In `config.json`, provide values for at least `botToken`, `homeChannel` and `homeServer`. Other settings are optional, but some functionality may not work without them. If you're not sure about something, see the [configuration documentation](CONFIG.md) or feel free to contact me!
+- Create a `.env` file and set a value for `BOT_TOKEN` with your Discord bot token, like this: `BOT_TOKEN=YOURTOKENHERE`
+- In `config.json`, provide values for at least `homeChannel` and `homeServer`. Other settings are optional, but some functionality may not work without them. If you're not sure about something, see the [configuration documentation](CONFIG.md) or feel free to contact me!
 - Run `docker compose up -d`
 
 ### Without Docker (for development)
@@ -32,10 +32,10 @@ This is the way to go if you intend on working on development.
 > You will need to have Redis installed to run the bot this way. If you do not already have it installed, I recommend [this guide](https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/install-redis-on-linux/) for Linux, [this guide](https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/install-redis-on-mac-os/) for macOS, and [this port](https://github.com/tporadowski/redis) for Windows.
 
 - Clone the repo
-- Copy `config.example.json` to `config.dev.json`
-- In `config.json`, provide values for at least `botToken`, `homeChannel` and `homeServer`. Other settings are optional, but some functionality may not work without them. If you're not sure about something, see the [configuration documentation](CONFIG.md) or feel free to contact me!
+- Set the `BOT_TOKEN` environment variable to your Discord bot token
+- In `config.json`, provide values for at least `homeChannel` and `homeServer`. Other settings are optional, but some functionality may not work without them. If you're not sure about something, see the [configuration documentation](CONFIG.md) or feel free to contact me!
 - Make sure Redis is running (probably `sudo systemctl start redis-server` on Linux, `brew services start redis` on macOS, or `sc start redis` on Windows)
-- Run the bot with your IDE
+- Run the bot with your IDE, or run `dotnet build -c Debug && dotnet run -c Debug`
 
 ## Contributing
 Feel free to open an issue or PR if you notice anything that seems wrong, or if you have a suggestion! I'm all ears. However, please note that I have some [Contribution Guidelines](CONTRIBUTING.md).

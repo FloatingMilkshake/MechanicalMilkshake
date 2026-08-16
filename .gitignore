@@ -2,7 +2,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/linux,windows,dotnetcore,visualstudio,visualstudiocode,csharp
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,windows,dotnetcore,visualstudio,visualstudiocode,csharp
 
-config.json
+.env
 config.dev.json
 db/*
 CommitHash.txt

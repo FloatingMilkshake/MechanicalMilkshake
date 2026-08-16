@@ -1,10 +1,16 @@
 {
     "configurations": [
     {
-        "name": "C#: Debug",
-        "type": "dotnet",
+        "name": ".NET Core Launch (console)",
+        "type": "coreclr",
         "request": "launch",
-        "projectPath": "${workspaceFolder}/MechanicalMilkshake.csproj"
+        "preLaunchTask": "build",
+        "program": "${workspaceFolder}/bin/Debug/net10.0/MechanicalMilkshake.dll",
+        "args": [],
+        "cwd": "${workspaceFolder}",
+        "stopAtEntry": false,
+        "console": "internalConsole",
+        "envFile": "${workspaceFolder}/.env"
     }
     ]
 }

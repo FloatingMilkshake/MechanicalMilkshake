@@ -16,13 +16,13 @@ internal class Program
 
         if (string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.HomeChannel) ||
             string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.HomeServer) ||
-            string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.BotToken))
+            string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("BOT_TOKEN")))
         {
-            Console.WriteLine("You are missing required values in your config.json file! Please ensure 'botToken', 'homeServer' and 'homeChannel' are set.");
+            Console.WriteLine("You are missing required configuration! Please ensure the BOT_TOKEN environment variable, and 'homeServer' and 'homeChannel' in config.json, are set correctly.");
             Environment.Exit(1);
         }
 
-        if (string.IsNullOrEmpty(Setup.State.Process.Configuration.UptimeKumaHeartbeatUrl))
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("UPTIME_KUMA_HEARTBEAT_URL")))
             Setup.State.Process.LastUptimeKumaHeartbeatStatus = "disabled";
         #endregion read config.json
 
@@ -47,7 +47,7 @@ internal class Program
         #endregion set up logging
 
         #region set up Discord client
-        var clientBuilder = DiscordClientBuilder.CreateDefault(Setup.State.Process.Configuration.BotToken,
+        var clientBuilder = DiscordClientBuilder.CreateDefault(Environment.GetEnvironmentVariable("BOT_TOKEN"),
             DiscordIntents.AllUnprivileged.AddIntent(DiscordIntents.MessageContents));
         clientBuilder.ConfigureLogging(config =>
         {
@@ -194,17 +194,17 @@ internal class Program
             }
         }
 
-        if (string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.WolframAlphaAppId))
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("WOLFRAM_ALPHA_APP_ID")))
         {
             Setup.State.Discord.Client.Logger.LogWarning("WolframAlpha commands disabled due to missing App ID.");
         }
 
-        if (string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.UptimeKumaHeartbeatUrl))
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("UPTIME_KUMA_HEARTBEAT_URL")))
         {
             Setup.State.Discord.Client.Logger.LogWarning("Uptime Kuma heartbeats disabled due to missing push URL.");
         }
 
-        if (string.IsNullOrWhiteSpace(Setup.State.Process.Configuration.DbotsApiToken))
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DBOTS_API_TOKEN")))
         {
             Setup.State.Discord.Client.Logger.LogWarning("DBots stats posting disabled due to missing configuration.");
         }
