@@ -1,8 +1,8 @@
 ﻿namespace MechanicalMilkshake.Setup.State;
 
-internal static class Caches
+public static class Caches
 {
-    internal static readonly Types.MessageCache MessageCache = new();
+    public static readonly Types.MessageCache MessageCache = new();
 
     // <user ID, reminder>; used to pass context between reminder modify interactions
     internal static Dictionary<ulong, Setup.Types.Reminder> ReminderModifyCache = [];
