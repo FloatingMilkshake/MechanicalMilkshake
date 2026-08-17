@@ -451,7 +451,7 @@ internal static class DebugCommands
 
             var cachedMessagesCount = Setup.State.Caches.MessageCache.Count();
             var uniqueChannelsCount = Setup.State.Caches.MessageCache.GetUniqueChannelCount();
-            var uniqueGuildsCount = Setup.State.Caches.MessageCache.GetUniqueGuildCount();
+            var uniqueGuildsCount = await Setup.State.Caches.MessageCache.GetUniqueGuildCountAsync();
             var uniqueAuthorsCount = Setup.State.Caches.MessageCache.GetUniqueAuthorCount();
 
             await ctx.FollowupAsync(new DiscordFollowupMessageBuilder()

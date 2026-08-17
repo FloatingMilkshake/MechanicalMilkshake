@@ -78,13 +78,15 @@ public sealed class MessageCache
         return uniqueChannelIds.Count;
     }
 
-    public int GetUniqueGuildCount()
+    public async Task<int> GetUniqueGuildCountAsync()
     {
         List<ulong> uniqueGuildIds = [];
 
         foreach (var cachedMessage in GetAllMessages())
         {
-            var guildId = Setup.State.Discord.Client.Guilds.Values.First(g => g.Channels.Any(c => c.Value.Id == cachedMessage.ChannelId)).Id;
+            var guildId = Setup.State.Discord.Client.Guilds.Values.FirstOrDefault(g => g.Channels.Any(c => c.Value.Id == cachedMessage.ChannelId)).Id;
+            if (guildId == default)
+                guildId = (await Setup.State.Discord.Client.GetChannelAsync(cachedMessage.ChannelId)).Guild.Id;
             if (!uniqueGuildIds.Contains(guildId))
                 uniqueGuildIds.Add(guildId);
         }
