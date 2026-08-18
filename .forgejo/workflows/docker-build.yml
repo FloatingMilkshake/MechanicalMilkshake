@@ -5,15 +5,11 @@ on:
   pull_request:
 
 env:
-  SHOULD_PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+  SHOULD_PUSH: ${{ forgejo.event_name == 'push' && forgejo.ref == 'refs/heads/main' }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -22,9 +18,9 @@ jobs:
         if: ${{ env.SHOULD_PUSH }}
         uses: docker/login-action@v4
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: git.milkshake.services
+          username: ${{ forgejo.actor }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -33,6 +29,6 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          platforms: linux/amd64, linux/arm64
+          platforms: linux/amd64
           push: ${{ env.SHOULD_PUSH }}
-          tags: ghcr.io/floatingmilkshake/mechanicalmilkshake:latest
+          tags: git.milkshake.services/floatingmilkshake/mechanicalmilkshake:latest
