@@ -84,7 +84,7 @@ public sealed class MessageCache
 
         foreach (var cachedMessage in GetAllMessages())
         {
-            var guildId = Setup.State.Discord.Client.Guilds.Values.FirstOrDefault(g => g.Channels.Any(c => c.Value.Id == cachedMessage.ChannelId)).Id;
+            var guildId = Setup.State.Discord.Client.Guilds.Values.FirstOrDefault(g => g.Channels.Any(c => c.Value.Id == cachedMessage.ChannelId))?.Id ?? default;
             if (guildId == default)
                 guildId = (await Setup.State.Discord.Client.GetChannelAsync(cachedMessage.ChannelId)).Guild.Id;
             if (!uniqueGuildIds.Contains(guildId))
