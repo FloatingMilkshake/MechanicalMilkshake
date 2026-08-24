@@ -1,7 +1,7 @@
 version: '2.3'
 services:
   bot:
-    image: ghcr.io/floatingmilkshake/mechanicalmilkshake
+    image: git.milkshake.services/floatingmilkshake/mechanicalmilkshake
     depends_on:
       redis:
         condition: service_healthy
