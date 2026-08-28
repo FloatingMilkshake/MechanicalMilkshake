@@ -14,6 +14,8 @@ internal class GuildEvents
     {
         if (Setup.State.Discord.Channels.GuildLogs is not null)
             await SendGuildEventLogEmbed(Setup.State.Discord.Channels.GuildLogs, e.Guild, GuildEventType.Leave);
+
+        Setup.State.Caches.MessageCache.RemoveGuild(e.Guild.Id);
     }
 
     internal static async Task HandleGuildDownloadCompletedEventAsync(DiscordClient _, GuildDownloadCompletedEventArgs __)

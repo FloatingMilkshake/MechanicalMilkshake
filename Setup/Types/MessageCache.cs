@@ -78,17 +78,14 @@ public sealed class MessageCache
         return uniqueChannelIds.Count;
     }
 
-    public async Task<int> GetUniqueGuildCountAsync()
+    public int GetUniqueGuildCount()
     {
-        List<ulong> uniqueGuildIds = [];
+        List<ulong?> uniqueGuildIds = [];
 
         foreach (var cachedMessage in GetAllMessages())
         {
-            var guildId = Setup.State.Discord.Client.Guilds.Values.FirstOrDefault(g => g.Channels.Any(c => c.Value.Id == cachedMessage.ChannelId))?.Id ?? default;
-            if (guildId == default)
-                guildId = (await Setup.State.Discord.Client.GetChannelAsync(cachedMessage.ChannelId)).Guild.Id;
-            if (!uniqueGuildIds.Contains(guildId))
-                uniqueGuildIds.Add(guildId);
+            if (!uniqueGuildIds.Contains(cachedMessage.GuildId))
+                uniqueGuildIds.Add(cachedMessage.GuildId);
         }
 
         return uniqueGuildIds.Count;
@@ -130,16 +127,23 @@ public sealed class MessageCache
         Messages.RemoveAll(x => x.AuthorId == authorId);
     }
 
+    public void RemoveGuild(ulong guildId)
+    {
+        Messages.RemoveAll(x => x.GuildId == guildId);
+    }
+
     public List<CachedMessage> Messages { get; }
 
     public sealed class CachedMessage
     {
+        public ulong? GuildId { get; set; }
         public ulong ChannelId { get; set; }
         public ulong MessageId { get; set; }
         public ulong AuthorId { get; set; }
 
         public CachedMessage(DiscordMessage message)
         {
+            GuildId = message.Channel.GuildId;
             ChannelId = message.ChannelId;
             MessageId = message.Id;
             AuthorId = message.Author.Id;
