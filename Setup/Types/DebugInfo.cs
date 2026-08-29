@@ -34,12 +34,16 @@ internal sealed class DebugInfo
 #if DEBUG
         return "dev";
 #else
-            var commitHash = await File.ReadAllTextOrFallbackAsync("CommitHash.txt");
-            var commitTimestamp = $"<t:{Convert.ToDateTime(await File.ReadAllTextOrFallbackAsync("CommitTime.txt")).ToUnixTimeSeconds()}:F>";
-            var commitMessage = await File.ReadAllTextOrFallbackAsync("CommitMessage.txt");
-            var remoteUrl = await File.ReadAllTextOrFallbackAsync("RemoteUrl.txt");
+        var commitHash = await File.ReadAllTextOrFallbackAsync("CommitHash.txt");
+        var timestamp = await File.ReadAllTextOrFallbackAsync("CommitTime.txt");
+        var commitTimestamp = string.IsNullOrEmpty(timestamp) ? string.Empty : $"<t:{Convert.ToDateTime(timestamp).ToUnixTimeSeconds()}:F>";
+        var commitMessage = await File.ReadAllTextOrFallbackAsync("CommitMessage.txt");
+        var remoteUrl = await File.ReadAllTextOrFallbackAsync("RemoteUrl.txt");
 
-            return $"[`{commitHash}`]({remoteUrl}/commit/{commitHash}): {commitMessage}\n{commitTimestamp}";
+        if (commitHash == "" || commitTimestamp == "" || commitMessage == "" || remoteUrl == "")
+            return "unknown";
+
+        return $"[`{commitHash}`]({remoteUrl}/commit/{commitHash}): {commitMessage}\n{commitTimestamp}";
 #endif
     }
 
