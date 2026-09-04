@@ -1,12 +1,12 @@
 ﻿namespace MechanicalMilkshake.Commands;
 
-[InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
-[InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
 internal class ReminderCommands
 {
     [Command("Remind Me About This")]
     [AllowedProcessors(typeof(MessageCommandProcessor))]
     [SlashCommandTypes(DiscordApplicationCommandType.MessageContextMenu)]
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
     public static async Task RemindMeAboutThisCommandAsync(MessageCommandContext ctx, DiscordMessage targetMessage)
     {
         await ctx.RespondWithModalAsync(new DiscordModalBuilder()
@@ -20,6 +20,8 @@ internal class ReminderCommands
 
     [Command("reminder")]
     [Description("Set, modify and delete reminders.")]
+    [InteractionInstallType(DiscordApplicationIntegrationType.GuildInstall, DiscordApplicationIntegrationType.UserInstall)]
+    [InteractionAllowedContexts([DiscordInteractionContextType.BotDM, DiscordInteractionContextType.PrivateChannel, DiscordInteractionContextType.Guild])]
     public class ReminderSlashCommands
     {
         [Command("set")]
