@@ -51,7 +51,7 @@ internal class ReminderCommands
 
             var reminder = new Setup.Types.Reminder(ctx.User.Id,
                 ctx.Channel.Id,
-                ctx.Interaction.IsUserInstallContext() ? "@me" : ctx.Guild.Id.ToString(),
+                ctx.Interaction.IsUserInstallContext() || ctx.Guild is null ? "@me" : ctx.Guild.Id.ToString(),
                 message.Id,
                 reminderId,
                 text,
