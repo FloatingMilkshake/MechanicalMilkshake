@@ -430,7 +430,7 @@ internal class InteractionEvents
                             e.Interaction.IsUserInstallContext() || e.Interaction.Guild is null ? "@me" : e.Interaction.Guild.Id.ToString(),
                             targetMessage.Id,
                             reminderId,
-                            "You set this reminder on a message with the \"Remind Me About This\" command.",
+                            null,
                             time,
                             DateTime.Now);
 
