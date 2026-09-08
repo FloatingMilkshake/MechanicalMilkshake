@@ -25,17 +25,14 @@ internal static class ServerSpecificFeatures
             #endregion my server
 
             #region Patch Tuesday announcements
-#if DEBUG
             if (e.Guild.Id == 799644062973427743) // my server
             {
-                await PatchTuesdayAnnouncementCheck(e, 944784076735414342, 1409289579139305573);
+                await PatchTuesdayAnnouncementCheck(e, 944784076735414342, 1408962751153569944);
             }
-#else
-            if (e.Guild.Id == 438781053675634713) // not my server
+            else if (e.Guild.Id == 438781053675634713) // not my server
             {
                 await PatchTuesdayAnnouncementCheck(e, 696333378990899301, 1251028070488477716);
             }
-#endif
             #endregion Patch Tuesday announcements
         }
 
