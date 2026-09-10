@@ -4,7 +4,7 @@ internal class Program
 {
     internal static async Task Main()
     {
-        Setup.Constants.HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("MechanicalMilkshake (https://github.com/FloatingMilkshake/MechanicalMilkshake)");
+        Setup.Constants.HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("MechanicalMilkshake/1.0 (bots@milkshake.services)");
 
         #region read config.json
 #if DEBUG
