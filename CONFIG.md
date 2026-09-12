@@ -5,6 +5,7 @@
 Here are explanations for each of the settings configured via enviromnent variables:
 
 | Key                           | Required? | What it is                                                                                                          |
+|-------------------------------|-----------|---------------------------------------------------------------------------------------------------------------------|
 | BOT_TOKEN                     | Yes       | The token for your bot. Get this from the Discord Developer Dashboard: https://discord.com/developers/applications  |
 | WOLFRAM_ALPHA_APP_ID          | No        | Your App ID from WolframAlpha. This is like an API key, and is required for the `/wolframalpha` command.            |
 | UPTIME_KUMA_HEARTBEAT_URL     | No        | An Uptime Kuma heartbeat URL for a "push" type monitor, if you want to use Uptime Kuma to monitor the bot's uptime. |
