@@ -1,27 +1,33 @@
-name: docker-build
+name: docker-build-push
 
 on:
-  pull_request:
   push:
     branches:
-      - '**'
-      - '!main'
+      - 'main'
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Log in to registry
+        uses: docker/login-action@v4
+        with:
+          registry: git.milkshake.services
+          username: ${{ forgejo.actor }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
-      - name: Build Docker image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64
           cache-from: type=gha
-          push: false
+          cache-to: type=gha,mode=max
+          push: true
           tags: git.milkshake.services/floatingmilkshake/mechanicalmilkshake:latest
