@@ -106,7 +106,9 @@ internal class ReminderTasks
             .AddEmbed(reminder.CreateEmbed());
 
         var user = await Setup.State.Discord.Client.GetUserAsync(reminder.UserId);
-        await user.SendMessageAsync(messageToSend.WithAllowedMentions([new UserMention(reminder.UserId)]));
+        await user.SendMessageAsync(messageToSend
+            .AddActionRowComponent([new DiscordButtonComponent(DiscordButtonStyle.Secondary, "button-callback-reminder-snooze", "Snooze")])
+            .WithAllowedMentions([new UserMention(reminder.UserId)]));
     }
 
     private static async Task LogExceptionAsync(DiscordChannel logChannel, Exception ex)
