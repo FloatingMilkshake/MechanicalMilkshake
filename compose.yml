@@ -15,7 +15,7 @@ services:
         target: /app/config.json
     env_file:
       - .env
-    labels: [ "com.centurylinklabs.watchtower.scope=mechanicalmilkshake" ]
+    labels: [ "com.centurylinklabs.watchtower.scope=autoupdate" ]
   redis:
     image: redis:alpine
     restart: always
@@ -29,11 +29,4 @@ services:
       timeout: 5s
       retries: 5
     command: --appendonly yes
-    labels: [ "com.centurylinklabs.watchtower.scope=mechanicalmilkshake" ]
-  watchtower:
-    image: nickfedor/watchtower
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: --interval 30 --label-enable --scope mechanicalmilkshake
-    restart: always
-    labels: [ "com.centurylinklabs.watchtower.scope=mechanicalmilkshake" ]
+    labels: [ "com.centurylinklabs.watchtower.scope=autoupdate" ]
