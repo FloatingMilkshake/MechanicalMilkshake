@@ -8,7 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="Abyssal.HumanDateParser" Version="2.0.0-20191113.1" />
-        <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-02609" />
+        <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-02613" />
         <PackageReference Include="DSharpPlus.Commands" Version="5.0.0-nightly-02609" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.9.0" />
