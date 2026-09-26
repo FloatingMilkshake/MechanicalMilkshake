@@ -1,4 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "prHourlyLimit": 0
+  "prHourlyLimit": 0,
+  "packageRules": [
+    {
+      "matchManagers": ["nuget"],
+      "matchPackageNames": ["DSharpPlus*"],
+      "groupName": "DSharpPlus"
+    }
+  ]
 }
