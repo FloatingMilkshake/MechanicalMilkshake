@@ -3,28 +3,12 @@ name: docker-build
 on:
   pull_request:
   push:
-    branches:
-      - '**'
-      - '!main'
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Build Docker image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          platforms: linux/amd64, linux/arm64
-          cache-from: type=gha
-          push: false
-          tags: git.milkshake.services/floatingmilkshake/mechanicalmilkshake:latest
+    uses: FloatingMilkshake/actions/.forgejo/workflows/docker/docker-build-push.yml@main
+    with:
+      image-name: floatingmilkshake/mechanicalmilkshake
+      push: ${{ forgejo.event_name == 'push' && forgejo.ref == 'refs/heads/main' }}
+    secrets:
+      registry-token: ${{ secrets.REGISTRY_TOKEN }}
