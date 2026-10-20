@@ -9,10 +9,7 @@
   ],
   "useServerSpecificFeatures": true,
   "feedbackChannel": "1493380989421097031",
-  "ratelimitCautionChannels": [
-    "356555058197823488",
-    "799644063443845180"
-  ],
+  "ratelimitCautionChannels": [],
   "slashCommandLogChannel": "1037044194860085318",
   "slashCommandLogExcludedGuilds": [
     "1007457740655968327"
