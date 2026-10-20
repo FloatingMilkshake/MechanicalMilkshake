@@ -18,16 +18,22 @@ internal static class DebugCommands
         var websocketPing = ctx.Client.GetConnectionLatency(0).TotalMilliseconds;
         ulong interactionLatency = (msg.Id - ctx.Interaction.Id) >> 22;
 
-        await ctx.EditResponseAsync($"**D#+ guild cache count:** {Setup.State.Discord.Client.Guilds.Count}"
-            + $"\n**D#+ channel cache count:** {Setup.State.Discord.Client.Guilds.Sum(x => x.Value.Channels.Count)}"
-            + $"\n**D#+ DM channel cache count:** {Setup.State.Discord.Client.PrivateChannels.Count}"
-            + $"\n**Messages checked for tracked keywords since startup:** {Setup.State.Process.MessagesCheckedForTrackedKeywords}"
-            + $"\n**Messages pending tracked keyword check:** {MessageEvents.MessagesPendingKeywordCheck.Count}"
-            + $"\n**Uptime:** {(DateTime.Now - Setup.State.Process.ProcessStartTime).Humanize()}"
-            + $"\n**Last websocket connection time:** {(DateTime.Now - Setup.State.Discord.ConnectTime).Humanize()} ago"
-            + $"\n**Websocket ping:** {(websocketPing == 0 ? "no heartbeat yet" : $"{websocketPing}ms")}"
-            + $"\n**Interaction latency:** {interactionLatency}ms"
-            + $"\n**Uptime Kuma heartbeat status:** {Setup.State.Process.LastUptimeKumaHeartbeatStatus}");
+        var embed = new DiscordEmbedBuilder()
+            .WithTitle("Statistics")
+            .WithTimestamp(DateTime.UtcNow)
+            .WithColor(Setup.Constants.BotColor)
+            .AddField("D#+ guild cache count", Setup.State.Discord.Client.Guilds.Count.ToString(), true)
+            .AddField("D#+ channel cache count", Setup.State.Discord.Client.Guilds.Sum(x => x.Value.Channels.Count).ToString(), true)
+            .AddField("D#+ DM channel cache count", Setup.State.Discord.Client.PrivateChannels.Count.ToString(), true)
+            .AddField("Messages checked for tracked keywords since startup", Setup.State.Process.MessagesCheckedForTrackedKeywords.ToString(), true)
+            .AddField("Messages pending tracked keyword check", MessageEvents.MessagesPendingKeywordCheck.Count.ToString(), true)
+            .AddField("Uptime", (DateTime.Now - Setup.State.Process.ProcessStartTime).Humanize(), true)
+            .AddField("Last websocket connection time", $"{(DateTime.Now - Setup.State.Discord.ConnectTime).Humanize()} ago", true)
+            .AddField("Websocket ping", $"{(websocketPing == 0 ? "no heartbeat yet" : $"{websocketPing}ms")}", true)
+            .AddField("Interaction latency", $"{interactionLatency}ms", true)
+            .AddField("Uptime Kuma heartbeat status", Setup.State.Process.LastUptimeKumaHeartbeatStatus, true);
+
+        await ctx.EditResponseAsync(embed);
     }
 
     // The idea for this command, and a lot of the code, is taken from DSharpPlus/DSharpPlus.Test. Reference linked below.
