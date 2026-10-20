@@ -6,4 +6,5 @@ internal static class Process
     internal static bool RedisExceptionsSuppressed;
     internal static readonly DateTime ProcessStartTime = DateTime.Now;
     internal static string LastUptimeKumaHeartbeatStatus = "waiting";
+    internal static int MessagesCheckedForTrackedKeywords = 0;
 }

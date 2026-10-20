@@ -9,6 +9,27 @@ internal static class DebugCommands
 {
     #region commands
 
+    [Command("stats")]
+    [Description("Read some statistics about the bot.")]
+    internal static async Task DebugStatsCommandAsync(SlashCommandContext ctx)
+    {
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent("Checking..."));
+        var msg = await ctx.GetResponseAsync();
+        var websocketPing = ctx.Client.GetConnectionLatency(0).TotalMilliseconds;
+        ulong interactionLatency = (msg.Id - ctx.Interaction.Id) >> 22;
+
+        await ctx.EditResponseAsync($"**D#+ guild cache count:** {Setup.State.Discord.Client.Guilds.Count}"
+            + $"\n**D#+ channel cache count:** {Setup.State.Discord.Client.Guilds.Sum(x => x.Value.Channels.Count)}"
+            + $"\n**D#+ DM channel cache count:** {Setup.State.Discord.Client.PrivateChannels.Count}"
+            + $"\n**Messages checked for tracked keywords since startup:** {Setup.State.Process.MessagesCheckedForTrackedKeywords}"
+            + $"\n**Messages pending tracked keyword check:** {MessageEvents.MessagesPendingKeywordCheck.Count}"
+            + $"\n**Uptime:** {(DateTime.Now - Setup.State.Process.ProcessStartTime).Humanize()}"
+            + $"\n**Last websocket connection time:** {(DateTime.Now - Setup.State.Discord.ConnectTime).Humanize()} ago"
+            + $"\n**Websocket ping:** {(websocketPing == 0 ? "no heartbeat yet" : $"{websocketPing}ms")}"
+            + $"\n**Interaction latency:** {interactionLatency}ms"
+            + $"\n**Uptime Kuma heartbeat status:** {Setup.State.Process.LastUptimeKumaHeartbeatStatus}");
+    }
+
     // The idea for this command, and a lot of the code, is taken from DSharpPlus/DSharpPlus.Test. Reference linked below.
     // https://github.com/DSharpPlus/DSharpPlus/blob/3a50fb3/DSharpPlus.Test/TestBotEvalCommands.cs
     [Command("eval")]

@@ -28,6 +28,7 @@ internal static class KeywordTrackingTasks
                     Setup.State.Discord.Client.Logger.LogDebug("Checking message {message} in channel {channel} for tracked keywords ({checkedCount}/{total})", pendingMessage.Value.message.Id, pendingMessage.Value.message.Channel.Id, checkedMessages, count);
                     await pendingMessage.Value.message.CheckForTrackedKeywordsAsync(pendingMessage.Value.isEditEvent);
                     MessageEvents.MessagesPendingKeywordCheck.Remove(pendingMessage.Key);
+                    Setup.State.Process.MessagesCheckedForTrackedKeywords++;
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
             }

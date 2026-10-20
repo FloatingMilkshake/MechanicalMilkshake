@@ -12,12 +12,10 @@ internal class PingCommands
             .WithContent("Ping!")
             .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
 
-        var now = DateTime.UtcNow;
-
-        var msg = await ctx.Interaction.GetOriginalResponseAsync();
+        var msg = await ctx.GetResponseAsync();
 
         var websocketPing = ctx.Client.GetConnectionLatency(0).TotalMilliseconds;
-        var interactionLatency = Math.Round((now - msg.CreationTimestamp.UtcDateTime).TotalMilliseconds);
+        ulong interactionLatency = (msg.Id - ctx.Interaction.Id) >> 22;
 
         var response = $"Pong!\n"
             + $"Websocket ping: `{websocketPing}ms`\n"
