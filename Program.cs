@@ -129,6 +129,9 @@ internal class Program
         // Reminder check
         await Task.Run(async () => ReminderTasks.ExecuteAsync());
 
+        // Keyword tracking hceck
+        await Task.Run(async () => KeywordTrackingTasks.ExecuteAsync());
+
         // DBots stats update
         await Task.Run(async () => DBotsTasks.ExecuteAsync());
         #endregion recurring tasks

@@ -2,6 +2,9 @@ namespace MechanicalMilkshake.Events;
 
 internal class MessageEvents
 {
+    internal static Lock MessagesPendingKeywordCheckLock = new();
+    internal static Dictionary<DateTime, (DiscordMessage message, bool isEditEvent)> MessagesPendingKeywordCheck = [];
+
     internal static async Task HandleMessageUpdatedEventAsync(DiscordClient _, MessageUpdatedEventArgs e)
     {
         if (e.Message is null)
@@ -12,7 +15,7 @@ internal class MessageEvents
 
         try
         {
-            await e.Message.CheckForTrackedKeywordsAsync(true);
+            lock (MessagesPendingKeywordCheckLock) MessagesPendingKeywordCheck.Add(DateTime.UtcNow, (e.Message, true));
         }
         catch (Exception ex)
         {
@@ -33,7 +36,7 @@ internal class MessageEvents
             if (Setup.State.Process.Configuration.UseServerSpecificFeatures)
                 await ServerSpecificFeatures.EventChecks.MessageCreateChecks(e);
 
-            await e.Message.CheckForTrackedKeywordsAsync();
+            MessagesPendingKeywordCheck.Add(DateTime.UtcNow, (e.Message, false));
 
             if (e.Channel.IsPrivate)
             {
