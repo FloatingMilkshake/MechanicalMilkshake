@@ -12,7 +12,7 @@ internal class GuildEvents
 
     internal static async Task HandleGuildDeletedEventAsync(DiscordClient _, GuildDeletedEventArgs e)
     {
-        if (Setup.State.Discord.Channels.GuildLogs is not null)
+        if (Setup.State.Discord.Channels.GuildLogs is not null && !e.Guild.IsUnavailable)
             await SendGuildEventLogEmbed(Setup.State.Discord.Channels.GuildLogs, e.Guild, GuildEventType.Leave);
 
         Setup.State.Caches.MessageCache.RemoveGuild(e.Guild.Id);
