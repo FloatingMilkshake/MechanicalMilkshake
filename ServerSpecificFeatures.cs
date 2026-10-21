@@ -53,29 +53,41 @@ internal static class ServerSpecificFeatures
                 455432936339144705
             };
 
-            // Get message before current message; if authors do not match or message is not a Cumulative Updates post, ignore
-            var previousMessage = (await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 1).ToListAsync())[0];
-            if (previousMessage.Author.Id != e.Message.Author.Id || !Regex.IsMatch(previousMessage.Content, insiderRedditUrlPattern))
-                return;
-
-            // Get URLs from both messages
-            var thisUrl = Regex.Match(e.Message.Content, insiderRedditUrlPattern).Value;
-            var previousUrl = Regex.Match(previousMessage.Content, insiderRedditUrlPattern).Value;
-
-            // Figure out which URL is Windows 10 and which is Windows 11
-            var windows10Url = thisUrl.Contains("Windows10") ? thisUrl : previousUrl;
-            var windows11Url = thisUrl.Contains("Windows11") ? thisUrl : previousUrl;
-
-            // Assemble message
-            var msg = "";
-            foreach (var user in usersToPing)
+            // Get last 3 messages before current message; if authors do not match or messages are not a Cumulative Updates post, ignore
+            var previousMessages = await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 3).ToListAsync();
+            foreach (var message in previousMessages)
             {
-                msg += $"<@{user}> ";
-            }
-            msg += $"```\nIt's <@&445773142233710594>! Update discussion threads & changelist links are here: {windows10Url} (Windows 10 Extended Security Updates) and {windows11Url} (Windows 11)\n```";
+                if (message.Author.Id != e.Message.Author.Id
+                || !Regex.IsMatch(message.Content, insiderRedditUrlPattern)
+                || message.CreationTimestamp < DateTime.Now.AddMinutes(-1)) // ignore messages older than 1 hour, they are probably not what we want
+                    continue;
 
-            // Send message
-            await e.Message.Channel.SendMessageAsync(msg);
+                // Get URLs from both messages
+                var thisUrl = Regex.Match(e.Message.Content, insiderRedditUrlPattern).Value;
+                var previousUrl = Regex.Match(message.Content, insiderRedditUrlPattern).Value;
+
+                // Figure out which URL is Windows 10 and which is Windows 11
+                var windows10Url = thisUrl.Contains("Windows10") ? thisUrl : previousUrl;
+                var windows11Url = thisUrl.Contains("Windows11") ? thisUrl : previousUrl;
+
+                // If both are for the same version of Windows, ignore
+                // This check is really silly but it probably does the job until I get around to rewriting this
+                if (windows10Url.Contains("Windows11") || windows11Url.Contains("Windows10"))
+                    continue;
+
+                // Assemble message
+                var msg = "";
+                foreach (var user in usersToPing)
+                {
+                    msg += $"<@{user}> ";
+                }
+                msg += $"```\nIt's <@&445773142233710594>! Update discussion threads & changelist links are here: {windows10Url} (Windows 10 Extended Security Updates) and {windows11Url} (Windows 11)\n```";
+
+                // Send message
+                await e.Message.Channel.SendMessageAsync(msg);
+
+                break;
+            }
         }
     }
 
