@@ -1,4 +1,6 @@
-﻿namespace MechanicalMilkshake.Commands;
+﻿using Microsoft.VisualBasic;
+
+namespace MechanicalMilkshake.Commands;
 
 [Command("debug")]
 [Description("Commands for checking if the bot is working properly.")]
@@ -18,22 +20,36 @@ internal static class DebugCommands
         var websocketPing = ctx.Client.GetConnectionLatency(0).TotalMilliseconds;
         ulong interactionLatency = (msg.Id - ctx.Interaction.Id) >> 22;
 
-        var embed = new DiscordEmbedBuilder()
-            .WithTitle("Statistics")
-            .WithTimestamp(DateTime.UtcNow)
-            .WithColor(Setup.Constants.BotColor)
-            .AddField("D#+ guild cache count", Setup.State.Discord.Client.Guilds.Count.ToString(), true)
-            .AddField("D#+ channel cache count", Setup.State.Discord.Client.Guilds.Sum(x => x.Value.Channels.Count).ToString(), true)
-            .AddField("D#+ DM channel cache count", Setup.State.Discord.Client.PrivateChannels.Count.ToString(), true)
-            .AddField("Messages checked for tracked keywords since startup", Setup.State.Process.MessagesCheckedForTrackedKeywords.ToString(), true)
-            .AddField("Messages pending tracked keyword check", MessageEvents.MessagesPendingKeywordCheck.Count.ToString(), true)
-            .AddField("Uptime", (DateTime.Now - Setup.State.Process.ProcessStartTime).Humanize(), true)
-            .AddField("Last websocket connection time", $"{(DateTime.Now - Setup.State.Discord.ConnectTime).Humanize()} ago", true)
-            .AddField("Websocket ping", $"{(websocketPing == 0 ? "no heartbeat yet" : $"{websocketPing}ms")}", true)
-            .AddField("Interaction latency", $"{interactionLatency}ms", true)
-            .AddField("Uptime Kuma heartbeat status", Setup.State.Process.LastUptimeKumaHeartbeatStatus, true);
+        List<DiscordComponent> components =
+        [
+            new DiscordTextDisplayComponent("## Statistics"),
 
-        await ctx.EditResponseAsync(embed);
+            new DiscordSeparatorComponent(divider: true, spacing: DiscordSeparatorSpacing.Small),
+
+            new DiscordTextDisplayComponent("### Cache"
+                + $"\n**Guilds:** {Setup.State.Discord.Client.Guilds.Count} guilds"
+                + $"\n**Channels:** {Setup.State.Discord.Client.Guilds.Sum(x => x.Value.Channels.Count)}"
+                + $"\n**DM Channels:** {Setup.State.Discord.Client.PrivateChannels.Count}"),
+
+            new DiscordSeparatorComponent(divider: true, spacing: DiscordSeparatorSpacing.Small),
+
+            new DiscordTextDisplayComponent("### Keyword Tracking"
+                + $"\n**Tracked Keywords:** {await Setup.Storage.Redis.HashLengthAsync("keywords")}"
+                + $"\n**Messages Checked Since Startup:** {Setup.State.Process.MessagesCheckedForTrackedKeywords}"
+                + $"\n**Messages Pending Check:** {MessageEvents.MessagesPendingKeywordCheck.Count}"),
+
+            new DiscordSeparatorComponent(divider: true, spacing: DiscordSeparatorSpacing.Small),
+
+            new DiscordTextDisplayComponent("### Connection"
+                + $"\n**Uptime:** {(DateTime.Now - Setup.State.Process.ProcessStartTime).Humanize()}"
+                + $"\n**Websocket Connection Duration:** {(DateTime.Now - Setup.State.Discord.ConnectTime).Humanize()}"
+                + $"\n**Uptime Kuma Heartbeat Status:** {Setup.State.Process.LastUptimeKumaHeartbeatStatus}")
+        ];
+        var container = new DiscordContainerComponent(components, color: Setup.Constants.BotColor);
+
+        await ctx.EditResponseAsync(new DiscordMessageBuilder()
+            .EnableV2Components()
+            .AddContainerComponent(container));
     }
 
     // The idea for this command, and a lot of the code, is taken from DSharpPlus/DSharpPlus.Test. Reference linked below.
