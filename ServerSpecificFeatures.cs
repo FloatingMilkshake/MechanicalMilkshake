@@ -24,67 +24,73 @@ internal static class ServerSpecificFeatures
             }
             #endregion my server
 
-            #region Patch Tuesday announcements
-            if (e.Guild.Id == 799644062973427743) // my server
-            {
-                await PatchTuesdayAnnouncementCheck(e, 944784076735414342, 1408962751153569944);
-            }
-            else if (e.Guild.Id == 438781053675634713) // not my server
-            {
-                await PatchTuesdayAnnouncementCheck(e, 696333378990899301, 1251028070488477716);
-            }
-            #endregion Patch Tuesday announcements
+            await DoPatchTuesdayMessageCheck(e);
         }
 
-        private static async Task PatchTuesdayAnnouncementCheck(MessageCreatedEventArgs e, ulong authorId, ulong channelId)
+        private static async Task DoPatchTuesdayMessageCheck(MessageCreatedEventArgs e)
         {
-            // Patch Tuesday automatic message generation
-
-            var insiderRedditUrlPattern = @"https:\/\/.*reddit.com\/r\/Windows[0-9]{1,}.*cumulative_updates.*";
-
-            // Filter to messages by approved author & channel IDs, and that match the pattern
-            if (e.Message.Author.Id != authorId || e.Channel.Id != channelId || !Regex.IsMatch(e.Message.Content, insiderRedditUrlPattern))
+            // Ignore messages in wrong channel or by wrong author
+            if (e.Channel.Id != 970467567552569365          // reddit mod #bot-spam
+                || (e.Author.Id != 1563348673017020497      // Windows11 relay
+                    && e.Author.Id != 1563352319830007889)) // Windows10 relay
+            {
                 return;
+            }
 
-            // List of users to ping with message
-            var usersToPing = new List<ulong>
-            {
-                228574821590499329,
-                455432936339144705
-            };
+            string insiderRedditUrlPattern = @"https:\/\/.*reddit\.com\/r\/Windows1[01]\/comments\/.+\/cumulative_updates[^ ]+";
+            var match = Regex.Match(e.Message.Content, insiderRedditUrlPattern);
 
-            // Get last 3 messages before current message; if authors do not match or messages are not a Cumulative Updates post, ignore
-            var previousMessages = await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 3).ToListAsync();
-            foreach (var message in previousMessages)
+            // Ignore messages that don't have a URL matching the expected format
+            if (!match.Success)
             {
-                if (message.Author.Id != e.Message.Author.Id
-                || !Regex.IsMatch(message.Content, insiderRedditUrlPattern)
-                || message.CreationTimestamp < DateTime.Now.AddMinutes(-1)) // ignore messages older than 1 hour, they are probably not what we want
+                await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                    .WithContent($"<@455432936339144705> This message was sent by the relay but doesn't match the expected format!")
+                    .WithReply(e.Message.Id)
+                    .WithAllowedMention(new UserMention(455432936339144705)));
+                return;
+            }
+            
+            // Get last 5 messages before current message; if messages are not a Cumulative Updates post, ignore
+            var previousMessages = await e.Message.Channel.GetMessagesBeforeAsync(e.Message.Id, 5).ToListAsync();
+            foreach (var previousMessage in previousMessages)
+            {
+                // Ignore messages older than 1 hour, they are probably not what we want
+                if (previousMessage.CreationTimestamp < DateTime.Now.AddMinutes(-1))
                     continue;
 
                 // Get URLs from both messages
-                var thisUrl = Regex.Match(e.Message.Content, insiderRedditUrlPattern).Value;
-                var previousUrl = Regex.Match(message.Content, insiderRedditUrlPattern).Value;
+                var thisUrl = match.Value;
+                var previousUrl = Regex.Match(previousMessage.Content, insiderRedditUrlPattern).Value;
 
-                // Figure out which URL is Windows 10 and which is Windows 11
-                var windows10Url = thisUrl.Contains("Windows10") ? thisUrl : previousUrl;
-                var windows11Url = thisUrl.Contains("Windows11") ? thisUrl : previousUrl;
+                // Figure out which URL is Windows 10...
+                string windows10Url;
+                if (thisUrl.Contains("windows10", StringComparison.OrdinalIgnoreCase))
+                    windows10Url = thisUrl;
+                else if (previousUrl.Contains("windows10", StringComparison.OrdinalIgnoreCase))
+                    windows10Url = previousUrl;
+                else
+                    continue; // Skip to the next of the previous messages. This probably shouldn't happen.
 
-                // If both are for the same version of Windows, ignore
-                // This check is really silly but it probably does the job until I get around to rewriting this
-                if (windows10Url.Contains("Windows11") || windows11Url.Contains("Windows10"))
-                    continue;
+                // ...and which is Windows 11
+                string windows11Url;
+                if (thisUrl.Contains("windows11", StringComparison.OrdinalIgnoreCase))
+                    windows11Url = thisUrl;
+                else if (previousUrl.Contains("windows11", StringComparison.OrdinalIgnoreCase))
+                    windows11Url = previousUrl;
+                else
+                    continue; // Skip to the next of the previous messages. This probably shouldn't happen.
 
-                // Assemble message
-                var msg = "";
-                foreach (var user in usersToPing)
-                {
-                    msg += $"<@{user}> ";
-                }
-                msg += $"```\nIt's <@&445773142233710594>! Update discussion threads & changelist links are here: {windows10Url} (Windows 10 Extended Security Updates) and {windows11Url} (Windows 11)\n```";
+                // Construct Patch Tuesday announcement
+                var msg = $"<@455432936339144705> <@228574821590499329>\n```\nIt's <@&445773142233710594>! Update discussion threads & changelist links are here: {windows10Url} (Windows 10 Extended Security Updates) and {windows11Url} (Windows 11)\n```";
 
                 // Send message
-                await e.Message.Channel.SendMessageAsync(msg);
+                var targetChannel = await Setup.State.Discord.Client.GetChannelAsync(1251028070488477716);
+                await targetChannel.SendMessageAsync(msg);
+
+                // React to relevant messages
+                await e.Message.CreateReactionAsync(DiscordEmoji.FromUnicode("✅"));
+                await Task.Delay(1000); // precaution because reaction ratelimits are stupid
+                await previousMessage.CreateReactionAsync(DiscordEmoji.FromUnicode("✅"));
 
                 break;
             }
