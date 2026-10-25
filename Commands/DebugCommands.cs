@@ -15,10 +15,12 @@ internal static class DebugCommands
     [Description("Read some statistics about the bot.")]
     internal static async Task DebugStatsCommandAsync(SlashCommandContext ctx)
     {
-        await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent("Checking..."));
+        await ctx.RespondAsync(new DiscordInteractionResponseBuilder().WithContent("Testing latency..."));
         var msg = await ctx.GetResponseAsync();
         var websocketPing = ctx.Client.GetConnectionLatency(0).TotalMilliseconds;
         ulong interactionLatency = (msg.Id - ctx.Interaction.Id) >> 22;
+
+        await ctx.EditResponseAsync("Collecting information...");
 
         List<DiscordComponent> components =
         [
@@ -36,7 +38,7 @@ internal static class DebugCommands
             new DiscordTextDisplayComponent("### Keyword Tracking"
                 + $"\n**Tracked Keywords:** {await Setup.Storage.Redis.HashLengthAsync("keywords")}"
                 + $"\n**Messages Checked Since Startup:** {Setup.State.Process.MessagesCheckedForTrackedKeywords}"
-                + $"\n**Messages Pending Check:** {MessageEvents.MessagesPendingKeywordCheck.Count}"),
+                + $"\n**Messages Pending Check:** {MessageEvents.MessagesPendingKeywordCheck.Count(x => x.Value.message.Id != msg.Id)}"),
 
             new DiscordSeparatorComponent(divider: true, spacing: DiscordSeparatorSpacing.Small),
 
@@ -60,7 +62,7 @@ internal static class DebugCommands
     {
         CancellationToken cancellationToken = default;
 
-        var builder = new DiscordMessageBuilder().WithContent("Working on it...");
+        var builder = new DiscordMessageBuilder().WithContent("Evaluating...");
 
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder(builder)
             .AsEphemeral(ephemeral: ctx.Interaction.ShouldUseEphemeralResponse(false)));
@@ -143,7 +145,7 @@ internal static class DebugCommands
         string command)
     {
         await ctx.RespondAsync(new DiscordInteractionResponseBuilder()
-            .WithContent("Working on it...")
+            .WithContent("Executing...")
             .AddActionRowComponent(new DiscordActionRowComponent(
                 [new DiscordButtonComponent(DiscordButtonStyle.Danger, "button-callback-eval-cancel", "Cancel")]
             ))
