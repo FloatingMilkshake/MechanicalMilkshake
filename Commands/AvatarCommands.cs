@@ -18,7 +18,8 @@ internal class AvatarCommands
         DiscordMember member = default;
         try
         {
-            member = await ctx.Guild.GetMemberAsync(targetUser.Id);
+            if (ctx.Guild is not null)
+                member = await ctx.Guild.GetMemberAsync(targetUser.Id);
         }
         catch (NotFoundException)
         {
@@ -58,7 +59,8 @@ internal class AvatarCommands
         DiscordMember member = default;
         try
         {
-            member = await ctx.Guild.GetMemberAsync(user.Id);
+            if (ctx.Guild is not null)
+                member = await ctx.Guild.GetMemberAsync(user.Id);
         }
         catch (NotFoundException)
         {
