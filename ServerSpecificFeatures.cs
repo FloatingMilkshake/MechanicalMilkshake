@@ -43,10 +43,25 @@ internal static class ServerSpecificFeatures
             // Ignore messages that don't have a URL matching the expected format
             if (!match.Success)
             {
-                await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
-                    .WithContent($"<@455432936339144705> This message was sent by the relay but doesn't match the expected format!")
-                    .WithReply(e.Message.Id)
-                    .WithAllowedMention(new UserMention(455432936339144705)));
+                List<string> acceptableRelayedMessagePatterns =
+                [
+                    "KB[0-9+]",                             // KB5127936
+                    "Insider.+(?: Preview)?(?: Build)?",    // Insider (Preview) (Build)
+                    "OS Builds?"                            // OS Build(s)
+                ];
+                if (acceptableRelayedMessagePatterns.All(pattern => !Regex.IsMatch(e.Message.Content, pattern, RegexOptions.IgnoreCase)))
+                {
+                    // Only alert for messages that don't match some other acceptable pattern, like Insider build posts
+                    await e.Channel.SendMessageAsync(new DiscordMessageBuilder()
+                       .WithContent($"<@455432936339144705> This message was sent by the relay but doesn't match the expected format!")
+                        .WithReply(e.Message.Id)
+                        .WithAllowedMention(new UserMention(455432936339144705)));
+                }
+                else
+                {
+                    // This message was ignored but isn't a problem. Just add a reaction.
+                    await e.Message.CreateReactionAsync(DiscordEmoji.FromUnicode("⛔"));
+                }
                 return;
             }
             
