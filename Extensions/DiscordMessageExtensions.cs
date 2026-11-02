@@ -20,22 +20,6 @@ internal static class DiscordMessageExtensions
 
             var allKeywords = (await Setup.Storage.Redis.HashGetAllAsync("keywords")).Select(k => JsonConvert.DeserializeObject<Setup.Types.TrackedKeyword>(k.Value));
 
-            // For any matched keywords, is the target user in teh guild?
-            foreach (var matchedKeyword in allKeywords.Where(x => message.Content.Contains(x.Keyword, StringComparison.OrdinalIgnoreCase)))
-            {
-                try
-                {
-                    await message.Channel.Guild.GetMemberAsync(matchedKeyword.UserId);
-                }
-                catch (NotFoundException)
-                {
-                    // User is not in guild. Skip.
-                    return;
-                }
-            }
-
-            // Yes. Continue with other checks.
-
             // Get message before current to check for assumed presence
             // Attempt to get message from cache before fetching from Discord to avoid potential API spam
             (ulong messageId, ulong authorId) msgBefore = default;
@@ -111,11 +95,11 @@ internal static class DiscordMessageExtensions
                 catch (NotFoundException)
                 {
                     // Member is not in server. We cannot check permissions, and it would be silly to continue anyway. Stop here.
-                    return;
+                    continue;
                 }
 
                 if (!message.Channel.PermissionsFor(member).HasPermission(DiscordPermission.ViewChannel) || !message.Channel.PermissionsFor(member).HasPermission(DiscordPermission.ReadMessageHistory))
-                    break;
+                    continue;
 
                 await keyword.SendAlertMessageAsync(message, isEdit);
             }

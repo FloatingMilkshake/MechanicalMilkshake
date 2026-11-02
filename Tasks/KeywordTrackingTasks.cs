@@ -17,26 +17,51 @@ internal static class KeywordTrackingTasks
         if (count > 0)
         {
             Setup.State.Discord.Client.Logger.LogDebug("Processing {count} messages pending keyword check", count);
-            try
+            Dictionary<DateTime, (DiscordMessage message, bool isEditEvent)> snapshot;
+            lock (MessageEvents.MessagesPendingKeywordCheckLock) snapshot = new(MessageEvents.MessagesPendingKeywordCheck);
+            int checkedMessages = 0;
+            foreach (var pendingMessage in snapshot)
             {
-                Dictionary<DateTime, (DiscordMessage message, bool isEditEvent)> snapshot;
-                lock (MessageEvents.MessagesPendingKeywordCheckLock) snapshot = new(MessageEvents.MessagesPendingKeywordCheck);
-                int checkedMessages = 0;
-                foreach (var pendingMessage in snapshot)
+                checkedMessages++;
+                Setup.State.Discord.Client.Logger.LogDebug("Checking message {message} in channel {channel} for tracked keywords ({checkedCount}/{total})", pendingMessage.Value.message.Id, pendingMessage.Value.message.Channel.Id, checkedMessages, count);
+                try
                 {
-                    checkedMessages++;
-                    Setup.State.Discord.Client.Logger.LogDebug("Checking message {message} in channel {channel} for tracked keywords ({checkedCount}/{total})", pendingMessage.Value.message.Id, pendingMessage.Value.message.Channel.Id, checkedMessages, count);
                     await pendingMessage.Value.message.CheckForTrackedKeywordsAsync(pendingMessage.Value.isEditEvent);
                     MessageEvents.MessagesPendingKeywordCheck.Remove(pendingMessage.Key);
                     Setup.State.Process.MessagesCheckedForTrackedKeywords++;
-                    await Task.Delay(TimeSpan.FromSeconds(1));
                 }
-            }
-            catch (Exception ex)
-            {
-                Setup.State.Discord.Client.Logger.LogError(ex, $"Failed to process messages pending keyword check! Will retry on next task run");
+                catch (Exception ex)
+                {
+                    Setup.State.Discord.Client.Logger.LogWarning(ex, "Failed to check message {message} in channel {channel} for tracked keywords!", pendingMessage.Value.message.Id, pendingMessage.Value.message.Channel.Id);
+                    if (ex is NotFoundException or UnauthorizedException)
+                    {
+                        // The message couldn't be checked, potentially because of bad permissions.
+                        // Skip it and carry on.
+                        MessageEvents.MessagesPendingKeywordCheck.Remove(pendingMessage.Key);
+                        await LogKeywordCheckErrorAsync(ex, pendingMessage.Value.message, false);
+                    }
+                    else
+                    {
+                        // The message couldn't be checked, this was probably a transient error.
+                        // Try again next run.
+                        await LogKeywordCheckErrorAsync(ex, pendingMessage.Value.message, true);
+                    }
+                }
+                await Task.Delay(TimeSpan.FromSeconds(1));
             }
             Setup.State.Discord.Client.Logger.LogDebug($"Done processing messages pending keyword check");
         }
+    }
+
+    private static async Task LogKeywordCheckErrorAsync(Exception ex, DiscordMessage message, bool willRetry)
+    {
+        var embed = new DiscordEmbedBuilder()
+        {
+            Title = "An exception occurred while processing tracked keywords",
+            Color = DiscordColor.Red,
+            Description = $"An exception occurred when processing message {message.Id} in channel {message.Channel.Id}."
+                + $"\n```\n{ex.GetType()}: {ex.Message}\n```",
+        }.AddField("Will retry?", willRetry ? "Yes" : "No");
+        await Setup.State.Discord.Channels.Home.SendMessageAsync(embed);
     }
 }
