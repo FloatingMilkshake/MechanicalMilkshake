@@ -4,10 +4,40 @@ internal static class KeywordTrackingTasks
 {
     internal static async Task ExecuteAsync()
     {
+        // Restore state at startup
+        var pendingKeywordChecks = await Setup.Storage.Redis.HashGetAllAsync("pendingKeywordChecks");
+        Setup.State.Discord.Client.Logger.LogDebug("Restoring state for keyword tracking, found {count} entries", pendingKeywordChecks.Length);
+        foreach (var pkc in pendingKeywordChecks)
+        {
+            try
+            {
+                var timestamp = new DateTime(long.Parse(pkc.Name.ToString()));
+                var value = pkc.Value.ToString().Split(":");
+                var channelId = ulong.Parse(value[0]);
+                var msgId = ulong.Parse(value[1]);
+                var isEdit = bool.Parse(value[2]);
+
+                var channel = await Setup.State.Discord.Client.GetChannelAsync(channelId);
+                var message = await channel.GetMessageAsync(msgId);
+
+                lock (MessageEvents.MessagesPendingKeywordCheckLock) MessageEvents.MessagesPendingKeywordCheck[timestamp] = (message, isEdit);
+            }
+            catch (Exception ex) when (ex is NotFoundException or UnauthorizedException)
+            {
+                await Setup.Storage.Redis.HashDeleteAsync("pendingKeywordChecks", pkc.Name);
+            }
+            await Task.Delay(TimeSpan.FromSeconds(1));
+        }
+        Setup.State.Discord.Client.Logger.LogDebug("Successfully restored state for keyword tracking, starting task");
+
         while (true)
         {
             await CheckPendingMessagesAsync();
-            await Task.Delay(TimeSpan.FromSeconds(60));
+#if DEBUG
+            await Task.Delay(TimeSpan.FromSeconds(10));
+#else
+            await Task.Delay(TimeSpan.FromMinutes(1));
+#endif
         }
     }
 
@@ -28,6 +58,7 @@ internal static class KeywordTrackingTasks
                 {
                     await pendingMessage.Value.message.CheckForTrackedKeywordsAsync(pendingMessage.Value.isEditEvent);
                     MessageEvents.MessagesPendingKeywordCheck.Remove(pendingMessage.Key);
+                    await Setup.Storage.Redis.HashDeleteAsync("pendingKeywordChecks", pendingMessage.Key.Ticks);
                     Setup.State.Process.MessagesCheckedForTrackedKeywords++;
                 }
                 catch (Exception ex)
@@ -38,6 +69,7 @@ internal static class KeywordTrackingTasks
                         // The message couldn't be checked, potentially because of bad permissions.
                         // Skip it and carry on.
                         MessageEvents.MessagesPendingKeywordCheck.Remove(pendingMessage.Key);
+                        await Setup.Storage.Redis.HashDeleteAsync("pendingKeywordChecks", pendingMessage.Key.Ticks);
                         await LogKeywordCheckErrorAsync(ex, pendingMessage.Value.message, false);
                     }
                     else

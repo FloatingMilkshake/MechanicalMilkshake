@@ -15,7 +15,9 @@ internal class MessageEvents
 
         try
         {
-            lock (MessagesPendingKeywordCheckLock) MessagesPendingKeywordCheck.Add(DateTime.UtcNow, (e.Message, true));
+            var now = DateTime.UtcNow;
+            lock (MessagesPendingKeywordCheckLock) MessagesPendingKeywordCheck.Add(now, (e.Message, true));
+            await Setup.Storage.Redis.HashSetAsync("pendingKeywordChecks", now.Ticks, $"{e.Message.Channel.Id}:{e.Message.Id}:{true}");
         }
         catch (Exception ex)
         {
@@ -36,7 +38,9 @@ internal class MessageEvents
             if (Setup.State.Process.Configuration.UseServerSpecificFeatures)
                 await ServerSpecificFeatures.EventChecks.MessageCreateChecks(e);
 
-            MessagesPendingKeywordCheck.Add(DateTime.UtcNow, (e.Message, false));
+            var now = DateTime.UtcNow;
+            MessagesPendingKeywordCheck.Add(now, (e.Message, false));
+            await Setup.Storage.Redis.HashSetAsync("pendingKeywordChecks", now.Ticks, $"{e.Message.Channel.Id}:{e.Message.Id}:{false}");
 
             if (e.Channel.IsPrivate)
             {
