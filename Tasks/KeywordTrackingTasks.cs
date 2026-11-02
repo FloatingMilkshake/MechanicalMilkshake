@@ -7,7 +7,7 @@ internal static class KeywordTrackingTasks
         while (true)
         {
             await CheckPendingMessagesAsync();
-            await Task.Delay(TimeSpan.FromSeconds(10));
+            await Task.Delay(TimeSpan.FromSeconds(60));
         }
     }
 
